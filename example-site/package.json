@@ -1,4 +1,6 @@
 {
+	"name": "your-design-system",
+	"private": true,
 	"scripts": {
 		"sb:dependency-previews": "node ./tools/build-dependency-previews.mjs",
 		"storybook": "pnpm run sb:dependency-previews && storybook dev -p 6006",
