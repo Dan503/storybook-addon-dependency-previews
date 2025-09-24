@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { useOf } from '@storybook/blocks'
 
 // If you want to fetch instead, change this path to '/lineage.json' and
@@ -14,10 +13,8 @@ type Graph = Record<string, { uses: string[]; usedBy: string[] }>
 import lineageData from 'virtual:lineage-json'
 
 export function DependencyPreviews() {
-	const { story } = useOf('story')
-	const filePath = (story?.parameters as any)?.__filePath as
-		| string
-		| undefined
+	const { story } = useOf<'story'>('story')
+	const filePath = story?.parameters?.__filePath as string | undefined
 
 	const graph: Graph | undefined = lineageData as Graph | undefined
 

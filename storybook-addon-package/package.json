@@ -18,6 +18,7 @@
 		"storybook": "^9.0.0"
 	},
 	"devDependencies": {
+		"@storybook/blocks": "9.0.0-alpha.17",
 		"@types/react": "^18.3.5",
 		"@types/react-dom": "^18.3.0",
 		"typescript": "^5.6.3"
