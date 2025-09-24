@@ -1,0 +1,18 @@
+{
+	"scripts": {
+		"sb:dependency-previews": "node ./tools/build-dependency-previews.mjs",
+		"storybook": "pnpm run sb:dependency-previews && storybook dev -p 6006",
+		"build-storybook": "pnpm run sb:dependency-previews && storybook build"
+	},
+	"dependencies": {
+		"react": "^18",
+		"react-dom": "^18"
+	},
+	"devDependencies": {
+		"storybook": "^9.0.0",
+		"@storybook/addon-docs": "^9.0.0",
+		"@storybook/react-vite": "^9.0.0",
+		"dependency-cruiser": "^16.6.0",
+		"storybook-addon-dependency-previews": "workspace:*"
+	}
+}
