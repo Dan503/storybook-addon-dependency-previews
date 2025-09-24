@@ -1,4 +1,4 @@
-import type { StorybookConfig } from 'storybook'
+import { StorybookConfig } from '@storybook/react-vite'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
