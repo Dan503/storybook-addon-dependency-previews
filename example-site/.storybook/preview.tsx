@@ -7,7 +7,7 @@ import {
 	Controls,
 	Stories,
 } from '@storybook/blocks'
-import { DependencyPreviews } from 'storybook-addon-dependency-previews'
+import { DependencyPreviews } from 'storybook-addon-dependency-previews/blocks'
 import type { ProjectAnnotations } from '@storybook/types'
 import type { Renderer } from 'storybook/internal/csf'
 

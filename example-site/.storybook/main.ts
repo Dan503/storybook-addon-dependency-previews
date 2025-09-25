@@ -36,6 +36,7 @@ const config: StorybookConfig = {
 		name: '@storybook/react-vite', // or @storybook/*-vite for your framework
 		options: {},
 	},
+	staticDirs: ['.storybook'],
 	async viteFinal(cfg) {
 		cfg.plugins = cfg.plugins || []
 		cfg.plugins.push(dependencyPreviewsVirtualPlugin())

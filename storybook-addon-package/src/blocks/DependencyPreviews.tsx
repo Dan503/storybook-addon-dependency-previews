@@ -1,4 +1,6 @@
 import { useOf } from '@storybook/blocks'
+import { useEffect, useState } from 'react'
+import type { Parameters } from 'storybook/internal/csf'
 
 // If you want to fetch instead, change this path to '/lineage.json' and
 // ensure you copy the file to your Storybook's staticDir.
@@ -6,26 +8,46 @@ import { useOf } from '@storybook/blocks'
 
 type Graph = Record<string, { uses: string[]; usedBy: string[] }>
 
-// Consumers will alias this import (see examples/.storybook/main.ts)
-// so we keep the path constant from the addon POV.
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import lineageData from 'virtual:lineage-json'
+function getJsonUrl(storyParams?: Parameters) {
+	// Allow consumer override via parameters.dependencyPreviews?.url
+	return (
+		storyParams?.dependencyPreviews?.url ||
+		'/.storybook/dependency-previews.json' // default
+	)
+}
 
 export function DependencyPreviews() {
 	const { story } = useOf<'story'>('story')
 	const filePath = story?.parameters?.__filePath as string | undefined
 
-	const graph: Graph | undefined = lineageData as Graph | undefined
+	const url = getJsonUrl(story?.parameters)
 
-	if (!filePath || !graph) {
-		return <div>No lineage data available.</div>
-	}
+	const [graph, setGraph] = useState<Graph | null>(null)
+	const [err, setErr] = useState<string | null>(null)
+
+	useEffect(() => {
+		let alive = true
+		;(async () => {
+			try {
+				const res = await fetch(url)
+				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+				const json = (await res.json()) as Graph
+				if (alive) setGraph(json)
+			} catch (e: any) {
+				if (alive) setErr(e?.message || String(e))
+			}
+		})()
+		return () => {
+			alive = false
+		}
+	}, [url])
+
+	if (err) return <div>Failed to load dependency previews: {err}</div>
+	if (!graph) return <div>Loading dependency previews…</div>
+	if (!filePath || !graph[filePath])
+		return <div>No dependency previews for this component.</div>
 
 	const node = graph[filePath]
-	if (!node) {
-		return <div>No lineage found for this component.</div>
-	}
 
 	return (
 		<div style={{ display: 'grid', gap: 12 }}>

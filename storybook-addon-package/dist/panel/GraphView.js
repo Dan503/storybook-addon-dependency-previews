@@ -1,14 +1,34 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import * as React from 'react';
-// Same import trick as in the Doc Block
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import lineageData from 'virtual:lineage-json';
+import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
+import { useEffect, useState } from 'react';
+const DEFAULT_URL = '/.storybook/dependency-previews.json';
 export function GraphView() {
-    const graph = lineageData;
-    const [q, setQ] = React.useState('');
+    const [graph, setGraph] = useState(null);
+    const [q, setQ] = useState('');
+    const [err, setErr] = useState(null);
+    useEffect(() => {
+        let alive = true;
+        (async () => {
+            try {
+                const res = await fetch(DEFAULT_URL);
+                if (!res.ok)
+                    throw new Error(`HTTP ${res.status}`);
+                const json = (await res.json());
+                if (alive)
+                    setGraph(json);
+            }
+            catch (e) {
+                if (alive)
+                    setErr(e?.message || String(e));
+            }
+        })();
+        return () => {
+            alive = false;
+        };
+    }, []);
+    if (err)
+        return _jsxs("p", { children: ["Failed to load dependency previews: ", err] });
     if (!graph)
-        return _jsx("div", { children: "Lineage data not loaded." });
+        return _jsx("p", { children: "Loading dependency graph\u2026" });
     const entries = Object.entries(graph)
         .filter(([k]) => k.toLowerCase().includes(q.toLowerCase()))
         .sort(([a], [b]) => a.localeCompare(b));

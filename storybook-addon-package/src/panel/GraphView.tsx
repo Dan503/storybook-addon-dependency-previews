@@ -1,17 +1,33 @@
-import * as React from 'react'
-
-// Same import trick as in the Doc Block
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import lineageData from 'virtual:lineage-json'
+import { useEffect, useState } from 'react'
 
 type Graph = Record<string, { uses: string[]; usedBy: string[] }>
 
-export function GraphView() {
-	const graph: Graph | undefined = lineageData as Graph | undefined
-	const [q, setQ] = React.useState('')
+const DEFAULT_URL = '/.storybook/dependency-previews.json'
 
-	if (!graph) return <div>Lineage data not loaded.</div>
+export function GraphView() {
+	const [graph, setGraph] = useState<Graph | null>(null)
+	const [q, setQ] = useState('')
+	const [err, setErr] = useState<string | null>(null)
+
+	useEffect(() => {
+		let alive = true
+		;(async () => {
+			try {
+				const res = await fetch(DEFAULT_URL)
+				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+				const json = (await res.json()) as Graph
+				if (alive) setGraph(json)
+			} catch (e: any) {
+				if (alive) setErr(e?.message || String(e))
+			}
+		})()
+		return () => {
+			alive = false
+		}
+	}, [])
+
+	if (err) return <p>Failed to load dependency previews: {err}</p>
+	if (!graph) return <p>Loading dependency graph…</p>
 
 	const entries = Object.entries(graph)
 		.filter(([k]) => k.toLowerCase().includes(q.toLowerCase()))
