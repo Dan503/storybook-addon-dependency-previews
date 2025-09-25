@@ -11,8 +11,7 @@ type Graph = Record<string, { uses: string[]; usedBy: string[] }>
 function getJsonUrl(storyParams?: Parameters) {
 	// Allow consumer override via parameters.dependencyPreviews?.url
 	return (
-		storyParams?.dependencyPreviews?.url ||
-		'/.storybook/dependency-previews.json' // default
+		storyParams?.dependencyPreviews?.url || '/dependency-previews.json' // default
 	)
 }
 

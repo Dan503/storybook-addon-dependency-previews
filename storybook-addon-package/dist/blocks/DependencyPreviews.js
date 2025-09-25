@@ -3,8 +3,7 @@ import { useOf } from '@storybook/blocks';
 import { useEffect, useState } from 'react';
 function getJsonUrl(storyParams) {
     // Allow consumer override via parameters.dependencyPreviews?.url
-    return (storyParams?.dependencyPreviews?.url ||
-        '/.storybook/dependency-previews.json' // default
+    return (storyParams?.dependencyPreviews?.url || '/dependency-previews.json' // default
     );
 }
 export function DependencyPreviews() {

@@ -1,6 +1,6 @@
 import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
 import { useEffect, useState } from 'react';
-const DEFAULT_URL = '/.storybook/dependency-previews.json';
+const DEFAULT_URL = '/dependency-previews.json';
 export function GraphView() {
     const [graph, setGraph] = useState(null);
     const [q, setQ] = useState('');

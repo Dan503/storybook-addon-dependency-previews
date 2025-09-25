@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 type Graph = Record<string, { uses: string[]; usedBy: string[] }>
 
-const DEFAULT_URL = '/.storybook/dependency-previews.json'
+const DEFAULT_URL = '/dependency-previews.json'
 
 export function GraphView() {
 	const [graph, setGraph] = useState<Graph | null>(null)
