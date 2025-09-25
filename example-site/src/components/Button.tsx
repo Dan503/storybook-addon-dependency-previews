@@ -1,8 +1,8 @@
-import { ReactNode } from 'react'
+import * as React from 'react'
 
 interface Props {
 	onClick: () => void
-	children: ReactNode
+	children: React.ReactNode
 }
 
 export function Button({ children, onClick }: Props) {
