@@ -1,12 +1,11 @@
 import { useOf } from '@storybook/blocks'
 import { useEffect, useState } from 'react'
 import type { Parameters } from 'storybook/internal/csf'
+import type { Graph } from '../types'
 
 // If you want to fetch instead, change this path to '/lineage.json' and
 // ensure you copy the file to your Storybook's staticDir.
 // Here we expect the consuming app to import the JSON (via Vite handling JSON).
-
-type Graph = Record<string, { uses: string[]; usedBy: string[] }>
 
 function getJsonUrl(storyParams?: Parameters) {
 	// Allow consumer override via parameters.dependencyPreviews?.url
@@ -52,9 +51,9 @@ export function DependencyPreviews() {
 		<div style={{ display: 'grid', gap: 12 }}>
 			<section>
 				<h3>Built with</h3>
-				{node.uses.length ? (
+				{node.builtWith.length ? (
 					<ul>
-						{node.uses.map((f) => (
+						{node.builtWith.map((f) => (
 							<li key={f}>{shortName(f)}</li>
 						))}
 					</ul>
@@ -64,9 +63,9 @@ export function DependencyPreviews() {
 			</section>
 			<section>
 				<h3>Used in</h3>
-				{node.usedBy.length ? (
+				{node.usedIn.length ? (
 					<ul>
-						{node.usedBy.map((f) => (
+						{node.usedIn.map((f) => (
 							<li key={f}>{shortName(f)}</li>
 						))}
 					</ul>

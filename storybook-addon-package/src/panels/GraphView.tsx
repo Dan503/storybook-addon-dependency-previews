@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-
-type Graph = Record<string, { uses: string[]; usedBy: string[] }>
+import type { Graph } from '../types'
 
 const DEFAULT_URL = '/dependency-previews.json'
 
@@ -58,9 +57,9 @@ export function GraphView() {
 							}}
 						>
 							<div>
-								<strong>Uses</strong>
+								<strong>Built with</strong>
 								<ul>
-									{node.uses.map((f) => (
+									{node.builtWith.map((f) => (
 										<li key={f}>
 											<code>{f}</code>
 										</li>
@@ -68,9 +67,9 @@ export function GraphView() {
 								</ul>
 							</div>
 							<div>
-								<strong>Used by</strong>
+								<strong>Used in</strong>
 								<ul>
-									{node.usedBy.map((f) => (
+									{node.usedIn.map((f) => (
 										<li key={f}>
 											<code>{f}</code>
 										</li>

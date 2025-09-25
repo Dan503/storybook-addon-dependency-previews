@@ -12,7 +12,7 @@ const raw = JSON.parse(readFileSync(inPath, 'utf8'))
 const norm = (p) => posix.normalize(p.replaceAll('\\', '/'))
 const isComponent = (p) => /src\/(components|ui|lib)\//.test(p) // tweak later via options
 
-/** @type {Record<string, {uses: string[], usedBy: string[]}>} */
+/** @type {import('../../src/types').Graph} */
 const graph = {}
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
@@ -21,15 +21,15 @@ for (const m of raw.modules || []) {
 		.map((d) => d.resolved && norm(d.resolved))
 		.filter(Boolean)
 		.filter(isComponent)
-	if (!graph[from]) graph[from] = { uses: [], usedBy: [] }
+	if (!graph[from]) graph[from] = { builtWith: [], usedIn: [] }
 	for (const to of deps) {
-		if (!graph[to]) graph[to] = { uses: [], usedBy: [] }
-		if (!graph[from].uses.includes(to)) graph[from].uses.push(to)
-		if (!graph[to].usedBy.includes(from)) graph[to].usedBy.push(from)
+		if (!graph[to]) graph[to] = { builtWith: [], usedIn: [] }
+		if (!graph[from].builtWith.includes(to)) graph[from].builtWith.push(to)
+		if (!graph[to].usedIn.includes(from)) graph[to].usedIn.push(from)
 	}
 }
 for (const k of Object.keys(graph)) {
-	graph[k].uses.sort()
-	graph[k].usedBy.sort()
+	graph[k].builtWith.sort()
+	graph[k].usedIn.sort()
 }
 writeFileSync(outPath, JSON.stringify(graph, null, 2))
