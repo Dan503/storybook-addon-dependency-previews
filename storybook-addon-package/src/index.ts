@@ -1,12 +1,13 @@
-// ESM-safe path resolution
-import { fileURLToPath } from 'node:url'
+export type DefaultTags = 'atom' | 'molecule' | 'organism' | 'template' | 'page'
+export type CustomTag = string & {}
 
-const manager = fileURLToPath(new URL('./manager.js', import.meta.url))
-const preview = fileURLToPath(new URL('./preview.js', import.meta.url))
+/** Adds `autodocs` tag by default and gives autocomplete atomic design tag options */
+export function tags<CustomTags extends string>(
+	...tagNames: Array<DefaultTags | CustomTags | CustomTag>
+): Array<DefaultTags | CustomTags | CustomTag | 'autodocs'> {
+	return ['autodocs', ...tagNames]
+}
 
-// Storybook preset API – do NOT import any UI here
-export const managerEntries = (entries: string[] = []) => [...entries, manager]
-export const previewAnnotations = (entries: string[] = []) => [
-	...entries,
-	preview,
-]
+// Re-export browser blocks so users can import directly
+export * from './blocks/index'
+export * from './panels/index'

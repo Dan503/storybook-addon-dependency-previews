@@ -1,10 +1,7 @@
-// ESM-safe path resolution
-import { fileURLToPath } from 'node:url';
-const manager = fileURLToPath(new URL('./manager.js', import.meta.url));
-const preview = fileURLToPath(new URL('./preview.js', import.meta.url));
-// Storybook preset API – do NOT import any UI here
-export const managerEntries = (entries = []) => [...entries, manager];
-export const previewAnnotations = (entries = []) => [
-    ...entries,
-    preview,
-];
+/** Adds `autodocs` tag by default and gives autocomplete atomic design tag options */
+export function tags(...tagNames) {
+    return ['autodocs', ...tagNames];
+}
+// Re-export browser blocks so users can import directly
+export * from './blocks/index';
+export * from './panels/index';

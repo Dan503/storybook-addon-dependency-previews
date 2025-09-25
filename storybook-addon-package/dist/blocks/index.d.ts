@@ -1,1 +1,1 @@
-export { DependencyPreviews } from './DependencyPreviews';
+export * from './DependencyPreviews';

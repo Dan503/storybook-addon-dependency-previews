@@ -1,32 +1,3 @@
-import React from 'react'
-import {
-	Title,
-	Subtitle,
-	Description,
-	Primary,
-	Controls,
-	Stories,
-} from '@storybook/blocks'
-import { DependencyPreviews } from 'storybook-addon-dependency-previews/blocks'
-import type { ProjectAnnotations } from '@storybook/types'
-import type { Renderer } from 'storybook/internal/csf'
+import { defaultPreviewConfig } from 'storybook-addon-dependency-previews'
 
-const preview: ProjectAnnotations<Renderer> = {
-	parameters: {
-		docs: {
-			page: () => (
-				<>
-					<Title />
-					<Subtitle />
-					<Description />
-					<Primary />
-					<Controls />
-					<DependencyPreviews />
-					<Stories />
-				</>
-			),
-		},
-	},
-}
-
-export default preview
+export default defaultPreviewConfig

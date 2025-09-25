@@ -1,11 +1,12 @@
 import type { Meta } from '@storybook/react-vite'
 import { Button } from './button'
+import { tags } from 'storybook-addon-dependency-previews'
 
 // Button.stories.tsx
 const meta: Meta<typeof Button> = {
 	title: 'Atoms/Button',
 	component: Button,
-	tags: ['autodocs'],
+	tags: tags('atom'),
 	parameters: {
 		__filePath: import.meta.url,
 	},

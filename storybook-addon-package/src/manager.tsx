@@ -1,7 +1,7 @@
 import { addons, types } from 'storybook/manager-api'
 import { AddonPanel } from 'storybook/internal/components'
 import { ADDON_ID, PANEL_ID } from './constants'
-import { GraphView } from './panel/GraphView'
+import { GraphView } from './panels/GraphView'
 
 addons.register(ADDON_ID, () => {
 	addons.add(PANEL_ID, {
