@@ -11,6 +11,9 @@
 		"./panels": "./dist/panels/index.js",
 		"./addon": "./dist/addon/index.js"
 	},
+	"bin": {
+		"sb-deps": "./cli/sb-deps.cjs"
+	},
 	"typesVersions": {
 		"*": {
 			"blocks": [
@@ -19,7 +22,9 @@
 		}
 	},
 	"files": [
-		"dist"
+		"dist",
+		"cli",
+		"depcruise.config.cjs"
 	],
 	"scripts": {
 		"build": "rm -rf dist && tsc -p tsconfig.json",
@@ -38,6 +43,7 @@
 		"typescript": "^5.6.3"
 	},
 	"dependencies": {
-		"@storybook/types": "9.0.0-alpha.1"
+		"@storybook/types": "9.0.0-alpha.1",
+		"dependency-cruiser": "^16.6.0"
 	}
 }

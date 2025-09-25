@@ -2,9 +2,9 @@
 	"name": "your-design-system",
 	"private": true,
 	"scripts": {
-		"sb:dependency-previews": "node ./tools/build-dependency-previews.mjs",
-		"storybook": "pnpm run sb:dependency-previews && storybook dev -p 6006",
-		"build-storybook": "pnpm run sb:dependency-previews && storybook build"
+		"deps": "sb-deps",
+		"storybook": "sb-deps && storybook dev -p 6006",
+		"build-storybook": "sb-deps && storybook build"
 	},
 	"dependencies": {
 		"react": "^18",

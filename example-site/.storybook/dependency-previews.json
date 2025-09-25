@@ -1,1 +1,18 @@
-{}
+{
+  "src/components/Button.stories.tsx": {
+    "uses": [
+      "src/components/button.tsx"
+    ],
+    "usedBy": []
+  },
+  "src/components/button.tsx": {
+    "uses": [],
+    "usedBy": [
+      "src/components/Button.stories.tsx"
+    ]
+  },
+  "src/components/Button.tsx": {
+    "uses": [],
+    "usedBy": []
+  }
+}
