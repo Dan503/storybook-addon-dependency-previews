@@ -1,7 +1,7 @@
 {
   "modules": [
     {
-      "source": "src/components/Button.stories.tsx",
+      "source": "src/components/Button/Button.stories.tsx",
       "dependencies": [
         {
           "dynamic": false,
@@ -12,7 +12,7 @@
             "local",
             "import"
           ],
-          "resolved": "src/components/button.tsx",
+          "resolved": "src/components/Button/button.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -26,16 +26,16 @@
       "valid": true
     },
     {
-      "source": "src/components/button.tsx",
+      "source": "src/components/Button/button.tsx",
       "dependencies": [],
       "dependents": [
-        "src/components/Button.stories.tsx"
+        "src/components/Button/Button.stories.tsx"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/components/Button.tsx",
+      "source": "src/components/Button/Button.tsx",
       "dependencies": [],
       "dependents": [],
       "orphan": true,
@@ -46,30 +46,656 @@
           "name": "no-orphans-in-components"
         }
       ]
+    },
+    {
+      "source": "src/components/Header.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/demo.FormComponents.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../hooks/demo.form-context",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/hooks/demo.form-context.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/hooks/demo.form.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/hooks/demo.form-context.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/demo.FormComponents.tsx",
+        "src/hooks/demo.form.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/hooks/demo.form.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/demo.FormComponents",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/demo.FormComponents.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./demo.form-context",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/hooks/demo.form-context.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routes/demo.form.address.tsx",
+        "src/routes/demo.form.simple.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/integrations/tanstack-query/devtools.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/integrations/tanstack-query/root-provider.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/router.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routeTree.gen.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./router.tsx",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/router.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/__root",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/__root.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/api.demo-names",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/api.demo-names.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/api.demo-tq-todos",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/api.demo-tq-todos.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/demo.form.address",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/demo.form.address.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/demo.form.simple",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/demo.form.simple.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/demo.start.api-request",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/demo.start.api-request.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/demo.start.server-funcs",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/demo.start.server-funcs.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/demo.tanstack-query",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/demo.tanstack-query.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/index",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/index.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/router.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/router.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./integrations/tanstack-query/root-provider",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/integrations/tanstack-query/root-provider.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routeTree.gen",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routeTree.gen.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/__root.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/Header",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/Header.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../integrations/tanstack-query/devtools",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/integrations/tanstack-query/devtools.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../styles.css?url",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/styles.css",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/styles.css",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/api.demo-names.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/api.demo-tq-todos.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/demo.form.address.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../hooks/demo.form",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/hooks/demo.form.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/demo.form.simple.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../hooks/demo.form",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/hooks/demo.form.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/demo.start.api-request.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/demo.start.server-funcs.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/demo.tanstack-query.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/index.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../logo.svg",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/logo.svg",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/logo.svg",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/routes/index.tsx"
+      ],
+      "orphan": false,
+      "valid": true
     }
   ],
   "summary": {
     "violations": [
       {
+        "type": "cycle",
+        "from": "src/router.tsx",
+        "to": "src/routeTree.gen.ts",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/router.tsx",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
         "type": "module",
-        "from": "src/components/Button.tsx",
-        "to": "src/components/Button.tsx",
+        "from": "src/components/Button/Button.tsx",
+        "to": "src/components/Button/Button.tsx",
         "rule": {
           "severity": "warn",
           "name": "no-orphans-in-components"
         }
       }
     ],
-    "error": 0,
+    "error": 1,
     "warn": 1,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 3,
-    "totalDependenciesCruised": 1,
+    "totalCruised": 22,
+    "totalDependenciesCruised": 22,
     "optionsUsed": {
-      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
+      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site-temp",
       "combinedDependencies": true,
-      "detectJSDocImports": false,
       "doNotFollow": {
         "path": "node_modules"
       },
@@ -87,7 +713,6 @@
       "outputType": "json",
       "preserveSymlinks": false,
       "rulesFile": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\cli\\scripts\\depcruise.config.cjs",
-      "skipAnalysisNotInRules": false,
       "tsPreCompilationDeps": true,
       "args": "."
     },

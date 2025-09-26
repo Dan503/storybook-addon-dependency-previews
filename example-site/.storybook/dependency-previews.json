@@ -1,17 +1,25 @@
 {
-  "src/components/Button.stories.tsx": {
+  "src/components/Button/Button.stories.tsx": {
     "builtWith": [
-      "src/components/button.tsx"
+      "src/components/Button/button.tsx"
     ],
     "usedIn": []
   },
-  "src/components/button.tsx": {
+  "src/components/Button/button.tsx": {
     "builtWith": [],
     "usedIn": [
-      "src/components/Button.stories.tsx"
+      "src/components/Button/Button.stories.tsx"
     ]
   },
-  "src/components/Button.tsx": {
+  "src/components/Button/Button.tsx": {
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/components/Header.tsx": {
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/components/demo.FormComponents.tsx": {
     "builtWith": [],
     "usedIn": []
   }
