@@ -1,3 +1,4 @@
 packages:
     - 'storybook-addon-package' # ← includes your addon
     - 'example-site' # ← includes your demo app
+    - 'example-site-temp'
