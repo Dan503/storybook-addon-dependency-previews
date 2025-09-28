@@ -5,14 +5,14 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "./button",
+          "module": "./Button",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/Button/button.tsx",
+          "resolved": "src/components/Button/Button.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -26,26 +26,13 @@
       "valid": true
     },
     {
-      "source": "src/components/Button/button.tsx",
+      "source": "src/components/Button/Button.tsx",
       "dependencies": [],
       "dependents": [
         "src/components/Button/Button.stories.tsx"
       ],
       "orphan": false,
       "valid": true
-    },
-    {
-      "source": "src/components/Button/Button.tsx",
-      "dependencies": [],
-      "dependents": [],
-      "orphan": true,
-      "valid": false,
-      "rules": [
-        {
-          "severity": "warn",
-          "name": "no-orphans-in-components"
-        }
-      ]
     },
     {
       "source": "src/components/Header.tsx",
@@ -88,6 +75,218 @@
       "dependencies": [],
       "dependents": [
         "src/components/demo.FormComponents.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+        "src/hooks/demo.form.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorBlockOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorMessageAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorMessageAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./TextFieldMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../../hooks/demo.form-context",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/hooks/demo.form-context.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../ErrorMessages/ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
         "src/hooks/demo.form.ts"
       ],
       "orphan": false,
@@ -106,6 +305,23 @@
             "import"
           ],
           "resolved": "src/components/demo.FormComponents.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../components/forms/TextFieldMolecule/TextFieldMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -676,25 +892,16 @@
             ]
           }
         ]
-      },
-      {
-        "type": "module",
-        "from": "src/components/Button/Button.tsx",
-        "to": "src/components/Button/Button.tsx",
-        "rule": {
-          "severity": "warn",
-          "name": "no-orphans-in-components"
-        }
       }
     ],
     "error": 1,
-    "warn": 1,
+    "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 22,
-    "totalDependenciesCruised": 22,
+    "totalCruised": 29,
+    "totalDependenciesCruised": 31,
     "optionsUsed": {
-      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site-temp",
+      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
       "doNotFollow": {
         "path": "node_modules"

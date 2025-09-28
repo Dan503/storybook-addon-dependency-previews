@@ -38,33 +38,6 @@ function ErrorMessages({
   )
 }
 
-export function TextField({
-  label,
-  placeholder,
-}: {
-  label: string
-  placeholder?: string
-}) {
-  const field = useFieldContext<string>()
-  const errors = useStore(field.store, (state) => state.meta.errors)
-
-  return (
-    <div>
-      <label htmlFor={label} className="block font-bold mb-1 text-xl">
-        {label}
-        <input
-          value={field.state.value}
-          placeholder={placeholder}
-          onBlur={field.handleBlur}
-          onChange={(e) => field.handleChange(e.target.value)}
-          className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-      </label>
-      {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
-    </div>
-  )
-}
-
 export function TextArea({
   label,
   rows = 3,
