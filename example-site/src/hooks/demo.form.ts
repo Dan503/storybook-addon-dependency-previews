@@ -4,13 +4,13 @@ import {
   Select,
   SubscribeButton,
   TextArea,
-  TextField,
 } from '../components/demo.FormComponents'
 import { fieldContext, formContext } from './demo.form-context'
+import { TextFieldMolecule } from '../components/forms/TextFieldMolecule/TextFieldMolecule'
 
-export const { useAppForm } = createFormHook({
+export const { useAppForm, withForm } = createFormHook({
   fieldComponents: {
-    TextField,
+    TextField: TextFieldMolecule,
     Select,
     TextArea,
   },
