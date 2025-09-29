@@ -1,6 +1,7 @@
 import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
 import { useOf } from '@storybook/blocks';
 import { useEffect, useState } from 'react';
+import { DepsPreviewBlock } from '../components/DepsPreviewBlock';
 // If you want to fetch instead, change this path to '/lineage.json' and
 // ensure you copy the file to your Storybook's staticDir.
 // Here we expect the consuming app to import the JSON (via Vite handling JSON).
@@ -48,15 +49,10 @@ export function DependencyPreviews() {
         return _jsx("div", { children: "No dependency previews for this component." });
     const builtWith = filterOutStoryFiles(node.builtWith);
     const usedIn = filterOutStoryFiles(node.usedIn);
-    return (_jsxs("div", { className: "grid gap-2", children: [_jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Built with ", builtWith.length, " component", plural(builtWith)] }) }), _jsx("div", { children: builtWith.length ? (_jsx("ul", { children: builtWith.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] }), _jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Used in ", usedIn.length, " component", plural(usedIn)] }) }), _jsx("div", { children: usedIn.length ? (_jsx("ul", { children: usedIn.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] })] }));
+    return (_jsxs("div", { className: "grid gap-2", children: [_jsx(DepsPreviewBlock, { deps: builtWith, title: "Built with" }), _jsx(DepsPreviewBlock, { deps: usedIn, title: "Used in" })] }));
 }
 function filterOutStoryFiles(array) {
-    return array.filter((str) => !str.includes('.stories.') && !str.includes('.story.'));
-}
-function shortName(file) {
-    // e.g., components/Button/Button.tsx → Button/Button.tsx
-    return file.split('/').slice(-2).join('/');
-}
-function plural(arr) {
-    return arr.length === 1 ? '' : 's';
+    return array.filter((info) => {
+        return (!info.path.includes('.stories.') && !info.path.includes('.story.'));
+    });
 }

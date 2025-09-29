@@ -1,7 +1,8 @@
 import { useOf } from '@storybook/blocks'
 import { useEffect, useState } from 'react'
 import type { Parameters } from 'storybook/internal/csf'
-import type { Graph } from '../types'
+import type { ComponentInfo, Graph } from '../types'
+import { DepsPreviewBlock } from '../components/DepsPreviewBlock'
 
 // If you want to fetch instead, change this path to '/lineage.json' and
 // ensure you copy the file to your Storybook's staticDir.
@@ -56,60 +57,18 @@ export function DependencyPreviews() {
 
 	return (
 		<div className="grid gap-2">
-			<details>
-				<summary>
-					<h2>
-						Built with {builtWith.length} component
-						{plural(builtWith)}
-					</h2>
-				</summary>
-
-				<div>
-					{builtWith.length ? (
-						<ul>
-							{builtWith.map((f) => (
-								<li key={f}>{shortName(f)}</li>
-							))}
-						</ul>
-					) : (
-						<p>—</p>
-					)}
-				</div>
-			</details>
-			<details>
-				<summary>
-					<h2>
-						Used in {usedIn.length} component
-						{plural(usedIn)}
-					</h2>
-				</summary>
-				<div>
-					{usedIn.length ? (
-						<ul>
-							{usedIn.map((f) => (
-								<li key={f}>{shortName(f)}</li>
-							))}
-						</ul>
-					) : (
-						<p>—</p>
-					)}
-				</div>
-			</details>
+			<DepsPreviewBlock deps={builtWith} title="Built with" />
+			<DepsPreviewBlock deps={usedIn} title="Used in" />
 		</div>
 	)
 }
 
-function filterOutStoryFiles(array: Array<string>): Array<string> {
-	return array.filter(
-		(str) => !str.includes('.stories.') && !str.includes('.story.'),
-	)
-}
-
-function shortName(file: string) {
-	// e.g., components/Button/Button.tsx → Button/Button.tsx
-	return file.split('/').slice(-2).join('/')
-}
-
-function plural(arr: Array<any>) {
-	return arr.length === 1 ? '' : 's'
+function filterOutStoryFiles(
+	array: Array<ComponentInfo>,
+): Array<ComponentInfo> {
+	return array.filter((info) => {
+		return (
+			!info.path.includes('.stories.') && !info.path.includes('.story.')
+		)
+	})
 }

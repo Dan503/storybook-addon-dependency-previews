@@ -37,6 +37,7 @@
 	},
 	"devDependencies": {
 		"@storybook/blocks": "9.0.0-alpha.17",
+		"@storybook/csf": "^0.1.13",
 		"@storybook/types": "9.0.0-alpha.1",
 		"@types/node": "^24.5.2",
 		"@types/react": "^19.1.13",
@@ -44,6 +45,10 @@
 		"typescript": "^5.6.3"
 	},
 	"dependencies": {
+		"@storybook/addon-links": "^9.1.8",
 		"dependency-cruiser": "^16.6.0"
+	},
+	"storybook-addon": {
+		"preset": "dist/addon/preset.js"
 	}
 }

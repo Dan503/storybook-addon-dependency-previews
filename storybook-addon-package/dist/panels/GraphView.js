@@ -36,5 +36,5 @@ export function GraphView() {
                                 display: 'grid',
                                 gap: 6,
                                 padding: '6px 0 0',
-                            }, children: [_jsxs("div", { children: [_jsx("strong", { children: "Built with" }), _jsx("ul", { children: node.builtWith.map((f) => (_jsx("li", { children: _jsx("code", { children: f }) }, f))) })] }), _jsxs("div", { children: [_jsx("strong", { children: "Used in" }), _jsx("ul", { children: node.usedIn.map((f) => (_jsx("li", { children: _jsx("code", { children: f }) }, f))) })] })] })] }, file))) })] }));
+                            }, children: [_jsxs("div", { children: [_jsx("strong", { children: "Built with" }), _jsx("ul", { children: node.builtWith.map((f) => (_jsx("li", { children: _jsx("code", { children: f.path }) }, f.path))) })] }), _jsxs("div", { children: [_jsx("strong", { children: "Used in" }), _jsx("ul", { children: node.usedIn.map((f) => (_jsx("li", { children: _jsx("code", { children: f.path }) }, f.path))) })] })] })] }, file))) })] }));
 }

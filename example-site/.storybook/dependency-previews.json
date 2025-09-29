@@ -1,14 +1,20 @@
 {
   "src/components/Button/Button.stories.tsx": {
     "builtWith": [
-      "src/components/Button/Button.tsx"
+      {
+        "storyId": "atoms-button--docs",
+        "storyTitle": "Atoms/Button",
+        "path": "src/components/Button/Button.stories.tsx"
+      }
     ],
     "usedIn": []
   },
   "src/components/Button/Button.tsx": {
     "builtWith": [],
     "usedIn": [
-      "src/components/Button/Button.stories.tsx"
+      {
+        "path": "src/components/Button/Button.stories.tsx"
+      }
     ]
   },
   "src/components/Header.tsx": {
@@ -21,86 +27,156 @@
   },
   "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx": {
     "builtWith": [
-      "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx"
+      {
+        "storyId": "forms-errormessages-errorblockorganism--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorBlockOrganism",
+        "path": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+      }
     ],
     "usedIn": []
   },
   "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx": {
     "builtWith": [
-      "src/components/forms/ErrorMessages/ErrorListMolecule.tsx"
+      {
+        "storyId": "forms-errormessages-errorlistmolecule--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorListMolecule",
+        "path": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx"
+      }
     ],
     "usedIn": [
-      "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+      {
+        "path": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+      }
     ]
   },
   "src/components/forms/ErrorMessages/ErrorListMolecule.tsx": {
     "builtWith": [
-      "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx"
+      {
+        "storyId": "forms-errormessages-errormessageatom--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorMessageAtom",
+        "path": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx"
+      }
     ],
     "usedIn": [
-      "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
-      "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx",
-      "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      {
+        "storyId": "forms-errormessages-errorblockorganism--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorBlockOrganism",
+        "path": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx"
+      },
+      {
+        "path": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+      },
+      {
+        "storyId": "forms-textfieldmolecule--docs",
+        "storyTitle": "Forms/TextFieldMolecule",
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      }
     ]
   },
   "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx": {
     "builtWith": [],
     "usedIn": [
-      "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-      "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+      {
+        "storyId": "forms-errormessages-errorlistmolecule--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorListMolecule",
+        "path": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx"
+      },
+      {
+        "path": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+      }
     ]
   },
   "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx": {
     "builtWith": [
-      "src/components/forms/ErrorMessages/ErrorListMolecule.tsx"
+      {
+        "storyId": "forms-errormessages-errorlistmolecule--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorListMolecule",
+        "path": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+      }
     ],
     "usedIn": []
   },
   "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx": {
     "builtWith": [
-      "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx"
+      {
+        "storyId": "forms-errormessages-errormessageatom--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorMessageAtom",
+        "path": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+      }
     ],
     "usedIn": []
   },
   "src/components/forms/FormDataPreview/FormDataMolecule.tsx": {
     "builtWith": [
-      "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
-      "src/components/forms/FormTypes.ts"
+      {
+        "path": "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
+      },
+      {
+        "path": "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
+      }
     ],
     "usedIn": [
-      "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      {
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      }
     ]
   },
   "src/components/forms/FormTypes.ts": {
     "builtWith": [],
     "usedIn": [
-      "src/components/forms/FormDataPreview/FormDataMolecule.tsx",
-      "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
-      "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      {
+        "path": "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
+      },
+      {
+        "path": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx"
+      },
+      {
+        "storyId": "forms-textfieldmolecule--docs",
+        "storyTitle": "Forms/TextFieldMolecule",
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      }
     ]
   },
   "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx": {
     "builtWith": [
-      "src/components/forms/FormTypes.ts"
+      {
+        "path": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx"
+      }
     ],
     "usedIn": [
-      "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
+      {
+        "path": "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
+      }
     ]
   },
   "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx": {
     "builtWith": [
-      "src/components/forms/FormDataPreview/FormDataMolecule.tsx",
-      "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      {
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      },
+      {
+        "storyId": "forms-textfieldmolecule--docs",
+        "storyTitle": "Forms/TextFieldMolecule",
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      }
     ],
     "usedIn": []
   },
   "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx": {
     "builtWith": [
-      "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-      "src/components/forms/FormTypes.ts"
+      {
+        "storyId": "forms-errormessages-errorlistmolecule--docs",
+        "storyTitle": "Forms/ErrorMessages/ErrorListMolecule",
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      },
+      {
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      }
     ],
     "usedIn": [
-      "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      {
+        "path": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      }
     ]
   }
 }

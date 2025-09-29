@@ -60,8 +60,8 @@ export function GraphView() {
 								<strong>Built with</strong>
 								<ul>
 									{node.builtWith.map((f) => (
-										<li key={f}>
-											<code>{f}</code>
+										<li key={f.path}>
+											<code>{f.path}</code>
 										</li>
 									))}
 								</ul>
@@ -70,8 +70,8 @@ export function GraphView() {
 								<strong>Used in</strong>
 								<ul>
 									{node.usedIn.map((f) => (
-										<li key={f}>
-											<code>{f}</code>
+										<li key={f.path}>
+											<code>{f.path}</code>
 										</li>
 									))}
 								</ul>
