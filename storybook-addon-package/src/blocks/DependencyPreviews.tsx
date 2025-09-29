@@ -17,7 +17,10 @@ function getJsonUrl(storyParams?: Parameters) {
 export function DependencyPreviews() {
 	const { story } = useOf<'story'>('story')
 	const filePath = story?.parameters?.__filePath as string | undefined
-	const refinedFilePath = filePath?.replace(/^.+\/src\//, 'src/')
+	const refinedFilePath = filePath
+		?.replace(/^.+\/src\//, 'src/')
+		.replace('.stories.', '.')
+		.replace('.story.', '.')
 
 	const url = getJsonUrl(story?.parameters)
 
@@ -48,20 +51,23 @@ export function DependencyPreviews() {
 	if (!refinedFilePath || !node)
 		return <div>No dependency previews for this component.</div>
 
+	const builtWith = filterOutStoryFiles(node.builtWith)
+	const usedIn = filterOutStoryFiles(node.usedIn)
+
 	return (
 		<div className="grid gap-2">
 			<details>
 				<summary>
 					<h2>
-						Built with {node.builtWith.length} component
-						{plural(node.builtWith)}
+						Built with {builtWith.length} component
+						{plural(builtWith)}
 					</h2>
 				</summary>
 
 				<div>
-					{node.builtWith.length ? (
+					{builtWith.length ? (
 						<ul>
-							{node.builtWith.map((f) => (
+							{builtWith.map((f) => (
 								<li key={f}>{shortName(f)}</li>
 							))}
 						</ul>
@@ -73,14 +79,14 @@ export function DependencyPreviews() {
 			<details>
 				<summary>
 					<h2>
-						Used in {node.usedIn.length} component
-						{plural(node.usedIn)}
+						Used in {usedIn.length} component
+						{plural(usedIn)}
 					</h2>
 				</summary>
 				<div>
-					{node.usedIn.length ? (
+					{usedIn.length ? (
 						<ul>
-							{node.usedIn.map((f) => (
+							{usedIn.map((f) => (
 								<li key={f}>{shortName(f)}</li>
 							))}
 						</ul>
@@ -90,6 +96,12 @@ export function DependencyPreviews() {
 				</div>
 			</details>
 		</div>
+	)
+}
+
+function filterOutStoryFiles(array: Array<string>): Array<string> {
+	return array.filter(
+		(str) => !str.includes('.stories.') && !str.includes('.story.'),
 	)
 }
 

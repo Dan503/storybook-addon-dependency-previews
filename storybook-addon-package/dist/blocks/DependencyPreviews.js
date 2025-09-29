@@ -12,7 +12,10 @@ function getJsonUrl(storyParams) {
 export function DependencyPreviews() {
     const { story } = useOf('story');
     const filePath = story?.parameters?.__filePath;
-    const refinedFilePath = filePath?.replace(/^.+\/src\//, 'src/');
+    const refinedFilePath = filePath
+        ?.replace(/^.+\/src\//, 'src/')
+        .replace('.stories.', '.')
+        .replace('.story.', '.');
     const url = getJsonUrl(story?.parameters);
     const [graph, setGraph] = useState(null);
     const [err, setErr] = useState(null);
@@ -43,7 +46,12 @@ export function DependencyPreviews() {
         return _jsx("div", { children: "Loading dependency previews\u2026" });
     if (!refinedFilePath || !node)
         return _jsx("div", { children: "No dependency previews for this component." });
-    return (_jsxs("div", { className: "grid gap-2", children: [_jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Built with ", node.builtWith.length, " component", plural(node.builtWith)] }) }), _jsx("div", { children: node.builtWith.length ? (_jsx("ul", { children: node.builtWith.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] }), _jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Used in ", node.usedIn.length, " component", plural(node.usedIn)] }) }), _jsx("div", { children: node.usedIn.length ? (_jsx("ul", { children: node.usedIn.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] })] }));
+    const builtWith = filterOutStoryFiles(node.builtWith);
+    const usedIn = filterOutStoryFiles(node.usedIn);
+    return (_jsxs("div", { className: "grid gap-2", children: [_jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Built with ", builtWith.length, " component", plural(builtWith)] }) }), _jsx("div", { children: builtWith.length ? (_jsx("ul", { children: builtWith.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] }), _jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Used in ", usedIn.length, " component", plural(usedIn)] }) }), _jsx("div", { children: usedIn.length ? (_jsx("ul", { children: usedIn.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] })] }));
+}
+function filterOutStoryFiles(array) {
+    return array.filter((str) => !str.includes('.stories.') && !str.includes('.story.'));
 }
 function shortName(file) {
     // e.g., components/Button/Button.tsx → Button/Button.tsx
