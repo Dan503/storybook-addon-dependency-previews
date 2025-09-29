@@ -17,6 +17,7 @@ function getJsonUrl(storyParams?: Parameters) {
 export function DependencyPreviews() {
 	const { story } = useOf<'story'>('story')
 	const filePath = story?.parameters?.__filePath as string | undefined
+	const refinedFilePath = filePath?.replace(/^.+\/src\//, 'src/')
 
 	const url = getJsonUrl(story?.parameters)
 
@@ -40,12 +41,12 @@ export function DependencyPreviews() {
 		}
 	}, [url])
 
+	const node = graph?.[refinedFilePath!]!
+
 	if (err) return <div>Failed to load dependency previews: {err}</div>
 	if (!graph) return <div>Loading dependency previews…</div>
-	if (!filePath || !graph[filePath])
+	if (!refinedFilePath || !node)
 		return <div>No dependency previews for this component.</div>
-
-	const node = graph[filePath]
 
 	return (
 		<div style={{ display: 'grid', gap: 12 }}>

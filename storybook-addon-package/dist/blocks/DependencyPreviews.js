@@ -12,6 +12,7 @@ function getJsonUrl(storyParams) {
 export function DependencyPreviews() {
     const { story } = useOf('story');
     const filePath = story?.parameters?.__filePath;
+    const refinedFilePath = filePath?.replace(/^.+\/src\//, 'src/');
     const url = getJsonUrl(story?.parameters);
     const [graph, setGraph] = useState(null);
     const [err, setErr] = useState(null);
@@ -35,13 +36,14 @@ export function DependencyPreviews() {
             alive = false;
         };
     }, [url]);
+    const node = graph?.[refinedFilePath];
+    console.log({ refinedFilePath, node, graph });
     if (err)
         return _jsxs("div", { children: ["Failed to load dependency previews: ", err] });
     if (!graph)
         return _jsx("div", { children: "Loading dependency previews\u2026" });
-    if (!filePath || !graph[filePath])
+    if (!refinedFilePath || !node)
         return _jsx("div", { children: "No dependency previews for this component." });
-    const node = graph[filePath];
     return (_jsxs("div", { style: { display: 'grid', gap: 12 }, children: [_jsxs("section", { children: [_jsx("h3", { children: "Built with" }), node.builtWith.length ? (_jsx("ul", { children: node.builtWith.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" }))] }), _jsxs("section", { children: [_jsx("h3", { children: "Used in" }), node.usedIn.length ? (_jsx("ul", { children: node.usedIn.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" }))] })] }));
 }
 function shortName(file) {
