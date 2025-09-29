@@ -37,16 +37,18 @@ export function DependencyPreviews() {
         };
     }, [url]);
     const node = graph?.[refinedFilePath];
-    console.log({ refinedFilePath, node, graph });
     if (err)
         return _jsxs("div", { children: ["Failed to load dependency previews: ", err] });
     if (!graph)
         return _jsx("div", { children: "Loading dependency previews\u2026" });
     if (!refinedFilePath || !node)
         return _jsx("div", { children: "No dependency previews for this component." });
-    return (_jsxs("div", { style: { display: 'grid', gap: 12 }, children: [_jsxs("section", { children: [_jsx("h3", { children: "Built with" }), node.builtWith.length ? (_jsx("ul", { children: node.builtWith.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" }))] }), _jsxs("section", { children: [_jsx("h3", { children: "Used in" }), node.usedIn.length ? (_jsx("ul", { children: node.usedIn.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" }))] })] }));
+    return (_jsxs("div", { className: "grid gap-2", children: [_jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Built with ", node.builtWith.length, " component", plural(node.builtWith)] }) }), _jsx("div", { children: node.builtWith.length ? (_jsx("ul", { children: node.builtWith.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] }), _jsxs("details", { children: [_jsx("summary", { children: _jsxs("h2", { children: ["Used in ", node.usedIn.length, " component", plural(node.usedIn)] }) }), _jsx("div", { children: node.usedIn.length ? (_jsx("ul", { children: node.usedIn.map((f) => (_jsx("li", { children: shortName(f) }, f))) })) : (_jsx("p", { children: "\u2014" })) })] })] }));
 }
 function shortName(file) {
     // e.g., components/Button/Button.tsx → Button/Button.tsx
     return file.split('/').slice(-2).join('/');
+}
+function plural(arr) {
+    return arr.length === 1 ? '' : 's';
 }

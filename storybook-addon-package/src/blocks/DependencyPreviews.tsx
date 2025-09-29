@@ -49,31 +49,46 @@ export function DependencyPreviews() {
 		return <div>No dependency previews for this component.</div>
 
 	return (
-		<div style={{ display: 'grid', gap: 12 }}>
-			<section>
-				<h3>Built with</h3>
-				{node.builtWith.length ? (
-					<ul>
-						{node.builtWith.map((f) => (
-							<li key={f}>{shortName(f)}</li>
-						))}
-					</ul>
-				) : (
-					<p>—</p>
-				)}
-			</section>
-			<section>
-				<h3>Used in</h3>
-				{node.usedIn.length ? (
-					<ul>
-						{node.usedIn.map((f) => (
-							<li key={f}>{shortName(f)}</li>
-						))}
-					</ul>
-				) : (
-					<p>—</p>
-				)}
-			</section>
+		<div className="grid gap-2">
+			<details>
+				<summary>
+					<h2>
+						Built with {node.builtWith.length} component
+						{plural(node.builtWith)}
+					</h2>
+				</summary>
+
+				<div>
+					{node.builtWith.length ? (
+						<ul>
+							{node.builtWith.map((f) => (
+								<li key={f}>{shortName(f)}</li>
+							))}
+						</ul>
+					) : (
+						<p>—</p>
+					)}
+				</div>
+			</details>
+			<details>
+				<summary>
+					<h2>
+						Used in {node.usedIn.length} component
+						{plural(node.usedIn)}
+					</h2>
+				</summary>
+				<div>
+					{node.usedIn.length ? (
+						<ul>
+							{node.usedIn.map((f) => (
+								<li key={f}>{shortName(f)}</li>
+							))}
+						</ul>
+					) : (
+						<p>—</p>
+					)}
+				</div>
+			</details>
 		</div>
 	)
 }
@@ -81,4 +96,8 @@ export function DependencyPreviews() {
 function shortName(file: string) {
 	// e.g., components/Button/Button.tsx → Button/Button.tsx
 	return file.split('/').slice(-2).join('/')
+}
+
+function plural(arr: Array<any>) {
+	return arr.length === 1 ? '' : 's'
 }
