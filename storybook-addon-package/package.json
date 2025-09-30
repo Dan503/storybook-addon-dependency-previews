@@ -47,6 +47,8 @@
 	},
 	"dependencies": {
 		"@storybook/addon-links": "^9.1.8",
+		"@storybook/manager-api": "9.0.0-alpha.1",
+		"@storybook/preview-api": "9.0.0-alpha.1",
 		"dependency-cruiser": "^16.6.0"
 	},
 	"storybook-addon": {

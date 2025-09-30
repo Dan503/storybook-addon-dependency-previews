@@ -1,13 +1,14 @@
 import { Story } from '@storybook/blocks'
 import { useDynamicStory } from '../hooks/useDynamicStory'
 import type { StoryInfo } from '../types'
+import { FullParityStory } from './FullParityStory'
 
 interface PropsForPrimaryPreview {
 	storyInfo: StoryInfo
 }
 
 export function PrimaryPreview({ storyInfo }: PropsForPrimaryPreview) {
-	const { csfModule, primaryExport, error, isLoading } =
+	const { csfModule, primaryExport, primaryId, error, isLoading } =
 		useDynamicStory(storyInfo)
 	const message =
 		error ||
@@ -19,5 +20,5 @@ export function PrimaryPreview({ storyInfo }: PropsForPrimaryPreview) {
 
 	console.log({ primaryExport, csfModule })
 
-	return <Story of={primaryExport} meta={csfModule!} inline />
+	return <FullParityStory storyId={primaryId!} args={primaryExport.args} />
 }

@@ -1,3 +1,6 @@
+import type { StoryContext } from '@storybook/types'
+import type { ComponentType, ReactNode } from 'react'
+
 export type Graph = Record<string, Deps>
 
 export interface Deps {
@@ -11,3 +14,29 @@ export interface StoryInfo {
 	storyTitle?: string
 	storyPath?: string
 }
+
+export type CsfModule = {
+	default?: {
+		title?: string
+		component?: ComponentType<any>
+		args?: AnyObj
+		parameters?: AnyObj
+		decorators?: DecoratorFn[]
+	}
+	__namedExportsOrder?: string[]
+	[k: string]: any // named story exports
+}
+
+export type AnyObj = Record<string, any>
+export type StoryExport =
+	| ((args: AnyObj, context?: StoryContext) => ReactNode) // function story
+	| {
+			render?: (args: AnyObj, context?: StoryContext) => ReactNode
+			args?: AnyObj
+			decorators?: DecoratorFn[]
+	  }
+
+export type DecoratorFn = (
+	Story: (ctx: StoryContext) => ReactNode,
+	ctx: StoryContext,
+) => ReactNode

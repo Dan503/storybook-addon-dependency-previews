@@ -1,11 +1,5 @@
-import type { ModuleExport } from '@storybook/types'
 import { useEffect, useMemo, useState } from 'react'
-import type { StoryInfo } from '../types'
-import type {
-	ComponentAnnotations,
-	Meta,
-	Renderer,
-} from 'storybook/internal/csf'
+import type { CsfModule, StoryInfo } from '../types'
 
 // grab all stories; Vite will code-split them
 const storiesGlob = import.meta.glob('/src/**/*.stories.@(tsx|ts|jsx|js)', {
@@ -33,7 +27,7 @@ export function useDynamicStory(storyInfo: StoryInfo) {
 		() => findStoryImporter(storyInfo.storyPath),
 		[storyInfo.storyPath],
 	)
-	const [csfModule, setCsfModule] = useState<CsfStoryModule | null>(null)
+	const [csfModule, setCsfModule] = useState<CsfModule | null>(null)
 	const [err, setErr] = useState<string | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 
@@ -47,7 +41,7 @@ export function useDynamicStory(storyInfo: StoryInfo) {
 						`No story module for ${storyInfo.componentPath}`,
 					)
 				const mod = await importer()
-				if (alive) setCsfModule(mod as CsfStoryModule)
+				if (alive) setCsfModule(mod as CsfModule)
 			} catch (e: any) {
 				if (alive) setErr(e?.message || String(e))
 			} finally {
@@ -59,37 +53,49 @@ export function useDynamicStory(storyInfo: StoryInfo) {
 		}
 	}, [importer, storyInfo.componentPath])
 
-	const primaryExport = pickStoryExport(csfModule, storyInfo)
-	const Component = csfModule?.default.component
-
-	if (csfModule) {
-		console.log('csfModule', csfModule)
-		console.log('keys', Object.keys(csfModule))
-		console.log('default', csfModule.default)
-		console.log('title', csfModule?.default?.title)
-	}
+	const primaryExport = getPrimaryStoryExport(csfModule, storyInfo)
+	const Component = csfModule?.default?.component
+	const primaryId = storyInfo.storyId?.replace(
+		/--docs$/,
+		getPrimaryId(csfModule),
+	)
 
 	return {
 		isLoading,
 		primaryExport,
+		primaryId,
 		csfModule,
 		Component,
 		error: err,
 	}
 }
 
-interface StoryMeta {
-	component: Renderer
-	parameters: {
-		__filePath?: string
-	}
-	tags: Array<string>
-	title: string
+function getPrimaryId(csfModule: CsfModule | undefined | null) {
+	if (!csfModule) return '--default'
+	if ('Default' in csfModule) return '--default'
+	if ('Primary' in csfModule) return '--primary'
+	return (
+		'--' +
+		slugifyExportName(csfModule?.__namedExportsOrder?.[0] || 'default')
+	)
 }
 
-type CsfStoryModule = Record<string, ComponentAnnotations<any>> & {
-	default: StoryMeta
-	tags: Array<string>
+// Kebab-case like Storybook: "ErrorStrings" -> "error-strings"
+function slugifyExportName(name: string) {
+	return (
+		name
+			// split camelCase / PascalCase boundaries
+			.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+			.replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2') // ABCDef -> ABC-Def
+			// underscores/spaces -> dashes
+			.replace(/[_\s]+/g, '-')
+			// strip anything not alnum or dash
+			.replace(/[^a-zA-Z0-9-]/g, '-')
+			// lowercase + collapse/trim dashes
+			.toLowerCase()
+			.replace(/--+/g, '-')
+			.replace(/^-+|-+$/g, '')
+	)
 }
 
 /** Choose a sensible story:
@@ -97,10 +103,11 @@ type CsfStoryModule = Record<string, ComponentAnnotations<any>> & {
  *  2) If we have a docs/primary id, try to match the export name in the id.
  *  3) Else fall back to the first named export.
  */
-function pickStoryExport(mod: any, info?: { storyId?: string }) {
+function getPrimaryStoryExport(mod: any, info?: { storyId?: string }) {
 	if (!mod) return null
 
-	// 1) Prefer Primary if present
+	// 1) Prefer "Default" or "Primary" if present
+	if ('Default' in mod) return mod.Default
 	if ('Primary' in mod) return mod.Primary
 
 	// 2) If we have a storyId like "…--errorstrings", try to match export name
