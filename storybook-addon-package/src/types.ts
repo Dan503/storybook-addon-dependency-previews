@@ -1,12 +1,13 @@
 export type Graph = Record<string, Deps>
 
 export interface Deps {
-	builtWith: Array<ComponentInfo>
-	usedIn: Array<ComponentInfo>
+	builtWith: Array<StoryInfo>
+	usedIn: Array<StoryInfo>
 }
 
-export interface ComponentInfo {
-	path: string
+export interface StoryInfo {
+	componentPath: string
 	storyId?: string
 	storyTitle?: string
+	storyPath?: string
 }

@@ -1,8 +1,10 @@
-import type { ComponentInfo } from '../types'
+import { Story } from '@storybook/blocks'
+import type { StoryInfo } from '../types'
 import { StoryLink } from './StoryLink'
+import { PrimaryPreview } from './PrimaryPreview'
 
 interface DepsPreviewBlockProps {
-	deps: Array<ComponentInfo>
+	deps: Array<StoryInfo>
 	title: string
 }
 
@@ -20,8 +22,9 @@ export function DepsPreviewBlock({ deps, title }: DepsPreviewBlockProps) {
 				{deps.length ? (
 					<ul>
 						{deps.map((f) => (
-							<li key={f.path}>
+							<li key={f.componentPath}>
 								<StoryLink info={f} />
+								{f.storyId && <PrimaryPreview storyInfo={f} />}
 							</li>
 						))}
 					</ul>

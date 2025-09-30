@@ -35,11 +35,12 @@ for (const m of raw.modules || []) {
 				? {
 						storyId: toStory.id,
 						storyTitle: toStory.title,
+						storyPath: toStory.path,
 				  }
 				: undefined
 			const data = {
 				...storyData,
-				path: from,
+				componentPath: from,
 			}
 
 			graph[from].builtWith.push(data)
@@ -50,11 +51,12 @@ for (const m of raw.modules || []) {
 				? {
 						storyId: fromStory.id,
 						storyTitle: fromStory.title,
+						storyPath: fromStory.path,
 				  }
 				: undefined
 			const data = {
 				...storyData,
-				path: from,
+				componentPath: from,
 			}
 			graph[to].usedIn.push(data)
 		}
@@ -69,26 +71,33 @@ writeFileSync(outPath, JSON.stringify(graph, null, 2))
 function getStoryId(componentPath) {
 	const rawFileData = getRawStoryFileData(componentPath)
 
-	if (!rawFileData) return null
+	if (!rawFileData.storyFileData) return null
 
-	const match = rawFileData.match(/title:\s*['"`]([^'"`]+)['"`]/)
+	const match = rawFileData.storyFileData.match(
+		/title:\s*['"`]([^'"`]+)['"`]/,
+	)
 	if (!match) return null
 	const title = match[1]
 	return {
 		title,
 		id: toId(title, 'docs'),
+		path: rawFileData.storyFilePath,
 	}
 }
 
 function getRawStoryFileData(componentPath) {
 	const base = componentPath.replace(/\.\w+$/, '')
-	const candidate_stories = `${base}.stories${extname(componentPath)}`
-	const candidate_story = `${base}.story${extname(componentPath)}`
+	const storiesPath = `${base}.stories${extname(componentPath)}`
+	const storyPath = `${base}.story${extname(componentPath)}`
 
-	const stories = getRawFileData(candidate_stories)
-	const story = getRawFileData(candidate_story)
+	const storiesData = getRawFileData(storiesPath)
+	const storyData = getRawFileData(storyPath)
 
-	return stories || story || null
+	return {
+		storyFileData: storiesData || storyData || null,
+		storyFilePath:
+			(storiesData && storiesPath) || (storyData && storyPath) || null,
+	}
 }
 
 function getRawFileData(path) {

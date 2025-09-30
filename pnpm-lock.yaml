@@ -154,6 +154,9 @@ importers:
       typescript:
         specifier: ^5.6.3
         version: 5.9.2
+      vite:
+        specifier: ^7.1.7
+        version: 7.1.7(@types/node@24.5.2)(jiti@2.6.0)(lightningcss@1.30.1)(tsx@4.20.6)
 
 packages:
 
@@ -5915,7 +5918,6 @@ snapshots:
       jiti: 2.6.0
       lightningcss: 1.30.1
       tsx: 4.20.6
-    optional: true
 
   vitefu@1.1.1(vite@7.1.7(@types/node@22.18.6)(jiti@2.6.0)(lightningcss@1.30.1)(tsx@4.20.6)):
     optionalDependencies:

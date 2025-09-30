@@ -1,7 +1,7 @@
 import { useOf } from '@storybook/blocks'
 import { useEffect, useState } from 'react'
 import type { Parameters } from 'storybook/internal/csf'
-import type { ComponentInfo, Graph } from '../types'
+import type { StoryInfo, Graph } from '../types'
 import { DepsPreviewBlock } from '../components/DepsPreviewBlock'
 
 // If you want to fetch instead, change this path to '/lineage.json' and
@@ -63,12 +63,11 @@ export function DependencyPreviews() {
 	)
 }
 
-function filterOutStoryFiles(
-	array: Array<ComponentInfo>,
-): Array<ComponentInfo> {
+function filterOutStoryFiles(array: Array<StoryInfo>): Array<StoryInfo> {
 	return array.filter((info) => {
 		return (
-			!info.path.includes('.stories.') && !info.path.includes('.story.')
+			!info.componentPath.includes('.stories.') &&
+			!info.componentPath.includes('.story.')
 		)
 	})
 }

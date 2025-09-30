@@ -42,7 +42,8 @@
 		"@types/node": "^24.5.2",
 		"@types/react": "^19.1.13",
 		"@types/react-dom": "^19.1.9",
-		"typescript": "^5.6.3"
+		"typescript": "^5.6.3",
+		"vite": "^7.1.7"
 	},
 	"dependencies": {
 		"@storybook/addon-links": "^9.1.8",

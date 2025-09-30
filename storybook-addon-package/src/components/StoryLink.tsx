@@ -1,13 +1,13 @@
-import type { ComponentInfo } from '../types'
+import type { StoryInfo } from '../types'
 import { linkTo } from '@storybook/addon-links'
 
 interface StoryLinkProps {
-	info: ComponentInfo
+	info: StoryInfo
 }
 
 export function StoryLink({ info }: StoryLinkProps) {
 	if (!info.storyId) {
-		return info.path
+		return info.componentPath
 	}
 	const linkPath = `/?path=/docs/${info.storyId}`
 	return (
