@@ -8,6 +8,8 @@ import {
 } from '../hooks/useDependencyGraph'
 import type { StoryInfo } from '../types'
 
+import s from './DependencyPreviews.module.css'
+
 export function DependencyPreviews() {
 	return (
 		<DependencyGraphProvider>
@@ -26,7 +28,7 @@ function TopLevelDependencyPreviews() {
 	const usedIn = filterOutStoryFiles(node.usedIn)
 
 	return (
-		<div className="grid gap-2">
+		<div className={s.topLevelWrapper}>
 			<DepsPreviewBlock deps={builtWith} title="Built with" />
 			<DepsPreviewBlock deps={usedIn} title="Used in" />
 		</div>
