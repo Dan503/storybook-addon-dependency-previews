@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { PrimaryPreview } from '../components/PrimaryPreview'
 import { StoryLink } from '../components/StoryLink'
 import {
@@ -9,6 +8,7 @@ import {
 import type { StoryInfo } from '../types'
 
 import s from './DependencyPreviews.module.css'
+import { Expandable } from '../components/Expandable'
 
 export function DependencyPreviews() {
 	return (
@@ -42,29 +42,27 @@ interface DepsPreviewBlockProps {
 
 export function DepsPreviewBlock({ deps, title }: DepsPreviewBlockProps) {
 	return (
-		<details>
-			<summary>
+		<Expandable
+			Header={
 				<h2>
 					{title} {deps.length} component
 					{plural(deps)}
 				</h2>
-			</summary>
-
-			<div>
-				{deps.length ? (
-					<ul>
-						{deps.map((info) => (
-							<DepsPreviewItem
-								storyInfo={info}
-								key={info.componentPath}
-							/>
-						))}
-					</ul>
-				) : (
-					<p>—</p>
-				)}
-			</div>
-		</details>
+			}
+		>
+			{deps.length ? (
+				<ul>
+					{deps.map((info) => (
+						<DepsPreviewItem
+							storyInfo={info}
+							key={info.componentPath}
+						/>
+					))}
+				</ul>
+			) : (
+				<p>—</p>
+			)}
+		</Expandable>
 	)
 }
 
@@ -75,23 +73,14 @@ interface PropsForDepsPreviewItem {
 function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 	const { graph } = useDependencyGraph()
 	const { builtWith, usedIn } = graph![storyInfo.componentPath]
-	const [isOpen, setIsOpen] = useState(false)
 	const filteredBuiltWith = filterOutStoryFiles(builtWith)
 	const fitleredUsedIn = filterOutStoryFiles(usedIn)
 
 	return (
 		<li key={storyInfo.componentPath}>
 			{storyInfo.storyId ? (
-				<details
-					onToggle={(e) => {
-						e.stopPropagation()
-						setIsOpen((prev) => !prev)
-					}}
-				>
-					<summary>
-						<StoryLink info={storyInfo} />
-					</summary>
-					{isOpen && storyInfo.storyId && (
+				<Expandable Header={<StoryLink info={storyInfo} />}>
+					{storyInfo.storyId && (
 						<div>
 							<PrimaryPreview storyInfo={storyInfo} />
 							{filteredBuiltWith.length > 0 && (
@@ -126,7 +115,7 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 							)}
 						</div>
 					)}
-				</details>
+				</Expandable>
 			) : (
 				<StoryLink info={storyInfo} />
 			)}

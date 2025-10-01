@@ -24,7 +24,7 @@ export function FullParityStory({
 	args,
 	globals,
 	enabled = true,
-	initialHeight = 320,
+	initialHeight = 120,
 	className,
 }: Props) {
 	const canvasId = React.useMemo(() => toCanvasId(storyId), [storyId])
