@@ -13,70 +13,78 @@ const raw = JSON.parse(readFileSync(inPath, 'utf8'))
 const norm = (p) => posix.normalize(p.replaceAll('\\', '/'))
 const isComponent = (p) => /src\/(components|ui|lib)\//.test(p) // tweak later via options
 
+/** Simple keyed-push to avoid duplicates */
+function pushUnique(list, item) {
+	if (!list.some((x) => x.componentPath === item.componentPath)) {
+		list.push(item)
+	}
+}
+
 /** @type {import('../../src/types').Graph} */
 const graph = {}
+
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
 	if (!isComponent(from)) continue
+
 	const deps = (m.dependencies || [])
 		.map((d) => d.resolved && norm(d.resolved))
 		.filter(Boolean)
 		.filter(isComponent)
-	if (!graph[from]) {
-		graph[from] = { builtWith: [], usedIn: [] }
-	}
-	for (const to of deps) {
-		if (!graph[to]) {
-			graph[to] = { builtWith: [], usedIn: [] }
-		}
-		if (!graph[from].builtWith.includes(to)) {
-			const toStory = getStoryId(to)
-			const storyData = toStory
-				? {
-						storyId: toStory.id,
-						storyTitle: toStory.title,
-						storyPath: toStory.path,
-				  }
-				: undefined
-			const data = {
-				...storyData,
-				componentPath: from,
-			}
 
-			graph[from].builtWith.push(data)
+	if (!graph[from]) graph[from] = { builtWith: [], usedIn: [] }
+
+	for (const to of deps) {
+		if (from === to) continue // 🔒 skip self-edges
+
+		if (!graph[to]) graph[to] = { builtWith: [], usedIn: [] }
+
+		// ---- builtWith: from → to
+		const toStory = getStoryId(to)
+		const builtWithEntry = {
+			componentPath: to, // ✅ the dependency, not "from"
+			...(toStory && {
+				storyId: toStory.id,
+				storyTitle: toStory.title,
+				storyPath: toStory.path,
+			}),
 		}
-		if (!graph[to].usedIn.includes(from)) {
-			const fromStory = getStoryId(from)
-			const storyData = fromStory
-				? {
-						storyId: fromStory.id,
-						storyTitle: fromStory.title,
-						storyPath: fromStory.path,
-				  }
-				: undefined
-			const data = {
-				...storyData,
-				componentPath: from,
-			}
-			graph[to].usedIn.push(data)
+		pushUnique(graph[from].builtWith, builtWithEntry)
+
+		// ---- usedIn: to ← from
+		const fromStory = getStoryId(from)
+		const usedInEntry = {
+			componentPath: from,
+			...(fromStory && {
+				storyId: fromStory.id,
+				storyTitle: fromStory.title,
+				storyPath: fromStory.path,
+			}),
 		}
+		pushUnique(graph[to].usedIn, usedInEntry)
 	}
 }
+
+// Stable sort by path for nicer diffs/UI
+const byPath = (a, b) =>
+	(a.componentPath || '').localeCompare(b.componentPath || '')
+
 for (const k of Object.keys(graph)) {
-	graph[k].builtWith.sort()
-	graph[k].usedIn.sort()
+	graph[k].builtWith.sort(byPath)
+	graph[k].usedIn.sort(byPath)
 }
+
 writeFileSync(outPath, JSON.stringify(graph, null, 2))
 
 function getStoryId(componentPath) {
 	const rawFileData = getRawStoryFileData(componentPath)
-
 	if (!rawFileData.storyFileData) return null
 
 	const match = rawFileData.storyFileData.match(
 		/title:\s*['"`]([^'"`]+)['"`]/,
 	)
 	if (!match) return null
+
 	const title = match[1]
 	return {
 		title,
