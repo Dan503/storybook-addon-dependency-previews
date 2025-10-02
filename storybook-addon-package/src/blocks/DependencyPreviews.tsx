@@ -15,6 +15,7 @@ import type { IconComponent } from '../components/icons/iconTypes'
 import { SquaresPlus } from '../components/icons/SquaresPlus'
 
 import s from './DependencyPreviews.module.css'
+import { Heading } from '@storybook/blocks'
 
 export function DependencyPreviews() {
 	return (
@@ -35,6 +36,9 @@ function TopLevelDependencyPreviews() {
 
 	return (
 		<div className={s.topLevelWrapper}>
+			<div className={s.sbHeading}>
+				<Heading>Dependency previews</Heading>
+			</div>
 			<DepsPreviewBlock
 				deps={builtWith}
 				title="Built with"
