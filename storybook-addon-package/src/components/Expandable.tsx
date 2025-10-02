@@ -1,5 +1,7 @@
-import { useState, type ReactElement, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import s from './Expandable.module.css'
+import { EyeOpen } from './icons/EyeOpen'
+import { X } from './icons/X'
 
 interface PropsForExpandable {
 	Header: ReactNode
@@ -18,7 +20,14 @@ export function Expandable({ onToggle, Header, children }: PropsForExpandable) {
 				setIsOpen(e.currentTarget.open)
 			}}
 		>
-			<summary className={s.header}>{Header}</summary>
+			<summary className={s.header}>
+				{isOpen ? (
+					<X className={s.icon} />
+				) : (
+					<EyeOpen className={s.icon} />
+				)}
+				<div className={s.headContent}>{Header}</div>
+			</summary>
 			{isOpen && <div className={s.body}>{children}</div>}
 		</details>
 	)
