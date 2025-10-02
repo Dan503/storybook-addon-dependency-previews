@@ -32,9 +32,10 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 	const { story } = useOf<'story'>('story')
 	const filePath = story?.parameters?.__filePath as string | undefined
 	const refinedFilePath = filePath
-		?.replace(/^.+\/src\//, 'src/')
-		.replace('.stories.', '.')
-		.replace('.story.', '.')
+		?.replace(/^.+\/src\//, 'src/') // remove host from the path
+		.replace('.stories.', '.') // remove .stories extension
+		.replace('.story.', '.') // remove .story extension
+		.replace(/\?.+$/, '') // remove any query string parameters
 
 	const url = getJsonUrl(story?.parameters)
 
