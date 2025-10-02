@@ -82,10 +82,12 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 				<Expandable Header={<StoryLink info={storyInfo} />}>
 					{storyInfo.storyId && (
 						<div>
-							<PrimaryPreview storyInfo={storyInfo} />
+							<Expandable Header="Preview component">
+								<PrimaryPreview storyInfo={storyInfo} />
+							</Expandable>
+
 							{filteredBuiltWith.length > 0 && (
-								<>
-									<p>Built with:</p>
+								<Expandable Header="Built with">
 									<ul>
 										{filterOutStoryFiles(builtWith).map(
 											(info) => (
@@ -96,11 +98,10 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 											),
 										)}
 									</ul>
-								</>
+								</Expandable>
 							)}
 							{fitleredUsedIn.length > 0 && (
-								<>
-									<p>Used in:</p>
+								<Expandable Header="Used in">
 									<ul>
 										{filterOutStoryFiles(usedIn).map(
 											(info) => (
@@ -111,7 +112,7 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 											),
 										)}
 									</ul>
-								</>
+								</Expandable>
 							)}
 						</div>
 					)}
