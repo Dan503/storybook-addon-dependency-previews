@@ -9,6 +9,8 @@ import {
 import { DependencyPreviews } from '../blocks'
 import type { ProjectAnnotations, Renderer } from '@storybook/types'
 
+export { DependencyPreviews }
+
 export function DefaultAutoDocsLayout() {
 	return (
 		<>
@@ -23,20 +25,9 @@ export function DefaultAutoDocsLayout() {
 	)
 }
 
-export const defaultPreviewConfig: ProjectAnnotations<Renderer> = {
-	parameters: {
+export const defaultPreviewParameters: ProjectAnnotations<Renderer>['parameters'] =
+	{
 		docs: {
-			page: () => (
-				<>
-					<Title />
-					<Subtitle />
-					<Description />
-					<Primary />
-					<Controls />
-					<DependencyPreviews />
-					<Stories />
-				</>
-			),
+			page: () => <DefaultAutoDocsLayout />,
 		},
-	},
-}
+	}

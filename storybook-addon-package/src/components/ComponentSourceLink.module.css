@@ -1,0 +1,5 @@
+.ComponentSourceLink {
+	&:hover {
+		text-decoration: underline;
+	}
+}

@@ -7,13 +7,14 @@ import {
 } from '../hooks/useDependencyGraph'
 import type { StoryInfo } from '../types'
 
-import s from './DependencyPreviews.module.css'
+import { ComponentSourceLink } from '../components/ComponentSourceLink'
 import { Expandable } from '../components/Expandable'
-import { SquaresPlus } from '../components/icons/SquaresPlus'
 import { BuildIcon } from '../components/icons/BuildIcon'
 import { EyeOpen } from '../components/icons/EyeOpen'
 import type { IconComponent } from '../components/icons/iconTypes'
-import { ComponentInfoPanel } from '../components/ComponentInfoPanel'
+import { SquaresPlus } from '../components/icons/SquaresPlus'
+
+import s from './DependencyPreviews.module.css'
 
 export function DependencyPreviews() {
 	return (
@@ -100,7 +101,9 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 							<ul style={{ marginBottom: '0.5em' }}>
 								<li>
 									<strong>Component path: </strong>
-									<span>{storyInfo.componentPath}</span>
+									<ComponentSourceLink
+										storyInfo={storyInfo}
+									/>
 								</li>
 								<li>
 									<strong>Story path: </strong>
