@@ -16,7 +16,7 @@
 	text-transform: uppercase;
 	color: var(--sb-color-text-secondary, #5c6870);
 	padding: 0;
-	margin-bottom: 0;
+	margin-bottom: 0.7rem;
 }
 
 .pathData.pathData {
