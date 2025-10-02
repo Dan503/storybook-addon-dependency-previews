@@ -8,6 +8,8 @@ export function EyeOpen({ className }: IconProps) {
 			viewBox="0 0 24 24"
 			strokeWidth={1.5}
 			stroke="currentColor"
+			height={20}
+			width={20}
 			className={className}
 		>
 			<path

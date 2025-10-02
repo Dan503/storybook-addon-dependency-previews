@@ -1,4 +1,8 @@
 .topLevelWrapper {
 	display: grid;
+	/**
+	Enables animation to height auto!!!
+	Has middling browser support so need to use progressive enhancement. */
+	interpolate-size: allow-keywords;
 	/* gap: 1em; */
 }

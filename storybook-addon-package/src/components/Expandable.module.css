@@ -5,11 +5,47 @@
 	margin: 0.5rem 0;
 	overflow: hidden;
 
+	&::details-content {
+		@supports (interpolate-size: allow-keywords) and
+			(transition-behavior: allow-discrete) {
+			block-size: 0;
+			transition: block-size 0.3s, content-visibility 0.3s;
+			transition-behavior: allow-discrete;
+		}
+	}
+
 	&[open] {
 		background: var(--sb-bg2, #f8f9fa);
 
-		& > .header::before {
-			transform: rotate(180deg);
+		& > .header > .icon {
+			&.XIcon {
+				display: block;
+			}
+		}
+
+		&::details-content {
+			@supports (interpolate-size: allow-keywords) and
+				(transition-behavior: allow-discrete) {
+				block-size: auto;
+			}
+		}
+	}
+}
+
+.container > .header > .icon {
+	display: none;
+}
+.container:not([open]) {
+	& > .header > .icon {
+		&.EyeIcon {
+			display: block;
+		}
+	}
+}
+.container[open] {
+	& > .header > .icon {
+		&.XIcon {
+			display: block;
 		}
 	}
 }
