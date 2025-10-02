@@ -32,12 +32,22 @@ for (const m of raw.modules || []) {
 		.filter(Boolean)
 		.filter(isComponent)
 
-	if (!graph[from]) graph[from] = { builtWith: [], usedIn: [] }
+	const topLevelFromStory = getStoryId(from)
+
+	if (!graph[from])
+		graph[from] = {
+			componentPath: from,
+			...(topLevelFromStory && {
+				storyId: topLevelFromStory?.id,
+				storyTitle: topLevelFromStory?.title,
+				storyPath: topLevelFromStory?.path,
+			}),
+			builtWith: [],
+			usedIn: [],
+		}
 
 	for (const to of deps) {
 		if (from === to) continue // 🔒 skip self-edges
-
-		if (!graph[to]) graph[to] = { builtWith: [], usedIn: [] }
 
 		// ---- builtWith: from → to
 		const toStory = getStoryId(to)
@@ -49,6 +59,14 @@ for (const m of raw.modules || []) {
 				storyPath: toStory.path,
 			}),
 		}
+
+		if (!graph[to])
+			graph[to] = {
+				...builtWithEntry,
+				builtWith: [],
+				usedIn: [],
+			}
+
 		pushUnique(graph[from].builtWith, builtWithEntry)
 
 		// ---- usedIn: to ← from

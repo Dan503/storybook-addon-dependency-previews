@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 
 export type Graph = Record<string, Deps>
 
-export interface Deps {
+export interface Deps extends StoryInfo {
 	builtWith: Array<StoryInfo>
 	usedIn: Array<StoryInfo>
 }

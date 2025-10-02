@@ -16,4 +16,16 @@
 	text-transform: uppercase;
 	color: var(--sb-color-text-secondary, #5c6870);
 	padding: 0;
+	margin-bottom: 0;
+}
+
+.pathData.pathData {
+	margin: 0;
+	display: grid;
+	gap: 0.5em;
+}
+
+.pathDataItem.pathDataItem {
+	margin: 0;
+	padding: 0;
 }
