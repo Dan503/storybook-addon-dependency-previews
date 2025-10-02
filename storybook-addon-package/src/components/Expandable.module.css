@@ -37,14 +37,14 @@
 }
 .container:not([open]) {
 	& > .header > .icon {
-		&.EyeIcon {
+		&.OpenIcon {
 			display: block;
 		}
 	}
 }
 .container[open] {
 	& > .header > .icon {
-		&.XIcon {
+		&.CloseIcon {
 			display: block;
 		}
 	}

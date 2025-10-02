@@ -9,6 +9,10 @@ import type { StoryInfo } from '../types'
 
 import s from './DependencyPreviews.module.css'
 import { Expandable } from '../components/Expandable'
+import { SquaresPlus } from '../components/icons/SquaresPlus'
+import { BuildIcon } from '../components/icons/BuildIcon'
+import { EyeOpen } from '../components/icons/EyeOpen'
+import type { IconComponent } from '../components/icons/iconTypes'
 
 export function DependencyPreviews() {
 	return (
@@ -29,8 +33,16 @@ function TopLevelDependencyPreviews() {
 
 	return (
 		<div className={s.topLevelWrapper}>
-			<DepsPreviewBlock deps={builtWith} title="Built with" />
-			<DepsPreviewBlock deps={usedIn} title="Used in" />
+			<DepsPreviewBlock
+				deps={builtWith}
+				title="Built with"
+				Icon={BuildIcon}
+			/>
+			<DepsPreviewBlock
+				deps={usedIn}
+				title="Used in"
+				Icon={SquaresPlus}
+			/>
 		</div>
 	)
 }
@@ -38,11 +50,13 @@ function TopLevelDependencyPreviews() {
 interface DepsPreviewBlockProps {
 	deps: Array<StoryInfo>
 	title: string
+	Icon: IconComponent
 }
 
-export function DepsPreviewBlock({ deps, title }: DepsPreviewBlockProps) {
+export function DepsPreviewBlock({ deps, title, Icon }: DepsPreviewBlockProps) {
 	return (
 		<Expandable
+			Icon={Icon}
 			Header={
 				<h2>
 					{title} {deps.length} component
@@ -74,7 +88,7 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 	const { graph } = useDependencyGraph()
 	const { builtWith, usedIn } = graph![storyInfo.componentPath]
 	const filteredBuiltWith = filterOutStoryFiles(builtWith)
-	const fitleredUsedIn = filterOutStoryFiles(usedIn)
+	const filteredUsedIn = filterOutStoryFiles(usedIn)
 
 	return (
 		<li key={storyInfo.componentPath}>
@@ -82,12 +96,20 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 				<Expandable Header={<StoryLink info={storyInfo} />}>
 					{storyInfo.storyId && (
 						<div>
-							<Expandable Header="Preview component">
+							<Expandable
+								Header="Preview component"
+								Icon={EyeOpen}
+							>
 								<PrimaryPreview storyInfo={storyInfo} />
 							</Expandable>
 
 							{filteredBuiltWith.length > 0 && (
-								<Expandable Header="Built with">
+								<Expandable
+									Header={`Built with ${
+										filteredBuiltWith.length
+									} component${plural(filteredBuiltWith)}`}
+									Icon={BuildIcon}
+								>
 									<ul>
 										{filterOutStoryFiles(builtWith).map(
 											(info) => (
@@ -100,8 +122,13 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 									</ul>
 								</Expandable>
 							)}
-							{fitleredUsedIn.length > 0 && (
-								<Expandable Header="Used in">
+							{filteredUsedIn.length > 0 && (
+								<Expandable
+									Header={`Used in ${
+										filteredUsedIn.length
+									} component${plural(filteredUsedIn)}`}
+									Icon={SquaresPlus}
+								>
 									<ul>
 										{filterOutStoryFiles(usedIn).map(
 											(info) => (
