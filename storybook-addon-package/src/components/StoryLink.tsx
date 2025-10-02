@@ -12,6 +12,9 @@ export function StoryLink({ info }: StoryLinkProps) {
 		return info.componentPath
 	}
 	const linkPath = `/?path=/docs/${info.storyId}`
+	const brokenUpStoryTitle = info.storyTitle?.split('/')
+	const reducedStoryTitle =
+		brokenUpStoryTitle?.[brokenUpStoryTitle?.length! - 1]
 	return (
 		<a
 			className={s.storyLink}
@@ -21,7 +24,7 @@ export function StoryLink({ info }: StoryLinkProps) {
 				linkTo(info.storyId!)(e)
 			}}
 		>
-			{info.storyTitle}
+			{reducedStoryTitle}
 		</a>
 	)
 }
