@@ -1,0 +1,47 @@
+.CopyButton {
+	padding: 0.2em;
+	color: var(--sb-color-text-secondary, #5c6870);
+	background-color: var(--sb-bg2, #f8f9fa);
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	cursor: pointer;
+	position: relative;
+	display: block;
+	height: 1.3em;
+
+	&[data-clicked='true'] {
+		&::before {
+			content: attr(data-copy-message);
+			position: absolute;
+			top: 50%;
+			left: 100%;
+			transform: translate(0.5em, -50%);
+			background-color: var(--sb-bg1, #fff);
+			color: var(--sb-color-text-secondary, #5c6870);
+			padding: 0.2em 0.5em;
+			border: 1px solid currentColor;
+			border-radius: 4px;
+			font-size: 0.8em;
+			white-space: nowrap;
+			z-index: 10;
+			animation: fadeOut 2s forwards;
+		}
+	}
+}
+
+.icon {
+	height: 100%;
+	width: auto;
+}
+
+@keyframes fadeOut {
+	0% {
+		opacity: 1;
+	}
+	80% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}

@@ -16,6 +16,7 @@ import { SquaresPlus } from '../components/icons/SquaresPlus'
 import { Heading } from '@storybook/blocks'
 import s from './DependencyPreviews.module.css'
 import { ArrowToRectangle } from '../components/icons/ArrowToRectangleIcon'
+import { CopyButton } from '../components/CopyButton'
 
 export function DependencyPreviews() {
 	return (
@@ -67,14 +68,28 @@ function DepsPreviewContent({
 					<p className={s.pathDataItem}>
 						<strong>Source file path: </strong>
 						<br />
-						<ComponentSourceLink storyInfo={storyInfo} />
+						<div className={s.pathLinkWrapper}>
+							<CopyButton
+								label="Copy source file path to clip board"
+								copyMessage="Copied source file path"
+								copyContent={storyInfo.componentPath}
+							/>
+							<ComponentSourceLink storyInfo={storyInfo} />
+						</div>
 					</p>
 					<p className={s.pathDataItem}>
 						<strong>Story path: </strong>
 						<br />
-						<StoryLink info={storyInfo}>
-							{storyInfo.storyTitle}
-						</StoryLink>
+						<div className={s.pathLinkWrapper}>
+							<CopyButton
+								label="Copy story path to clip board"
+								copyMessage="Copied story path"
+								copyContent={storyInfo.storyTitle!}
+							/>
+							<StoryLink info={storyInfo}>
+								{storyInfo.storyTitle}
+							</StoryLink>
+						</div>
 					</p>
 				</div>
 			</Expandable>
