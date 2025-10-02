@@ -83,9 +83,12 @@ function getJsonUrl(storyParams?: Parameters) {
 	)
 }
 
-export function filterOutStoryFiles(array: Array<StoryInfo>): Array<StoryInfo> {
+export function filterOutStoryAndNonComponentFiles(
+	array: Array<StoryInfo>,
+): Array<StoryInfo> {
 	return array.filter((info) => {
 		return (
+			Boolean(info.storyId) &&
 			!info.componentPath.includes('.stories.') &&
 			!info.componentPath.includes('.story.')
 		)

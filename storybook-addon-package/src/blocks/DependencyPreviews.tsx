@@ -2,7 +2,7 @@ import { PrimaryPreview } from '../components/PrimaryPreview'
 import { StoryLink } from '../components/StoryLink'
 import {
 	DependencyGraphProvider,
-	filterOutStoryFiles,
+	filterOutStoryAndNonComponentFiles,
 	useDependencyGraph,
 } from '../hooks/useDependencyGraph'
 import type { StoryInfo } from '../types'
@@ -28,8 +28,8 @@ function TopLevelDependencyPreviews() {
 	if (!graph) return <div>Loading dependency previews…</div>
 	if (!node) return <div>No dependency previews for this component.</div>
 
-	const builtWith = filterOutStoryFiles(node.builtWith)
-	const usedIn = filterOutStoryFiles(node.usedIn)
+	const builtWith = filterOutStoryAndNonComponentFiles(node.builtWith)
+	const usedIn = filterOutStoryAndNonComponentFiles(node.usedIn)
 
 	return (
 		<div className={s.topLevelWrapper}>
@@ -87,8 +87,8 @@ interface PropsForDepsPreviewItem {
 function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 	const { graph } = useDependencyGraph()
 	const { builtWith, usedIn } = graph![storyInfo.componentPath]
-	const filteredBuiltWith = filterOutStoryFiles(builtWith)
-	const filteredUsedIn = filterOutStoryFiles(usedIn)
+	const filteredBuiltWith = filterOutStoryAndNonComponentFiles(builtWith)
+	const filteredUsedIn = filterOutStoryAndNonComponentFiles(usedIn)
 
 	return (
 		<li key={storyInfo.componentPath}>
@@ -111,14 +111,14 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 									Icon={BuildIcon}
 								>
 									<ul>
-										{filterOutStoryFiles(builtWith).map(
-											(info) => (
-												<DepsPreviewItem
-													storyInfo={info}
-													key={info.componentPath}
-												/>
-											),
-										)}
+										{filterOutStoryAndNonComponentFiles(
+											builtWith,
+										).map((info) => (
+											<DepsPreviewItem
+												storyInfo={info}
+												key={info.componentPath}
+											/>
+										))}
 									</ul>
 								</Expandable>
 							)}
@@ -130,14 +130,14 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 									Icon={SquaresPlus}
 								>
 									<ul>
-										{filterOutStoryFiles(usedIn).map(
-											(info) => (
-												<DepsPreviewItem
-													storyInfo={info}
-													key={info.componentPath}
-												/>
-											),
-										)}
+										{filterOutStoryAndNonComponentFiles(
+											usedIn,
+										).map((info) => (
+											<DepsPreviewItem
+												storyInfo={info}
+												key={info.componentPath}
+											/>
+										))}
 									</ul>
 								</Expandable>
 							)}
