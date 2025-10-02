@@ -2,12 +2,14 @@ import type { StoryInfo } from '../types'
 import { linkTo } from '@storybook/addon-links'
 
 import s from './StoryLink.module.css'
+import type { ReactNode } from 'react'
 
 interface StoryLinkProps {
 	info: StoryInfo
+	children?: ReactNode
 }
 
-export function StoryLink({ info }: StoryLinkProps) {
+export function StoryLink({ info, children }: StoryLinkProps) {
 	if (!info.storyId) {
 		return info.componentPath
 	}
@@ -24,7 +26,7 @@ export function StoryLink({ info }: StoryLinkProps) {
 				linkTo(info.storyId!)(e)
 			}}
 		>
-			{reducedStoryTitle}
+			{children ?? reducedStoryTitle}
 		</a>
 	)
 }

@@ -13,6 +13,7 @@ import { SquaresPlus } from '../components/icons/SquaresPlus'
 import { BuildIcon } from '../components/icons/BuildIcon'
 import { EyeOpen } from '../components/icons/EyeOpen'
 import type { IconComponent } from '../components/icons/iconTypes'
+import { ComponentInfoPanel } from '../components/ComponentInfoPanel'
 
 export function DependencyPreviews() {
 	return (
@@ -96,6 +97,19 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 				<Expandable Header={<StoryLink info={storyInfo} />}>
 					{storyInfo.storyId && (
 						<div>
+							<ul style={{ marginBottom: '0.5em' }}>
+								<li>
+									<strong>Component path: </strong>
+									<span>{storyInfo.componentPath}</span>
+								</li>
+								<li>
+									<strong>Story path: </strong>
+									<StoryLink info={storyInfo}>
+										{storyInfo.storyTitle}
+									</StoryLink>
+								</li>
+							</ul>
+
 							<Expandable
 								Header="Preview component"
 								Icon={EyeOpen}
