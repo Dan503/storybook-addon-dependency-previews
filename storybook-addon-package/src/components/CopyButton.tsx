@@ -29,8 +29,6 @@ export function CopyButton({
 
 	useEffect(() => {
 		function handler(e: KeyboardEvent) {
-			console.log('keydown', e.key, isHovered)
-			// if btnRef is hovered over and escape key is pressed
 			if (e.key === 'Escape' && (isHovered || isFocused)) {
 				e.stopPropagation()
 				reset()

@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import s from './TooltipTrigger.module.css'
+import { ExternalLinkIcon } from './icons/ExternalLinkIcon'
 
 interface Props {
 	TriggerElem: 'a' | 'button'
@@ -36,8 +37,6 @@ export function TooltipTrigger({
 
 	useEffect(() => {
 		function handler(e: KeyboardEvent) {
-			console.log('keydown', e.key, isHovered)
-			// if btnRef is hovered over and escape key is pressed
 			if (e.key === 'Escape' && (isHovered || isFocused)) {
 				e.stopPropagation()
 				setIsForcedShut(true)
@@ -103,9 +102,29 @@ export function TooltipTrigger({
 					className={[className, s.TriggerElem].join(' ')}
 					target={newWindow ? '_blank' : undefined}
 					rel={newWindow ? 'noreferrer' : undefined}
-					dangerouslySetInnerHTML={dangerouslySetInnerHTML}
 				>
-					{children}
+					<span style={{ whiteSpace: 'nowrap' }}>
+						{dangerouslySetInnerHTML ? (
+							<span
+								style={{ whiteSpace: 'initial' }}
+								dangerouslySetInnerHTML={
+									dangerouslySetInnerHTML
+								}
+							/>
+						) : (
+							<span style={{ whiteSpace: 'initial' }}>
+								{children}
+							</span>
+						)}
+						{newWindow && (
+							<>
+								&nbsp;
+								<ExternalLinkIcon
+									className={s.externalLinkIcon}
+								/>
+							</>
+						)}
+					</span>
 				</a>
 			)}
 

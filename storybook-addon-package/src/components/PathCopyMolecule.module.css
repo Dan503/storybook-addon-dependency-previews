@@ -5,7 +5,10 @@
 
 .pathLinkWrapper {
 	display: flex;
-	flex-wrap: wrap;
 	align-items: center;
 	gap: 0 0.5em;
+
+	& a {
+		line-height: 1 !important;
+	}
 }
