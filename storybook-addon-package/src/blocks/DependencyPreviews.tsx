@@ -17,6 +17,7 @@ import { Heading } from '@storybook/blocks'
 import { ArrowToRectangle } from '../components/icons/ArrowToRectangleIcon'
 import { PathCopyMolecule } from '../components/PathCopyMolecule'
 import s from './DependencyPreviews.module.css'
+import { useId } from 'react'
 
 export function DependencyPreviews() {
 	return (
@@ -54,6 +55,7 @@ function DepsPreviewContent({
 	const { builtWith, usedIn } = graph![storyInfo.componentPath]
 	const filteredBuiltWith = filterOutStoryAndNonComponentFiles(builtWith)
 	const filteredUsedIn = filterOutStoryAndNonComponentFiles(usedIn)
+	const newTabWarningId = storyInfo.storyId + '-newWindowWarning' + useId()
 
 	return (
 		<div>
@@ -69,8 +71,11 @@ function DepsPreviewContent({
 						label="Source File Path"
 						copyContent={storyInfo.componentPath}
 					>
-						<ComponentSourceLink storyInfo={storyInfo} /> (opens in
-						new tab)
+						<ComponentSourceLink
+							storyInfo={storyInfo}
+							ariaDescribedBy={newTabWarningId}
+						/>{' '}
+						<span id={newTabWarningId}>(opens in new tab)</span>
 					</PathCopyMolecule>
 
 					<PathCopyMolecule
@@ -78,7 +83,15 @@ function DepsPreviewContent({
 						copyContent={storyInfo.storyTitle!}
 					>
 						<StoryLink info={storyInfo}>
-							{storyInfo.storyTitle}
+							<span
+								dangerouslySetInnerHTML={{
+									// allow line breaks on slashes
+									__html: storyInfo.storyTitle!.replaceAll(
+										'/',
+										'/<wbr/>',
+									),
+								}}
+							/>
 						</StoryLink>
 					</PathCopyMolecule>
 

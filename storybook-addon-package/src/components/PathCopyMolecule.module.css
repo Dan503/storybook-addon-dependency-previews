@@ -5,6 +5,7 @@
 
 .pathLinkWrapper {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.5em;
+	gap: 0 0.5em;
 }

@@ -22,16 +22,5 @@
 .pathData.pathData {
 	margin: 0;
 	display: grid;
-	gap: 0.5em;
-}
-
-.pathDataItem.pathDataItem {
-	margin: 0;
-	padding: 0;
-}
-
-.pathLinkWrapper {
-	display: flex;
-	align-items: center;
-	gap: 0.5em;
+	gap: 1em;
 }

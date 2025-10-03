@@ -5,8 +5,9 @@ import s from './ComponentSourceLink.module.css'
 
 interface Props {
 	storyInfo: StoryInfo
+	ariaDescribedBy?: string
 }
-export function ComponentSourceLink({ storyInfo }: Props) {
+export function ComponentSourceLink({ storyInfo, ariaDescribedBy }: Props) {
 	const { story } = useOf<'story'>('story')
 	const sourceRootUrl: string | undefined =
 		story?.parameters?.dependencyPreviews?.sourceBaseUrl
@@ -29,8 +30,11 @@ export function ComponentSourceLink({ storyInfo }: Props) {
 			href={href}
 			target="_blank"
 			rel="noreferrer"
-		>
-			{relativePath}
-		</a>
+			aria-describedby={ariaDescribedBy}
+			dangerouslySetInnerHTML={{
+				// allow line breaks on slashes
+				__html: relativePath.replaceAll('/', '/<wbr/>'),
+			}}
+		/>
 	)
 }
