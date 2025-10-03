@@ -1,8 +1,6 @@
 import {
 	useEffect,
 	useId,
-	useLayoutEffect,
-	useRef,
 	useState,
 	type AnchorHTMLAttributes,
 	type ReactNode,
@@ -10,9 +8,6 @@ import {
 
 import s from './TooltipTrigger.module.css'
 import { ExternalLinkIcon } from './icons/ExternalLinkIcon'
-import { useElemDimensions } from '../hooks/useElemDimensions'
-import { createPortal } from 'react-dom'
-import { useAnimatedMount } from '../hooks/useAnimatedMount'
 
 interface Props {
 	TriggerElem: 'a' | 'button'
@@ -40,24 +35,6 @@ export function TooltipTrigger({
 	const [isFocused, setIsFocused] = useState(false)
 	const tooltipId = useId()
 
-	const isOpen = (isHovered || isFocused) && !isForcedShut
-
-	const {
-		rect: aRect,
-		ref: aRef,
-		updateRect: updateARect,
-	} = useElemDimensions<HTMLAnchorElement>(isOpen)
-	const {
-		rect: buttonRect,
-		ref: buttonRef,
-		updateRect: updateButtonRect,
-	} = useElemDimensions<HTMLButtonElement>(isOpen)
-
-	const { isRendered, animationState } = useAnimatedMount(isOpen, 180)
-
-	const rect = TriggerElem === 'a' ? aRect : buttonRect
-	const updateRect = TriggerElem === 'a' ? updateARect : updateButtonRect
-
 	useEffect(() => {
 		function handler(e: KeyboardEvent) {
 			if (e.key === 'Escape' && (isHovered || isFocused)) {
@@ -74,11 +51,9 @@ export function TooltipTrigger({
 		setIsFocused(false)
 	}
 	function onFocus() {
-		updateRect()
 		setIsFocused(true)
 	}
 	function onMouseEnter() {
-		updateRect()
 		setIsForcedShut(false)
 		setIsHovered(true)
 	}
@@ -110,7 +85,6 @@ export function TooltipTrigger({
 					aria-describedby={tooltipId}
 					className={[className, s.TriggerElem].join(' ')}
 					dangerouslySetInnerHTML={dangerouslySetInnerHTML}
-					ref={buttonRef}
 				>
 					{children}
 				</button>
@@ -128,7 +102,6 @@ export function TooltipTrigger({
 					className={[className, s.TriggerElem].join(' ')}
 					target={newWindow ? '_blank' : undefined}
 					rel={newWindow ? 'noreferrer' : undefined}
-					ref={aRef}
 				>
 					<span style={{ whiteSpace: 'nowrap' }}>
 						{dangerouslySetInnerHTML ? (
@@ -155,28 +128,14 @@ export function TooltipTrigger({
 				</a>
 			)}
 
-			{isRendered &&
-				rect &&
-				createPortal(
-					<span
-						id={tooltipId}
-						className={s.tooltip}
-						aria-hidden="true"
-						data-animation-state={animationState}
-						data-force-closed={isForcedShut}
-						style={{
-							position: 'fixed',
-							bottom: rect.bottom / 2,
-							left: rect.left + rect.width / 2,
-							transform:
-								'translateX(-50%) translateY(calc(-100% - 0.5em))',
-							zIndex: 9999,
-						}}
-					>
-						{tooltipText}
-					</span>,
-					document.body,
-				)}
+			<span
+				id={tooltipId}
+				className={s.tooltip}
+				aria-hidden="true"
+				data-force-closed={isForcedShut}
+			>
+				{tooltipText}
+			</span>
 		</span>
 	)
 }
