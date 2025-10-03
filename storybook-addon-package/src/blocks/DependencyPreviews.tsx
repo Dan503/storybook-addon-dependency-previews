@@ -55,7 +55,6 @@ function DepsPreviewContent({
 	const { builtWith, usedIn } = graph![storyInfo.componentPath]
 	const filteredBuiltWith = filterOutStoryAndNonComponentFiles(builtWith)
 	const filteredUsedIn = filterOutStoryAndNonComponentFiles(usedIn)
-	const newTabWarningId = storyInfo.storyId + '-newWindowWarning' + useId()
 
 	return (
 		<div>
@@ -71,11 +70,7 @@ function DepsPreviewContent({
 						label="Source File Path"
 						copyContent={storyInfo.componentPath}
 					>
-						<ComponentSourceLink
-							storyInfo={storyInfo}
-							ariaDescribedBy={newTabWarningId}
-						/>{' '}
-						<span id={newTabWarningId}>(opens in new tab)</span>
+						<ComponentSourceLink storyInfo={storyInfo} />
 					</PathCopyMolecule>
 
 					<PathCopyMolecule

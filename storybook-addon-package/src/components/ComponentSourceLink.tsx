@@ -2,6 +2,7 @@ import { useOf } from '@storybook/blocks'
 import type { StoryInfo } from '../types'
 
 import s from './ComponentSourceLink.module.css'
+import { TooltipTrigger } from './TooltipTrigger'
 
 interface Props {
 	storyInfo: StoryInfo
@@ -25,12 +26,13 @@ export function ComponentSourceLink({ storyInfo, ariaDescribedBy }: Props) {
 		encodeURI(relativePath)
 
 	return (
-		<a
+		<TooltipTrigger
+			TriggerElem="a"
 			className={s.ComponentSourceLink}
 			href={href}
-			target="_blank"
-			rel="noreferrer"
+			newWindow
 			aria-describedby={ariaDescribedBy}
+			tooltipText="View source (opens in new tab)"
 			dangerouslySetInnerHTML={{
 				// allow line breaks on slashes
 				__html: relativePath.replaceAll('/', '/<wbr/>'),
