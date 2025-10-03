@@ -1,6 +1,7 @@
 import {
 	useEffect,
 	useId,
+	useRef,
 	useState,
 	type AnchorHTMLAttributes,
 	type ReactNode,
@@ -30,78 +31,50 @@ export function TooltipTrigger({
 	newWindow,
 	dangerouslySetInnerHTML,
 }: Props) {
-	const [isForcedShut, setIsForcedShut] = useState(false)
-	const [isHovered, setIsHovered] = useState(false)
-	const [isFocused, setIsFocused] = useState(false)
-	const tooltipId = useId()
+	const triggerId = useId()
+	const tipId = useId()
+	const tipRef = useRef<HTMLDivElement | null>(null)
 
-	useEffect(() => {
-		function handler(e: KeyboardEvent) {
-			if (e.key === 'Escape' && (isHovered || isFocused)) {
+	function show() {
+		;(tipRef.current as any)?.showPopover?.()
+	}
+	function hide() {
+		;(tipRef.current as any)?.hidePopover?.()
+	}
+
+	const common = {
+		id: triggerId,
+		onClick,
+		onFocus: show,
+		onBlur: hide,
+		onMouseEnter: show,
+		onMouseLeave: hide,
+		onKeyDown: (e: React.KeyboardEvent) => {
+			if (e.key === 'Escape') {
 				e.stopPropagation()
-				setIsForcedShut(true)
+				hide()
 			}
-		}
-		document.addEventListener('keyup', handler)
-		return () => document.removeEventListener('keyup', handler)
-	}, [isHovered, isFocused])
-
-	function onBlur() {
-		setIsForcedShut(false)
-		setIsFocused(false)
-	}
-	function onFocus() {
-		setIsFocused(true)
-	}
-	function onMouseEnter() {
-		setIsForcedShut(false)
-		setIsHovered(true)
-	}
-	function onMouseLeave() {
-		setIsHovered(false)
-		if (isFocused) {
-			setIsForcedShut(true)
-		}
-	}
-
-	function onKeyUp(e: React.KeyboardEvent) {
-		if (!onClick) return
-		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault()
-			onClick?.(e as any)
-		}
+		},
+		'aria-describedby': tipId, // announce on focus for keyboard users
+		className: [className, s.TriggerElem].filter(Boolean).join(' '),
 	}
 
 	return (
-		<span className={s.wrapper}>
-			{TriggerElem === 'button' && (
+		<span data-anchor-name={triggerId + tipId}>
+			{TriggerElem === 'button' ? (
 				<button
-					onClick={onClick}
-					onKeyUp={onKeyUp}
-					onMouseEnter={onMouseEnter}
-					onMouseLeave={onMouseLeave}
-					onFocus={onFocus}
-					onBlur={onBlur}
-					aria-describedby={tooltipId}
-					className={[className, s.TriggerElem].join(' ')}
-					dangerouslySetInnerHTML={dangerouslySetInnerHTML}
+					type="button"
+					{...common}
+					dangerouslySetInnerHTML={dangerouslySetInnerHTML as any}
 				>
-					{children}
+					{!dangerouslySetInnerHTML && children}
 				</button>
-			)}
-			{TriggerElem === 'a' && (
+			) : (
 				<a
 					href={href}
-					onClick={onClick}
-					onKeyUp={onKeyUp}
-					onMouseEnter={onMouseEnter}
-					onMouseLeave={onMouseLeave}
-					onFocus={onFocus}
-					onBlur={onBlur}
-					aria-describedby={tooltipId}
-					className={[className, s.TriggerElem].join(' ')}
 					target={newWindow ? '_blank' : undefined}
 					rel={newWindow ? 'noreferrer' : undefined}
+					{...(common as any)}
 				>
 					<span style={{ whiteSpace: 'nowrap' }}>
 						{dangerouslySetInnerHTML ? (
@@ -118,6 +91,7 @@ export function TooltipTrigger({
 						)}
 						{newWindow && (
 							<>
+								{' '}
 								&nbsp;
 								<ExternalLinkIcon
 									className={s.externalLinkIcon}
@@ -128,11 +102,15 @@ export function TooltipTrigger({
 				</a>
 			)}
 
+			{/* Top-layer, CSS-anchored tooltip (no rect) */}
 			<span
-				id={tooltipId}
-				className={s.tooltip}
-				aria-hidden="true"
-				data-force-closed={isForcedShut}
+				id={tipId}
+				ref={tipRef}
+				popover="auto"
+				role="tooltip"
+				className={s.popover}
+				data-popover-anchor={triggerId + tipId}
+				// {...{ anchor: triggerId + tipId }} // <-- anchor to the trigger by id
 			>
 				{tooltipText}
 			</span>

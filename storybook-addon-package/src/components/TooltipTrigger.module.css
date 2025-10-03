@@ -1,31 +1,13 @@
-.wrapper {
+[data-anchor-name] {
 	position: relative;
-	display: inline-flex;
-	align-items: center;
-}
-
-/* Tooltip element (instead of ::before so SRs can reference it) */
-.tooltip {
-	position: absolute;
-	inset-block-end: calc(100% + 0.5em);
-	inset-inline-start: 50%;
-	transform: translateX(-50%);
-	background: var(--sb-bg1, #fff);
-	color: var(--sb-color-text-secondary, #5c6870);
-	border: 1px solid currentColor;
-	border-radius: 4px;
-	padding: 0.25em 0.5em;
-	white-space: nowrap;
-	z-index: 10;
-	font-size: 0.8em;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-	transition: opacity 0.3s ease, visibility 0.3s ease;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
+	--anchor-name: attr(data-anchor-name);
 }
 
 .TriggerElem {
+	display: inline-block;
+	position: relative;
+	anchor-name: var(--anchor-name);
+
 	&:hover,
 	&:focus-visible {
 		& + .tooltip:not([data-force-closed='true']) {
@@ -41,4 +23,47 @@
 	width: 1em;
 	display: inline-block;
 	transform: translateY(-0.1em);
+}
+
+/* Tooltip lives in the top layer and is positioned via Anchor Positioning */
+.popover {
+	white-space: nowrap;
+	background: var(--sb-bg1, #fff);
+	color: var(--sb-color-text-secondary, #5c6870);
+	border: 1px solid currentColor;
+	font-weight: normal;
+	border-radius: 4px;
+	padding: 0.25em 0.5em;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+	pointer-events: none; /* tooltips shouldn't trap the pointer */
+
+	/* ---- Anchor positioning (no JS) ---- */
+	position: absolute; /* top-layer absolute; coordinates come from anchor() */
+	top: 0;
+	left: 0;
+	position-anchor: var(--anchor-name);
+	position-area: top span-all;
+	transform: translateY(-0.5em); /* gap between trigger and tooltip */
+
+	/* ---- Fade in/out with Popover API ---- */
+	opacity: 0;
+	scale: 0.5;
+	transition: opacity 0.3s ease, scale 0.3s ease;
+}
+
+.popover:popover-open {
+	opacity: 1;
+	scale: 1;
+}
+
+/* Fallback (if anchor() unsupported): keep it usable, though not perfectly placed */
+@supports not (position-area: top center) {
+	.popover {
+		position: absolute;
+		inset: unset;
+		bottom: 100%;
+		left: 50%;
+		translate: -50% -8px; /* center X, place above with 8px gap */
+		/* you could hide or choose a simple fixed position as a last resort */
+	}
 }
