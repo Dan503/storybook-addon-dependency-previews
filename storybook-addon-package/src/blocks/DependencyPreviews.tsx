@@ -14,9 +14,9 @@ import { EyeOpen } from '../components/icons/EyeOpen'
 import { SquaresPlus } from '../components/icons/SquaresPlus'
 
 import { Heading } from '@storybook/blocks'
-import s from './DependencyPreviews.module.css'
 import { ArrowToRectangle } from '../components/icons/ArrowToRectangleIcon'
-import { CopyButton } from '../components/CopyButton'
+import { PathCopyMolecule } from '../components/PathCopyMolecule'
+import s from './DependencyPreviews.module.css'
 
 export function DependencyPreviews() {
 	return (
@@ -65,32 +65,31 @@ function DepsPreviewContent({
 
 			<Expandable Header="Paths to component" Icon={ArrowToRectangle}>
 				<div className={s.pathData}>
-					<p className={s.pathDataItem}>
-						<strong>Source file path: </strong>
-						<br />
-						<div className={s.pathLinkWrapper}>
-							<CopyButton
-								label="Copy source file path to clip board"
-								copyMessage="Copied source file path"
-								copyContent={storyInfo.componentPath}
-							/>
-							<ComponentSourceLink storyInfo={storyInfo} />
-						</div>
-					</p>
-					<p className={s.pathDataItem}>
-						<strong>Story path: </strong>
-						<br />
-						<div className={s.pathLinkWrapper}>
-							<CopyButton
-								label="Copy story path to clip board"
-								copyMessage="Copied story path"
-								copyContent={storyInfo.storyTitle!}
-							/>
-							<StoryLink info={storyInfo}>
-								{storyInfo.storyTitle}
-							</StoryLink>
-						</div>
-					</p>
+					<PathCopyMolecule
+						label="Source File Path"
+						copyContent={storyInfo.componentPath}
+					>
+						<ComponentSourceLink storyInfo={storyInfo} /> (opens in
+						new tab)
+					</PathCopyMolecule>
+
+					<PathCopyMolecule
+						label="Story Title Path"
+						copyContent={storyInfo.storyTitle!}
+					>
+						<StoryLink info={storyInfo}>
+							{storyInfo.storyTitle}
+						</StoryLink>
+					</PathCopyMolecule>
+
+					<PathCopyMolecule
+						label="Story Page ID"
+						copyContent={storyInfo.storyId!}
+					>
+						<StoryLink info={storyInfo}>
+							{storyInfo.storyId}
+						</StoryLink>
+					</PathCopyMolecule>
 				</div>
 			</Expandable>
 

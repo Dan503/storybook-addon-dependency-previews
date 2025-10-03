@@ -1,0 +1,10 @@
+.pathDataItem.pathDataItem {
+	margin: 0;
+	padding: 0;
+}
+
+.pathLinkWrapper {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
