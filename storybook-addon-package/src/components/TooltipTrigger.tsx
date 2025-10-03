@@ -11,7 +11,7 @@ import { ExternalLinkIcon } from './icons/ExternalLinkIcon'
 
 interface Props {
 	TriggerElem: 'a' | 'button'
-	onClick?: () => void
+	onClick?: (event: React.MouseEvent) => void
 	href?: string
 	children?: ReactNode
 	className?: string
@@ -68,7 +68,7 @@ export function TooltipTrigger({
 		if (!onClick) return
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault()
-			onClick()
+			onClick?.(e as any)
 		}
 	}
 

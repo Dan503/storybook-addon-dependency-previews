@@ -3,3 +3,11 @@
 		text-decoration: underline;
 	}
 }
+
+.currentStory {
+	line-height: 1;
+}
+.currentStoryMark {
+	font-weight: 700;
+	white-space: nowrap;
+}
