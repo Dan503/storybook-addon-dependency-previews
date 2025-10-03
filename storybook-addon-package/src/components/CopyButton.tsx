@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { CopyIcon } from './icons/CopyIcon'
 import s from './CopyButton.module.css'
 
@@ -19,10 +19,27 @@ export function CopyButton({
 }: Props) {
 	const [status, setStatus] = useState<Status>('idle')
 	const [isResultOpen, setResultOpen] = useState(false)
+	const [isForcedShut, setIsForcedShut] = useState(false)
+	const [isHovered, setIsHovered] = useState(false)
+	const [isFocused, setIsFocused] = useState(false)
 	const tooltipId = useId()
 	const srId = useId()
 	const resultMessageId = useId()
 	const btnRef = useRef<HTMLButtonElement | null>(null)
+
+	useEffect(() => {
+		function handler(e: KeyboardEvent) {
+			console.log('keydown', e.key, isHovered)
+			// if btnRef is hovered over and escape key is pressed
+			if (e.key === 'Escape' && (isHovered || isFocused)) {
+				e.stopPropagation()
+				reset()
+				setIsForcedShut(true)
+			}
+		}
+		document.addEventListener('keyup', handler)
+		return () => document.removeEventListener('keyup', handler)
+	}, [isHovered, isFocused])
 
 	async function onCopy() {
 		try {
@@ -41,18 +58,27 @@ export function CopyButton({
 
 	function onBlur() {
 		reset()
+		setIsForcedShut(false)
+		setIsFocused(false)
+	}
+	function onFocus() {
+		setIsFocused(true)
+	}
+	function onMouseEnter() {
+		setIsForcedShut(false)
+		setIsHovered(true)
 	}
 	function onMouseLeave() {
+		setIsHovered(false)
 		reset()
+		if (isFocused) {
+			setIsForcedShut(true)
+		}
 	}
 	function onKeyDown(e: React.KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault()
 			onCopy()
-		}
-		if (e.key === 'Escape') {
-			e.stopPropagation()
-			reset()
 		}
 	}
 
@@ -69,7 +95,9 @@ export function CopyButton({
 				type="button"
 				className={s.CopyButton}
 				onClick={onCopy}
+				onFocus={onFocus}
 				onBlur={onBlur}
+				onMouseEnter={onMouseEnter}
 				onMouseLeave={onMouseLeave}
 				onKeyDown={onKeyDown}
 				aria-label={label}
@@ -78,7 +106,12 @@ export function CopyButton({
 				<CopyIcon className={s.icon} />
 			</button>
 
-			<span id={tooltipId} className={s.tooltip} aria-hidden="true">
+			<span
+				id={tooltipId}
+				className={s.tooltip}
+				aria-hidden="true"
+				data-force-closed={isForcedShut}
+			>
 				{copyResultMessage || label}
 			</span>
 

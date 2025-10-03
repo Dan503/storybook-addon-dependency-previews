@@ -49,19 +49,17 @@
 	opacity: 0;
 	visibility: hidden;
 	pointer-events: none;
-
-	&[data-open] {
-		opacity: 1;
-		visibility: visible;
-		pointer-events: auto;
-	}
 }
 
-.CopyButton:hover + .tooltip,
-.CopyButton:focus-visible + .tooltip {
-	opacity: 1;
-	visibility: visible;
-	pointer-events: auto;
+.CopyButton {
+	&:hover,
+	&:focus-visible {
+		& + .tooltip:not([data-force-closed='true']) {
+			opacity: 1;
+			visibility: visible;
+			pointer-events: auto;
+		}
+	}
 }
 
 /* Screen-reader only utility */
