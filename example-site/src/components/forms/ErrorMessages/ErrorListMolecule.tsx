@@ -6,9 +6,12 @@ export interface PropsForErrorListMolecule {
 
 export function ErrorListMolecule({ errors }: PropsForErrorListMolecule) {
 	return (
-		<ul>
+		<ul className="grid gap-1 pl-6">
 			{errors.map((err) => (
-				<li key={err instanceof Error ? err.message : err}>
+				<li
+					key={err instanceof Error ? err.message : err}
+					className="list-disc list-outside"
+				>
 					<ErrorMessageAtom error={err} />
 				</li>
 			))}
