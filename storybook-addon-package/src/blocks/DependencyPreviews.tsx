@@ -151,7 +151,11 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 	return (
 		<li key={storyInfo.componentPath}>
 			{storyInfo.storyId ? (
-				<Expandable Header={<StoryLink info={storyInfo} />}>
+				<Expandable
+					Header={
+						<StoryLink info={storyInfo} tooltipPosition="right" />
+					}
+				>
 					<DepsPreviewContent storyInfo={storyInfo} />
 				</Expandable>
 			) : (

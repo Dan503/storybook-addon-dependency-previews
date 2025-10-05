@@ -17,8 +17,11 @@ interface Props {
 	className?: string
 	tooltipText?: string
 	newWindow?: boolean
+	tooltipPosition?: TooltipPosition
 	dangerouslySetInnerHTML?: AnchorHTMLAttributes<HTMLAnchorElement>['dangerouslySetInnerHTML']
 }
+
+export type TooltipPosition = 'top' | 'bottom' | 'left' | 'right'
 
 export function TooltipTrigger({
 	TriggerElem,
@@ -29,6 +32,7 @@ export function TooltipTrigger({
 	href,
 	newWindow,
 	dangerouslySetInnerHTML,
+	tooltipPosition = 'top',
 }: Props) {
 	const [isForcedShut, setIsForcedShut] = useState(false)
 	const [isHovered, setIsHovered] = useState(false)
@@ -133,6 +137,7 @@ export function TooltipTrigger({
 				className={s.tooltip}
 				aria-hidden="true"
 				data-force-closed={isForcedShut}
+				data-tooltip-position={tooltipPosition}
 			>
 				{tooltipText}
 			</span>

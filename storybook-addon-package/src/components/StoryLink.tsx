@@ -3,14 +3,19 @@ import { linkTo } from '@storybook/addon-links'
 
 import s from './StoryLink.module.css'
 import type { ReactNode } from 'react'
-import { TooltipTrigger } from './TooltipTrigger'
+import { TooltipTrigger, type TooltipPosition } from './TooltipTrigger'
 
 interface StoryLinkProps {
 	info: StoryInfo
 	children?: ReactNode
+	tooltipPosition?: TooltipPosition
 }
 
-export function StoryLink({ info, children }: StoryLinkProps) {
+export function StoryLink({
+	info,
+	children,
+	tooltipPosition = 'top',
+}: StoryLinkProps) {
 	if (!info.storyId) {
 		return info.componentPath
 	}
@@ -37,6 +42,7 @@ export function StoryLink({ info, children }: StoryLinkProps) {
 			tooltipText="View story"
 			className={s.storyLink}
 			href={linkPath}
+			tooltipPosition={tooltipPosition}
 			onClick={(e) => {
 				e.preventDefault()
 				linkTo(info.storyId!)(e)

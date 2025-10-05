@@ -7,9 +7,6 @@
 /* Tooltip element (instead of ::before so SRs can reference it) */
 .tooltip {
 	position: absolute;
-	inset-block-end: calc(100% + 0.5em);
-	inset-inline-start: 50%;
-	transform: translateX(-50%);
 	background: var(--sb-bg1, #fff);
 	color: var(--sb-color-text-secondary, #5c6870);
 	border: 1px solid currentColor;
@@ -23,6 +20,27 @@
 	opacity: 0;
 	visibility: hidden;
 	pointer-events: none;
+
+	&[data-tooltip-position='top'] {
+		inset-block-end: calc(100% + 0.5em);
+		inset-inline-start: 50%;
+		transform: translateX(-50%);
+	}
+	&[data-tooltip-position='bottom'] {
+		inset-block-start: calc(100% + 0.5em);
+		inset-inline-start: 50%;
+		transform: translateX(-50%);
+	}
+	&[data-tooltip-position='left'] {
+		inset-block-start: 50%;
+		inset-inline-end: calc(100% + 0.5em);
+		transform: translateY(-50%);
+	}
+	&[data-tooltip-position='right'] {
+		inset-block-start: 50%;
+		inset-inline-start: calc(100% + 0.5em);
+		transform: translateY(-50%);
+	}
 }
 
 .TriggerElem {
