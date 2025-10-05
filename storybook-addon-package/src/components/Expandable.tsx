@@ -1,21 +1,20 @@
 import { useState, type ReactNode } from 'react'
 import s from './Expandable.module.css'
-import { EyeOpen } from './icons/EyeOpen'
+import { DoubleChevronDown } from './icons/DoubleChevronDown'
 import { X } from './icons/X'
 import type { IconComponent } from './icons/iconTypes'
-import { DoubleChevronDown } from './icons/DoubleChevronDown'
 
 interface PropsForExpandable {
 	Header: ReactNode
 	children: ReactNode
-	Icon?: IconComponent
+	Icon: IconComponent
 	onToggle?: (toggleState: boolean) => void
 }
 export function Expandable({
 	onToggle,
 	Header,
 	children,
-	Icon = DoubleChevronDown,
+	Icon,
 }: PropsForExpandable) {
 	const [isOpen, setIsOpen] = useState(false)
 
@@ -46,9 +45,10 @@ export function Expandable({
 		>
 			<summary className={s.header}>
 				{/* Need to handle show/hide of icons with CSS since isOpen has a delay on close */}
-				<X className={`${s.icon} ${s.CloseIcon}`} />
-				<Icon className={`${s.icon} ${s.OpenIcon}`} />
+				<Icon className={`${s.icon}`} />
 				<div className={s.headContent}>{Header}</div>
+				<DoubleChevronDown className={`${s.icon} ${s.OpenIcon}`} />
+				<X className={`${s.icon} ${s.CloseIcon}`} />
 			</summary>
 			{isOpen && <div className={s.body}>{children}</div>}
 		</details>

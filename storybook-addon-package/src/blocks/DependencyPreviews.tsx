@@ -18,6 +18,7 @@ import { ArrowToRectangle } from '../components/icons/ArrowToRectangleIcon'
 import { PathCopyMolecule } from '../components/PathCopyMolecule'
 import s from './DependencyPreviews.module.css'
 import { useId } from 'react'
+import { CubeIcon } from '../components/icons/CubeIcon'
 
 export function DependencyPreviews() {
 	return (
@@ -152,6 +153,7 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 		<li key={storyInfo.componentPath}>
 			{storyInfo.storyId ? (
 				<Expandable
+					Icon={CubeIcon}
 					Header={
 						<StoryLink info={storyInfo} tooltipPosition="right" />
 					}

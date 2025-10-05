@@ -33,7 +33,11 @@
 }
 
 .container > .header > .icon {
-	display: none;
+	&.OpenIcon,
+	&.CloseIcon {
+		display: none;
+		margin-left: auto;
+	}
 }
 .container:not([open]) {
 	& > .header > .icon {
