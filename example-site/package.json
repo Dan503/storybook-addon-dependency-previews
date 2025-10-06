@@ -11,9 +11,9 @@
     "lint": "eslint",
     "format": "prettier",
     "check": "prettier --write . && eslint --fix",
-    "deps": "sb-deps",
-    "sb": "sb-deps && storybook dev -p 6006",
-    "build-storybook": "sb-deps && storybook build"
+		"sb": "sb-deps --watch --run-storybook",
+		"sb:build": "sb-deps && storybook build",
+		"sb:deps": "sb-deps"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.6",
