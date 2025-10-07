@@ -2,8 +2,8 @@
 
 /* eslint-disable no-console */
 const { execSync, spawn } = require('node:child_process')
-const { existsSync, mkdirSync, writeFileSync } = require('node:fs')
-const { resolve, join, dirname } = require('node:path')
+const { existsSync, mkdirSync, writeFileSync, statSync } = require('node:fs')
+const { resolve, join, dirname, posix, sep, basename } = require('node:path')
 const { readFileSync } = require('node:fs')
 const watcherParcel = require('@parcel/watcher')
 const micromatch = require('micromatch')
@@ -79,6 +79,111 @@ function buildOnce() {
 		if (!WATCH) throw e
 	}
 }
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Utils
+// ───────────────────────────────────────────────────────────────────────────────
+
+// Split words out of Pascal/camel/kebab/snake
+function toWords(input) {
+	return String(input)
+		.replace(/([a-z0-9])([A-Z])/g, '$1 $2') // fooBar -> foo Bar
+		.replace(/[_\-./]+/g, ' ') // kebab/snake/dots -> spaces
+		.trim()
+		.split(/\s+/)
+}
+
+function toTitleCase(words) {
+	return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
+
+function toPascalCase(input) {
+	return toTitleCase(toWords(input)).replace(/\s+/g, '')
+}
+
+// src/components/Foo/Bar/BazButton.stories.tsx -> "BazButton"
+function componentBaseFromStory(absPath) {
+	const base = basename(absPath)
+	return base.replace(/\.(stories|story)\.\w+$/i, '')
+}
+
+// Build a Storybook title from folder path + component name
+function makeStoryTitle(absPath) {
+	// 1) get path relative to src (prefer), else project root
+	const relFromSrc = (() => {
+		const srcRoot = join(projectRoot, 'src') + sep
+		const norm = absPath.replace(/\\/g, '/')
+		const normSrc = srcRoot.replace(/\\/g, '/')
+		return norm.startsWith(normSrc) ? norm.slice(normSrc.length) : null
+	})()
+
+	const relPath =
+		relFromSrc || absPath.replace(projectRoot + sep, '').replace(/\\/g, '/')
+
+	// 2) drop file name, split folders
+	const dir = posix.dirname(relPath) // use posix to normalize `/`
+	let segments = dir.split('/').filter(Boolean)
+
+	// 3) optional pruning: drop leading "components" (tweak to taste)
+	if (segments[0] && /^components?$/i.test(segments[0]))
+		segments = segments.slice(1)
+
+	// 4) Title-case each folder segment
+	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
+
+	// 5) Add the component name (last segment)
+	const compBase = componentBaseFromStory(absPath)
+	const compTitle = toTitleCase(toWords(compBase))
+
+	// 6) Join with slashes
+	const parts = [...titledFolders, compTitle].filter(Boolean)
+	return parts.join(' / ')
+}
+
+// true if file is 0 bytes or only whitespace
+function isEmptyOrWhitespace(absPath) {
+	try {
+		const s = statSync(absPath)
+		if (s.size === 0) return true
+		const txt = readFileSync(absPath, 'utf8')
+		return !txt.trim()
+	} catch {
+		return true
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Story scaffolding
+// ───────────────────────────────────────────────────────────────────────────────
+
+function scaffoldStory(absPath) {
+	const base = componentBaseFromStory(absPath)
+	const componentName = toPascalCase(base)
+	const title = makeStoryTitle(absPath) // ← smart path-based title
+
+	const tpl = `import type { Meta } from '@storybook/react-vite'
+ import { ${componentName}, type ${componentName}Props } from './${componentName}'
+
+ const meta: Meta<typeof ${componentName}> = {
+	title: '${title}',
+	component: ${componentName},
+	tags: ['autodocs', 'atom/molecule/organism'],
+	parameters: {
+	  __filePath: import.meta.url,
+	},
+ }
+ 
+ export default meta
+ 
+ export const Default = {
+	args: {} satisfies ${componentName}Props,
+ }
+ `
+
+	writeFileSync(absPath, tpl, 'utf8')
+	info(`scaffolded template → ${rel(absPath)}`)
+}
+
 // ───────────────────────────────────────────────────────────────────────────────
 // Watcher
 // ───────────────────────────────────────────────────────────────────────────────
@@ -149,35 +254,48 @@ function startWatcher() {
 				}
 
 				for (const ev of events) {
-					// ev = { type: 'create' | 'update' | 'delete', path: 'abs' }
 					const abs = ev.path
 					const relPath = rel(abs)
 
 					if (!shouldInclude(relPath)) {
-						console.log('[sb-deps][skip]', ev.type, relPath)
+						// console.log('[sb-deps][skip]', ev.type, relPath)
 						continue
 					}
-					console.log('[sb-deps][event]', ev.type, relPath)
+					// console.log('[sb-deps][event]', ev.type, relPath)
 
 					if (ev.type === 'delete') {
 						kick('unlink', abs)
 						continue
 					}
 
-					// create/update
-					if (isStoryFile(relPath) && !hasDefaultExport(abs)) {
+					const isStory = isStoryFile(relPath)
+
+					// --- NEW: auto-template on create or still-empty change ---
+					if (
+						isStory &&
+						(ev.type === 'create' || isEmptyOrWhitespace(abs))
+					) {
+						// Only scaffold for TS/TSX/JS/JSX stories (skip MDX/Svelte unless you want variants)
+						if (/\.(stories|story)\.(ts|tsx|js|jsx)$/i.test(abs)) {
+							scaffoldStory(abs)
+						}
+					}
+
+					// After potential scaffold, skip builds if no default export yet
+					if (isStory && !hasDefaultExport(abs)) {
 						info(
 							`${ev.type} story (missing default export) — skipping build: ${relPath}`,
 						)
 						continue
 					}
 
+					// Go rebuild
 					kick(ev.type, abs)
 				}
 			},
 			{
-				ignore: ignoreGlobs, // Parcel will fast-ignore these
-				backend: 'inotify', // let Parcel pick; remove if it complains
+				ignore: ignoreGlobs,
+				// backend: 'inotify', // let Parcel pick best backend (remove if it warns)
 			},
 		)
 		.then(() => info('watching… (ready)'))
