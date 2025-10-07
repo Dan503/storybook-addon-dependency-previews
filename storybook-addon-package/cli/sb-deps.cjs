@@ -84,63 +84,20 @@ function buildOnce() {
 // Utils
 // ───────────────────────────────────────────────────────────────────────────────
 
-// Split words out of Pascal/camel/kebab/snake
 function toWords(input) {
 	return String(input)
-		.replace(/([a-z0-9])([A-Z])/g, '$1 $2') // fooBar -> foo Bar
-		.replace(/[_\-./]+/g, ' ') // kebab/snake/dots -> spaces
+		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+		.replace(/[_\-./]+/g, ' ')
 		.trim()
 		.split(/\s+/)
 }
-
 function toTitleCase(words) {
 	return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
-
 function toPascalCase(input) {
 	return toTitleCase(toWords(input)).replace(/\s+/g, '')
 }
 
-// src/components/Foo/Bar/BazButton.stories.tsx -> "BazButton"
-function componentBaseFromStory(absPath) {
-	const base = basename(absPath)
-	return base.replace(/\.(stories|story)\.\w+$/i, '')
-}
-
-// Build a Storybook title from folder path + component name
-function makeStoryTitle(absPath) {
-	// 1) get path relative to src (prefer), else project root
-	const relFromSrc = (() => {
-		const srcRoot = join(projectRoot, 'src') + sep
-		const norm = absPath.replace(/\\/g, '/')
-		const normSrc = srcRoot.replace(/\\/g, '/')
-		return norm.startsWith(normSrc) ? norm.slice(normSrc.length) : null
-	})()
-
-	const relPath =
-		relFromSrc || absPath.replace(projectRoot + sep, '').replace(/\\/g, '/')
-
-	// 2) drop file name, split folders
-	const dir = posix.dirname(relPath) // use posix to normalize `/`
-	let segments = dir.split('/').filter(Boolean)
-
-	// 3) optional pruning: drop leading "components" (tweak to taste)
-	if (segments[0] && /^components?$/i.test(segments[0]))
-		segments = segments.slice(1)
-
-	// 4) Title-case each folder segment
-	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
-
-	// 5) Add the component name (last segment)
-	const compBase = componentBaseFromStory(absPath)
-	const compTitle = toTitleCase(toWords(compBase))
-
-	// 6) Join with slashes
-	const parts = [...titledFolders, compTitle].filter(Boolean)
-	return parts.join(' / ')
-}
-
-// true if file is 0 bytes or only whitespace
 function isEmptyOrWhitespace(absPath) {
 	try {
 		const s = statSync(absPath)
@@ -152,36 +109,168 @@ function isEmptyOrWhitespace(absPath) {
 	}
 }
 
+// src/components/**/Thing.tsx ? (and not a story file)
+function isComponentsTsx(absPath) {
+	const norm = absPath.replace(/\\/g, '/')
+	return (
+		/\/src\/components\/.+\.tsx$/i.test(norm) &&
+		!/\.stories?\.tsx$/i.test(norm)
+	)
+}
+
+/** e.g. /foo/Bar.tsx → "Bar" */
+function componentBaseFromComponent(absCompPath) {
+	return basename(absCompPath, '.tsx')
+}
+
+/** e.g. /foo/Bar.stories.tsx → "Bar" */
+function componentBaseFromStory(absStoryPath) {
+	const base = basename(absStoryPath)
+	return base.replace(/\.(stories|story)\.\w+$/i, '')
+}
+
+/** detect atomic token nearest to the end of the path */
+function detectAtomicTag(absPath) {
+	const hay = absPath.toLowerCase().replace(/\\/g, '/')
+	const tokens = ['atom', 'molecule', 'organism', 'template', 'page']
+	let best = null
+	for (const t of tokens) {
+		const idx = hay.lastIndexOf(t)
+		if (idx !== -1 && (best === null || idx > best.idx)) {
+			best = { val: t, idx }
+		}
+	}
+	return best ? best.val : null
+}
+
+/** path for sibling story file */
+function storyPathForComponent(absCompPath) {
+	const dir = dirname(absCompPath)
+	const base = componentBaseFromComponent(absCompPath)
+	return join(dir, `${base}.stories.tsx`)
+}
+
+/** title from folder (relative to src) + component name */
+function makeTitleFromComponent(absCompPath) {
+	const srcRoot = join(projectRoot, 'src') + sep
+	const normAbs = absCompPath.replace(/\\/g, '/')
+	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
+		? normAbs.slice(srcRoot.length)
+		: absCompPath.replace(projectRoot + sep, '').replace(/\\/g, '/')
+
+	const dir = posix.dirname(relFromSrc)
+	let segments = dir.split('/').filter(Boolean)
+
+	// drop leading "components" for nicer titles (tweak to taste)
+	if (segments[0] && /^components?$/i.test(segments[0]))
+		segments = segments.slice(1)
+
+	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
+	const compName = componentBaseFromComponent(absCompPath)
+	const compTitle = toTitleCase(toWords(compName))
+	return [...titledFolders, compTitle].filter(Boolean).join(' / ')
+}
+
 // ───────────────────────────────────────────────────────────────────────────────
-// Story scaffolding
+// Story & component scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
 
-function scaffoldStory(absPath) {
+function scaffoldComponent(absCompPath) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+
+	const tpl = `import type { ReactNode } from 'react'
+
+export interface ${propsName} {
+	children?: ReactNode
+}
+
+export function ${componentName}({ children }: ${propsName}) {
+	return (
+		<div>
+			<p>${componentName}</p>
+			{children}
+		</div>
+	)
+}
+`
+	writeFileSync(absCompPath, tpl, 'utf8')
+	info(`scaffolded component → ${rel(absCompPath)}`)
+}
+
+function scaffoldStoryForComponent(absCompPath) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+	const title = makeTitleFromComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const storyTpl = `import type { Meta } from '@storybook/react-vite'
+import { ${componentName}, type ${propsName} } from './${componentName}'
+
+const meta: Meta<typeof ${componentName}> = {
+	title: '${title}',
+	component: ${componentName},
+	tags: ${JSON.stringify(tags)},
+	parameters: {
+		__filePath: import.meta.url,
+	},
+}
+
+export default meta
+
+export const Default = {
+	args: {} satisfies ${propsName},
+}
+`
+	const storyPath = storyPathForComponent(absCompPath)
+	writeFileSync(storyPath, storyTpl, 'utf8')
+	info(`scaffolded story → ${rel(storyPath)}`)
+	return storyPath
+}
+
+function scaffoldStoryOnly(absPath) {
 	const base = componentBaseFromStory(absPath)
 	const componentName = toPascalCase(base)
-	const title = makeStoryTitle(absPath) // ← smart path-based title
+	const propsName = `PropsFor${componentName}`
+	const title = makeTitleFromComponent(absPath) // ← smart path-based title
+	const atomic = detectAtomicTag(absPath)
+
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
 
 	const tpl = `import type { Meta } from '@storybook/react-vite'
- import { ${componentName}, type ${componentName}Props } from './${componentName}'
+import { ${componentName}, type ${propsName} } from './${componentName}'
 
  const meta: Meta<typeof ${componentName}> = {
 	title: '${title}',
 	component: ${componentName},
-	tags: ['autodocs', 'atom/molecule/organism'],
+	tags: ${JSON.stringify(tags)},
 	parameters: {
-	  __filePath: import.meta.url,
+		__filePath: import.meta.url,
 	},
- }
- 
- export default meta
- 
- export const Default = {
-	args: {} satisfies ${componentName}Props,
- }
- `
+}
+
+export default meta
+
+export const Default = {
+	args: {} satisfies ${propsName},
+}
+`
 
 	writeFileSync(absPath, tpl, 'utf8')
 	info(`scaffolded template → ${rel(absPath)}`)
+}
+
+/** ensure story exists for component; return created path or null */
+function ensureStoryForComponent(absCompPath) {
+	const sPath = storyPathForComponent(absCompPath)
+	if (existsSync(sPath)) return null
+	return scaffoldStoryForComponent(absCompPath)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -270,14 +359,50 @@ function startWatcher() {
 
 					const isStory = isStoryFile(relPath)
 
-					// --- NEW: auto-template on create or still-empty change ---
+					// if a component .tsx was created (or created empty), scaffold it,
+					// then ensure a sibling story exists
+					if (isComponentsTsx(abs) && ev.type === 'create') {
+						if (isEmptyOrWhitespace(abs)) {
+							scaffoldComponent(abs)
+						}
+						const createdStory = ensureStoryForComponent(abs)
+						if (createdStory) {
+							// kick a rebuild because a new story was added
+							kick('create:story', createdStory)
+							continue
+						}
+					}
+
+					// existing behavior: scaffold story files that are empty/new (manual story creation)
+					if (
+						isStory &&
+						(ev.type === 'create' || isEmptyOrWhitespace(abs))
+					) {
+						if (/\.(stories|story)\.(ts|tsx|js|jsx)$/i.test(abs)) {
+							// this version expects a STORY path; if you kept your old scaffoldStory(path),
+							// call that here; otherwise you can derive a component path and call the
+							// *for component* variant as needed.
+							// For simplicity you can re-use the component version by mapping story → component:
+							const compPathGuess = abs.replace(
+								/\.(stories|story)\.(ts|tsx|js|jsx)$/i,
+								'.tsx',
+							)
+							if (existsSync(compPathGuess)) {
+								scaffoldStoryForComponent(compPathGuess)
+								kick('create:story', abs)
+								continue
+							}
+						}
+					}
+
+					// --- If a story file is created without first creating a component file, we scaffold only the story ---
 					if (
 						isStory &&
 						(ev.type === 'create' || isEmptyOrWhitespace(abs))
 					) {
 						// Only scaffold for TS/TSX/JS/JSX stories (skip MDX/Svelte unless you want variants)
 						if (/\.(stories|story)\.(ts|tsx|js|jsx)$/i.test(abs)) {
-							scaffoldStory(abs)
+							scaffoldStoryOnly(abs)
 						}
 					}
 
