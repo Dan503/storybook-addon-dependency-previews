@@ -35,9 +35,35 @@
       "valid": true
     },
     {
+      "source": "src/components/Header.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./Header",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/Header.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/Header.tsx",
       "dependencies": [],
       "dependents": [
+        "src/components/Header.stories.tsx",
         "src/routes/__root.tsx"
       ],
       "orphan": false,
@@ -999,8 +1025,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 32,
-    "totalDependenciesCruised": 35,
+    "totalCruised": 33,
+    "totalDependenciesCruised": 36,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
