@@ -2,9 +2,11 @@
 
 /* eslint-disable no-console */
 const { execSync, spawn } = require('node:child_process')
-const chokidar = require('chokidar')
 const { existsSync, mkdirSync, writeFileSync } = require('node:fs')
 const { resolve, join, dirname } = require('node:path')
+const { readFileSync } = require('node:fs')
+const watcherParcel = require('@parcel/watcher')
+const micromatch = require('micromatch')
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
@@ -63,11 +65,12 @@ function postprocessOnce() {
 	const start = Date.now()
 	const postCmd = `node "${post}" "${rawPath}" "${cookedPath}"`
 	execSync(postCmd, { cwd: projectRoot, stdio: 'inherit' })
-	info(`cooked ✓ → ${rel(cookedPath)} (${ms(Date.now() - start)})`)
+	info(`compiled ✓ → ${rel(cookedPath)} (${ms(Date.now() - start)})`)
 }
 
 function buildOnce() {
 	try {
+		console.log('buildOnce')
 		runDepCruiseOnce()
 		postprocessOnce()
 	} catch (e) {
@@ -76,50 +79,109 @@ function buildOnce() {
 		if (!WATCH) throw e
 	}
 }
-
 // ───────────────────────────────────────────────────────────────────────────────
 // Watcher
 // ───────────────────────────────────────────────────────────────────────────────
+
 function startWatcher() {
-	// Stories + potential component changes that affect deps
-	const globs = [
-		// stories
-		'**/*.stories.@(ts|tsx|js|jsx|mdx)',
-		'**/*.story.@(ts|tsx|js|jsx)',
-		// components (adjust as you see fit)
-		'src/**/*.@(ts|tsx|js|jsx)',
-		// configs affecting cruise
+	const root = projectRoot
+
+	// Globs we *care* about (everything else is ignored)
+	const includeGlobs = [
+		'**/*.stories.{ts,tsx,js,jsx,mdx,svelte}',
+		'**/*.story.{ts,tsx,js,jsx,mdx,svelte}',
+		'src/**/*.{ts,tsx,js,jsx,svelte}',
 		'depcruise.config.cjs',
-		'.dependency-cruiser.@(js|cjs)',
+		'.dependency-cruiser.{js,cjs}',
 	]
 
-	const watcher = chokidar.watch(globs, {
-		cwd: projectRoot,
-		ignoreInitial: true,
-		awaitWriteFinish: { stabilityThreshold: 150, pollInterval: 50 },
-	})
+	// Globs we want to ignore
+	const ignoreGlobs = [
+		'node_modules/**',
+		'.git/**',
+		'.storybook/**', // avoid loops on our compiled JSON
+		'**/.cache/**',
+		'**/.storybook-cache/**',
+		'**/.sb/**',
+		'**/dist/**',
+		'**/build/**',
+		'**/~*',
+		'**/#*#',
+		'**/*.tmp', // editor temp files
+	]
+
+	const isStoryFile = (p) =>
+		/\.stories\.\w+$/i.test(p) || /\.story\.\w+$/i.test(p)
+
+	const hasDefaultExport = (absPath) => {
+		try {
+			const src = readFileSync(absPath, 'utf8')
+			return /export\s+default\s+/m.test(src)
+		} catch {
+			return false
+		}
+	}
+
+	const shouldInclude = (relPath) =>
+		micromatch.isMatch(relPath, includeGlobs) &&
+		!micromatch.isMatch(relPath, ignoreGlobs)
 
 	let pending = false
 	let timer = null
-	const kick = (reason, file) => {
+	const kick = (reason, absPath) => {
 		if (pending) return
 		pending = true
 		if (timer) clearTimeout(timer)
 		timer = setTimeout(() => {
-			info(`${reason}: ${file ? rel(file) : ''}`.trim())
+			info(`${reason}: ${rel(absPath)}`)
 			buildOnce()
 			pending = false
-		}, 120) // debounce a touch
+		}, 120)
 	}
 
-	watcher
-		.on('add', (p) => kick('add', p))
-		.on('change', (p) => kick('change', p))
-		.on('unlink', (p) => kick('unlink', p))
-		.on('error', (e) => error(`watch error ${e?.message || e}`))
+	watcherParcel
+		.subscribe(
+			root,
+			(err, events) => {
+				if (err) {
+					error(`watch error ${err?.message || err}`)
+					return
+				}
 
-	info('watching…')
-	return watcher
+				for (const ev of events) {
+					// ev = { type: 'create' | 'update' | 'delete', path: 'abs' }
+					const abs = ev.path
+					const relPath = rel(abs)
+
+					if (!shouldInclude(relPath)) {
+						console.log('[sb-deps][skip]', ev.type, relPath)
+						continue
+					}
+					console.log('[sb-deps][event]', ev.type, relPath)
+
+					if (ev.type === 'delete') {
+						kick('unlink', abs)
+						continue
+					}
+
+					// create/update
+					if (isStoryFile(relPath) && !hasDefaultExport(abs)) {
+						info(
+							`${ev.type} story (missing default export) — skipping build: ${relPath}`,
+						)
+						continue
+					}
+
+					kick(ev.type, abs)
+				}
+			},
+			{
+				ignore: ignoreGlobs, // Parcel will fast-ignore these
+				backend: 'inotify', // let Parcel pick; remove if it complains
+			},
+		)
+		.then(() => info('watching… (ready)'))
+		.catch((e) => error(`watch init failed ${e?.message || e}`))
 }
 
 // ───────────────────────────────────────────────────────────────────────────────

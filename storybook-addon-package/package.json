@@ -51,10 +51,12 @@
 		"vite": "^7.1.7"
 	},
 	"dependencies": {
+		"@parcel/watcher": "^2.5.1",
 		"@storybook/addon-links": "^9.1.8",
 		"@storybook/manager-api": "9.0.0-alpha.1",
 		"@storybook/preview-api": "9.0.0-alpha.1",
-		"dependency-cruiser": "^16.6.0"
+		"dependency-cruiser": "^16.6.0",
+		"micromatch": "^4.0.8"
 	},
 	"storybook-addon": {
 		"preset": "dist/addon/preset.js"
