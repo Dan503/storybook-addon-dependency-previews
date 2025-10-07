@@ -70,6 +70,143 @@
       "valid": true
     },
     {
+      "source": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./LocationNameMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../icons/MapPinIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/icons/MapPinIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/icons/MapPinIcon.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./Svg",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/icons/Svg.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
+        "src/components/icons/MapPinIcon.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/icons/iconTypes.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/icons/MapPinIcon.tsx",
+        "src/components/icons/Svg.tsx",
+        "src/components/icons/MapPinIcon.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/icons/Svg.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/icons/MapPinIcon.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/demo.FormComponents.tsx",
       "dependencies": [
         {
@@ -416,6 +553,49 @@
         "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
         "src/hooks/demo.form.ts"
       ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/icons/MapPinIcon.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./MapPinIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/icons/MapPinIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
       "orphan": false,
       "valid": true
     },
@@ -1025,8 +1205,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 33,
-    "totalDependenciesCruised": 36,
+    "totalCruised": 39,
+    "totalDependenciesCruised": 43,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

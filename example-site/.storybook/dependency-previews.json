@@ -47,6 +47,96 @@
       }
     ]
   },
+  "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx": {
+    "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
+        "storyId": "housing-property-location-name-molecule--docs",
+        "storyTitle": "Housing Property / Location Name Molecule",
+        "storyPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx": {
+    "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
+    "storyId": "housing-property-location-name-molecule--docs",
+    "storyTitle": "Housing Property / Location Name Molecule",
+    "storyPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/MapPinIcon.tsx",
+        "storyId": "icons-map-pin-icon--docs",
+        "storyTitle": "Icons / Map Pin Icon",
+        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
+      }
+    ]
+  },
+  "src/components/icons/MapPinIcon.tsx": {
+    "componentPath": "src/components/icons/MapPinIcon.tsx",
+    "storyId": "icons-map-pin-icon--docs",
+    "storyTitle": "Icons / Map Pin Icon",
+    "storyPath": "src/components/icons/MapPinIcon.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/icons/Svg.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
+        "storyId": "housing-property-location-name-molecule--docs",
+        "storyTitle": "Housing Property / Location Name Molecule",
+        "storyPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/icons/MapPinIcon.stories.tsx"
+      }
+    ]
+  },
+  "src/components/icons/iconTypes.ts": {
+    "componentPath": "src/components/icons/iconTypes.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/icons/MapPinIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/icons/MapPinIcon.tsx",
+        "storyId": "icons-map-pin-icon--docs",
+        "storyTitle": "Icons / Map Pin Icon",
+        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/icons/Svg.tsx"
+      }
+    ]
+  },
+  "src/components/icons/Svg.tsx": {
+    "componentPath": "src/components/icons/Svg.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/icons/MapPinIcon.tsx",
+        "storyId": "icons-map-pin-icon--docs",
+        "storyTitle": "Icons / Map Pin Icon",
+        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+      }
+    ]
+  },
   "src/components/demo.FormComponents.tsx": {
     "componentPath": "src/components/demo.FormComponents.tsx",
     "builtWith": [],
@@ -239,5 +329,20 @@
         "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
       }
     ]
+  },
+  "src/components/icons/MapPinIcon.stories.tsx": {
+    "componentPath": "src/components/icons/MapPinIcon.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/icons/MapPinIcon.tsx",
+        "storyId": "icons-map-pin-icon--docs",
+        "storyTitle": "Icons / Map Pin Icon",
+        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+      }
+    ],
+    "usedIn": []
   }
 }
