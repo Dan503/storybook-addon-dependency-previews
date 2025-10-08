@@ -25,6 +25,7 @@ const previewConfig: ProjectAnnotations<Renderer> = {
 	],
 	parameters: {
 		...defaultPreviewParameters,
+		layout: 'centered',
 		dependencyPreviews: {
 			sourceBaseUrl:
 				'https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site',
