@@ -22,3 +22,10 @@ export const Default = {
 		meal: exampleMeal,
 	} satisfies PropsForMealDetailOrganism,
 }
+
+export const Loading = {
+	args: {
+		meal: undefined,
+		isLoading: true,
+	} satisfies PropsForMealDetailOrganism,
+}
