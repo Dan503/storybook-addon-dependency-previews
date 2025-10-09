@@ -137,6 +137,80 @@
       }
     ]
   },
+  "src/components/MealDetailOrganism.stories.tsx": {
+    "componentPath": "src/components/MealDetailOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/MealDetailOrganism.tsx",
+        "storyId": "meal-detail-organism--docs",
+        "storyTitle": "Meal Detail Organism",
+        "storyPath": "src/components/MealDetailOrganism.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/MealDetailOrganism.tsx": {
+    "componentPath": "src/components/MealDetailOrganism.tsx",
+    "storyId": "meal-detail-organism--docs",
+    "storyTitle": "Meal Detail Organism",
+    "storyPath": "src/components/MealDetailOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Listings / Compact / Compact Listing Organism",
+        "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/MealDetailOrganism.stories.tsx"
+      }
+    ]
+  },
+  "src/components/listings/compact/CompactListingOrganism.tsx": {
+    "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
+    "storyId": "listings-compact-compact-listing-organism--docs",
+    "storyTitle": "Listings / Compact / Compact Listing Organism",
+    "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Listings / Compact / Compact Listing Molecule",
+        "storyPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/MealDetailOrganism.tsx",
+        "storyId": "meal-detail-organism--docs",
+        "storyTitle": "Meal Detail Organism",
+        "storyPath": "src/components/MealDetailOrganism.stories.tsx"
+      }
+    ]
+  },
+  "src/components/listings/compact/CompactListingMolecule.tsx": {
+    "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
+    "storyId": "listings-compact-compact-listing-molecule--docs",
+    "storyTitle": "Listings / Compact / Compact Listing Molecule",
+    "storyPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Listings / Compact / Compact Listing Organism",
+        "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      }
+    ]
+  },
   "src/components/demo.FormComponents.tsx": {
     "componentPath": "src/components/demo.FormComponents.tsx",
     "builtWith": [],
@@ -418,24 +492,6 @@
     ],
     "usedIn": []
   },
-  "src/components/listings/compact/CompactListingMolecule.tsx": {
-    "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
-    "storyId": "listings-compact-compact-listing-molecule--docs",
-    "storyTitle": "Listings / Compact / Compact Listing Molecule",
-    "storyPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
-        "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Listings / Compact / Compact Listing Organism",
-        "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      }
-    ]
-  },
   "src/components/listings/compact/CompactListingOrganism.stories.tsx": {
     "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
     "builtWith": [
@@ -447,24 +503,5 @@
       }
     ],
     "usedIn": []
-  },
-  "src/components/listings/compact/CompactListingOrganism.tsx": {
-    "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
-    "storyId": "listings-compact-compact-listing-organism--docs",
-    "storyTitle": "Listings / Compact / Compact Listing Organism",
-    "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
-    "builtWith": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
-        "storyId": "listings-compact-compact-listing-molecule--docs",
-        "storyTitle": "Listings / Compact / Compact Listing Molecule",
-        "storyPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      }
-    ]
   }
 }

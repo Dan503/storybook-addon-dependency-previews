@@ -43,7 +43,9 @@ function ItemInternals({
 		<div className="grid grid-cols-[auto_1fr] gap-4 items-center">
 			<img src={imageSrc} alt="" className="h-15" />
 			<div>
-				<Section component={<H className="text-xl font-bold">{title}</H>}>
+				<Section
+					component={<H className="text-xl font-bold leading-none">{title}</H>}
+				>
 					<p>{description}</p>
 				</Section>
 			</div>
