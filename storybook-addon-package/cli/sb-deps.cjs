@@ -155,7 +155,13 @@ function makeTitleFromComponent(absCompPath) {
 	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
 	const compName = componentBaseFromComponent(absCompPath)
 	const compTitle = toTitleCase(toWords(compName))
-	return [...titledFolders, compTitle].filter(Boolean).join(' / ')
+
+	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
+
+	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
+	const dedupedStoryPath = [...new Set(fullStoryPath)]
+
+	return dedupedStoryPath.join(' / ')
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
