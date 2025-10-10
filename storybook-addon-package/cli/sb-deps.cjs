@@ -200,7 +200,7 @@ function scaffoldStoryForComponent(absCompPath) {
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 
-	const storyTpl = `import type { Meta } from '@storybook/react-vite'
+	const storyTpl = `import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ${componentName}, type ${propsName} } from './${componentName}'
 
 const meta: Meta<typeof ${componentName}> = {
@@ -214,7 +214,9 @@ const meta: Meta<typeof ${componentName}> = {
 
 export default meta
 
-export const Default = {
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {
 	args: {} satisfies ${propsName},
 }
 `
