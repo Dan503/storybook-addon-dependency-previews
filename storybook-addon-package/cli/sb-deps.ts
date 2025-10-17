@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 /* eslint-disable no-console */
-const { execSync, spawn } = require('node:child_process')
-const {
+import { execSync, spawn } from 'node:child_process'
+import {
 	existsSync,
 	mkdirSync,
 	writeFileSync,
 	statSync,
 	readFileSync,
-} = require('node:fs')
-const { resolve, join, dirname, posix, sep, basename } = require('node:path')
-const watcherParcel = require('@parcel/watcher')
-const micromatch = require('micromatch')
+} from 'node:fs'
+import { resolve, join, dirname, posix, sep, basename } from 'node:path'
+import watcherParcel from '@parcel/watcher'
+import micromatch from 'micromatch'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
@@ -266,7 +266,7 @@ function startWatcher() {
 		}, 120)
 	}
 
-	watcherParcel
+	return watcherParcel
 		.subscribe(
 			root,
 			async (err, events) => {

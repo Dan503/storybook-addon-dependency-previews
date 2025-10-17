@@ -28,10 +28,13 @@
 	],
 	"scripts": {
 		"copy-css": "cpx \"src/**/*.module.css\" dist",
-		"build": "rm -rf dist && tsc -p tsconfig.json && npm run copy-css",
-		"dev:ts": "tsc -w -p tsconfig.json",
+		"build": "pnpm typecheck && rm -rf dist && pnpm bundle && npm run copy-css",
+		"bundle": "tsdown",
+		"bundle:watch": "tsdown -w",
+		"typecheck": "cross-env FORCE_COLOR=1 npm_config_color=always tsc -p tsconfig.json --noEmit --pretty true && tsc -p ./cli/tsconfig.json --noEmit --pretty true",
+		"typecheck:watch": "cross-env FORCE_COLOR=1 npm_config_color=always concurrently --raw -k -n TSC,CLI \"tsc -p tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\" \"tsc -p ./cli/tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\"",
 		"dev:css": "cpx \"src/**/*.module.css\" dist --watch",
-		"dev": "concurrently -k -n TS,CSS \"pnpm dev:ts\" \"pnpm dev:css\""
+		"dev": "cross-env FORCE_COLOR=1 npm_config_color=always concurrently --raw -k -n CSS,TS-COMPILE,TS-CHECK \"pnpm dev:css\" \"pnpm bundle:watch\" \"pnpm typecheck:watch\""
 	},
 	"peerDependencies": {
 		"react": ">=18",
@@ -42,11 +45,15 @@
 		"@storybook/blocks": "9.0.0-alpha.17",
 		"@storybook/csf": "^0.1.13",
 		"@storybook/types": "9.0.0-alpha.1",
-		"@types/node": "^24.5.2",
+		"@types/micromatch": "^4.0.9",
+		"@types/node": "^24.7.2",
 		"@types/react": "^19.1.13",
 		"@types/react-dom": "^19.1.9",
 		"concurrently": "^9.2.1",
 		"cpx2": "^8.0.0",
+		"cross-env": "^10.1.0",
+		"ts-dedent": "^2.2.0",
+		"tsdown": "^0.15.7",
 		"typescript": "^5.6.3",
 		"vite": "^7.1.7"
 	},

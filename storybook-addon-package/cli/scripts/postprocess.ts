@@ -10,8 +10,8 @@ if (!existsSync(dirname(outPath)))
 	mkdirSync(dirname(outPath), { recursive: true })
 
 const raw = JSON.parse(readFileSync(inPath, 'utf8'))
-const norm = (p) => posix.normalize(p.replaceAll('\\', '/'))
-const isComponent = (p) => /src\/(components|ui|lib)\//.test(p) // tweak later via options
+const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
+const isComponent = (p: string) => /src\/(components|ui|lib)\//.test(p) // tweak later via options
 
 /** Simple keyed-push to avoid duplicates */
 function pushUnique(list, item) {
