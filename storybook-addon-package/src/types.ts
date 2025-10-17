@@ -10,9 +10,9 @@ export interface Deps extends StoryInfo {
 
 export interface StoryInfo {
 	componentPath: string
-	storyId?: string
-	storyTitle?: string
-	storyPath?: string
+	storyId?: string | null
+	storyTitle?: string | null
+	storyPath?: string | null
 }
 
 export type CsfModule = {

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname } from 'node:path'
 import { toId } from '@storybook/csf'
+import { Graph, type StoryInfo } from '../../src/types'
 
 const [, , inPathArg, outPathArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
@@ -14,21 +15,20 @@ const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
 const isComponent = (p: string) => /src\/(components|ui|lib)\//.test(p) // tweak later via options
 
 /** Simple keyed-push to avoid duplicates */
-function pushUnique(list, item) {
+function pushUnique(list: Array<StoryInfo>, item: StoryInfo) {
 	if (!list.some((x) => x.componentPath === item.componentPath)) {
 		list.push(item)
 	}
 }
 
-/** @type {import('../../src/types').Graph} */
-const graph = {}
+const graph: Graph = {}
 
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
 	if (!isComponent(from)) continue
 
 	const deps = (m.dependencies || [])
-		.map((d) => d.resolved && norm(d.resolved))
+		.map((d: any) => d.resolved && norm(d.resolved))
 		.filter(Boolean)
 		.filter(isComponent)
 
@@ -84,7 +84,7 @@ for (const m of raw.modules || []) {
 }
 
 // Stable sort by path for nicer diffs/UI
-const byPath = (a, b) =>
+const byPath = (a: StoryInfo, b: StoryInfo) =>
 	(a.componentPath || '').localeCompare(b.componentPath || '')
 
 for (const k of Object.keys(graph)) {
@@ -94,7 +94,7 @@ for (const k of Object.keys(graph)) {
 
 writeFileSync(outPath, JSON.stringify(graph, null, 2))
 
-function getStoryId(componentPath) {
+function getStoryId(componentPath: string) {
 	const rawFileData = getRawStoryFileData(componentPath)
 	if (!rawFileData.storyFileData) return null
 
@@ -111,7 +111,7 @@ function getStoryId(componentPath) {
 	}
 }
 
-function getRawStoryFileData(componentPath) {
+function getRawStoryFileData(componentPath: string) {
 	const base = componentPath.replace(/\.\w+$/, '')
 	const storiesPath = `${base}.stories${extname(componentPath)}`
 	const storyPath = `${base}.story${extname(componentPath)}`
@@ -126,6 +126,6 @@ function getRawStoryFileData(componentPath) {
 	}
 }
 
-function getRawFileData(path) {
+function getRawFileData(path: string) {
 	return existsSync(path) && readFileSync(path, 'utf8')
 }

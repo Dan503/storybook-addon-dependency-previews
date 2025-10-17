@@ -103,7 +103,7 @@ function slugifyExportName(name: string) {
  *  2) If we have a docs/primary id, try to match the export name in the id.
  *  3) Else fall back to the first named export.
  */
-function getPrimaryStoryExport(mod: any, info?: { storyId?: string }) {
+function getPrimaryStoryExport(mod: any, info?: StoryInfo) {
 	if (!mod) return null
 
 	// 1) Prefer "Default" or "Primary" if present
