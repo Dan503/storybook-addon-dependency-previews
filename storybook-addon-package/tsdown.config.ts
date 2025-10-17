@@ -7,6 +7,7 @@ export default defineConfig([
 		platform: 'neutral',
 		dts: true,
 		watch: ['src/**/*.{ts,tsx,css}'],
+		ignoreWatch: ['dist/**/*'],
 	},
 	// --- CLI 1
 	{
@@ -18,6 +19,7 @@ export default defineConfig([
 		format: 'cjs',
 		fixedExtension: true,
 		watch: ['cli/**/*.{ts,tsx}'],
+		ignoreWatch: ['dist/**/*'],
 	},
 	// --- CLI 2
 	{
@@ -29,5 +31,6 @@ export default defineConfig([
 		format: 'esm',
 		fixedExtension: true,
 		watch: ['cli/**/*.{ts,tsx}'],
+		ignoreWatch: ['dist/**/*'],
 	},
 ])
