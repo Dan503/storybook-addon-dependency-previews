@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /* eslint-disable no-console */
-import { execSync, spawn } from 'node:child_process'
+import { execSync, spawn, type ChildProcess } from 'node:child_process'
 import {
 	existsSync,
 	mkdirSync,
@@ -84,21 +84,21 @@ function buildOnce() {
 // ───────────────────────────────────────────────────────────────────────────────
 // Utils
 // ───────────────────────────────────────────────────────────────────────────────
-function toWords(input) {
+function toWords(input: string) {
 	return String(input)
 		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
 		.replace(/[_\-./]+/g, ' ')
 		.trim()
 		.split(/\s+/)
 }
-function toTitleCase(words) {
+function toTitleCase(words: Array<string>) {
 	return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
-function toPascalCase(input) {
+function toPascalCase(input: string) {
 	return toTitleCase(toWords(input)).replace(/\s+/g, '')
 }
 
-function isEmptyOrWhitespace(absPath) {
+function isEmptyOrWhitespace(absPath: string) {
 	try {
 		const s = statSync(absPath)
 		if (s.size === 0) return true
@@ -110,7 +110,7 @@ function isEmptyOrWhitespace(absPath) {
 }
 
 // src/components/**/Thing.tsx ? (and not a story file)
-function isComponentsTsx(absPath) {
+function isComponentsTsx(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
 	return (
 		/\/src\/components\/.+\.tsx$/i.test(norm) &&
@@ -118,11 +118,11 @@ function isComponentsTsx(absPath) {
 	)
 }
 
-function componentBaseFromComponent(absCompPath) {
+function componentBaseFromComponent(absCompPath: string) {
 	return basename(absCompPath, '.tsx')
 }
 
-function detectAtomicTag(absPath) {
+function detectAtomicTag(absPath: string) {
 	const hay = absPath.toLowerCase().replace(/\\/g, '/')
 	const tokens = ['atom', 'molecule', 'organism', 'template', 'page']
 	let best = null
@@ -134,13 +134,13 @@ function detectAtomicTag(absPath) {
 	return best ? best.val : null
 }
 
-function storyPathForComponent(absCompPath) {
+function storyPathForComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromComponent(absCompPath)
 	return join(dir, `${base}.stories.tsx`)
 }
 
-function makeTitleFromComponent(absCompPath) {
+function makeTitleFromComponent(absCompPath: string) {
 	const srcRoot = join(projectRoot, 'src') + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
 	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
@@ -167,7 +167,7 @@ function makeTitleFromComponent(absCompPath) {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story & component scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
-function scaffoldComponent(absCompPath) {
+function scaffoldComponent(absCompPath: string) {
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
@@ -191,7 +191,7 @@ export function ${componentName}({ children }: ${propsName}) {
 	info(`scaffolded component → ${rel(absCompPath)}`)
 }
 
-function scaffoldStoryForComponent(absCompPath) {
+function scaffoldStoryForComponent(absCompPath: string) {
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
@@ -226,7 +226,7 @@ export const Default: Story = {
 	return storyPath
 }
 
-function ensureStoryForComponent(absCompPath) {
+function ensureStoryForComponent(absCompPath: string) {
 	const sPath = storyPathForComponent(absCompPath)
 	if (existsSync(sPath)) return null
 	return scaffoldStoryForComponent(absCompPath)
@@ -254,8 +254,9 @@ function startWatcher() {
 	]
 
 	let pending = false
-	let timer = null
-	const kick = (reason, absPath) => {
+	let timer: NodeJS.Timeout | null = null
+
+	function kick(reason: string, absPath: string) {
 		if (pending) return
 		pending = true
 		if (timer) clearTimeout(timer)
@@ -325,14 +326,17 @@ function startWatcher() {
 			},
 			{ ignore: ignoreGlobs },
 		)
-		.then(() => info('watching… (ready)'))
+		.then((result) => {
+			info('watching… (ready)')
+			return result
+		})
 		.catch((e) => error(`watch init failed ${e?.message || e}`))
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Storybook child
 // ───────────────────────────────────────────────────────────────────────────────
-let sbChild = null
+let sbChild: ChildProcess | null = null
 function startStorybook() {
 	let sbEntry = null
 	try {
@@ -382,38 +386,33 @@ info(`outDir: ${rel(outDir)}`)
 info(configPath ? `config: ${rel(configPath)}` : 'config: (none)')
 buildOnce()
 
-let watcher = null
-if (WATCH) watcher = startWatcher()
+let watcher: watcherParcel.AsyncSubscription | null = null
+if (WATCH) startWatcher().then((w) => (watcher = w || null))
 if (RUN_SB) startStorybook()
 
-process.on('SIGINT', () => {
-	console.log()
+process.on('SIGINT', async () => {
 	info('shutting down…')
-	watcher?.close().catch(() => {})
-	if (sbChild) {
-		try {
-			sbChild.kill('SIGINT')
-		} catch {}
-	}
+	watcher?.unsubscribe()
+	sbChild?.kill('SIGINT')
 	process.exit(0)
 })
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Utils
 // ───────────────────────────────────────────────────────────────────────────────
-function rel(p) {
+function rel(p: string) {
 	return p.replace(resolve(projectRoot) + require('path').sep, '')
 }
-function ms(n) {
+function ms(n: number) {
 	return `${Math.max(1, Math.round(n))}ms`
 }
-function info(msg) {
+function info(msg: string) {
 	console.log('[sb-deps]', msg)
 }
-function error(msg) {
+function error(msg: string) {
 	console.error('[sb-deps]', msg)
 }
-function banner(title) {
+function banner(title: string) {
 	console.log(`\n${title} – dependency previews\n`)
 }
 function wait(time = 500) {
