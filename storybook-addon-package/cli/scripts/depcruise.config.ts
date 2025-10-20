@@ -1,5 +1,6 @@
-/** @type {import('dependency-cruiser').IConfiguration} */
-module.exports = {
+import type { IConfiguration } from 'dependency-cruiser'
+
+const config: IConfiguration = {
 	forbidden: [
 		// 0) No circular dependencies anywhere
 		{
@@ -37,3 +38,5 @@ module.exports = {
 		// baseDir: 'src'
 	},
 }
+
+export default config

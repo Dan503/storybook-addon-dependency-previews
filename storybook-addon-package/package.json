@@ -12,7 +12,7 @@
 		"./addon": "./dist/addon/index.js"
 	},
 	"bin": {
-		"sb-deps": "./cli/sb-deps.cjs"
+		"sb-deps": "./dist/cli/sb-deps.cjs"
 	},
 	"typesVersions": {
 		"*": {

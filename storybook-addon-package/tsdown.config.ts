@@ -9,7 +9,7 @@ export default defineConfig([
 		watch: ['src/**/*.{ts,tsx,css}'],
 		ignoreWatch: ['dist/**/*'],
 	},
-	// --- CLI 1
+	// --- CLI
 	{
 		entry: './cli/sb-deps.ts',
 		outDir: 'dist/cli',
@@ -18,10 +18,18 @@ export default defineConfig([
 		dts: true,
 		format: 'cjs',
 		fixedExtension: true,
-		watch: ['cli/**/*.{ts,tsx}'],
-		ignoreWatch: ['dist/**/*'],
+		watch: 'cli/sb-deps.ts',
 	},
-	// --- CLI 2
+	{
+		entry: './cli/scripts/depcruise.config.ts',
+		outDir: 'dist/cli/scripts',
+		platform: 'node',
+		tsconfig: './cli/tsconfig.json',
+		dts: true,
+		format: 'cjs',
+		fixedExtension: true,
+		watch: 'cli/scripts/depcruise.config.ts',
+	},
 	{
 		entry: './cli/scripts/postprocess.ts',
 		outDir: 'dist/cli/scripts',
@@ -30,7 +38,6 @@ export default defineConfig([
 		dts: true,
 		format: 'esm',
 		fixedExtension: true,
-		watch: ['cli/**/*.{ts,tsx}'],
-		ignoreWatch: ['dist/**/*'],
+		watch: 'cli/scripts/postprocess.ts',
 	},
 ])
