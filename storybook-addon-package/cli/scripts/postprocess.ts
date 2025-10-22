@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
-import { resolve, posix, dirname, extname } from 'node:path'
+import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
-import type { Graph, StoryInfo } from '../../src/types.js'
+import type { Deps, Graph, StoryInfo } from '../../src/types.js'
 
 const [, , inPathArg, outPathArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
@@ -40,23 +40,25 @@ for (const m of raw.modules || []) {
 			...(topLevelFromStory && {
 				storyId: topLevelFromStory?.id,
 				storyTitle: topLevelFromStory?.title,
-				storyPath: topLevelFromStory?.path,
+				storyTitlePath: topLevelFromStory?.titlePath,
+				storyFilePath: topLevelFromStory?.filePath,
 			}),
 			builtWith: [],
 			usedIn: [],
-		}
+		} satisfies Deps
 
 	for (const to of deps) {
 		if (from === to) continue // 🔒 skip self-edges
 
 		// ---- builtWith: from → to
 		const toStory = getStoryId(to)
-		const builtWithEntry = {
+		const builtWithEntry: StoryInfo = {
 			componentPath: to, // ✅ the dependency, not "from"
 			...(toStory && {
 				storyId: toStory.id,
 				storyTitle: toStory.title,
-				storyPath: toStory.path,
+				storyTitlePath: toStory.titlePath,
+				storyFilePath: toStory.filePath,
 			}),
 		}
 
@@ -71,12 +73,13 @@ for (const m of raw.modules || []) {
 
 		// ---- usedIn: to ← from
 		const fromStory = getStoryId(from)
-		const usedInEntry = {
+		const usedInEntry: StoryInfo = {
 			componentPath: from,
 			...(fromStory && {
 				storyId: fromStory.id,
 				storyTitle: fromStory.title,
-				storyPath: fromStory.path,
+				storyTitlePath: fromStory.titlePath,
+				storyFilePath: fromStory.filePath,
 			}),
 		}
 		pushUnique(graph[to].usedIn, usedInEntry)
@@ -103,11 +106,13 @@ function getStoryId(componentPath: string) {
 	)
 	if (!match) return null
 
-	const title = match[1]
+	const titlePath = match[1]
+	const title = basename(titlePath).trim()
 	return {
-		title,
-		id: toId(title, 'docs'),
-		path: rawFileData.storyFilePath,
+		title: title,
+		titlePath: titlePath,
+		id: toId(titlePath, 'docs'),
+		filePath: rawFileData.storyFilePath,
 	}
 }
 

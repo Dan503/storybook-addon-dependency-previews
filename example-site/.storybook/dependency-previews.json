@@ -5,8 +5,9 @@
       {
         "componentPath": "src/components/Button/Button.tsx",
         "storyId": "atoms-button--docs",
-        "storyTitle": "Atoms/Button",
-        "storyPath": "src/components/Button/Button.stories.tsx"
+        "storyTitle": "Button",
+        "storyTitlePath": "Atoms/Button",
+        "storyFilePath": "src/components/Button/Button.stories.tsx"
       }
     ],
     "usedIn": []
@@ -14,8 +15,9 @@
   "src/components/Button/Button.tsx": {
     "componentPath": "src/components/Button/Button.tsx",
     "storyId": "atoms-button--docs",
-    "storyTitle": "Atoms/Button",
-    "storyPath": "src/components/Button/Button.stories.tsx",
+    "storyTitle": "Button",
+    "storyTitlePath": "Atoms/Button",
+    "storyFilePath": "src/components/Button/Button.stories.tsx",
     "builtWith": [],
     "usedIn": [
       {
@@ -30,7 +32,8 @@
         "componentPath": "src/components/Header.tsx",
         "storyId": "header--docs",
         "storyTitle": "Header",
-        "storyPath": "src/components/Header.stories.tsx"
+        "storyTitlePath": "Header",
+        "storyFilePath": "src/components/Header.stories.tsx"
       }
     ],
     "usedIn": []
@@ -39,7 +42,8 @@
     "componentPath": "src/components/Header.tsx",
     "storyId": "header--docs",
     "storyTitle": "Header",
-    "storyPath": "src/components/Header.stories.tsx",
+    "storyTitlePath": "Header",
+    "storyFilePath": "src/components/Header.stories.tsx",
     "builtWith": [],
     "usedIn": [
       {
@@ -53,8 +57,9 @@
       {
         "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
         "storyId": "housing-property-location-name-molecule--docs",
-        "storyTitle": "Housing Property / Location Name Molecule",
-        "storyPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
+        "storyTitle": "Location Name Molecule",
+        "storyTitlePath": "Housing Property / Location Name Molecule",
+        "storyFilePath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
       }
     ],
     "usedIn": []
@@ -62,14 +67,16 @@
   "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx": {
     "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
     "storyId": "housing-property-location-name-molecule--docs",
-    "storyTitle": "Housing Property / Location Name Molecule",
-    "storyPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx",
+    "storyTitle": "Location Name Molecule",
+    "storyTitlePath": "Housing Property / Location Name Molecule",
+    "storyFilePath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/icons/MapPinIcon.tsx",
         "storyId": "icons-map-pin-icon--docs",
-        "storyTitle": "Icons / Map Pin Icon",
-        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "Icons / Map Pin Icon",
+        "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx"
       }
     ],
     "usedIn": [
@@ -81,8 +88,9 @@
   "src/components/icons/MapPinIcon.tsx": {
     "componentPath": "src/components/icons/MapPinIcon.tsx",
     "storyId": "icons-map-pin-icon--docs",
-    "storyTitle": "Icons / Map Pin Icon",
-    "storyPath": "src/components/icons/MapPinIcon.stories.tsx",
+    "storyTitle": "Map Pin Icon",
+    "storyTitlePath": "Icons / Map Pin Icon",
+    "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/icons/iconTypes.ts"
@@ -95,8 +103,9 @@
       {
         "componentPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
         "storyId": "housing-property-location-name-molecule--docs",
-        "storyTitle": "Housing Property / Location Name Molecule",
-        "storyPath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
+        "storyTitle": "Location Name Molecule",
+        "storyTitlePath": "Housing Property / Location Name Molecule",
+        "storyFilePath": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx"
       },
       {
         "componentPath": "src/components/icons/MapPinIcon.stories.tsx"
@@ -113,8 +122,9 @@
       {
         "componentPath": "src/components/icons/MapPinIcon.tsx",
         "storyId": "icons-map-pin-icon--docs",
-        "storyTitle": "Icons / Map Pin Icon",
-        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "Icons / Map Pin Icon",
+        "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx"
       },
       {
         "componentPath": "src/components/icons/Svg.tsx"
@@ -132,8 +142,9 @@
       {
         "componentPath": "src/components/icons/MapPinIcon.tsx",
         "storyId": "icons-map-pin-icon--docs",
-        "storyTitle": "Icons / Map Pin Icon",
-        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "Icons / Map Pin Icon",
+        "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx"
       }
     ]
   },
@@ -144,7 +155,8 @@
         "componentPath": "src/components/MealDetailOrganism.tsx",
         "storyId": "meal-detail-organism--docs",
         "storyTitle": "Meal Detail Organism",
-        "storyPath": "src/components/MealDetailOrganism.stories.tsx"
+        "storyTitlePath": "Meal Detail Organism",
+        "storyFilePath": "src/components/MealDetailOrganism.stories.tsx"
       }
     ],
     "usedIn": []
@@ -153,13 +165,15 @@
     "componentPath": "src/components/MealDetailOrganism.tsx",
     "storyId": "meal-detail-organism--docs",
     "storyTitle": "Meal Detail Organism",
-    "storyPath": "src/components/MealDetailOrganism.stories.tsx",
+    "storyTitlePath": "Meal Detail Organism",
+    "storyFilePath": "src/components/MealDetailOrganism.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
         "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Listings / Compact / Compact Listing Organism",
-        "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
       }
     ],
     "usedIn": [
@@ -171,14 +185,16 @@
   "src/components/listings/compact/CompactListingOrganism.tsx": {
     "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
     "storyId": "listings-compact-compact-listing-organism--docs",
-    "storyTitle": "Listings / Compact / Compact Listing Organism",
-    "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
+    "storyTitle": "Compact Listing Organism",
+    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+    "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
         "storyId": "listings-compact-compact-listing-molecule--docs",
-        "storyTitle": "Listings / Compact / Compact Listing Molecule",
-        "storyPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
       }
     ],
     "usedIn": [
@@ -189,15 +205,17 @@
         "componentPath": "src/components/MealDetailOrganism.tsx",
         "storyId": "meal-detail-organism--docs",
         "storyTitle": "Meal Detail Organism",
-        "storyPath": "src/components/MealDetailOrganism.stories.tsx"
+        "storyTitlePath": "Meal Detail Organism",
+        "storyFilePath": "src/components/MealDetailOrganism.stories.tsx"
       }
     ]
   },
   "src/components/listings/compact/CompactListingMolecule.tsx": {
     "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
     "storyId": "listings-compact-compact-listing-molecule--docs",
-    "storyTitle": "Listings / Compact / Compact Listing Molecule",
-    "storyPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx",
+    "storyTitle": "Compact Listing Molecule",
+    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+    "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.tsx",
     "builtWith": [],
     "usedIn": [
       {
@@ -206,8 +224,9 @@
       {
         "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
         "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Listings / Compact / Compact Listing Organism",
-        "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
       }
     ]
   },
@@ -222,8 +241,9 @@
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
         "storyId": "forms-error-messages-error-block-organism--docs",
-        "storyTitle": "Forms/Error Messages/Error Block Organism",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+        "storyTitle": "Error Block Organism",
+        "storyTitlePath": "Forms/Error Messages/Error Block Organism",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
       }
     ],
     "usedIn": []
@@ -231,14 +251,16 @@
   "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx": {
     "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
     "storyId": "forms-error-messages-error-block-organism--docs",
-    "storyTitle": "Forms/Error Messages/Error Block Organism",
-    "storyPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx",
+    "storyTitle": "Error Block Organism",
+    "storyTitlePath": "Forms/Error Messages/Error Block Organism",
+    "storyFilePath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
         "storyId": "forms-error-messages-error-list-molecule--docs",
-        "storyTitle": "Forms/Error Messages/Error List Molecule",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+        "storyTitle": "Error List Molecule",
+        "storyTitlePath": "Forms/Error Messages/Error List Molecule",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
       }
     ],
     "usedIn": [
@@ -250,22 +272,25 @@
   "src/components/forms/ErrorMessages/ErrorListMolecule.tsx": {
     "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
     "storyId": "forms-error-messages-error-list-molecule--docs",
-    "storyTitle": "Forms/Error Messages/Error List Molecule",
-    "storyPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx",
+    "storyTitle": "Error List Molecule",
+    "storyTitlePath": "Forms/Error Messages/Error List Molecule",
+    "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
         "storyId": "forms-error-messages-error-message-atom--docs",
-        "storyTitle": "Forms/Error Messages/Error Message Atom",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+        "storyTitle": "Error Message Atom",
+        "storyTitlePath": "Forms/Error Messages/Error Message Atom",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
       }
     ],
     "usedIn": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
         "storyId": "forms-error-messages-error-block-organism--docs",
-        "storyTitle": "Forms/Error Messages/Error Block Organism",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+        "storyTitle": "Error Block Organism",
+        "storyTitlePath": "Forms/Error Messages/Error Block Organism",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
       },
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
@@ -273,23 +298,26 @@
       {
         "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
         "storyId": "forms-text-field-molecule--docs",
-        "storyTitle": "Forms/Text Field Molecule",
-        "storyPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+        "storyTitle": "Text Field Molecule",
+        "storyTitlePath": "Forms/Text Field Molecule",
+        "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
       }
     ]
   },
   "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx": {
     "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
     "storyId": "forms-error-messages-error-message-atom--docs",
-    "storyTitle": "Forms/Error Messages/Error Message Atom",
-    "storyPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx",
+    "storyTitle": "Error Message Atom",
+    "storyTitlePath": "Forms/Error Messages/Error Message Atom",
+    "storyFilePath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx",
     "builtWith": [],
     "usedIn": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
         "storyId": "forms-error-messages-error-list-molecule--docs",
-        "storyTitle": "Forms/Error Messages/Error List Molecule",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+        "storyTitle": "Error List Molecule",
+        "storyTitlePath": "Forms/Error Messages/Error List Molecule",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
       },
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
@@ -302,8 +330,9 @@
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
         "storyId": "forms-error-messages-error-list-molecule--docs",
-        "storyTitle": "Forms/Error Messages/Error List Molecule",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+        "storyTitle": "Error List Molecule",
+        "storyTitlePath": "Forms/Error Messages/Error List Molecule",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
       }
     ],
     "usedIn": []
@@ -314,8 +343,9 @@
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
         "storyId": "forms-error-messages-error-message-atom--docs",
-        "storyTitle": "Forms/Error Messages/Error Message Atom",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+        "storyTitle": "Error Message Atom",
+        "storyTitlePath": "Forms/Error Messages/Error Message Atom",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
       }
     ],
     "usedIn": []
@@ -349,8 +379,9 @@
       {
         "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
         "storyId": "forms-text-field-molecule--docs",
-        "storyTitle": "Forms/Text Field Molecule",
-        "storyPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+        "storyTitle": "Text Field Molecule",
+        "storyTitlePath": "Forms/Text Field Molecule",
+        "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
       }
     ]
   },
@@ -376,8 +407,9 @@
       {
         "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
         "storyId": "forms-text-field-molecule--docs",
-        "storyTitle": "Forms/Text Field Molecule",
-        "storyPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+        "storyTitle": "Text Field Molecule",
+        "storyTitlePath": "Forms/Text Field Molecule",
+        "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
       }
     ],
     "usedIn": []
@@ -385,14 +417,16 @@
   "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx": {
     "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
     "storyId": "forms-text-field-molecule--docs",
-    "storyTitle": "Forms/Text Field Molecule",
-    "storyPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
+    "storyTitle": "Text Field Molecule",
+    "storyTitlePath": "Forms/Text Field Molecule",
+    "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
         "storyId": "forms-error-messages-error-list-molecule--docs",
-        "storyTitle": "Forms/Error Messages/Error List Molecule",
-        "storyPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+        "storyTitle": "Error List Molecule",
+        "storyTitlePath": "Forms/Error Messages/Error List Molecule",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
       },
       {
         "componentPath": "src/components/forms/FormTypes.ts"
@@ -413,8 +447,9 @@
       {
         "componentPath": "src/components/icons/MapPinIcon.tsx",
         "storyId": "icons-map-pin-icon--docs",
-        "storyTitle": "Icons / Map Pin Icon",
-        "storyPath": "src/components/icons/MapPinIcon.stories.tsx"
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "Icons / Map Pin Icon",
+        "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx"
       }
     ],
     "usedIn": []
@@ -425,8 +460,9 @@
       {
         "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
         "storyId": "listings-card-card-listing-organism--docs",
-        "storyTitle": "Listings / Card / Card Listing Organism",
-        "storyPath": "src/components/listings/card/CardListingOrganism.stories.tsx"
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.tsx"
       }
     ],
     "usedIn": []
@@ -434,14 +470,16 @@
   "src/components/listings/card/CardListingOrganism.tsx": {
     "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
     "storyId": "listings-card-card-listing-organism--docs",
-    "storyTitle": "Listings / Card / Card Listing Organism",
-    "storyPath": "src/components/listings/card/CardListingOrganism.stories.tsx",
+    "storyTitle": "Card Listing Organism",
+    "storyTitlePath": "Listings / Card / Card Listing Organism",
+    "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/listings/card/CardMolecule.tsx",
         "storyId": "listings-card-card-molecule--docs",
-        "storyTitle": "Listings / Card / Card Molecule",
-        "storyPath": "src/components/listings/card/CardMolecule.stories.tsx"
+        "storyTitle": "Card Molecule",
+        "storyTitlePath": "Listings / Card / Card Molecule",
+        "storyFilePath": "src/components/listings/card/CardMolecule.stories.tsx"
       }
     ],
     "usedIn": [
@@ -453,15 +491,17 @@
   "src/components/listings/card/CardMolecule.tsx": {
     "componentPath": "src/components/listings/card/CardMolecule.tsx",
     "storyId": "listings-card-card-molecule--docs",
-    "storyTitle": "Listings / Card / Card Molecule",
-    "storyPath": "src/components/listings/card/CardMolecule.stories.tsx",
+    "storyTitle": "Card Molecule",
+    "storyTitlePath": "Listings / Card / Card Molecule",
+    "storyFilePath": "src/components/listings/card/CardMolecule.stories.tsx",
     "builtWith": [],
     "usedIn": [
       {
         "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
         "storyId": "listings-card-card-listing-organism--docs",
-        "storyTitle": "Listings / Card / Card Listing Organism",
-        "storyPath": "src/components/listings/card/CardListingOrganism.stories.tsx"
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.tsx"
       },
       {
         "componentPath": "src/components/listings/card/CardMolecule.stories.tsx"
@@ -474,8 +514,9 @@
       {
         "componentPath": "src/components/listings/card/CardMolecule.tsx",
         "storyId": "listings-card-card-molecule--docs",
-        "storyTitle": "Listings / Card / Card Molecule",
-        "storyPath": "src/components/listings/card/CardMolecule.stories.tsx"
+        "storyTitle": "Card Molecule",
+        "storyTitlePath": "Listings / Card / Card Molecule",
+        "storyFilePath": "src/components/listings/card/CardMolecule.stories.tsx"
       }
     ],
     "usedIn": []
@@ -486,8 +527,9 @@
       {
         "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
         "storyId": "listings-compact-compact-listing-molecule--docs",
-        "storyTitle": "Listings / Compact / Compact Listing Molecule",
-        "storyPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
       }
     ],
     "usedIn": []
@@ -498,8 +540,9 @@
       {
         "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
         "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Listings / Compact / Compact Listing Organism",
-        "storyPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
       }
     ],
     "usedIn": []

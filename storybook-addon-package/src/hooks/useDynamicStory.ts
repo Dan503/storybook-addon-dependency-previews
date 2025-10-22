@@ -24,8 +24,8 @@ function findStoryImporter(storyFilePath: string | undefined | null) {
 
 export function useDynamicStory(storyInfo: StoryInfo) {
 	const importer = useMemo(
-		() => findStoryImporter(storyInfo.storyPath),
-		[storyInfo.storyPath],
+		() => findStoryImporter(storyInfo.storyFilePath),
+		[storyInfo.storyFilePath],
 	)
 	const [csfModule, setCsfModule] = useState<CsfModule | null>(null)
 	const [err, setErr] = useState<string | null>(null)

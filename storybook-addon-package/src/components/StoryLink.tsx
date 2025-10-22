@@ -21,14 +21,12 @@ export function StoryLink({
 	}
 	const currentStoryId = /id=(.+?)&globals/.exec(window.location.href)?.[1]
 	const linkPath = `/?path=/docs/${info.storyId}`
-	const brokenUpStoryTitle = info.storyTitle?.split('/')
-	const reducedStoryTitle =
-		brokenUpStoryTitle?.[brokenUpStoryTitle?.length! - 1]
+	const storyTitle = info.storyTitle
 
 	if (info.storyId === currentStoryId) {
 		return (
 			<span className={s.currentStory}>
-				{children ?? reducedStoryTitle}{' '}
+				{children ?? storyTitle}{' '}
 				<strong className={s.currentStoryMark}>
 					(Current Story Page)
 				</strong>
@@ -48,7 +46,7 @@ export function StoryLink({
 				linkTo(info.storyId!)(e)
 			}}
 		>
-			{children ?? reducedStoryTitle}
+			{children ?? storyTitle}
 		</TooltipTrigger>
 	)
 }

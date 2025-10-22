@@ -76,13 +76,13 @@ function DepsPreviewContent({
 
 					<PathCopyMolecule
 						label="Story Title Path"
-						copyContent={storyInfo.storyTitle!}
+						copyContent={storyInfo.storyTitlePath!}
 					>
 						<StoryLink info={storyInfo}>
 							<span
 								dangerouslySetInnerHTML={{
 									// allow line breaks on slashes
-									__html: storyInfo.storyTitle!.replaceAll(
+									__html: storyInfo.storyTitlePath!.replaceAll(
 										'/',
 										'/<wbr/>',
 									),

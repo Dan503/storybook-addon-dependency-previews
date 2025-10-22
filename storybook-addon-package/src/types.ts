@@ -12,7 +12,8 @@ export interface StoryInfo {
 	componentPath: string
 	storyId?: string | null
 	storyTitle?: string | null
-	storyPath?: string | null
+	storyTitlePath?: string | null
+	storyFilePath?: string | null
 }
 
 export type CsfModule = {
