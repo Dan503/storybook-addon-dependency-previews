@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname } from 'node:path'
 import { toId } from '@storybook/csf'
-import { Graph, type StoryInfo } from '../../src/types'
+import type { Graph, StoryInfo } from '../../src/types.js'
 
 const [, , inPathArg, outPathArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')

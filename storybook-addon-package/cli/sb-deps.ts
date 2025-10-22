@@ -10,6 +10,8 @@ import {
 	readFileSync,
 } from 'node:fs'
 import { resolve, join, dirname, posix, sep, basename } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { createRequire } from 'node:module'
 import watcherParcel from '@parcel/watcher'
 import micromatch from 'micromatch'
 
@@ -35,8 +37,11 @@ const cookedPath = join(outDir, 'dependency-previews.json')
 
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true })
 
-const cliDir = dirname(__filename)
-const pkgDefault = resolve(cliDir, 'scripts', 'depcruise.config.cjs')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Resolve depcruise config: prefer project overrides, else bundled default
+const pkgDefault = resolve(__dirname, 'scripts', 'depcruise.config.cjs')
 const overrideCandidates = [
 	resolve(projectRoot, 'depcruise.config.cjs'),
 	resolve(projectRoot, '.dependency-cruiser.js'),
@@ -46,7 +51,17 @@ const configPath =
 	overrideCandidates.find((p) => existsSync(p)) ||
 	(existsSync(pkgDefault) ? pkgDefault : null)
 
-const post = resolve(cliDir, '..', 'cli', 'scripts', 'postprocess.mjs')
+// Path to postprocess helper (built as ESM)
+const post = resolve(__dirname, 'scripts', 'postprocess.mjs')
+
+// ───────────────────────────────────────────────────────────────────────────────
+/** Small helper to create a resolver relative to the project root in ESM */
+function createProjectRequire() {
+	// point at a file inside the project so Node resolves using the project's node_modules
+	const pseudo = pathToFileURL(resolve(projectRoot, 'package.json')).href
+	return createRequire(pseudo)
+}
+const projectRequire = createProjectRequire()
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -82,7 +97,7 @@ function buildOnce() {
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
-// Utils
+// String utils
 // ───────────────────────────────────────────────────────────────────────────────
 function toWords(input: string) {
 	return String(input)
@@ -125,7 +140,7 @@ function componentBaseFromComponent(absCompPath: string) {
 function detectAtomicTag(absPath: string) {
 	const hay = absPath.toLowerCase().replace(/\\/g, '/')
 	const tokens = ['atom', 'molecule', 'organism', 'template', 'page']
-	let best = null
+	let best: null | { val: string; idx: number } = null
 	for (const t of tokens) {
 		const idx = hay.lastIndexOf(t)
 		if (idx !== -1 && (best === null || idx > best.idx))
@@ -175,26 +190,26 @@ function scaffoldComponent(absCompPath: string) {
 	const tpl = `import type { ReactNode } from 'react'
 
 export interface ${propsName} {
-	children?: ReactNode
+  children?: ReactNode
 }
 
 export function ${componentName}({ children }: ${propsName}) {
-	return (
-		<div>
-			<p>${componentName}</p>
-			{children}
-		</div>
-	)
+  return (
+    <div>
+      <p>${componentName}</p>
+      {children}
+    </div>
+  )
 }
 `
 	writeFileSync(absCompPath, tpl, 'utf8')
-	info(`scaffolded component → ${rel(absCompPath)}`)
+	info(`scaffolded component → \${rel(absCompPath)}`)
 }
 
 function scaffoldStoryForComponent(absCompPath: string) {
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
+	const propsName = `PropsFor\${componentName}`
 	const title = makeTitleFromComponent(absCompPath)
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
@@ -204,12 +219,12 @@ function scaffoldStoryForComponent(absCompPath: string) {
 import { ${componentName}, type ${propsName} } from './${componentName}'
 
 const meta: Meta<typeof ${componentName}> = {
-	title: '${title}',
-	component: ${componentName},
-	tags: ${JSON.stringify(tags)},
-	parameters: {
-		__filePath: import.meta.url,
-	},
+  title: '${title}',
+  component: ${componentName},
+  tags: ${JSON.stringify(tags)},
+  parameters: {
+    __filePath: import.meta.url,
+  },
 }
 
 export default meta
@@ -217,12 +232,12 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-	args: {} satisfies ${propsName},
+  args: {} satisfies ${propsName},
 }
 `
 	const storyPath = storyPathForComponent(absCompPath)
 	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded story → ${rel(storyPath)}`)
+	info(`scaffolded story → \${rel(storyPath)}`)
 	return storyPath
 }
 
@@ -255,6 +270,7 @@ function startWatcher() {
 
 	let pending = false
 	let timer: NodeJS.Timeout | null = null
+	let isDeletingFile = false
 
 	function kick(reason: string, absPath: string) {
 		if (pending) return
@@ -276,8 +292,6 @@ function startWatcher() {
 					return
 				}
 
-				let isDeletingFile = false
-
 				for (const ev of events) {
 					const abs = ev.path
 					const relPath = rel(abs)
@@ -292,32 +306,8 @@ function startWatcher() {
 
 					// COMPONENT CREATE — scaffold if empty and ensure story
 					if (isComponentsTsx(abs) && ev.type === 'create') {
-						handleComponentCreation()
-
-						async function handleComponentCreation() {
-							if (isEmptyOrWhitespace(abs)) {
-								scaffoldComponent(abs)
-							}
-
-							// wait a bit for a possible rename
-							await wait(200)
-
-							// Skip if likely rename
-							if (isDeletingFile) {
-								console.log('Rename detected for:', relPath)
-								info(
-									`suppressed scaffolding (component rename): ${relPath}`,
-								)
-								return
-							}
-							console.log('Component creation detected:', relPath)
-							const createdStory = ensureStoryForComponent(abs)
-							if (createdStory) {
-								isDeletingFile = false
-								kick('create:story', createdStory)
-								return
-							}
-						}
+						await handleComponentCreation(abs, relPath)
+						continue
 					}
 
 					// normal rebuild
@@ -331,24 +321,46 @@ function startWatcher() {
 			return result
 		})
 		.catch((e) => error(`watch init failed ${e?.message || e}`))
+
+	async function handleComponentCreation(abs: string, relPath: string) {
+		if (isEmptyOrWhitespace(abs)) {
+			scaffoldComponent(abs)
+		}
+
+		// wait a bit for a possible rename
+		await wait(200)
+
+		// Skip if likely rename
+		if (isDeletingFile) {
+			console.log('Rename detected for:', relPath)
+			info(`suppressed scaffolding (component rename): ${relPath}`)
+			isDeletingFile = false
+			return
+		}
+
+		console.log('Component creation detected:', relPath)
+		const createdStory = ensureStoryForComponent(abs)
+		if (createdStory) {
+			kick('create:story', createdStory)
+		}
+	}
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Storybook child
 // ───────────────────────────────────────────────────────────────────────────────
 let sbChild: ChildProcess | null = null
-function startStorybook() {
-	let sbEntry = null
+async function startStorybook() {
+	// Resolve the SB CLI entry relative to the **project** (not this package)
+	let sbEntry: string | null = null
 	try {
-		sbEntry = require.resolve('storybook/bin/index.cjs', {
-			paths: [projectRoot],
-		})
+		sbEntry = projectRequire.resolve('storybook/bin/index.cjs')
 	} catch {
 		try {
-			sbEntry = require.resolve('@storybook/cli/bin/index.js', {
-				paths: [projectRoot],
-			})
-		} catch {}
+			sbEntry = projectRequire.resolve('@storybook/cli/bin/index.js')
+		} catch {
+			sbEntry = null
+		}
 	}
 
 	if (sbEntry) {
@@ -372,6 +384,7 @@ function startStorybook() {
 		})
 		info(`storybook (npx) running on http://localhost:${SB_PORT}`)
 	}
+
 	sbChild.on('exit', (code, sig) => {
 		info(`storybook exited (${sig || code})`)
 		sbChild = null
@@ -392,7 +405,7 @@ if (RUN_SB) startStorybook()
 
 process.on('SIGINT', async () => {
 	info('shutting down…')
-	watcher?.unsubscribe()
+	await watcher?.unsubscribe()
 	sbChild?.kill('SIGINT')
 	process.exit(0)
 })
@@ -401,7 +414,9 @@ process.on('SIGINT', async () => {
 // Utils
 // ───────────────────────────────────────────────────────────────────────────────
 function rel(p: string) {
-	return p.replace(resolve(projectRoot) + require('path').sep, '')
+	// remove the projectRoot prefix and normalize slashes for logs
+	const prefix = resolve(projectRoot) + sep
+	return p.replace(prefix, '')
 }
 function ms(n: number) {
 	return `${Math.max(1, Math.round(n))}ms`

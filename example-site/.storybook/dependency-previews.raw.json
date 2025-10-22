@@ -1631,7 +1631,7 @@
       "outputTo": "-",
       "outputType": "json",
       "preserveSymlinks": false,
-      "rulesFile": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\cli\\scripts\\depcruise.config.cjs",
+      "rulesFile": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\dist\\cli\\scripts\\depcruise.config.cjs",
       "tsPreCompilationDeps": true,
       "args": "."
     },

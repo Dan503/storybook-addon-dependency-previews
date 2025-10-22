@@ -3,13 +3,25 @@
 	"version": "0.1.0",
 	"private": false,
 	"type": "module",
-	"main": "dist/index.js",
+	"main": "dist/index.cjs",
+	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"exports": {
-		".": "./dist/index.js",
-		"./blocks": "./dist/blocks/index.js",
-		"./panels": "./dist/panels/index.js",
-		"./addon": "./dist/addon/index.js"
+		".": {
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs",
+			"types": "./dist/index.d.mts"
+		},
+		"./addon": {
+			"import": "./dist/addon/index.mjs",
+			"require": "./dist/addon/index.cjs",
+			"types": "./dist/addon/index.d.mts"
+		},
+		"./cli/sb-deps": {
+			"import": "./dist/cli/sb-deps.mjs",
+			"require": "./dist/cli/sb-deps.cjs",
+			"types": "./dist/cli/sb-deps.d.mts"
+		}
 	},
 	"bin": {
 		"sb-deps": "./dist/cli/sb-deps.cjs"
@@ -21,20 +33,18 @@
 			]
 		}
 	},
+	"sideEffects": [
+		"**/*.css"
+	],
 	"files": [
-		"dist",
-		"cli",
-		"depcruise.config.cjs"
+		"dist/**"
 	],
 	"scripts": {
 		"copy-css": "cpx \"src/**/*.module.css\" dist",
-		"build": "pnpm typecheck && rm -rf dist && pnpm bundle && npm run copy-css",
-		"bundle": "tsdown",
-		"bundle:watch": "tsdown -w",
+		"build": "pnpm typecheck && rm -rf dist && pnpm bundle",
+		"bundle": "tsdown && npm run copy-css",
 		"typecheck": "cross-env FORCE_COLOR=1 npm_config_color=always tsc -p tsconfig.json --noEmit --pretty true && tsc -p ./cli/tsconfig.json --noEmit --pretty true",
-		"typecheck:watch": "cross-env FORCE_COLOR=1 npm_config_color=always concurrently --raw -k -n TSC,CLI \"tsc -p tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\" \"tsc -p ./cli/tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\"",
-		"dev:css": "cpx \"src/**/*.module.css\" dist --watch",
-		"dev": "cross-env FORCE_COLOR=1 npm_config_color=always concurrently --raw -k -n CSS,TS-COMPILE,TS-CHECK \"pnpm dev:css\" \"pnpm bundle:watch\" \"pnpm typecheck:watch\""
+		"typecheck:watch": "cross-env FORCE_COLOR=1 npm_config_color=always concurrently --raw -k -n TSC,CLI \"tsc -p tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\" \"tsc -p ./cli/tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\""
 	},
 	"peerDependencies": {
 		"react": ">=18",
@@ -66,6 +76,6 @@
 		"micromatch": "^4.0.8"
 	},
 	"storybook-addon": {
-		"preset": "dist/addon/preset.js"
+		"preset": "dist/addon/preset.cjs"
 	}
 }
