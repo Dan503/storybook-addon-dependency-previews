@@ -41,10 +41,16 @@
 	],
 	"scripts": {
 		"copy-css": "cpx \"src/**/*.module.css\" dist",
-		"build": "rm -rf dist && pnpm bundle && npm run typecheck",
-		"bundle": "tsdown && npm run copy-css",
-		"dev": "tsdown --watch --onSuccess \"npm run copy-css && npm run typecheck\"",
+		"build": "rm -rf dist && tsdown && npm run copy-css && npm run typecheck",
+		"dev": "npm-watch",
 		"typecheck": "cross-env FORCE_COLOR=1 npm_config_color=always tsc -p tsconfig.json --noEmit --pretty true && tsc -p ./cli/tsconfig.json --noEmit --pretty true"
+	},
+	"watch": {
+		"build": {
+			"patterns": ["src","cli"],
+			"extensions": "ts,tsx,css",
+			"delay": 200
+		}
 	},
 	"peerDependencies": {
 		"react": ">=18",
@@ -62,6 +68,7 @@
 		"concurrently": "^9.2.1",
 		"cpx2": "^8.0.0",
 		"cross-env": "^10.1.0",
+		"npm-watch": "^0.13.0",
 		"ts-dedent": "^2.2.0",
 		"tsdown": "^0.15.7",
 		"typescript": "^5.6.3",
