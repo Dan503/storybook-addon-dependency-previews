@@ -1,6 +1,8 @@
 import * as React from 'react'
-import { ProjectAnnotations, Renderer } from '@storybook/types'
-import { defaultPreviewParameters } from 'storybook-addon-dependency-previews'
+import {
+	defaultPreviewParameters,
+	type StorybookPreviewConfig,
+} from 'storybook-addon-dependency-previews'
 import {
 	RouterProvider,
 	createMemoryHistory,
@@ -10,7 +12,7 @@ import {
 
 import '../src/styles.css'
 
-const previewConfig: ProjectAnnotations<Renderer> = {
+const previewConfig: StorybookPreviewConfig = {
 	decorators: [
 		(Story) => (
 			<RouterProvider
