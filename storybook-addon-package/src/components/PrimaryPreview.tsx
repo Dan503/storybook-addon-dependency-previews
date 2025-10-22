@@ -1,4 +1,3 @@
-import { Story } from '@storybook/blocks'
 import { useDynamicStory } from '../hooks/useDynamicStory'
 import type { StoryInfo } from '../types'
 import { FullParityStory } from './FullParityStory'
