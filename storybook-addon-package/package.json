@@ -41,10 +41,10 @@
 	],
 	"scripts": {
 		"copy-css": "cpx \"src/**/*.module.css\" dist",
-		"build": "pnpm typecheck && rm -rf dist && pnpm bundle",
+		"build": "rm -rf dist && pnpm bundle && npm run typecheck",
 		"bundle": "tsdown && npm run copy-css",
-		"typecheck": "cross-env FORCE_COLOR=1 npm_config_color=always tsc -p tsconfig.json --noEmit --pretty true && tsc -p ./cli/tsconfig.json --noEmit --pretty true",
-		"typecheck:watch": "cross-env FORCE_COLOR=1 npm_config_color=always concurrently --raw -k -n TSC,CLI \"tsc -p tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\" \"tsc -p ./cli/tsconfig.json --noEmit -w --pretty true --preserveWatchOutput\""
+		"dev": "tsdown --watch --onSuccess \"npm run copy-css && npm run typecheck\"",
+		"typecheck": "cross-env FORCE_COLOR=1 npm_config_color=always tsc -p tsconfig.json --noEmit --pretty true && tsc -p ./cli/tsconfig.json --noEmit --pretty true"
 	},
 	"peerDependencies": {
 		"react": ">=18",
