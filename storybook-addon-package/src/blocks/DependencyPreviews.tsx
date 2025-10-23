@@ -60,12 +60,18 @@ function DepsPreviewContent({
 	return (
 		<div>
 			{enablePreview && (
-				<Expandable Header="Preview component" Icon={EyeOpen}>
+				<Expandable
+					Header={`Preview ${storyInfo.storyTitle} component`}
+					Icon={EyeOpen}
+				>
 					<PrimaryPreview storyInfo={storyInfo} />
 				</Expandable>
 			)}
 
-			<Expandable Header="Paths to component" Icon={ArrowToRectangle}>
+			<Expandable
+				Header={`Paths to ${storyInfo.storyTitle} component`}
+				Icon={ArrowToRectangle}
+			>
 				<div className={s.pathData}>
 					<PathCopyMolecule
 						label="Source File Path"
