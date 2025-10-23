@@ -1,24 +1,14 @@
-import {
-	createContext,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-	type ReactNode,
-} from 'react'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import type { Deps, Graph, StoryInfo } from '../types'
-import type { Parameters } from '@storybook/types'
-import { useOf } from '@storybook/blocks'
+import { useStoryParams } from './useStoryParams'
 
 export interface DependencyGraphContextType {
 	graph: Graph | null
-	error: string | null
 	node: Deps | null
 }
 
 export const DependencyGraphContext = createContext<DependencyGraphContextType>(
 	{
-		error: null,
 		graph: null,
 		node: null,
 	},
@@ -29,35 +19,15 @@ export function useDependencyGraph() {
 }
 
 export function DependencyGraphProvider({ children }: { children: ReactNode }) {
-	const { story } = useOf<'story'>('story')
-	const filePath = story?.parameters?.__filePath as string | undefined
+	const storyParams = useStoryParams()
+	const filePath = storyParams?.__filePath
 	const refinedFilePath = filePath
 		?.replace(/^.+\/src\//, 'src/') // remove host from the path
 		.replace('.stories.', '.') // remove .stories extension
 		.replace('.story.', '.') // remove .story extension
 		.replace(/\?.+$/, '') // remove any query string parameters
 
-	const url = getJsonUrl(story?.parameters)
-
-	const [graph, setGraph] = useState<Graph | null>(null)
-	const [error, setError] = useState<string | null>(null)
-
-	useEffect(() => {
-		let alive = true
-		;(async () => {
-			try {
-				const res = await fetch(url)
-				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-				const json = (await res.json()) as Graph
-				if (alive) setGraph(json)
-			} catch (e: any) {
-				if (alive) setError(e?.message || String(e))
-			}
-		})()
-		return () => {
-			alive = false
-		}
-	}, [url])
+	const graph = storyParams.dependencyPreviews.dependenciesJson
 
 	const node = useMemo(
 		() => graph?.[refinedFilePath!]!,
@@ -67,20 +37,12 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 	return (
 		<DependencyGraphContext.Provider
 			value={{
-				error,
 				graph,
 				node,
 			}}
 		>
 			{children}
 		</DependencyGraphContext.Provider>
-	)
-}
-
-function getJsonUrl(storyParams?: Parameters) {
-	// Allow consumer override via parameters.dependencyPreviews?.url
-	return (
-		storyParams?.dependencyPreviews?.url || '/dependency-previews.json' // default
 	)
 }
 

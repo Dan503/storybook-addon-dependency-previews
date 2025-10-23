@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { CsfModule, StoryInfo } from '../types'
+import type { CsfModule, StoryInfo, StoryModules } from '../types'
+import { useStoryParams } from './useStoryParams'
 
 // grab all stories; Vite will code-split them
-const storiesGlob = import.meta.glob('/src/**/*.stories.@(tsx|ts|jsx|js)', {
-	eager: false,
-})
 
-function findStoryImporter(storyFilePath: string | undefined | null) {
+function findStoryImporter(
+	storiesGlob: StoryModules,
+	storyFilePath: string | undefined | null,
+) {
 	if (!storyFilePath) {
 		return null
 	}
@@ -14,7 +15,6 @@ function findStoryImporter(storyFilePath: string | undefined | null) {
 	const norm = (p: string) =>
 		'/' + p.replace(/^[./]+/, '').replace(/\\/g, '/')
 	const wanted = norm(storyFilePath)
-	console.log({ storiesGlob })
 	// exact match first, else suffix match as a fallback
 	return (
 		storiesGlob[wanted] ||
@@ -23,9 +23,11 @@ function findStoryImporter(storyFilePath: string | undefined | null) {
 }
 
 export function useDynamicStory(storyInfo: StoryInfo) {
+	const { dependencyPreviews } = useStoryParams()
+	const modules = dependencyPreviews.storyModules
 	const importer = useMemo(
-		() => findStoryImporter(storyInfo.storyFilePath),
-		[storyInfo.storyFilePath],
+		() => findStoryImporter(modules, storyInfo.storyFilePath),
+		[modules, storyInfo.storyFilePath],
 	)
 	const [csfModule, setCsfModule] = useState<CsfModule | null>(null)
 	const [err, setErr] = useState<string | null>(null)
@@ -38,7 +40,7 @@ export function useDynamicStory(storyInfo: StoryInfo) {
 			try {
 				if (!importer)
 					throw new Error(
-						`No story module for ${storyInfo.componentPath}`,
+						`No story module found at this path: ${storyInfo.storyFilePath}`,
 					)
 				const mod = await importer()
 				if (alive) setCsfModule(mod as CsfModule)

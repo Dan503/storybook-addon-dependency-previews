@@ -29,9 +29,7 @@ export function DependencyPreviews() {
 }
 
 function TopLevelDependencyPreviews() {
-	const { error, graph, node } = useDependencyGraph()
-	if (error) return <div>Failed to load dependency previews: {error}</div>
-	if (!graph) return <div>Loading dependency previews…</div>
+	const { node } = useDependencyGraph()
 	if (!node) return <div>No dependency previews for this component.</div>
 
 	return (
