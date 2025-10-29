@@ -195,7 +195,7 @@ export interface ${propsName} {
 
 export function ${componentName}({ children }: ${propsName}) {
   return (
-    <div>
+    <div className="${componentName}">
       <p>${componentName}</p>
       {children}
     </div>
@@ -209,7 +209,7 @@ export function ${componentName}({ children }: ${propsName}) {
 function scaffoldStoryForComponent(absCompPath: string) {
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
-	const propsName = `PropsFor\${componentName}`
+	const propsName = `PropsFor${componentName}`
 	const title = makeTitleFromComponent(absCompPath)
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
