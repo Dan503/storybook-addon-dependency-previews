@@ -27,7 +27,7 @@ export function HeroBlockOrganism({
 			tintColor={tintColor}
 			tintPercent={tintPercent}
 		>
-			<Section component={<H className="text-3xl font-bold">{title}</H>}>
+			<Section component={<H className="text-4xl font-bold">{title}</H>}>
 				{children}
 			</Section>
 		</BgImageContainer>

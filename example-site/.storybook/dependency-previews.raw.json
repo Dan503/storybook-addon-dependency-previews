@@ -291,7 +291,8 @@
         "src/components/listings/card/CardListingOrganism.stories.tsx",
         "src/components/listings/card/CardMolecule.stories.tsx",
         "src/components/listings/compact/CompactListingMolecule.stories.tsx",
-        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+        "src/components/listings/compact/CompactListingOrganism.stories.tsx",
+        "src/components/organisms/HomeOrganism.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -318,7 +319,8 @@
       "dependencies": [],
       "dependents": [
         "src/data/example-meal-data.ts",
-        "src/components/MealDetailOrganism.tsx"
+        "src/components/MealDetailOrganism.tsx",
+        "src/components/organisms/HomeOrganism.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -898,7 +900,8 @@
         }
       ],
       "dependents": [
-        "src/components/listings/card/CardListingOrganism.stories.tsx"
+        "src/components/listings/card/CardListingOrganism.stories.tsx",
+        "src/components/organisms/HomeOrganism.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1086,7 +1089,112 @@
         }
       ],
       "dependents": [
-        "src/components/organisms/HeroBlockOrganism.stories.tsx"
+        "src/components/organisms/HeroBlockOrganism.stories.tsx",
+        "src/components/organisms/HomeOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/HomeOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../data/example-meal-data",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-data.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./HomeOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/HomeOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/HomeOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/card/CardListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./HeroBlockOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/HeroBlockOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/organisms/HomeOrganism.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1697,8 +1805,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 56,
-    "totalDependenciesCruised": 62,
+    "totalCruised": 58,
+    "totalDependenciesCruised": 67,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

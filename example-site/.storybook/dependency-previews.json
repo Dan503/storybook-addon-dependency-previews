@@ -518,6 +518,13 @@
     "usedIn": [
       {
         "componentPath": "src/components/listings/card/CardListingOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/organisms/HomeOrganism.tsx",
+        "storyId": "organisms-home-organism--docs",
+        "storyTitle": "Home Organism",
+        "storyTitlePath": "Organisms / Home Organism",
+        "storyFilePath": "src/components/organisms/HomeOrganism.stories.tsx"
       }
     ]
   },
@@ -611,6 +618,54 @@
     "usedIn": [
       {
         "componentPath": "src/components/organisms/HeroBlockOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/organisms/HomeOrganism.tsx",
+        "storyId": "organisms-home-organism--docs",
+        "storyTitle": "Home Organism",
+        "storyTitlePath": "Organisms / Home Organism",
+        "storyFilePath": "src/components/organisms/HomeOrganism.stories.tsx"
+      }
+    ]
+  },
+  "src/components/organisms/HomeOrganism.stories.tsx": {
+    "componentPath": "src/components/organisms/HomeOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/organisms/HomeOrganism.tsx",
+        "storyId": "organisms-home-organism--docs",
+        "storyTitle": "Home Organism",
+        "storyTitlePath": "Organisms / Home Organism",
+        "storyFilePath": "src/components/organisms/HomeOrganism.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/organisms/HomeOrganism.tsx": {
+    "componentPath": "src/components/organisms/HomeOrganism.tsx",
+    "storyId": "organisms-home-organism--docs",
+    "storyTitle": "Home Organism",
+    "storyTitlePath": "Organisms / Home Organism",
+    "storyFilePath": "src/components/organisms/HomeOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/organisms/HeroBlockOrganism.tsx",
+        "storyId": "organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/organisms/HeroBlockOrganism.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/organisms/HomeOrganism.stories.tsx"
       }
     ]
   }
