@@ -230,6 +230,39 @@
       }
     ]
   },
+  "src/components/atoms/BgImageContainer.stories.tsx": {
+    "componentPath": "src/components/atoms/BgImageContainer.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/atoms/BgImageContainer.tsx",
+        "storyId": "atoms-bg-image-container--docs",
+        "storyTitle": "Bg Image Container",
+        "storyTitlePath": "Atoms / Bg Image Container",
+        "storyFilePath": "src/components/atoms/BgImageContainer.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/atoms/BgImageContainer.tsx": {
+    "componentPath": "src/components/atoms/BgImageContainer.tsx",
+    "storyId": "atoms-bg-image-container--docs",
+    "storyTitle": "Bg Image Container",
+    "storyTitlePath": "Atoms / Bg Image Container",
+    "storyFilePath": "src/components/atoms/BgImageContainer.stories.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/atoms/BgImageContainer.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/organisms/HeroBlockOrganism.tsx",
+        "storyId": "organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/organisms/HeroBlockOrganism.stories.tsx"
+      }
+    ]
+  },
   "src/components/demo.FormComponents.tsx": {
     "componentPath": "src/components/demo.FormComponents.tsx",
     "builtWith": [],
@@ -546,5 +579,39 @@
       }
     ],
     "usedIn": []
+  },
+  "src/components/organisms/HeroBlockOrganism.stories.tsx": {
+    "componentPath": "src/components/organisms/HeroBlockOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/organisms/HeroBlockOrganism.tsx",
+        "storyId": "organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/organisms/HeroBlockOrganism.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/organisms/HeroBlockOrganism.tsx": {
+    "componentPath": "src/components/organisms/HeroBlockOrganism.tsx",
+    "storyId": "organisms-hero-block-organism--docs",
+    "storyTitle": "Hero Block Organism",
+    "storyTitlePath": "Organisms / Hero Block Organism",
+    "storyFilePath": "src/components/organisms/HeroBlockOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/atoms/BgImageContainer.tsx",
+        "storyId": "atoms-bg-image-container--docs",
+        "storyTitle": "Bg Image Container",
+        "storyTitlePath": "Atoms / Bg Image Container",
+        "storyFilePath": "src/components/atoms/BgImageContainer.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/organisms/HeroBlockOrganism.stories.tsx"
+      }
+    ]
   }
 }

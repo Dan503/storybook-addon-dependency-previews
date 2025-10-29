@@ -407,6 +407,41 @@
       "valid": true
     },
     {
+      "source": "src/components/atoms/BgImageContainer.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./BgImageContainer",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/atoms/BgImageContainer.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/atoms/BgImageContainer.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/atoms/BgImageContainer.stories.tsx",
+        "src/components/organisms/HeroBlockOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/demo.FormComponents.tsx",
       "dependencies": [
         {
@@ -1001,6 +1036,58 @@
         }
       ],
       "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/HeroBlockOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./HeroBlockOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/HeroBlockOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/HeroBlockOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../atoms/BgImageContainer",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/atoms/BgImageContainer.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/organisms/HeroBlockOrganism.stories.tsx"
+      ],
       "orphan": false,
       "valid": true
     },
@@ -1610,8 +1697,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 52,
-    "totalDependenciesCruised": 59,
+    "totalCruised": 56,
+    "totalDependenciesCruised": 62,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
