@@ -5,6 +5,7 @@ import {
 	TextFieldMolecule,
 	type PropsForTextFieldMolecule,
 } from './TextFieldMolecule'
+import { useFormValues } from '../formUtils'
 
 // Button.stories.tsx
 const meta: Meta<typeof TextFieldMolecule> = {
@@ -29,9 +30,10 @@ export const Default = {
 				firstName: '',
 			},
 		})
+		const formValues = useFormValues(form)
 
 		return (
-			<FormDataMolecule form={form}>
+			<FormDataMolecule formValues={formValues}>
 				<form.Field name="firstName">
 					{(field) => <TextFieldMolecule {...args} field={field} />}
 				</form.Field>
