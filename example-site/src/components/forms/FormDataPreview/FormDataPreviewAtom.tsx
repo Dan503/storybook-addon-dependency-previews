@@ -1,12 +1,15 @@
-import type { AnyFormApi } from '@tanstack/react-form'
-import type { WithForm } from '../FormTypes'
+import { type AnyFormApi } from '@tanstack/react-form'
+
+interface Props<FormApi extends AnyFormApi> {
+	formValues?: FormApi['state']['values']
+}
 
 export function FormDataPreviewAtom<FormApi extends AnyFormApi>({
-  form,
-}: WithForm<FormApi>) {
-  return (
-    <pre>
-      <code>{JSON.stringify(form.store.state.values, null, 3)}</code>
-    </pre>
-  )
+	formValues,
+}: Props<FormApi>) {
+	return (
+		<pre>
+			<code>{JSON.stringify(formValues, null, 3)}</code>
+		</pre>
+	)
 }

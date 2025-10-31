@@ -1,21 +1,20 @@
 import type { AnyFormApi } from '@tanstack/react-form'
 import type { ReactNode } from 'react'
 import { FormDataPreviewAtom } from './FormDataPreviewAtom'
-import type { WithForm } from '../FormTypes'
 
-interface PropsForFormDataWrapper<FormApi extends AnyFormApi>
-  extends WithForm<FormApi> {
-  children: ReactNode
+interface PropsForFormDataWrapper<FormApi extends AnyFormApi> {
+	formValues?: FormApi['state']['values']
+	children: ReactNode
 }
 
 export function FormDataMolecule<FormApi extends AnyFormApi>({
-  form,
-  children,
+	formValues,
+	children,
 }: PropsForFormDataWrapper<FormApi>) {
-  return (
-    <div className="grid gap-2">
-      {children}
-      <FormDataPreviewAtom form={form} />
-    </div>
-  )
+	return (
+		<div className="grid gap-2">
+			{children}
+			<FormDataPreviewAtom formValues={formValues} />
+		</div>
+	)
 }
