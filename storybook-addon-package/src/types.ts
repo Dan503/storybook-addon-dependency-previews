@@ -1,9 +1,9 @@
+import type { ComponentType, ReactNode } from 'react'
 import type {
 	ProjectAnnotations,
 	Renderer,
 	StoryContext,
-} from '@storybook/types'
-import type { ComponentType, ReactNode } from 'react'
+} from 'storybook/internal/types'
 
 export type StorybookParameters = ProjectAnnotations<Renderer>['parameters']
 

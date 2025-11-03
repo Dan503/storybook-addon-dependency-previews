@@ -5,7 +5,7 @@ import {
 	Stories,
 	Subtitle,
 	Title,
-} from '@storybook/blocks'
+} from '@storybook/addon-docs/blocks'
 import { DependencyPreviews } from '../blocks'
 import type { StorybookParameters } from '../types'
 

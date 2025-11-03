@@ -1,4 +1,4 @@
-import { useOf } from '@storybook/blocks'
+import { useOf } from '@storybook/addon-docs/blocks'
 import type { DependencyPreviewStorybookParameters } from '../types'
 
 export function useStoryParams(): DependencyPreviewStorybookParameters {

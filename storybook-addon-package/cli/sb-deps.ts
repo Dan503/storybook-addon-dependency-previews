@@ -351,44 +351,29 @@ function startWatcher() {
 // ───────────────────────────────────────────────────────────────────────────────
 let sbChild: ChildProcess | null = null
 async function startStorybook() {
-	// Resolve the SB CLI entry relative to the **project** (not this package)
-	let sbEntry: string | null = null
-	try {
-		sbEntry = projectRequire.resolve('storybook/bin/index.cjs')
-	} catch {
-		try {
-			sbEntry = projectRequire.resolve('@storybook/cli/bin/index.js')
-		} catch {
-			sbEntry = null
-		}
-	}
+	const isWin = process.platform === 'win32'
+	const cmd = 'npx'
+	const args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
 
-	if (sbEntry) {
-		sbChild = spawn(
-			process.execPath,
-			[sbEntry, 'dev', '-p', String(SB_PORT)],
-			{
-				cwd: projectRoot,
-				stdio: 'inherit',
-				env: process.env,
-			},
-		)
-		info(`storybook (node) running on http://localhost:${SB_PORT}`)
-	} else {
-		const isWin = process.platform === 'win32'
-		const cmd = isWin ? 'npx.cmd' : 'npx'
-		sbChild = spawn(cmd, ['storybook', 'dev', '-p', String(SB_PORT)], {
-			cwd: projectRoot,
-			stdio: 'inherit',
-			env: process.env,
-		})
-		info(`storybook (npx) running on http://localhost:${SB_PORT}`)
-	}
+	info(`[sb-deps] launching: ${cmd} ${args.join(' ')}`)
+
+	sbChild = spawn(cmd, args, {
+		cwd: projectRoot,
+		stdio: 'inherit',
+		shell: isWin, // ← critical to avoid EINVAL on Win + Git Bash
+		env: process.env,
+	})
+
+	sbChild.on('error', (err: any) => {
+		error(`spawn failed: ${err?.message || err}`)
+	})
 
 	sbChild.on('exit', (code, sig) => {
 		info(`storybook exited (${sig || code})`)
 		sbChild = null
 	})
+
+	info(`storybook running on http://localhost:${SB_PORT}`)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────

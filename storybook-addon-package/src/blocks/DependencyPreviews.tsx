@@ -13,11 +13,10 @@ import { BuildIcon } from '../components/icons/BuildIcon'
 import { EyeOpen } from '../components/icons/EyeOpen'
 import { SquaresPlus } from '../components/icons/SquaresPlus'
 
-import { Heading } from '@storybook/blocks'
+import { Heading } from '@storybook/addon-docs/blocks'
 import { ArrowToRectangle } from '../components/icons/ArrowToRectangleIcon'
 import { PathCopyMolecule } from '../components/PathCopyMolecule'
 import s from './DependencyPreviews.module.css'
-import { useId } from 'react'
 import { CubeIcon } from '../components/icons/CubeIcon'
 
 export function DependencyPreviews() {
