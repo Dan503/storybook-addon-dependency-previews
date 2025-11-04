@@ -5,7 +5,7 @@ import {
 } from './HeroBlockOrganism'
 
 const meta: Meta<typeof HeroBlockOrganism> = {
-	title: 'Organisms / Hero Block Organism',
+	title: '03 Organisms / Hero Block Organism',
 	component: HeroBlockOrganism,
 	tags: ['autodocs', 'organism'],
 	parameters: {

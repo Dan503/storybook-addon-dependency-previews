@@ -5,7 +5,7 @@ import {
 } from './BgImageContainer'
 
 const meta: Meta<typeof BgImageContainer> = {
-	title: 'Atoms / Bg Image Container',
+	title: '01 Atoms / Bg Image Container',
 	component: BgImageContainer,
 	tags: ['autodocs', 'atom'],
 	parameters: {

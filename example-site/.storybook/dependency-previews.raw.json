@@ -132,7 +132,8 @@
       ],
       "dependents": [
         "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
-        "src/components/02-molecules/IconTextMolecule.stories.tsx"
+        "src/components/02-molecules/IconTextMolecule.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -250,7 +251,8 @@
       ],
       "dependents": [
         "src/components/01-atoms/icons/PhoneIcon.stories.tsx",
-        "src/components/02-molecules/IconTextMolecule.stories.tsx"
+        "src/components/02-molecules/IconTextMolecule.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -318,7 +320,8 @@
       "source": "src/components/02-molecules/IconTextMolecule.tsx",
       "dependencies": [],
       "dependents": [
-        "src/components/02-molecules/IconTextMolecule.stories.tsx"
+        "src/components/02-molecules/IconTextMolecule.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -451,6 +454,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../zz-meta-components/ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./SiteFrameOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -468,6 +488,16 @@
         }
       ],
       "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
+        "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      ],
       "orphan": false,
       "valid": true
     },
@@ -512,6 +542,297 @@
       "dependents": [
         "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
         "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/ContactTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ContactTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/ContactTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/ContactTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/MapPinIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/PhoneIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../02-molecules/IconTextMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/IconTextMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../forms/ContactFormOrganism/ContactFormOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../TextAreaMolecule/TextAreaMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../TextFieldMolecule/TextFieldMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../ErrorMessages/ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../FormTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorMessageAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/FormTypes.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../ErrorMessages/ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../FormTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
+        "src/hooks/demo.form.ts"
       ],
       "orphan": false,
       "valid": true
@@ -941,193 +1262,6 @@
       "valid": true
     },
     {
-      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../TextAreaMolecule/TextAreaMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../TextFieldMolecule/TextFieldMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../ErrorMessages/ErrorListMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../FormTypes",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/components/forms/FormTypes.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./ErrorMessageAtom",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
-        "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
-        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/FormTypes.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../ErrorMessages/ErrorListMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../FormTypes",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/components/forms/FormTypes.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
-        "src/hooks/demo.form.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx",
       "dependencies": [
         {
@@ -1547,15 +1681,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/zz-meta-components/ChildContentAtom.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -2157,8 +2282,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 68,
-    "totalDependenciesCruised": 82,
+    "totalCruised": 70,
+    "totalDependenciesCruised": 88,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

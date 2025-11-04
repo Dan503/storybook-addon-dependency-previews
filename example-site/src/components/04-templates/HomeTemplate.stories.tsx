@@ -3,7 +3,7 @@ import { HomeTemplate, type PropsForHomeTemplate } from './HomeTemplate'
 import { exampleMealList } from '../../data/example-meal-data'
 
 const meta: Meta<typeof HomeTemplate> = {
-	title: 'Templates / Home Template',
+	title: '04 Templates / Home Template',
 	component: HomeTemplate,
 	tags: ['autodocs', 'template'],
 	parameters: {

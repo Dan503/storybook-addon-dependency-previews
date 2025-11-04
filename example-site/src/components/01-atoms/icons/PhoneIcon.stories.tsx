@@ -3,7 +3,7 @@ import { PhoneIcon } from './PhoneIcon'
 import type { IconProps } from './iconTypes'
 
 const meta: Meta<typeof PhoneIcon> = {
-	title: 'Atoms / Icons / Phone Icon',
+	title: '01 Atoms / Icons / Phone Icon',
 	component: PhoneIcon,
 	tags: ['autodocs', 'atom', 'icon'],
 	parameters: {

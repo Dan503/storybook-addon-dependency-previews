@@ -7,7 +7,7 @@ import { MapPinIcon } from '../01-atoms/icons/MapPinIcon'
 import { PhoneIcon } from '../01-atoms/icons/PhoneIcon'
 
 const meta: Meta<typeof IconTextMolecule> = {
-	title: 'Molecules / Icon Text Molecule',
+	title: '02 Molecules / Icon Text Molecule',
 	component: IconTextMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {

@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite'
 import { HeaderOrganism } from './HeaderOrganism'
 
 const meta: Meta<typeof HeaderOrganism> = {
-	title: 'organisms / Header Organism',
+	title: '03 organisms / Header Organism',
 	component: HeaderOrganism,
 	tags: ['autodocs', 'organism'],
 	parameters: {

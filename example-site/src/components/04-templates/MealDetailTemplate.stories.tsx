@@ -6,7 +6,7 @@ import {
 import { exampleMeal } from '../../data/example-meal-data'
 
 const meta: Meta<typeof MealDetailTemplate> = {
-	title: 'Templates / Meal Detail Template',
+	title: '04 Templates / Meal Detail Template',
 	component: MealDetailTemplate,
 	tags: ['autodocs', 'template'],
 	parameters: {
