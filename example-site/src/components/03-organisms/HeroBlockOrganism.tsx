@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { BgImageContainer } from '../atoms/BgImageContainer'
 import { H, Section } from 'react-headings'
+import { BgImageContainer } from '../01-atoms/BgImageContainer'
 
 export interface PropsForHeroBlockOrganism {
 	title: string

@@ -3,7 +3,7 @@ import {
 	SiteFrameOrganism,
 	type PropsForSiteFrameOrganism,
 } from './SiteFrameOrganism'
-import { ChildContentAtom } from '../atoms/ChildContentAtom'
+import { ChildContentAtom } from '../meta-components/ChildContentAtom'
 
 const meta: Meta<typeof SiteFrameOrganism> = {
 	title: 'Organisms / Site Frame Organism',

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { IconComponent } from '../icons/iconTypes'
+import type { IconComponent } from '../atoms/icons/iconTypes'
 
 export interface PropsForIconTextMolecule {
 	Icon: IconComponent

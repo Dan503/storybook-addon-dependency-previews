@@ -3,9 +3,9 @@ import { PhoneIcon } from './PhoneIcon'
 import type { IconProps } from './iconTypes'
 
 const meta: Meta<typeof PhoneIcon> = {
-	title: 'Icons / Phone Icon',
+	title: 'Atoms / Icons / Phone Icon',
 	component: PhoneIcon,
-	tags: ['autodocs', 'atom'],
+	tags: ['autodocs', 'atom', 'icon'],
 	parameters: {
 		__filePath: import.meta.url,
 	},

@@ -11,7 +11,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
-import { SiteFrameOrganism } from '../components/organisms/SiteFrameOrganism'
+import { SiteFrameOrganism } from '../components/03-organisms/SiteFrameOrganism'
 
 interface MyRouterContext {
 	queryClient: QueryClient

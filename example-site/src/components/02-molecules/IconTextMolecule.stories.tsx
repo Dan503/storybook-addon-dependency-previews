@@ -3,8 +3,8 @@ import {
 	IconTextMolecule,
 	type PropsForIconTextMolecule,
 } from './IconTextMolecule'
-import { MapPinIcon } from '../icons/MapPinIcon'
-import { PhoneIcon } from '../icons/PhoneIcon'
+import { MapPinIcon } from '../01-atoms/icons/MapPinIcon'
+import { PhoneIcon } from '../01-atoms/icons/PhoneIcon'
 
 const meta: Meta<typeof IconTextMolecule> = {
 	title: 'Molecules / Icon Text Molecule',

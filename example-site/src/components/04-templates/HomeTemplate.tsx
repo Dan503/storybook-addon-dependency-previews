@@ -1,5 +1,5 @@
 import type { Meal } from '../../utils/mealDbApiUtils'
-import { HeroBlockOrganism } from '../organisms/HeroBlockOrganism'
+import { HeroBlockOrganism } from '../03-organisms/HeroBlockOrganism'
 import { H, Section } from 'react-headings'
 import { CardListingOrganism } from '../listings/card/CardListingOrganism'
 
