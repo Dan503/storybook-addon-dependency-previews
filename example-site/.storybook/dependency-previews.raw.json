@@ -86,7 +86,8 @@
         "src/components/01-atoms/icons/MapPinIcon.tsx",
         "src/components/01-atoms/icons/Svg.tsx",
         "src/components/01-atoms/icons/PhoneIcon.stories.tsx",
-        "src/components/01-atoms/icons/PhoneIcon.tsx"
+        "src/components/01-atoms/icons/PhoneIcon.tsx",
+        "src/components/02-molecules/IconTextMolecule.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -318,7 +319,26 @@
     },
     {
       "source": "src/components/02-molecules/IconTextMolecule.tsx",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/02-molecules/IconTextMolecule.stories.tsx",
         "src/components/04-templates/ContactTemplate.tsx"
@@ -2283,7 +2303,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 70,
-    "totalDependenciesCruised": 88,
+    "totalDependenciesCruised": 89,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

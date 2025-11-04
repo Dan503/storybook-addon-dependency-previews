@@ -62,7 +62,7 @@ export function ContactFormOrganism({
 				{(field) => (
 					<TextAreaMolecule
 						label="Message"
-						placeholder="example@email.com"
+						placeholder="Type your message here..."
 						field={field}
 					/>
 				)}
