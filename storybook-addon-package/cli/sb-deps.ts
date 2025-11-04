@@ -138,11 +138,11 @@ function componentBaseFromComponent(absCompPath: string) {
 }
 
 function detectAtomicTag(absPath: string) {
-	const hay = absPath.toLowerCase().replace(/\\/g, '/')
-	const tokens = ['atom', 'molecule', 'organism', 'template', 'page']
+	const adaptedPath = absPath.toLowerCase().replace(/\\/g, '/')
+	const tokens = ['atom', 'molecule', 'organism', 'template', 'page', 'icon']
 	let best: null | { val: string; idx: number } = null
 	for (const t of tokens) {
-		const idx = hay.lastIndexOf(t)
+		const idx = adaptedPath.lastIndexOf(t)
 		if (idx !== -1 && (best === null || idx > best.idx))
 			best = { val: t, idx }
 	}
