@@ -327,17 +327,6 @@ function startWatcher() {
 			scaffoldComponent(abs)
 		}
 
-		// wait a bit for a possible rename
-		await wait(200)
-
-		// Skip if likely rename
-		if (isDeletingFile) {
-			console.log('Rename detected for:', relPath)
-			info(`suppressed scaffolding (component rename): ${relPath}`)
-			isDeletingFile = false
-			return
-		}
-
 		console.log('Component creation detected:', relPath)
 		const createdStory = ensureStoryForComponent(abs)
 		if (createdStory) {
