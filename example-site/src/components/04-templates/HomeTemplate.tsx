@@ -2,17 +2,22 @@ import type { Meal } from '../../utils/mealDbApiUtils'
 import { HeroBlockOrganism } from '../03-organisms/HeroBlockOrganism'
 import { H, Section } from 'react-headings'
 import { CardListingOrganism } from '../listings/card/CardListingOrganism'
+import type { Category } from '../../data/example-meal-data'
 
 export interface PropsForHomeTemplate {
-	mealList: Array<Meal>
+	randomMeal: Meal
+	categoryList: Array<Category>
 }
 
-export function HomeTemplate({ mealList }: PropsForHomeTemplate) {
+export function HomeTemplate({
+	categoryList,
+	randomMeal,
+}: PropsForHomeTemplate) {
 	return (
 		<div className="HomeTemplate grid gap-4">
 			<HeroBlockOrganism
 				title="Welcome to the Storybook Dependency Previews example site"
-				imgSrc={mealList[0].image}
+				imgSrc={randomMeal.image}
 			>
 				<p>
 					This is an example site to demonstrate the dependency preview addon in
@@ -21,15 +26,17 @@ export function HomeTemplate({ mealList }: PropsForHomeTemplate) {
 			</HeroBlockOrganism>
 			<Section component={<></>}>
 				<H className="text-2xl font-bold">
-					Take a look at some of these tasty recipes:
+					Select what type of meal you would like to explore:
 				</H>
 				<CardListingOrganism
-					cards={mealList.map((meal) => ({
-						title: meal.name,
-						description: `${meal.area} ${meal.category}`,
-						imgSrc: meal.image,
-						href: '#',
-					}))}
+					cards={categoryList
+						.toSorted((a, b) => a.strCategory.localeCompare(b.strCategory))
+						.map((c) => ({
+							title: c.strCategory,
+							description: c.strCategoryDescription,
+							imgSrc: c.strCategoryThumb,
+							href: '#',
+						}))}
 				/>
 			</Section>
 		</div>

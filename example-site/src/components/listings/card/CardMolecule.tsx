@@ -21,7 +21,7 @@ export function CardMolecule({
 		>
 			<img src={imgSrc} alt="" />
 			<Section component={<H className="text-3xl font-bold">{title}</H>}>
-				<p>{description}</p>
+				<p className="line-clamp-4">{description}</p>
 			</Section>
 		</Link>
 	)

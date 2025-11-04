@@ -5,6 +5,20 @@ import {
 } from '../utils/mealDbApiUtils'
 
 import rawExampleMealList from './example-meal-list.json'
+import categoriesApi from './categories.json'
+
+export interface CategoriesApiResponse {
+	categories: Category[]
+}
+
+export interface Category {
+	idCategory: string
+	strCategory: string
+	strCategoryThumb: string
+	strCategoryDescription: string
+}
+
+export const categoryList: Array<Category> = categoriesApi.categories
 
 export const mealRawExample: MealRawData = {
 	idMeal: '52795',

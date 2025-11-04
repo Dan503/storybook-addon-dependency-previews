@@ -921,6 +921,23 @@
         },
         {
           "dynamic": false,
+          "module": "./categories.json",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/categories.json",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./example-meal-list.json",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -939,11 +956,29 @@
       ],
       "dependents": [
         "src/components/04-templates/HomeTemplate.stories.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
         "src/components/04-templates/MealDetailTemplate.stories.tsx",
         "src/components/listings/card/CardListingOrganism.stories.tsx",
         "src/components/listings/card/CardMolecule.stories.tsx",
         "src/components/listings/compact/CompactListingMolecule.stories.tsx",
         "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/data/categories.json",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/data/example-meal-data.ts"
       ],
       "orphan": false,
       "valid": true
@@ -979,6 +1014,24 @@
     {
       "source": "src/components/04-templates/HomeTemplate.tsx",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../data/example-meal-data",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-data.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "../../utils/mealDbApiUtils",
@@ -2302,8 +2355,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 70,
-    "totalDependenciesCruised": 89,
+    "totalCruised": 71,
+    "totalDependenciesCruised": 91,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
