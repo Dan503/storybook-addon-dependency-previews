@@ -1,16 +1,16 @@
 import { H, Section } from 'react-headings'
-import { CompactListingOrganism } from './listings/compact/CompactListingOrganism'
-import type { Meal } from '../utils/mealDbApiUtils'
+import type { Meal } from '../../utils/mealDbApiUtils'
+import { CompactListingOrganism } from '../listings/compact/CompactListingOrganism'
 
-export interface PropsForMealDetailOrganism {
+export interface PropsForMealDetailTemplate {
 	meal: Meal | undefined
 	isLoading?: boolean
 }
 
-export function MealDetailOrganism({
+export function MealDetailTemplate({
 	meal,
 	isLoading,
-}: PropsForMealDetailOrganism) {
+}: PropsForMealDetailTemplate) {
 	if (isLoading || !meal) {
 		return <div>Loading...</div>
 	}

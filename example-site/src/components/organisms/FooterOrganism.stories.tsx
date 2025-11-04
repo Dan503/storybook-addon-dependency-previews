@@ -1,0 +1,19 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { FooterOrganism, type PropsForFooterOrganism } from './FooterOrganism'
+
+const meta: Meta<typeof FooterOrganism> = {
+	title: 'Organisms / Footer Organism',
+	component: FooterOrganism,
+	tags: ['autodocs', 'organism'],
+	parameters: {
+		__filePath: import.meta.url,
+	},
+}
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {
+	args: {} satisfies PropsForFooterOrganism,
+}

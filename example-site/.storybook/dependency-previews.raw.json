@@ -1,75 +1,6 @@
 {
   "modules": [
     {
-      "source": "src/components/Button/Button.stories.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./Button",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/Button/Button.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/Button/Button.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/Button/Button.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/Header.stories.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./Header",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/Header.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/Header.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/Header.stories.tsx",
-        "src/routes/__root.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/HousingProperty/LocationName/LocationNameMolecule.stories.tsx",
       "dependencies": [
         {
@@ -207,208 +138,6 @@
       "valid": true
     },
     {
-      "source": "src/components/MealDetailOrganism.stories.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./MealDetailOrganism",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/MealDetailOrganism.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/data/example-meal-data.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./example-meal-list.json",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-list.json",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/MealDetailOrganism.stories.tsx",
-        "src/components/listings/card/CardListingOrganism.stories.tsx",
-        "src/components/listings/card/CardMolecule.stories.tsx",
-        "src/components/listings/compact/CompactListingMolecule.stories.tsx",
-        "src/components/listings/compact/CompactListingOrganism.stories.tsx",
-        "src/components/organisms/HomeOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/data/example-meal-list.json",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "local",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/data/example-meal-data.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/utils/mealDbApiUtils.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/data/example-meal-data.ts",
-        "src/components/MealDetailOrganism.tsx",
-        "src/components/organisms/HomeOrganism.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/MealDetailOrganism.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./listings/compact/CompactListingOrganism",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/compact/CompactListingOrganism.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/MealDetailOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/compact/CompactListingOrganism.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./CompactListingMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/compact/CompactListingMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/MealDetailOrganism.tsx",
-        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/compact/CompactListingMolecule.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/listings/compact/CompactListingOrganism.tsx",
-        "src/components/listings/compact/CompactListingMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/atoms/BgImageContainer.stories.tsx",
       "dependencies": [
         {
@@ -439,6 +168,41 @@
       "dependents": [
         "src/components/atoms/BgImageContainer.stories.tsx",
         "src/components/organisms/HeroBlockOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/atoms/ChildContentAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/atoms/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/atoms/ChildContentAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/atoms/ChildContentAtom.stories.tsx",
+        "src/components/organisms/SiteFrameOrganism.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1063,6 +827,83 @@
       "valid": true
     },
     {
+      "source": "src/data/example-meal-data.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./example-meal-list.json",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-list.json",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.stories.tsx",
+        "src/components/listings/card/CardMolecule.stories.tsx",
+        "src/components/listings/compact/CompactListingMolecule.stories.tsx",
+        "src/components/listings/compact/CompactListingOrganism.stories.tsx",
+        "src/components/templates/HomeTemplate.stories.tsx",
+        "src/components/templates/MealDetailTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/data/example-meal-list.json",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/data/example-meal-data.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/utils/mealDbApiUtils.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/data/example-meal-data.ts",
+        "src/components/templates/HomeTemplate.tsx",
+        "src/components/templates/MealDetailTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/listings/card/CardListingOrganism.tsx",
       "dependencies": [
         {
@@ -1085,7 +926,7 @@
       ],
       "dependents": [
         "src/components/listings/card/CardListingOrganism.stories.tsx",
-        "src/components/organisms/HomeOrganism.tsx"
+        "src/components/templates/HomeTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1185,6 +1026,16 @@
       "valid": true
     },
     {
+      "source": "src/components/listings/compact/CompactListingMolecule.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/compact/CompactListingMolecule.stories.tsx",
+        "src/components/listings/compact/CompactListingOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
       "dependencies": [
         {
@@ -1223,6 +1074,104 @@
         }
       ],
       "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CompactListingMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/listings/compact/CompactListingOrganism.stories.tsx",
+        "src/components/templates/MealDetailTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/FooterOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./FooterOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/FooterOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/FooterOrganism.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/organisms/FooterOrganism.stories.tsx",
+        "src/components/organisms/SiteFrameOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/HeaderOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./HeaderOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/HeaderOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/HeaderOrganism.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/organisms/HeaderOrganism.stories.tsx",
+        "src/components/organisms/SiteFrameOrganism.tsx"
+      ],
       "orphan": false,
       "valid": true
     },
@@ -1274,13 +1223,100 @@
       ],
       "dependents": [
         "src/components/organisms/HeroBlockOrganism.stories.tsx",
-        "src/components/organisms/HomeOrganism.tsx"
+        "src/components/templates/HomeTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/components/organisms/HomeOrganism.stories.tsx",
+      "source": "src/components/organisms/SiteFrameOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../atoms/ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/atoms/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/organisms/SiteFrameOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./FooterOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/FooterOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./HeaderOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/organisms/HeaderOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/organisms/SiteFrameOrganism.stories.tsx",
+        "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/templates/HomeTemplate.stories.tsx",
       "dependencies": [
         {
           "dynamic": false,
@@ -1301,14 +1337,14 @@
         },
         {
           "dynamic": false,
-          "module": "./HomeOrganism",
+          "module": "./HomeTemplate",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/organisms/HomeOrganism.tsx",
+          "resolved": "src/components/templates/HomeTemplate.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -1322,7 +1358,7 @@
       "valid": true
     },
     {
-      "source": "src/components/organisms/HomeOrganism.tsx",
+      "source": "src/components/templates/HomeTemplate.tsx",
       "dependencies": [
         {
           "dynamic": false,
@@ -1361,7 +1397,7 @@
         },
         {
           "dynamic": false,
-          "module": "./HeroBlockOrganism",
+          "module": "../organisms/HeroBlockOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
@@ -1378,7 +1414,94 @@
         }
       ],
       "dependents": [
-        "src/components/organisms/HomeOrganism.stories.tsx"
+        "src/components/templates/HomeTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/templates/MealDetailTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../data/example-meal-data",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-data.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./MealDetailTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/templates/MealDetailTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/templates/MealDetailTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/compact/CompactListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/templates/MealDetailTemplate.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1739,14 +1862,14 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../components/Header",
+          "module": "../components/organisms/SiteFrameOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/Header.tsx",
+          "resolved": "src/components/organisms/SiteFrameOrganism.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -1989,8 +2112,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 63,
-    "totalDependenciesCruised": 75,
+    "totalCruised": 67,
+    "totalDependenciesCruised": 80,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

@@ -1,15 +1,15 @@
-import { HeroBlockOrganism } from './HeroBlockOrganism'
-import { CardListingOrganism } from '../listings/card/CardListingOrganism'
-import { H, Section } from 'react-headings'
 import type { Meal } from '../../utils/mealDbApiUtils'
+import { HeroBlockOrganism } from '../organisms/HeroBlockOrganism'
+import { H, Section } from 'react-headings'
+import { CardListingOrganism } from '../listings/card/CardListingOrganism'
 
-export interface PropsForHomeOrganism {
+export interface PropsForHomeTemplate {
 	mealList: Array<Meal>
 }
 
-export function HomeOrganism({ mealList }: PropsForHomeOrganism) {
+export function HomeTemplate({ mealList }: PropsForHomeTemplate) {
 	return (
-		<div className="HomeOrganism grid gap-4">
+		<div className="HomeTemplate grid gap-4">
 			<HeroBlockOrganism
 				title="Welcome to the Storybook Dependency Previews example site"
 				imgSrc={mealList[0].image}
