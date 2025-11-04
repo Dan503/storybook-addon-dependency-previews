@@ -18,7 +18,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {
+export const Primary: Story = {
 	parameters: {},
 	args: {
 		title: 'Welcome to the Storybook Dependency Previews example site',

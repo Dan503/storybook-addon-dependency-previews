@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react-vite'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import {
 	CompactListingOrganism,
 	type PropsForCompactListingOrganism,
@@ -17,7 +17,9 @@ const meta: Meta<typeof CompactListingOrganism> = {
 
 export default meta
 
-export const Default = {
+type Story = StoryObj<typeof meta>
+
+export const Primary: Story = {
 	args: {
 		items: exampleIngredientList.map((ingredient) => ({
 			title: ingredient.ingredient,

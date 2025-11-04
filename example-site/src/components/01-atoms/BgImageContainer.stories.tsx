@@ -17,7 +17,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {
+export const Primary: Story = {
 	args: {
 		imgSrc: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg',
 		altText: 'Placeholder Image',

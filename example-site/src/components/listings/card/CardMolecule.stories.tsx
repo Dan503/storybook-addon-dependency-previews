@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react-vite'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import { CardMolecule, type PropsForCardMolecule } from './CardMolecule'
 import { exampleIngredient, exampleMeal } from '../../../data/example-meal-data'
 
@@ -13,7 +13,9 @@ const meta: Meta<typeof CardMolecule> = {
 
 export default meta
 
-export const Meal = {
+type Story = StoryObj<typeof meta>
+
+export const Meal: Story = {
 	args: {
 		title: exampleMeal.name,
 		href: '/example-path',
@@ -22,7 +24,7 @@ export const Meal = {
 	} satisfies PropsForCardMolecule,
 }
 
-export const Ingredient = {
+export const Ingredient: Story = {
 	args: {
 		title: exampleIngredient.ingredient,
 		href: '/example-path',

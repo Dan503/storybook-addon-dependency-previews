@@ -1,4 +1,4 @@
-import type { Meta } from '@storybook/react-vite'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import {
 	CompactListingMolecule,
 	type PropsForCompactListingMolecule,
@@ -16,7 +16,9 @@ const meta: Meta<typeof CompactListingMolecule> = {
 
 export default meta
 
-export const Default = {
+type Story = StoryObj<typeof meta>
+
+export const Primary: Story = {
 	args: {
 		title: exampleIngredient.ingredient,
 		imageSrc: exampleIngredient.imageUrl.small,
