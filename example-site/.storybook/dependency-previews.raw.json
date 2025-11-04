@@ -93,7 +93,8 @@
       ],
       "dependents": [
         "src/components/HousingProperty/LocationName/LocationNameMolecule.tsx",
-        "src/components/icons/MapPinIcon.stories.tsx"
+        "src/components/icons/MapPinIcon.stories.tsx",
+        "src/components/molecules/IconTextMolecule.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -104,7 +105,10 @@
       "dependents": [
         "src/components/icons/MapPinIcon.tsx",
         "src/components/icons/Svg.tsx",
-        "src/components/icons/MapPinIcon.stories.tsx"
+        "src/components/icons/MapPinIcon.stories.tsx",
+        "src/components/icons/PhoneIcon.stories.tsx",
+        "src/components/icons/PhoneIcon.tsx",
+        "src/components/molecules/IconTextMolecule.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -132,7 +136,8 @@
         }
       ],
       "dependents": [
-        "src/components/icons/MapPinIcon.tsx"
+        "src/components/icons/MapPinIcon.tsx",
+        "src/components/icons/PhoneIcon.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -785,6 +790,95 @@
       "valid": true
     },
     {
+      "source": "src/components/icons/PhoneIcon.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./PhoneIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/icons/PhoneIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/icons/PhoneIcon.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./Svg",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/icons/Svg.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/icons/PhoneIcon.stories.tsx",
+        "src/components/molecules/IconTextMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/listings/card/CardListingOrganism.stories.tsx",
       "dependencies": [
         {
@@ -1101,6 +1195,93 @@
       "dependents": [
         "src/components/listings/compact/CompactListingOrganism.stories.tsx",
         "src/components/templates/MealDetailTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/molecules/IconTextMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../icons/MapPinIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/icons/MapPinIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../icons/PhoneIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/icons/PhoneIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./IconTextMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/molecules/IconTextMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/molecules/IconTextMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../icons/iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/molecules/IconTextMolecule.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2112,8 +2293,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 67,
-    "totalDependenciesCruised": 80,
+    "totalCruised": 71,
+    "totalDependenciesCruised": 88,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

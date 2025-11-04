@@ -57,6 +57,9 @@
       },
       {
         "componentPath": "src/components/icons/MapPinIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/molecules/IconTextMolecule.stories.tsx"
       }
     ]
   },
@@ -75,7 +78,24 @@
         "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx"
       },
       {
+        "componentPath": "src/components/icons/PhoneIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/icons/PhoneIcon.tsx",
+        "storyId": "icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "Icons / Phone Icon",
+        "storyFilePath": "src/components/icons/PhoneIcon.stories.tsx"
+      },
+      {
         "componentPath": "src/components/icons/Svg.tsx"
+      },
+      {
+        "componentPath": "src/components/molecules/IconTextMolecule.tsx",
+        "storyId": "molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "Molecules / Icon Text Molecule",
+        "storyFilePath": "src/components/molecules/IconTextMolecule.stories.tsx"
       }
     ]
   },
@@ -93,6 +113,13 @@
         "storyTitle": "Map Pin Icon",
         "storyTitlePath": "Icons / Map Pin Icon",
         "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/icons/PhoneIcon.tsx",
+        "storyId": "icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "Icons / Phone Icon",
+        "storyFilePath": "src/components/icons/PhoneIcon.stories.tsx"
       }
     ]
   },
@@ -505,6 +532,45 @@
     ],
     "usedIn": []
   },
+  "src/components/icons/PhoneIcon.stories.tsx": {
+    "componentPath": "src/components/icons/PhoneIcon.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/icons/PhoneIcon.tsx",
+        "storyId": "icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "Icons / Phone Icon",
+        "storyFilePath": "src/components/icons/PhoneIcon.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/icons/PhoneIcon.tsx": {
+    "componentPath": "src/components/icons/PhoneIcon.tsx",
+    "storyId": "icons-phone-icon--docs",
+    "storyTitle": "Phone Icon",
+    "storyTitlePath": "Icons / Phone Icon",
+    "storyFilePath": "src/components/icons/PhoneIcon.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/icons/Svg.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/icons/PhoneIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/molecules/IconTextMolecule.stories.tsx"
+      }
+    ]
+  },
   "src/components/listings/card/CardListingOrganism.stories.tsx": {
     "componentPath": "src/components/listings/card/CardListingOrganism.stories.tsx",
     "builtWith": [
@@ -650,6 +716,50 @@
         "storyTitle": "Meal Detail Template",
         "storyTitlePath": "Templates / Meal Detail Template",
         "storyFilePath": "src/components/templates/MealDetailTemplate.stories.tsx"
+      }
+    ]
+  },
+  "src/components/molecules/IconTextMolecule.stories.tsx": {
+    "componentPath": "src/components/molecules/IconTextMolecule.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/MapPinIcon.tsx",
+        "storyId": "icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "Icons / Map Pin Icon",
+        "storyFilePath": "src/components/icons/MapPinIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/icons/PhoneIcon.tsx",
+        "storyId": "icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "Icons / Phone Icon",
+        "storyFilePath": "src/components/icons/PhoneIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/molecules/IconTextMolecule.tsx",
+        "storyId": "molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "Molecules / Icon Text Molecule",
+        "storyFilePath": "src/components/molecules/IconTextMolecule.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/molecules/IconTextMolecule.tsx": {
+    "componentPath": "src/components/molecules/IconTextMolecule.tsx",
+    "storyId": "molecules-icon-text-molecule--docs",
+    "storyTitle": "Icon Text Molecule",
+    "storyTitlePath": "Molecules / Icon Text Molecule",
+    "storyFilePath": "src/components/molecules/IconTextMolecule.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/molecules/IconTextMolecule.stories.tsx"
       }
     ]
   },
