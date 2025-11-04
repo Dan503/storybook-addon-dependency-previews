@@ -451,23 +451,6 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../meta-components/ChildContentAtom",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/meta-components/ChildContentAtom.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "./SiteFrameOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -485,16 +468,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/meta-components/ChildContentAtom.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
-        "src/components/meta-components/ChildContentAtom.stories.tsx"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -1553,7 +1526,7 @@
       "valid": true
     },
     {
-      "source": "src/components/meta-components/ChildContentAtom.stories.tsx",
+      "source": "src/components/zz-meta-components/ChildContentAtom.stories.tsx",
       "dependencies": [
         {
           "dynamic": false,
@@ -1564,7 +1537,7 @@
             "local",
             "import"
           ],
-          "resolved": "src/components/meta-components/ChildContentAtom.tsx",
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -1574,6 +1547,15 @@
         }
       ],
       "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      ],
       "orphan": false,
       "valid": true
     },
@@ -2176,7 +2158,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 68,
-    "totalDependenciesCruised": 83,
+    "totalDependenciesCruised": 82,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

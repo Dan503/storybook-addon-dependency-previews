@@ -319,32 +319,9 @@
         "storyTitle": "Site Frame Organism",
         "storyTitlePath": "Organisms / Site Frame Organism",
         "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/meta-components/ChildContentAtom.tsx",
-        "storyId": "meta-components-child-content-atom--docs",
-        "storyTitle": "Child Content Atom",
-        "storyTitlePath": "Meta Components / Child Content Atom",
-        "storyFilePath": "src/components/meta-components/ChildContentAtom.stories.tsx"
       }
     ],
     "usedIn": []
-  },
-  "src/components/meta-components/ChildContentAtom.tsx": {
-    "componentPath": "src/components/meta-components/ChildContentAtom.tsx",
-    "storyId": "meta-components-child-content-atom--docs",
-    "storyTitle": "Child Content Atom",
-    "storyTitlePath": "Meta Components / Child Content Atom",
-    "storyFilePath": "src/components/meta-components/ChildContentAtom.stories.tsx",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/meta-components/ChildContentAtom.stories.tsx"
-      }
-    ]
   },
   "src/components/03-organisms/SiteFrameOrganism.tsx": {
     "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
@@ -923,17 +900,30 @@
     ],
     "usedIn": []
   },
-  "src/components/meta-components/ChildContentAtom.stories.tsx": {
-    "componentPath": "src/components/meta-components/ChildContentAtom.stories.tsx",
+  "src/components/zz-meta-components/ChildContentAtom.stories.tsx": {
+    "componentPath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx",
     "builtWith": [
       {
-        "componentPath": "src/components/meta-components/ChildContentAtom.tsx",
+        "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
         "storyId": "meta-components-child-content-atom--docs",
         "storyTitle": "Child Content Atom",
         "storyTitlePath": "Meta Components / Child Content Atom",
-        "storyFilePath": "src/components/meta-components/ChildContentAtom.stories.tsx"
+        "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
       }
     ],
     "usedIn": []
+  },
+  "src/components/zz-meta-components/ChildContentAtom.tsx": {
+    "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
+    "storyId": "meta-components-child-content-atom--docs",
+    "storyTitle": "Child Content Atom",
+    "storyTitlePath": "Meta Components / Child Content Atom",
+    "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      }
+    ]
   }
 }
