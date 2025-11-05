@@ -207,6 +207,7 @@ function scaffoldStoryForComponent(absCompPath: string) {
 	if (atomic) tags.push(atomic)
 
 	const storyTpl = `import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${componentName}'
 
 const meta: Meta<typeof ${componentName}> = {
@@ -214,8 +215,9 @@ const meta: Meta<typeof ${componentName}> = {
   component: ${componentName},
   tags: ${JSON.stringify(tags)},
   parameters: {
+    layout: 'padded',
     __filePath: import.meta.url,
-  },
+  } satisfies StoryParameters,
 }
 
 export default meta
