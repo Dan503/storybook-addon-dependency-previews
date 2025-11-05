@@ -55,15 +55,6 @@ const configPath =
 const post = resolve(__dirname, 'scripts', 'postprocess.mjs')
 
 // ───────────────────────────────────────────────────────────────────────────────
-/** Small helper to create a resolver relative to the project root in ESM */
-function createProjectRequire() {
-	// point at a file inside the project so Node resolves using the project's node_modules
-	const pseudo = pathToFileURL(resolve(projectRoot, 'package.json')).href
-	return createRequire(pseudo)
-}
-const projectRequire = createProjectRequire()
-
-// ───────────────────────────────────────────────────────────────────────────────
 // Runners
 // ───────────────────────────────────────────────────────────────────────────────
 function runDepCruiseOnce() {
