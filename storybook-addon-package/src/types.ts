@@ -9,8 +9,10 @@ export type StorybookParameters = ProjectAnnotations<Renderer>['parameters']
 
 export type StoryModules = Record<string, () => Promise<unknown>>
 
-export type DependencyPreviewStorybookParameters = StorybookParameters & {
-	layout: 'centered' | 'padded' | 'fullscreen'
+type LayoutOptions = 'centered' | 'padded' | 'fullscreen'
+
+export type StoryParameters = StorybookParameters & {
+	layout?: LayoutOptions
 	/**
 	 * A required property in all component story files. This is used to determine the path to the story.
 	 *
@@ -21,6 +23,9 @@ export type DependencyPreviewStorybookParameters = StorybookParameters & {
 	 * ```
 	 */
 	__filePath?: string
+}
+
+export type DependencyPreviewStorybookParameters = StoryParameters & {
 	/** Preview settings used by the dependency-previews storybook add-on */
 	dependencyPreviews: {
 		/**
