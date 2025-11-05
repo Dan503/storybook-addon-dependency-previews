@@ -958,6 +958,7 @@
         "src/components/04-templates/HomeTemplate.stories.tsx",
         "src/components/04-templates/HomeTemplate.tsx",
         "src/components/04-templates/MealDetailTemplate.stories.tsx",
+        "src/components/04-templates/MealListTemplate.stories.tsx",
         "src/components/listings/card/CardListingOrganism.stories.tsx",
         "src/components/listings/card/CardMolecule.stories.tsx",
         "src/components/listings/compact/CompactListingMolecule.stories.tsx",
@@ -1006,7 +1007,8 @@
       "dependents": [
         "src/data/example-meal-data.ts",
         "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealDetailTemplate.tsx"
+        "src/components/04-templates/MealDetailTemplate.tsx",
+        "src/components/04-templates/MealListTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1114,6 +1116,7 @@
       ],
       "dependents": [
         "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/04-templates/MealListTemplate.tsx",
         "src/components/listings/card/CardListingOrganism.stories.tsx"
       ],
       "orphan": false,
@@ -1250,6 +1253,93 @@
       "dependents": [
         "src/components/listings/compact/CompactListingOrganism.tsx",
         "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/MealListTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../data/example-meal-data",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-data.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./MealListTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/MealListTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/MealListTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/card/CardListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/MealListTemplate.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2355,8 +2445,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 71,
-    "totalDependenciesCruised": 91,
+    "totalCruised": 73,
+    "totalDependenciesCruised": 95,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

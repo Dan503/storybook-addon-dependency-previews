@@ -705,6 +705,13 @@
         "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx"
       },
       {
+        "componentPath": "src/components/04-templates/MealListTemplate.tsx",
+        "storyId": "04-templates-meal-list-template--docs",
+        "storyTitle": "Meal List Template",
+        "storyTitlePath": "04 Templates / Meal List Template",
+        "storyFilePath": "src/components/04-templates/MealListTemplate.stories.tsx"
+      },
+      {
         "componentPath": "src/components/listings/card/CardListingOrganism.stories.tsx"
       }
     ]
@@ -808,6 +815,40 @@
         "storyTitle": "Compact Listing Organism",
         "storyTitlePath": "Listings / Compact / Compact Listing Organism",
         "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      }
+    ]
+  },
+  "src/components/04-templates/MealListTemplate.stories.tsx": {
+    "componentPath": "src/components/04-templates/MealListTemplate.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/MealListTemplate.tsx",
+        "storyId": "04-templates-meal-list-template--docs",
+        "storyTitle": "Meal List Template",
+        "storyTitlePath": "04 Templates / Meal List Template",
+        "storyFilePath": "src/components/04-templates/MealListTemplate.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/04-templates/MealListTemplate.tsx": {
+    "componentPath": "src/components/04-templates/MealListTemplate.tsx",
+    "storyId": "04-templates-meal-list-template--docs",
+    "storyTitle": "Meal List Template",
+    "storyTitlePath": "04 Templates / Meal List Template",
+    "storyFilePath": "src/components/04-templates/MealListTemplate.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/MealListTemplate.stories.tsx"
       }
     ]
   },
