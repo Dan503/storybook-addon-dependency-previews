@@ -4,14 +4,16 @@ import {
 	type PropsForCompactListingMolecule,
 } from './CompactListingMolecule'
 import { exampleIngredient } from '../../../data/example-meal-data'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 
 const meta: Meta<typeof CompactListingMolecule> = {
 	title: 'Listings / Compact / Compact Listing Molecule',
 	component: CompactListingMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {
+		layout: 'padded',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

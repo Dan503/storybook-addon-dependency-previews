@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import {
 	HeroBlockOrganism,
 	type PropsForHeroBlockOrganism,
@@ -9,9 +10,9 @@ const meta: Meta<typeof HeroBlockOrganism> = {
 	component: HeroBlockOrganism,
 	tags: ['autodocs', 'organism'],
 	parameters: {
-		__filePath: import.meta.url,
 		layout: 'fullscreen',
-	},
+		__filePath: import.meta.url,
+	} satisfies StoryParameters,
 }
 
 export default meta

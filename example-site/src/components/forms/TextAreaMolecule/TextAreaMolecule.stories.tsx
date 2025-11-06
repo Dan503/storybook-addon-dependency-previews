@@ -1,19 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useForm } from '@tanstack/react-form'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
+import { useFormValues } from '../formUtils'
 import {
 	TextAreaMolecule,
 	type PropsForTextAreaMolecule,
 } from './TextAreaMolecule'
-import { useForm } from '@tanstack/react-form'
-import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
-import { useFormValues } from '../formUtils'
 
 const meta: Meta<typeof TextAreaMolecule> = {
 	title: 'Forms / Text Area Molecule',
 	component: TextAreaMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {
+		layout: 'centered',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

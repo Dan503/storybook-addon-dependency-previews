@@ -1,11 +1,12 @@
 import type { Meta } from '@storybook/react-vite'
 import { useForm } from '@tanstack/react-form'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
+import { useFormValues } from '../formUtils'
 import {
 	TextFieldMolecule,
 	type PropsForTextFieldMolecule,
 } from './TextFieldMolecule'
-import { useFormValues } from '../formUtils'
 
 // Button.stories.tsx
 const meta: Meta<typeof TextFieldMolecule> = {
@@ -13,8 +14,9 @@ const meta: Meta<typeof TextFieldMolecule> = {
 	component: TextFieldMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {
+		layout: 'centered',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

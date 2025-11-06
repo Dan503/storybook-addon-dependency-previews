@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import {
 	ContactTemplate,
 	type PropsForContactTemplate,
@@ -9,8 +10,9 @@ const meta: Meta<typeof ContactTemplate> = {
 	component: ContactTemplate,
 	tags: ['autodocs', 'template'],
 	parameters: {
+		layout: 'fullscreen',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

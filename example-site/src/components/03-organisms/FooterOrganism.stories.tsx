@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { FooterOrganism, type PropsForFooterOrganism } from './FooterOrganism'
 
 const meta: Meta<typeof FooterOrganism> = {
@@ -6,8 +7,9 @@ const meta: Meta<typeof FooterOrganism> = {
 	component: FooterOrganism,
 	tags: ['autodocs', 'organism'],
 	parameters: {
+		layout: 'padded',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

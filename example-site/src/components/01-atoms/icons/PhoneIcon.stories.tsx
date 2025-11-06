@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { PhoneIcon } from './PhoneIcon'
 import type { IconProps } from './iconTypes'
 
@@ -7,8 +8,9 @@ const meta: Meta<typeof PhoneIcon> = {
 	component: PhoneIcon,
 	tags: ['autodocs', 'atom', 'icon'],
 	parameters: {
+		layout: 'centered',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

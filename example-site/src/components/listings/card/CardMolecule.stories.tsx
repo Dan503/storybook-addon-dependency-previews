@@ -1,14 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { CardMolecule, type PropsForCardMolecule } from './CardMolecule'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { exampleIngredient, exampleMeal } from '../../../data/example-meal-data'
+import { CardMolecule, type PropsForCardMolecule } from './CardMolecule'
 
 const meta: Meta<typeof CardMolecule> = {
 	title: 'Listings / Card / Card Molecule',
 	component: CardMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {
+		layout: 'padded',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

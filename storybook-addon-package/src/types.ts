@@ -16,9 +16,9 @@ export type StoryParameters = StorybookParameters & {
 	 * Determine how the component is displayed in the preview area.
 	 *
 	 * Options are:
-	 * - 'padded' - adds padding around the component in the preview area (good for most components)
-	 * - 'centered' - centers the component in the preview area (good for small components like buttons and icons)
-	 * - 'fullscreen' - makes the component take up the entire preview area (good for components that take up the entire screen like pages and modals)
+	 * - `'padded'` - adds padding around the component in the preview area (good for most components)
+	 * - `'centered'` - centers the component in the preview area (good for small components like buttons and icons)
+	 * - `'fullscreen'` - makes the component take up the entire preview area (good for components that take up the entire screen like pages and modals)
 	 *
 	 * @default 'padded'
 	 */

@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import {
 	ErrorListMolecule,
 	type PropsForErrorListMolecule,
@@ -10,8 +11,9 @@ const meta: Meta<typeof ErrorListMolecule> = {
 	component: ErrorListMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {
+		layout: 'padded',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

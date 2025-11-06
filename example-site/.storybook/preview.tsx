@@ -32,7 +32,6 @@ const previewConfig: StorybookPreviewConfig = {
 	],
 	parameters: {
 		...defaultPreviewParameters,
-		layout: 'centered',
 		dependencyPreviews: {
 			dependenciesJson,
 			storyModules: import.meta.glob(

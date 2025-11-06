@@ -1,18 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { exampleMealList } from '../../../data/example-meal-data'
 import {
 	CardListingOrganism,
 	type PropsForCardListingOrganism,
 } from './CardListingOrganism'
-import { exampleMealList } from '../../../data/example-meal-data'
 
 const meta: Meta<typeof CardListingOrganism> = {
 	title: 'Listings / Card / Card Listing Organism',
 	component: CardListingOrganism,
 	tags: ['autodocs', 'organism'],
 	parameters: {
-		__filePath: import.meta.url,
 		layout: 'padded',
-	},
+		__filePath: import.meta.url,
+	} satisfies StoryParameters,
 }
 
 export default meta

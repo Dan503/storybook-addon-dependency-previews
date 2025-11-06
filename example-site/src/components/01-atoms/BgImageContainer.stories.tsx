@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from '../../../../storybook-addon-package/dist/types.d.mts'
 import {
 	BgImageContainer,
 	type PropsForBgImageContainer,
@@ -9,8 +10,9 @@ const meta: Meta<typeof BgImageContainer> = {
 	component: BgImageContainer,
 	tags: ['autodocs', 'atom'],
 	parameters: {
+		layout: 'padded',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

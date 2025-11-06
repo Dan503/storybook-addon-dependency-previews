@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
 import {
 	ContactFormOrganism,
@@ -13,7 +14,7 @@ const meta: Meta<typeof ContactFormOrganism> = {
 	tags: ['autodocs', 'organism'],
 	parameters: {
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

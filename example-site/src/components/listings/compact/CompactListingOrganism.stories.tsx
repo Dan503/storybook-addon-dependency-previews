@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { exampleIngredientList } from '../../../data/example-meal-data'
 import {
 	CompactListingOrganism,
 	type PropsForCompactListingOrganism,
 } from './CompactListingOrganism'
-import { exampleIngredientList } from '../../../data/example-meal-data'
 
 const meta: Meta<typeof CompactListingOrganism> = {
 	title: 'Listings / Compact / Compact Listing Organism',
@@ -12,7 +13,7 @@ const meta: Meta<typeof CompactListingOrganism> = {
 	parameters: {
 		layout: 'padded',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

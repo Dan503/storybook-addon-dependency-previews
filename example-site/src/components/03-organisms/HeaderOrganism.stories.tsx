@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { HeaderOrganism } from './HeaderOrganism'
 
 const meta: Meta<typeof HeaderOrganism> = {
@@ -6,8 +7,9 @@ const meta: Meta<typeof HeaderOrganism> = {
 	component: HeaderOrganism,
 	tags: ['autodocs', 'organism'],
 	parameters: {
+		layout: 'padded',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta

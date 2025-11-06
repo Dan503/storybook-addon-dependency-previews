@@ -1,18 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { exampleMeal } from '../../data/example-meal-data'
 import {
 	MealDetailTemplate,
 	type PropsForMealDetailTemplate,
 } from './MealDetailTemplate'
-import { exampleMeal } from '../../data/example-meal-data'
 
 const meta: Meta<typeof MealDetailTemplate> = {
 	title: '04 Templates / Meal Detail Template',
 	component: MealDetailTemplate,
 	tags: ['autodocs', 'template'],
 	parameters: {
-		layout: 'padded',
+		layout: 'fullscreen',
 		__filePath: import.meta.url,
-	},
+	} satisfies StoryParameters,
 }
 
 export default meta
