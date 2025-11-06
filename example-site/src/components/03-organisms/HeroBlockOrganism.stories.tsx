@@ -22,13 +22,8 @@ type Story = StoryObj<typeof meta>
 export const Primary: Story = {
 	parameters: {},
 	args: {
-		title: 'Welcome to the Storybook Dependency Previews example site',
+		title: 'Hero Block Title',
 		imgSrc: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg',
-		children: (
-			<p>
-				This is an example site to demonstrate the dependency preview addon in a
-				realistic environment
-			</p>
-		),
+		children: <p>This is where the hero block content goes.</p>,
 	} satisfies PropsForHeroBlockOrganism,
 }

@@ -32,6 +32,72 @@
       }
     ]
   },
+  "src/components/01-atoms/ScreenPaddingAtom.stories.tsx": {
+    "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
+        "storyId": "meta-components-child-content-atom--docs",
+        "storyTitle": "Child Content Atom",
+        "storyTitlePath": "Meta Components / Child Content Atom",
+        "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/zz-meta-components/ChildContentAtom.tsx": {
+    "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
+    "storyId": "meta-components-child-content-atom--docs",
+    "storyTitle": "Child Content Atom",
+    "storyTitlePath": "Meta Components / Child Content Atom",
+    "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      }
+    ]
+  },
+  "src/components/01-atoms/ScreenPaddingAtom.tsx": {
+    "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+    "storyId": "01-atoms-screen-padding-atom--docs",
+    "storyTitle": "Screen Padding Atom",
+    "storyTitlePath": "01 Atoms / Screen Padding Atom",
+    "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.tsx",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.tsx",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx"
+      }
+    ]
+  },
   "src/components/01-atoms/icons/MapPinIcon.stories.tsx": {
     "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
     "builtWith": [
@@ -327,6 +393,13 @@
         "storyTitle": "Bg Image Container",
         "storyTitlePath": "01 Atoms / Bg Image Container",
         "storyFilePath": "src/components/01-atoms/BgImageContainer.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
       }
     ],
     "usedIn": [
@@ -361,22 +434,6 @@
       }
     ],
     "usedIn": []
-  },
-  "src/components/zz-meta-components/ChildContentAtom.tsx": {
-    "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
-    "storyId": "meta-components-child-content-atom--docs",
-    "storyTitle": "Child Content Atom",
-    "storyTitlePath": "Meta Components / Child Content Atom",
-    "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
-      }
-    ]
   },
   "src/components/03-organisms/SiteFrameOrganism.tsx": {
     "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
@@ -695,6 +752,13 @@
     "storyTitlePath": "04 Templates / Home Template",
     "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx",
     "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
       {
         "componentPath": "src/components/03-organisms/HeroBlockOrganism.tsx",
         "storyId": "03-organisms-hero-block-organism--docs",
