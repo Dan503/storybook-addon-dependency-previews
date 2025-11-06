@@ -92,6 +92,13 @@
     "usedIn": [
       {
         "componentPath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.tsx",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.tsx"
       }
     ]
   },
@@ -569,6 +576,13 @@
     "storyTitlePath": "04 Templates / Contact Template",
     "storyFilePath": "src/components/04-templates/ContactTemplate.stories.tsx",
     "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ContentRestraintAtom.tsx",
+        "storyId": "01-atoms-content-restraint-atom--docs",
+        "storyTitle": "Content Restraint Atom",
+        "storyTitlePath": "01 Atoms / Content Restraint Atom",
+        "storyFilePath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
+      },
       {
         "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx",
         "storyId": "01-atoms-icons-map-pin-icon--docs",

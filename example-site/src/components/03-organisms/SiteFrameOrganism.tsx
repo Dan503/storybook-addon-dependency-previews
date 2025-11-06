@@ -8,9 +8,9 @@ export interface PropsForSiteFrameOrganism {
 
 export function SiteFrameOrganism({ children }: PropsForSiteFrameOrganism) {
 	return (
-		<div className="SiteFrameOrganism">
+		<div className="SiteFrameOrganism flex flex-col">
 			<HeaderOrganism />
-			{children}
+			<div className="flex-1 grid items-center">{children}</div>
 			<FooterOrganism />
 		</div>
 	)

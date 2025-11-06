@@ -111,7 +111,8 @@
         }
       ],
       "dependents": [
-        "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
+        "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -741,6 +742,23 @@
     {
       "source": "src/components/04-templates/ContactTemplate.tsx",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ContentRestraintAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ContentRestraintAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "../01-atoms/icons/MapPinIcon",
@@ -2695,7 +2713,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 77,
-    "totalDependenciesCruised": 107,
+    "totalDependenciesCruised": 108,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
