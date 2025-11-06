@@ -403,6 +403,34 @@
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.tsx",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.tsx",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/MealDetailTemplate.tsx",
+        "storyId": "04-templates-meal-detail-template--docs",
+        "storyTitle": "Meal Detail Template",
+        "storyTitlePath": "04 Templates / Meal Detail Template",
+        "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/MealListTemplate.tsx",
+        "storyId": "04-templates-meal-list-template--docs",
+        "storyTitle": "Meal List Template",
+        "storyTitlePath": "04 Templates / Meal List Template",
+        "storyFilePath": "src/components/04-templates/MealListTemplate.stories.tsx"
       }
     ]
   },
@@ -446,6 +474,13 @@
         "storyTitle": "Icon Text Molecule",
         "storyTitlePath": "02 Molecules / Icon Text Molecule",
         "storyFilePath": "src/components/02-molecules/IconTextMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
       },
       {
         "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
@@ -668,6 +703,13 @@
         "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.tsx"
       },
       {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
+      },
+      {
         "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
         "storyId": "listings-card-card-listing-organism--docs",
         "storyTitle": "Card Listing Organism",
@@ -757,6 +799,13 @@
     "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx",
     "builtWith": [
       {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
+      },
+      {
         "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
         "storyId": "listings-compact-compact-listing-organism--docs",
         "storyTitle": "Compact Listing Organism",
@@ -838,6 +887,13 @@
     "storyTitlePath": "04 Templates / Meal List Template",
     "storyFilePath": "src/components/04-templates/MealListTemplate.stories.tsx",
     "builtWith": [
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
+      },
       {
         "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
         "storyId": "listings-card-card-listing-organism--docs",

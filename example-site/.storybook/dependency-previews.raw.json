@@ -561,6 +561,10 @@
       ],
       "dependents": [
         "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/04-templates/MealDetailTemplate.tsx",
+        "src/components/04-templates/MealListTemplate.tsx",
         "src/routes/__root.tsx"
       ],
       "orphan": false,
@@ -638,6 +642,23 @@
             "import"
           ],
           "resolved": "src/components/02-molecules/IconTextMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -1071,6 +1092,23 @@
         },
         {
           "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../listings/card/CardListingOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -1197,6 +1235,23 @@
         },
         {
           "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../listings/compact/CompactListingOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -1313,6 +1368,23 @@
             "import"
           ],
           "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2446,7 +2518,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 73,
-    "totalDependenciesCruised": 95,
+    "totalDependenciesCruised": 99,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

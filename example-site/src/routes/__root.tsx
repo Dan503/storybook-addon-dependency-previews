@@ -49,7 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
-				<SiteFrameOrganism>{children}</SiteFrameOrganism>
+				{children}
 				<TanstackDevtools
 					config={{
 						position: 'bottom-left',
