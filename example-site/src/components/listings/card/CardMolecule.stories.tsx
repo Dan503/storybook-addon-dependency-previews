@@ -17,20 +17,33 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Meal: Story = {
+export const Primary: Story = {
 	args: {
-		title: exampleMeal.name,
-		href: '/example-path',
-		description: `${exampleMeal.area} ${exampleMeal.category} dish`,
+		title: 'Title of the card',
+		href: '#',
+		description: `Card description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
 		imgSrc: exampleMeal.image,
 	} satisfies PropsForCardMolecule,
+	decorators: [
+		(Story) => (
+			<div style={{ width: '400px' }}>
+				<Story />
+			</div>
+		),
+	],
+	parameters: {
+		layout: 'centered',
+	},
 }
 
-export const Ingredient: Story = {
+export const FullWidth: Story = {
 	args: {
-		title: exampleIngredient.ingredient,
-		href: '/example-path',
-		description: exampleIngredient.amount,
-		imgSrc: exampleIngredient.imageUrl.small,
+		title: 'Full Width Card',
+		href: '#',
+		description: `This card takes the full width of its container. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
+		imgSrc: exampleMeal.image,
 	} satisfies PropsForCardMolecule,
+	parameters: {
+		layout: 'padded',
+	},
 }
