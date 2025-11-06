@@ -3,15 +3,15 @@ import type { Meal } from '../../utils/mealDbApiUtils'
 import { CardListingOrganism } from '../listings/card/CardListingOrganism'
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
 
-export interface PropsForMealListTemplate {
+export interface PropsForCardListTemplate {
 	categoryName?: string
 	mealList?: Array<Meal>
 }
 
-export function MealListTemplate({
+export function CardListTemplate({
 	categoryName,
 	mealList,
-}: PropsForMealListTemplate) {
+}: PropsForCardListTemplate) {
 	return (
 		<SiteFrameOrganism>
 			<div className="MealListTemplate grid gap-6">

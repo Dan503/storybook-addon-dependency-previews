@@ -705,11 +705,268 @@
       ],
       "dependents": [
         "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
+        "src/components/04-templates/CardListTemplate.tsx",
         "src/components/04-templates/ContactTemplate.tsx",
         "src/components/04-templates/HomeTemplate.tsx",
         "src/components/04-templates/MealDetailTemplate.tsx",
-        "src/components/04-templates/MealListTemplate.tsx",
         "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../data/example-meal-data",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-data.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./CardListTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/data/example-meal-data.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./categories.json",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/categories.json",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./example-meal-list.json",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-list.json",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.stories.tsx",
+        "src/components/04-templates/HomeTemplate.stories.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/04-templates/MealDetailTemplate.stories.tsx",
+        "src/components/listings/card/CardListingOrganism.stories.tsx",
+        "src/components/listings/card/CardMolecule.stories.tsx",
+        "src/components/listings/compact/CompactListingMolecule.stories.tsx",
+        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/data/categories.json",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/data/example-meal-data.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/data/example-meal-list.json",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/data/example-meal-data.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/utils/mealDbApiUtils.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/data/example-meal-data.ts",
+        "src/components/04-templates/CardListTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/04-templates/MealDetailTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/card/CardListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CardMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/listings/card/CardListingOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardMolecule.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.tsx",
+        "src/components/listings/card/CardMolecule.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1082,120 +1339,6 @@
       "valid": true
     },
     {
-      "source": "src/data/example-meal-data.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./categories.json",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/categories.json",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./example-meal-list.json",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-list.json",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/04-templates/HomeTemplate.stories.tsx",
-        "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealDetailTemplate.stories.tsx",
-        "src/components/04-templates/MealListTemplate.stories.tsx",
-        "src/components/listings/card/CardListingOrganism.stories.tsx",
-        "src/components/listings/card/CardMolecule.stories.tsx",
-        "src/components/listings/compact/CompactListingMolecule.stories.tsx",
-        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/data/categories.json",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "local",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/data/example-meal-data.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/data/example-meal-list.json",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "local",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/data/example-meal-data.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/utils/mealDbApiUtils.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/data/example-meal-data.ts",
-        "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealDetailTemplate.tsx",
-        "src/components/04-templates/MealListTemplate.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/04-templates/HomeTemplate.tsx",
       "dependencies": [
         {
@@ -1305,45 +1448,6 @@
       ],
       "dependents": [
         "src/components/04-templates/HomeTemplate.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/card/CardListingOrganism.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./CardMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/card/CardMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealListTemplate.tsx",
-        "src/components/listings/card/CardListingOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/card/CardMolecule.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/listings/card/CardListingOrganism.tsx",
-        "src/components/listings/card/CardMolecule.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1503,110 +1607,6 @@
       "dependents": [
         "src/components/listings/compact/CompactListingOrganism.tsx",
         "src/components/listings/compact/CompactListingMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/04-templates/MealListTemplate.stories.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./MealListTemplate",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/04-templates/MealListTemplate.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/04-templates/MealListTemplate.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../03-organisms/SiteFrameOrganism",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../listings/card/CardListingOrganism",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/card/CardListingOrganism.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/04-templates/MealListTemplate.stories.tsx"
       ],
       "orphan": false,
       "valid": true
