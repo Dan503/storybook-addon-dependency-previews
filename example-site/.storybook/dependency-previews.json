@@ -32,15 +32,15 @@
       }
     ]
   },
-  "src/components/01-atoms/ScreenPaddingAtom.stories.tsx": {
-    "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+  "src/components/01-atoms/ContentRestraintAtom.stories.tsx": {
+    "componentPath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
     "builtWith": [
       {
-        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
-        "storyId": "01-atoms-screen-padding-atom--docs",
-        "storyTitle": "Screen Padding Atom",
-        "storyTitlePath": "01 Atoms / Screen Padding Atom",
-        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+        "componentPath": "src/components/01-atoms/ContentRestraintAtom.tsx",
+        "storyId": "01-atoms-content-restraint-atom--docs",
+        "storyTitle": "Content Restraint Atom",
+        "storyTitlePath": "01 Atoms / Content Restraint Atom",
+        "storyFilePath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
       },
       {
         "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
@@ -61,6 +61,9 @@
     "builtWith": [],
     "usedIn": [
       {
+        "componentPath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
+      },
+      {
         "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
       },
       {
@@ -68,6 +71,27 @@
       },
       {
         "componentPath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      }
+    ]
+  },
+  "src/components/01-atoms/ContentRestraintAtom.tsx": {
+    "componentPath": "src/components/01-atoms/ContentRestraintAtom.tsx",
+    "storyId": "01-atoms-content-restraint-atom--docs",
+    "storyTitle": "Content Restraint Atom",
+    "storyTitlePath": "01 Atoms / Content Restraint Atom",
+    "storyFilePath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
       }
     ]
   },
@@ -79,6 +103,13 @@
     "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
     "builtWith": [],
     "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ContentRestraintAtom.tsx",
+        "storyId": "01-atoms-content-restraint-atom--docs",
+        "storyTitle": "Content Restraint Atom",
+        "storyTitlePath": "01 Atoms / Content Restraint Atom",
+        "storyFilePath": "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
+      },
       {
         "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
       },
@@ -95,8 +126,35 @@
         "storyTitle": "Home Template",
         "storyTitlePath": "04 Templates / Home Template",
         "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/MealDetailTemplate.tsx",
+        "storyId": "04-templates-meal-detail-template--docs",
+        "storyTitle": "Meal Detail Template",
+        "storyTitlePath": "04 Templates / Meal Detail Template",
+        "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx"
       }
     ]
+  },
+  "src/components/01-atoms/ScreenPaddingAtom.stories.tsx": {
+    "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
+        "storyId": "meta-components-child-content-atom--docs",
+        "storyTitle": "Child Content Atom",
+        "storyTitlePath": "Meta Components / Child Content Atom",
+        "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      }
+    ],
+    "usedIn": []
   },
   "src/components/01-atoms/icons/MapPinIcon.stories.tsx": {
     "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
@@ -862,6 +920,13 @@
     "storyTitlePath": "04 Templates / Meal Detail Template",
     "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx",
     "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
       {
         "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
         "storyId": "03-organisms-site-frame-organism--docs",

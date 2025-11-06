@@ -36,6 +36,100 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../zz-meta-components/ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./ContentRestraintAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ContentRestraintAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+        "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
+        "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ContentRestraintAtom.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.tsx",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+        "src/components/03-organisms/HeroBlockOrganism.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/04-templates/MealDetailTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
       "dependencies": [
         {
@@ -74,28 +168,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/zz-meta-components/ChildContentAtom.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
-        "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
-        "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/01-atoms/ScreenPaddingAtom.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
-        "src/components/03-organisms/HeroBlockOrganism.tsx",
-        "src/components/04-templates/HomeTemplate.tsx"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -1314,6 +1386,23 @@
             "import"
           ],
           "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2605,8 +2694,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 75,
-    "totalDependenciesCruised": 103,
+    "totalCruised": 77,
+    "totalDependenciesCruised": 107,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
