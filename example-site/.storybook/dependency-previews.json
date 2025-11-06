@@ -128,6 +128,13 @@
         "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.tsx"
       },
       {
+        "componentPath": "src/components/04-templates/CardListTemplate.tsx",
+        "storyId": "04-templates-meal-list-template--docs",
+        "storyTitle": "Meal List Template",
+        "storyTitlePath": "04 Templates / Meal List Template",
+        "storyFilePath": "src/components/04-templates/CardListTemplate.stories.tsx"
+      },
+      {
         "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
         "storyId": "04-templates-meal-detail-template--docs",
         "storyTitle": "Meal Detail Template",
@@ -576,6 +583,13 @@
     "storyTitlePath": "04 Templates / Meal List Template",
     "storyFilePath": "src/components/04-templates/CardListTemplate.stories.tsx",
     "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
       {
         "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
         "storyId": "03-organisms-site-frame-organism--docs",

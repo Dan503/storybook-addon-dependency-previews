@@ -22,7 +22,9 @@ type Story = StoryObj<typeof meta>
 
 export const Primary: Story = {
 	args: {
-		categoryName: 'chicken',
+		title: 'Delicious chicken dishes',
+		introText:
+			'Explore our curated selection of mouth-watering chicken recipes that are sure to satisfy your cravings.',
 		mealList: exampleMealList,
 	} satisfies PropsForCardListTemplate,
 }

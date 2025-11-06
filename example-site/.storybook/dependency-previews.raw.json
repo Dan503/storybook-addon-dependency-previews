@@ -124,6 +124,7 @@
         "src/components/01-atoms/ContentRestraintAtom.tsx",
         "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
         "src/components/03-organisms/HeroBlockOrganism.tsx",
+        "src/components/04-templates/CardListTemplate.tsx",
         "src/components/04-templates/DetailPageTemplate.tsx",
         "src/components/04-templates/HomeTemplate.tsx"
       ],
@@ -884,6 +885,23 @@
             "import"
           ],
           "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2713,7 +2731,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 77,
-    "totalDependenciesCruised": 108,
+    "totalDependenciesCruised": 109,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
