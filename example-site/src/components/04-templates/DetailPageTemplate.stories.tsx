@@ -2,13 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { exampleMeal } from '../../data/example-meal-data'
 import {
-	MealDetailTemplate,
-	type PropsForMealDetailTemplate,
-} from './MealDetailTemplate'
+	DetailPageTemplate,
+	type PropsForDetailPageTemplate,
+} from './DetailPageTemplate'
 
-const meta: Meta<typeof MealDetailTemplate> = {
+const meta: Meta<typeof DetailPageTemplate> = {
 	title: '04 Templates / Meal Detail Template',
-	component: MealDetailTemplate,
+	component: DetailPageTemplate,
 	tags: ['autodocs', 'template'],
 	parameters: {
 		layout: 'fullscreen',
@@ -23,12 +23,12 @@ type Story = StoryObj<typeof meta>
 export const Primary: Story = {
 	args: {
 		meal: exampleMeal,
-	} satisfies PropsForMealDetailTemplate,
+	} satisfies PropsForDetailPageTemplate,
 }
 
 export const Loading = {
 	args: {
 		meal: undefined,
 		isLoading: true,
-	} satisfies PropsForMealDetailTemplate,
+	} satisfies PropsForDetailPageTemplate,
 }

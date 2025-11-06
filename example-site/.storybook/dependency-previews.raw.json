@@ -124,8 +124,8 @@
         "src/components/01-atoms/ContentRestraintAtom.tsx",
         "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
         "src/components/03-organisms/HeroBlockOrganism.tsx",
-        "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealDetailTemplate.tsx"
+        "src/components/04-templates/DetailPageTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -707,8 +707,8 @@
         "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
         "src/components/04-templates/CardListTemplate.tsx",
         "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/04-templates/DetailPageTemplate.tsx",
         "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealDetailTemplate.tsx",
         "src/routes/__root.tsx"
       ],
       "orphan": false,
@@ -813,9 +813,9 @@
       ],
       "dependents": [
         "src/components/04-templates/CardListTemplate.stories.tsx",
+        "src/components/04-templates/DetailPageTemplate.stories.tsx",
         "src/components/04-templates/HomeTemplate.stories.tsx",
         "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealDetailTemplate.stories.tsx",
         "src/components/listings/card/CardListingOrganism.stories.tsx",
         "src/components/listings/card/CardMolecule.stories.tsx",
         "src/components/listings/compact/CompactListingMolecule.stories.tsx",
@@ -864,8 +864,8 @@
       "dependents": [
         "src/data/example-meal-data.ts",
         "src/components/04-templates/CardListTemplate.tsx",
-        "src/components/04-templates/HomeTemplate.tsx",
-        "src/components/04-templates/MealDetailTemplate.tsx"
+        "src/components/04-templates/DetailPageTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1297,6 +1297,165 @@
       "valid": true
     },
     {
+      "source": "src/components/04-templates/DetailPageTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../data/example-meal-data",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/data/example-meal-data.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./DetailPageTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/DetailPageTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/DetailPageTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/compact/CompactListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CompactListingMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/DetailPageTemplate.tsx",
+        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingMolecule.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/compact/CompactListingOrganism.tsx",
+        "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/04-templates/HomeTemplate.stories.tsx",
       "dependencies": [
         {
@@ -1448,165 +1607,6 @@
       ],
       "dependents": [
         "src/components/04-templates/HomeTemplate.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/04-templates/MealDetailTemplate.stories.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./MealDetailTemplate",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/04-templates/MealDetailTemplate.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/04-templates/MealDetailTemplate.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../01-atoms/ScreenPaddingAtom",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../03-organisms/SiteFrameOrganism",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../listings/compact/CompactListingOrganism",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/compact/CompactListingOrganism.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/04-templates/MealDetailTemplate.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/compact/CompactListingOrganism.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./CompactListingMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/compact/CompactListingMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/04-templates/MealDetailTemplate.tsx",
-        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/compact/CompactListingMolecule.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/listings/compact/CompactListingOrganism.tsx",
-        "src/components/listings/compact/CompactListingMolecule.stories.tsx"
       ],
       "orphan": false,
       "valid": true

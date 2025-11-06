@@ -4,15 +4,15 @@ import { CompactListingOrganism } from '../listings/compact/CompactListingOrgani
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
 import { ScreenPaddingAtom } from '../01-atoms/ScreenPaddingAtom'
 
-export interface PropsForMealDetailTemplate {
+export interface PropsForDetailPageTemplate {
 	meal: Meal | undefined
 	isLoading?: boolean
 }
 
-export function MealDetailTemplate({
+export function DetailPageTemplate({
 	meal,
 	isLoading,
-}: PropsForMealDetailTemplate) {
+}: PropsForDetailPageTemplate) {
 	if (isLoading || !meal) {
 		return <div>Loading...</div>
 	}

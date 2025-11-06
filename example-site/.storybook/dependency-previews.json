@@ -128,18 +128,18 @@
         "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.tsx"
       },
       {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
+        "storyId": "04-templates-meal-detail-template--docs",
+        "storyTitle": "Meal Detail Template",
+        "storyTitlePath": "04 Templates / Meal Detail Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      },
+      {
         "componentPath": "src/components/04-templates/HomeTemplate.tsx",
         "storyId": "04-templates-home-template--docs",
         "storyTitle": "Home Template",
         "storyTitlePath": "04 Templates / Home Template",
         "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/04-templates/MealDetailTemplate.tsx",
-        "storyId": "04-templates-meal-detail-template--docs",
-        "storyTitle": "Meal Detail Template",
-        "storyTitlePath": "04 Templates / Meal Detail Template",
-        "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx"
       }
     ]
   },
@@ -541,18 +541,18 @@
         "storyFilePath": "src/components/04-templates/ContactTemplate.stories.tsx"
       },
       {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
+        "storyId": "04-templates-meal-detail-template--docs",
+        "storyTitle": "Meal Detail Template",
+        "storyTitlePath": "04 Templates / Meal Detail Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      },
+      {
         "componentPath": "src/components/04-templates/HomeTemplate.tsx",
         "storyId": "04-templates-home-template--docs",
         "storyTitle": "Home Template",
         "storyTitlePath": "04 Templates / Home Template",
         "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/04-templates/MealDetailTemplate.tsx",
-        "storyId": "04-templates-meal-detail-template--docs",
-        "storyTitle": "Meal Detail Template",
-        "storyTitlePath": "04 Templates / Meal Detail Template",
-        "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx"
       }
     ]
   },
@@ -900,6 +900,102 @@
       }
     ]
   },
+  "src/components/04-templates/DetailPageTemplate.stories.tsx": {
+    "componentPath": "src/components/04-templates/DetailPageTemplate.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
+        "storyId": "04-templates-meal-detail-template--docs",
+        "storyTitle": "Meal Detail Template",
+        "storyTitlePath": "04 Templates / Meal Detail Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/04-templates/DetailPageTemplate.tsx": {
+    "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
+    "storyId": "04-templates-meal-detail-template--docs",
+    "storyTitle": "Meal Detail Template",
+    "storyTitlePath": "04 Templates / Meal Detail Template",
+    "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      }
+    ]
+  },
+  "src/components/listings/compact/CompactListingOrganism.tsx": {
+    "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
+    "storyId": "listings-compact-compact-listing-organism--docs",
+    "storyTitle": "Compact Listing Organism",
+    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+    "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
+        "storyId": "04-templates-meal-detail-template--docs",
+        "storyTitle": "Meal Detail Template",
+        "storyTitlePath": "04 Templates / Meal Detail Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      }
+    ]
+  },
+  "src/components/listings/compact/CompactListingMolecule.tsx": {
+    "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
+    "storyId": "listings-compact-compact-listing-molecule--docs",
+    "storyTitle": "Compact Listing Molecule",
+    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+    "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      }
+    ]
+  },
   "src/components/04-templates/HomeTemplate.stories.tsx": {
     "componentPath": "src/components/04-templates/HomeTemplate.stories.tsx",
     "builtWith": [
@@ -952,102 +1048,6 @@
     "usedIn": [
       {
         "componentPath": "src/components/04-templates/HomeTemplate.stories.tsx"
-      }
-    ]
-  },
-  "src/components/04-templates/MealDetailTemplate.stories.tsx": {
-    "componentPath": "src/components/04-templates/MealDetailTemplate.stories.tsx",
-    "builtWith": [
-      {
-        "componentPath": "src/components/04-templates/MealDetailTemplate.tsx",
-        "storyId": "04-templates-meal-detail-template--docs",
-        "storyTitle": "Meal Detail Template",
-        "storyTitlePath": "04 Templates / Meal Detail Template",
-        "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx"
-      }
-    ],
-    "usedIn": []
-  },
-  "src/components/04-templates/MealDetailTemplate.tsx": {
-    "componentPath": "src/components/04-templates/MealDetailTemplate.tsx",
-    "storyId": "04-templates-meal-detail-template--docs",
-    "storyTitle": "Meal Detail Template",
-    "storyTitlePath": "04 Templates / Meal Detail Template",
-    "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx",
-    "builtWith": [
-      {
-        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
-        "storyId": "01-atoms-screen-padding-atom--docs",
-        "storyTitle": "Screen Padding Atom",
-        "storyTitlePath": "01 Atoms / Screen Padding Atom",
-        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
-        "storyId": "03-organisms-site-frame-organism--docs",
-        "storyTitle": "Site Frame Organism",
-        "storyTitlePath": "03 Organisms / Site Frame Organism",
-        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
-        "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Compact Listing Organism",
-        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/04-templates/MealDetailTemplate.stories.tsx"
-      }
-    ]
-  },
-  "src/components/listings/compact/CompactListingOrganism.tsx": {
-    "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
-    "storyId": "listings-compact-compact-listing-organism--docs",
-    "storyTitle": "Compact Listing Organism",
-    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-    "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
-    "builtWith": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
-        "storyId": "listings-compact-compact-listing-molecule--docs",
-        "storyTitle": "Compact Listing Molecule",
-        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-        "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/04-templates/MealDetailTemplate.tsx",
-        "storyId": "04-templates-meal-detail-template--docs",
-        "storyTitle": "Meal Detail Template",
-        "storyTitlePath": "04 Templates / Meal Detail Template",
-        "storyFilePath": "src/components/04-templates/MealDetailTemplate.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      }
-    ]
-  },
-  "src/components/listings/compact/CompactListingMolecule.tsx": {
-    "componentPath": "src/components/listings/compact/CompactListingMolecule.tsx",
-    "storyId": "listings-compact-compact-listing-molecule--docs",
-    "storyTitle": "Compact Listing Molecule",
-    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-    "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.tsx",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingMolecule.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/listings/compact/CompactListingOrganism.tsx",
-        "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Compact Listing Organism",
-        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.tsx"
       }
     ]
   },
