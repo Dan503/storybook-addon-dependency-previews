@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { StoryParameters } from '../../../../storybook-addon-package/dist/types.d.mts'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import {
 	BgImageContainer,
 	type PropsForBgImageContainer,
