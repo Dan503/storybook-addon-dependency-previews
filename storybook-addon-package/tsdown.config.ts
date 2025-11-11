@@ -1,4 +1,3 @@
-// tsdown.config.ts
 import { defineConfig, type UserConfig } from 'tsdown'
 
 const commonConfig: UserConfig = {
@@ -19,9 +18,8 @@ export default defineConfig([
 		entry: {
 			index: './src/index.ts',
 			manager: './src/manager.tsx',
-			preview: './src/preview.tsx',
 		},
-		platform: 'neutral',
+		platform: 'browser',
 	},
 	{
 		...commonConfig,

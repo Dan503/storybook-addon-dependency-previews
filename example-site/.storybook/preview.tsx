@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
-import * as React from 'react'
 import {
 	defaultPreviewParameters,
+	dependencyPreviewDecorators,
 	type StorybookPreviewConfig,
 } from 'storybook-addon-dependency-previews'
 import {
@@ -19,6 +19,7 @@ import '../src/styles.css'
 const previewConfig: StorybookPreviewConfig = {
 	// Added Tanstack React Router decorator to provide routing context, not needed for the addon itself
 	decorators: [
+		...dependencyPreviewDecorators,
 		(Story) => (
 			<RouterProvider
 				router={createRouter({

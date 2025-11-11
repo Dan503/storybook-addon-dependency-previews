@@ -2,3 +2,4 @@
 export * from './blocks/index'
 export * from './panels/index'
 export * from './types'
+export * from './preview'
