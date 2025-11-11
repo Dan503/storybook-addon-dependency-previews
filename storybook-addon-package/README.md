@@ -127,6 +127,7 @@ Now create a `preview.tsx` file in the `.storybook` folder with the following co
 import * as React from 'react'
 import {
 	defaultPreviewParameters,
+	dependencyPreviewDecorators,
 	type StorybookPreviewConfig,
 } from 'storybook-addon-dependency-previews'
 
@@ -137,9 +138,11 @@ import dependenciesJson from './dependency-previews.json'
 import '../src/styles.css'
 
 const previewConfig: StorybookPreviewConfig = {
+	decorators: [
+		...dependencyPreviewDecorators,
+	],
 	parameters: {
 		...defaultPreviewParameters,
-		layout: 'centered',
 		dependencyPreviews: {
 			dependenciesJson,
 			storyModules: import.meta.glob(
