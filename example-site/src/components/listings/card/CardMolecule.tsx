@@ -1,16 +1,22 @@
-import { Link, type ToPathOption } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { H, Section } from 'react-headings'
+import type {
+	RouterParams,
+	RouterPaths,
+} from '../../../utils/routerUtilityTypes'
 
 export interface PropsForCardMolecule {
-	href: ToPathOption
 	title: string
 	imgSrc: string
 	description: string
+	href: RouterPaths
+	hrefParams?: RouterParams
 }
 
 export function CardMolecule({
 	description,
 	href,
+	hrefParams,
 	title,
 	imgSrc,
 }: PropsForCardMolecule) {
@@ -18,6 +24,7 @@ export function CardMolecule({
 		<div className="@container">
 			<Link
 				to={href}
+				params={hrefParams}
 				className="h-full flex @max-md:flex-col gap-2 border rounded-2xl overflow-hidden focus:bg-gray-200 hover:bg-gray-200 hover:shadow-lg hover:transform-[scale(1.02)] transition-all"
 			>
 				<img

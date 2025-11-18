@@ -24,7 +24,8 @@ export const Primary: Story = {
 	args: {
 		cards: exampleMealList.map((meal) => ({
 			title: meal.name,
-			href: '/example-path',
+			href: '/meal/$mealId',
+			hrefParams: { mealId: meal.id },
 			description: `${meal.area} ${meal.category} dish`,
 			imgSrc: meal.image,
 		})),

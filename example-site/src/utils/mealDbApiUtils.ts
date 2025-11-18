@@ -1,3 +1,6 @@
+import axios from 'axios'
+import type { Category } from '../data/example-meal-data'
+
 // Ergonomic response shape (array, same as API)
 export interface MealDBTransformedResponse {
 	meals: Meal[]
@@ -96,6 +99,52 @@ export interface MealRawData {
 	strImageSource: string | null
 	strCreativeCommonsConfirmed: string | null
 	dateModified: string | null
+}
+
+export const mealDbApi = axios.create({
+	baseURL: 'https://www.themealdb.com/api/json/v1/1/',
+	transformResponse: [
+		...(axios.defaults.transformResponse as []),
+		(data: MealDBResponse): Array<Meal> => data.meals.map(transformMealData),
+	],
+})
+
+export async function fetchMealById(mealId: string): Promise<Meal | null> {
+	const { data } = await mealDbApi.get<Array<Meal>>(`lookup.php?i=${mealId}`)
+	return data[0] || null
+}
+
+export async function fetchCategories(): Promise<Array<Category>> {
+	const { data } = await axios.get<Array<Category>>(
+		`https://www.themealdb.com/api/json/v1/1/categories.php`,
+	)
+	return data || []
+}
+
+export async function fetchMealsByCategory(
+	category: string,
+): Promise<Array<Meal>> {
+	const { data } = await mealDbApi.get<Array<Meal>>(
+		`filter.php?c=${encodeURIComponent(category)}`,
+	)
+	return data || []
+}
+
+export async function fetchMealsByArea(area: string): Promise<Array<Meal>> {
+	const { data } = await mealDbApi.get<Array<Meal>>(
+		`filter.php?a=${encodeURIComponent(area)}`,
+	)
+	return data || []
+}
+
+async function fetchRandomMeal(): Promise<Meal> {
+	const { data } = await mealDbApi.get<Array<Meal>>('random.php')
+	return data[0]
+}
+
+export async function fetchRandomMealList(count = 10): Promise<Array<Meal>> {
+	const promises = Array.from({ length: count }, () => fetchRandomMeal())
+	return Promise.all(promises)
 }
 
 export function transformMealData(raw: MealRawData): Meal {

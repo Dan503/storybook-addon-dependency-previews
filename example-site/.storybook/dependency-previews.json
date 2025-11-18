@@ -373,6 +373,39 @@
       }
     ]
   },
+  "src/components/02-molecules/MainNavMolecule.stories.tsx": {
+    "componentPath": "src/components/02-molecules/MainNavMolecule.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/02-molecules/MainNavMolecule.tsx",
+        "storyId": "02-molecules-main-nav-molecule--docs",
+        "storyTitle": "Main Nav Molecule",
+        "storyTitlePath": "02 Molecules / Main Nav Molecule",
+        "storyFilePath": "src/components/02-molecules/MainNavMolecule.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/02-molecules/MainNavMolecule.tsx": {
+    "componentPath": "src/components/02-molecules/MainNavMolecule.tsx",
+    "storyId": "02-molecules-main-nav-molecule--docs",
+    "storyTitle": "Main Nav Molecule",
+    "storyTitlePath": "02 Molecules / Main Nav Molecule",
+    "storyFilePath": "src/components/02-molecules/MainNavMolecule.stories.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/02-molecules/MainNavMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeaderOrganism.tsx",
+        "storyId": "03-organisms-header-organism--docs",
+        "storyTitle": "Header Organism",
+        "storyTitlePath": "03 organisms / Header Organism",
+        "storyFilePath": "src/components/03-organisms/HeaderOrganism.stories.tsx"
+      }
+    ]
+  },
   "src/components/03-organisms/FooterOrganism.stories.tsx": {
     "componentPath": "src/components/03-organisms/FooterOrganism.stories.tsx",
     "builtWith": [
@@ -425,7 +458,15 @@
     "storyTitle": "Header Organism",
     "storyTitlePath": "03 organisms / Header Organism",
     "storyFilePath": "src/components/03-organisms/HeaderOrganism.stories.tsx",
-    "builtWith": [],
+    "builtWith": [
+      {
+        "componentPath": "src/components/02-molecules/MainNavMolecule.tsx",
+        "storyId": "02-molecules-main-nav-molecule--docs",
+        "storyTitle": "Main Nav Molecule",
+        "storyTitlePath": "02 Molecules / Main Nav Molecule",
+        "storyFilePath": "src/components/02-molecules/MainNavMolecule.stories.tsx"
+      }
+    ],
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/HeaderOrganism.stories.tsx"

@@ -5,7 +5,7 @@ import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
 import { ScreenPaddingAtom } from '../01-atoms/ScreenPaddingAtom'
 
 export interface PropsForDetailPageTemplate {
-	meal: Meal | undefined
+	meal: Meal | undefined | null
 	isLoading?: boolean
 }
 

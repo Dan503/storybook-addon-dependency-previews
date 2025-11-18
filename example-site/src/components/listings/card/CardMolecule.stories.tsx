@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { exampleIngredient, exampleMeal } from '../../../data/example-meal-data'
+import { exampleMeal } from '../../../data/example-meal-data'
 import { CardMolecule, type PropsForCardMolecule } from './CardMolecule'
 
 const meta: Meta<typeof CardMolecule> = {
@@ -20,7 +20,7 @@ type Story = StoryObj<typeof meta>
 export const Primary: Story = {
 	args: {
 		title: 'Title of the card',
-		href: '#',
+		href: '/',
 		description: `Card description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
 		imgSrc: exampleMeal.image,
 	} satisfies PropsForCardMolecule,
@@ -39,7 +39,7 @@ export const Primary: Story = {
 export const FullWidth: Story = {
 	args: {
 		title: 'Full Width Card',
-		href: '#',
+		href: '/',
 		description: `This card takes the full width of its container. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
 		imgSrc: exampleMeal.image,
 	} satisfies PropsForCardMolecule,

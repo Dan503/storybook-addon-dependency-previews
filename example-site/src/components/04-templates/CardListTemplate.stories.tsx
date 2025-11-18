@@ -30,7 +30,8 @@ export const CategoryList: Story = {
 			title: category.strCategory,
 			imgSrc: category.strCategoryThumb,
 			description: category.strCategoryDescription,
-			href: `/category/${category.idCategory}`,
+			href: '/categories/$category',
+			hrefParams: { category: category.strCategory },
 		})),
 	} satisfies PropsForCardListTemplate,
 }
@@ -45,7 +46,8 @@ export const MealList: Story = {
 			title: meal.name,
 			imgSrc: meal.image,
 			description: meal.area,
-			href: `/meal/${meal.id}`,
+			href: '/meal/$mealId',
+			hrefParams: { mealId: meal.id },
 		})),
 	} satisfies PropsForCardListTemplate,
 }

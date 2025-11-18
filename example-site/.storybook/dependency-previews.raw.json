@@ -485,6 +485,41 @@
       "valid": true
     },
     {
+      "source": "src/components/02-molecules/MainNavMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./MainNavMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/MainNavMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/MainNavMolecule.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/02-molecules/MainNavMolecule.stories.tsx",
+        "src/components/03-organisms/HeaderOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/03-organisms/FooterOrganism.stories.tsx",
       "dependencies": [
         {
@@ -546,7 +581,25 @@
     },
     {
       "source": "src/components/03-organisms/HeaderOrganism.tsx",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../02-molecules/MainNavMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/MainNavMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/03-organisms/HeaderOrganism.stories.tsx",
         "src/components/03-organisms/SiteFrameOrganism.tsx"
@@ -816,7 +869,6 @@
         "src/components/04-templates/CardListTemplate.stories.tsx",
         "src/components/04-templates/DetailPageTemplate.stories.tsx",
         "src/components/04-templates/HomeTemplate.stories.tsx",
-        "src/components/04-templates/HomeTemplate.tsx",
         "src/components/listings/card/CardListingOrganism.stories.tsx",
         "src/components/listings/card/CardMolecule.stories.tsx",
         "src/components/listings/compact/CompactListingMolecule.stories.tsx",
@@ -866,7 +918,8 @@
         "src/data/example-meal-data.ts",
         "src/components/04-templates/CardListTemplate.tsx",
         "src/components/04-templates/DetailPageTemplate.tsx",
-        "src/components/04-templates/HomeTemplate.tsx"
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/routes/index.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1539,24 +1592,6 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "../../utils/mealDbApiUtils",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -2199,10 +2234,7 @@
           "valid": true
         }
       ],
-      "dependents": [
-        "src/routes/demo.form.address.tsx",
-        "src/routes/demo.form.simple.tsx"
-      ],
+      "dependents": [],
       "orphan": false,
       "valid": true
     },
@@ -2321,14 +2353,14 @@
         },
         {
           "dynamic": false,
-          "module": "./routes/demo.form.address",
+          "module": "./routes/categories",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/routes/demo.form.address.tsx",
+          "resolved": "src/routes/categories.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2338,14 +2370,14 @@
         },
         {
           "dynamic": false,
-          "module": "./routes/demo.form.simple",
+          "module": "./routes/categories.$category",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/routes/demo.form.simple.tsx",
+          "resolved": "src/routes/categories.$category.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2355,48 +2387,14 @@
         },
         {
           "dynamic": false,
-          "module": "./routes/demo.start.api-request",
+          "module": "./routes/contact",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/routes/demo.start.api-request.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./routes/demo.start.server-funcs",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/routes/demo.start.server-funcs.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./routes/demo.tanstack-query",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/routes/demo.tanstack-query.tsx",
+          "resolved": "src/routes/contact.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2414,6 +2412,23 @@
             "import"
           ],
           "resolved": "src/routes/index.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/meal.$mealId",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/meal.$mealId.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2592,61 +2607,7 @@
       "valid": true
     },
     {
-      "source": "src/routes/demo.form.address.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../hooks/demo.form",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/hooks/demo.form.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/routeTree.gen.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/routes/demo.form.simple.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../hooks/demo.form",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/hooks/demo.form.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/routeTree.gen.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/routes/demo.start.api-request.tsx",
+      "source": "src/routes/categories.tsx",
       "dependencies": [],
       "dependents": [
         "src/routeTree.gen.ts"
@@ -2655,7 +2616,7 @@
       "valid": true
     },
     {
-      "source": "src/routes/demo.start.server-funcs.tsx",
+      "source": "src/routes/categories.$category.tsx",
       "dependencies": [],
       "dependents": [
         "src/routeTree.gen.ts"
@@ -2664,7 +2625,7 @@
       "valid": true
     },
     {
-      "source": "src/routes/demo.tanstack-query.tsx",
+      "source": "src/routes/contact.tsx",
       "dependencies": [],
       "dependents": [
         "src/routeTree.gen.ts"
@@ -2708,6 +2669,23 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [
@@ -2729,6 +2707,15 @@
       "dependencies": [],
       "dependents": [
         "src/routes/index.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/meal.$mealId.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
       ],
       "orphan": false,
       "valid": true
@@ -2767,8 +2754,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 77,
-    "totalDependenciesCruised": 111,
+    "totalCruised": 78,
+    "totalDependenciesCruised": 110,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
