@@ -942,6 +942,24 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/card/CardMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [
@@ -983,6 +1001,7 @@
       "source": "src/components/listings/card/CardMolecule.tsx",
       "dependencies": [],
       "dependents": [
+        "src/components/04-templates/CardListTemplate.tsx",
         "src/components/listings/card/CardListingOrganism.tsx",
         "src/components/listings/card/CardMolecule.stories.tsx"
       ],
@@ -1624,7 +1643,8 @@
         }
       ],
       "dependents": [
-        "src/components/04-templates/HomeTemplate.stories.tsx"
+        "src/components/04-templates/HomeTemplate.stories.tsx",
+        "src/routes/index.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2657,6 +2677,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../components/04-templates/HomeTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/HomeTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../logo.svg",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -2731,7 +2768,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 77,
-    "totalDependenciesCruised": 109,
+    "totalDependenciesCruised": 111,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

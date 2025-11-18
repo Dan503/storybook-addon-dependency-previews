@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { exampleMealList } from '../../data/example-meal-data'
+import { categoryList, exampleMealList } from '../../data/example-meal-data'
 import {
 	CardListTemplate,
 	type PropsForCardListTemplate,
 } from './CardListTemplate'
 
 const meta: Meta<typeof CardListTemplate> = {
-	title: '04 Templates / Meal List Template',
+	title: '04 Templates / Card List Template',
 	component: CardListTemplate,
 	tags: ['autodocs', 'template'],
 	parameters: {
@@ -20,11 +20,32 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Primary: Story = {
+export const CategoryList: Story = {
+	args: {
+		title: 'What type of meal are you looking for?',
+		introText:
+			'Browse through our diverse meal categories to find the perfect dish for any occasion.',
+		cardList: categoryList?.map((category) => ({
+			id: category.idCategory,
+			title: category.strCategory,
+			imgSrc: category.strCategoryThumb,
+			description: category.strCategoryDescription,
+			href: `/category/${category.idCategory}`,
+		})),
+	} satisfies PropsForCardListTemplate,
+}
+
+export const MealList: Story = {
 	args: {
 		title: 'Delicious chicken dishes',
 		introText:
 			'Explore our curated selection of mouth-watering chicken recipes that are sure to satisfy your cravings.',
-		mealList: exampleMealList,
+		cardList: exampleMealList?.map((meal) => ({
+			id: meal.id,
+			title: meal.name,
+			imgSrc: meal.image,
+			description: meal.area,
+			href: `/meal/${meal.id}`,
+		})),
 	} satisfies PropsForCardListTemplate,
 }
