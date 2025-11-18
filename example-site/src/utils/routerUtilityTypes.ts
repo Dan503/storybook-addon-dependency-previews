@@ -1,13 +1,13 @@
 import { type PathParamOptions } from '@tanstack/react-router'
 import type { getRouter } from '../router'
-import type { FileRoutesByFullPath, FileRoutesByTo } from '../routeTree.gen'
+import type { FileRoutesByTo } from '../routeTree.gen'
 
 type RouterType = ReturnType<typeof getRouter>
 
-export type RouterPaths = keyof FileRoutesByFullPath
+export type RouterPaths = keyof FileRoutesByTo
 
 export type RouterParams = PathParamOptions<
 	RouterType,
-	keyof FileRoutesByTo,
+	RouterPaths,
 	any
 >['params']
