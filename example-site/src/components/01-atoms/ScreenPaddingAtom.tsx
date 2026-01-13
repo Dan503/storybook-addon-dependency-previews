@@ -10,7 +10,7 @@ export function ScreenPaddingAtom({
 	padVertical,
 }: PropsForScreenPaddingAtom) {
 	return (
-		<div className={`ScreenPaddingAtom ${padVertical ? 'p-6' : 'px-6'}`}>
+		<div className={`ScreenPaddingAtom ${padVertical ? 'p-6' : 'px-6'} w-full`}>
 			{children}
 		</div>
 	)
