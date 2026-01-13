@@ -60,7 +60,8 @@
 		"@storybook/addon-links": "^10.0.2",
 		"react": ">=18",
 		"react-dom": ">=18",
-		"storybook": "^10.0.2"
+		"storybook": "^10.0.2",
+		"dependency-cruiser": "^17.3.6"
 	},
 	"devDependencies": {
 		"@storybook/csf": "^0.1.13",
@@ -78,13 +79,13 @@
 		"ts-dedent": "^2.2.0",
 		"tsdown": "^0.15.7",
 		"typescript": "^5.6.3",
-		"vite": "^7.1.7"
+		"vite": "^7.1.7",
+		"dependency-cruiser": "^17.3.6"
 	},
 	"dependencies": {
 		"@iframe-resizer/child": "^5.5.7",
 		"@iframe-resizer/react": "^5.5.7",
 		"@parcel/watcher": "^2.5.1",
-		"dependency-cruiser": "^16.6.0",
 		"micromatch": "^4.0.8"
 	},
 	"storybook-addon": {
