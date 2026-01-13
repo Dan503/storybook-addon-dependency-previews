@@ -121,6 +121,13 @@
         "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
       },
       {
+        "componentPath": "src/components/03-organisms/HeaderOrganism.tsx",
+        "storyId": "03-organisms-header-organism--docs",
+        "storyTitle": "Header Organism",
+        "storyTitlePath": "03 organisms / Header Organism",
+        "storyFilePath": "src/components/03-organisms/HeaderOrganism.stories.tsx"
+      },
+      {
         "componentPath": "src/components/03-organisms/HeroBlockOrganism.tsx",
         "storyId": "03-organisms-hero-block-organism--docs",
         "storyTitle": "Hero Block Organism",
@@ -460,6 +467,13 @@
     "storyFilePath": "src/components/03-organisms/HeaderOrganism.stories.tsx",
     "builtWith": [
       {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
         "componentPath": "src/components/02-molecules/MainNavMolecule.tsx",
         "storyId": "02-molecules-main-nav-molecule--docs",
         "storyTitle": "Main Nav Molecule",
@@ -721,19 +735,6 @@
       }
     ]
   },
-  "src/components/04-templates/ContactTemplate.stories.tsx": {
-    "componentPath": "src/components/04-templates/ContactTemplate.stories.tsx",
-    "builtWith": [
-      {
-        "componentPath": "src/components/04-templates/ContactTemplate.tsx",
-        "storyId": "04-templates-contact-template--docs",
-        "storyTitle": "Contact Template",
-        "storyTitlePath": "04 Templates / Contact Template",
-        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.tsx"
-      }
-    ],
-    "usedIn": []
-  },
   "src/components/04-templates/ContactTemplate.tsx": {
     "componentPath": "src/components/04-templates/ContactTemplate.tsx",
     "storyId": "04-templates-contact-template--docs",
@@ -969,18 +970,47 @@
       }
     ]
   },
-  "src/components/04-templates/DetailPageTemplate.stories.tsx": {
-    "componentPath": "src/components/04-templates/DetailPageTemplate.stories.tsx",
+  "src/components/04-templates/HomeTemplate.tsx": {
+    "componentPath": "src/components/04-templates/HomeTemplate.tsx",
+    "storyId": "04-templates-home-template--docs",
+    "storyTitle": "Home Template",
+    "storyTitlePath": "04 Templates / Home Template",
+    "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx",
     "builtWith": [
       {
-        "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
-        "storyId": "04-templates-meal-detail-template--docs",
-        "storyTitle": "Meal Detail Template",
-        "storyTitlePath": "04 Templates / Meal Detail Template",
-        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.tsx"
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.tsx",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.tsx"
       }
     ],
-    "usedIn": []
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.stories.tsx"
+      }
+    ]
   },
   "src/components/04-templates/DetailPageTemplate.tsx": {
     "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
@@ -1065,6 +1095,32 @@
       }
     ]
   },
+  "src/components/04-templates/ContactTemplate.stories.tsx": {
+    "componentPath": "src/components/04-templates/ContactTemplate.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.tsx",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/04-templates/DetailPageTemplate.stories.tsx": {
+    "componentPath": "src/components/04-templates/DetailPageTemplate.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.tsx",
+        "storyId": "04-templates-meal-detail-template--docs",
+        "storyTitle": "Meal Detail Template",
+        "storyTitlePath": "04 Templates / Meal Detail Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
   "src/components/04-templates/HomeTemplate.stories.tsx": {
     "componentPath": "src/components/04-templates/HomeTemplate.stories.tsx",
     "builtWith": [
@@ -1077,48 +1133,6 @@
       }
     ],
     "usedIn": []
-  },
-  "src/components/04-templates/HomeTemplate.tsx": {
-    "componentPath": "src/components/04-templates/HomeTemplate.tsx",
-    "storyId": "04-templates-home-template--docs",
-    "storyTitle": "Home Template",
-    "storyTitlePath": "04 Templates / Home Template",
-    "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx",
-    "builtWith": [
-      {
-        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
-        "storyId": "01-atoms-screen-padding-atom--docs",
-        "storyTitle": "Screen Padding Atom",
-        "storyTitlePath": "01 Atoms / Screen Padding Atom",
-        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/03-organisms/HeroBlockOrganism.tsx",
-        "storyId": "03-organisms-hero-block-organism--docs",
-        "storyTitle": "Hero Block Organism",
-        "storyTitlePath": "03 Organisms / Hero Block Organism",
-        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/03-organisms/SiteFrameOrganism.tsx",
-        "storyId": "03-organisms-site-frame-organism--docs",
-        "storyTitle": "Site Frame Organism",
-        "storyTitlePath": "03 Organisms / Site Frame Organism",
-        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/listings/card/CardListingOrganism.tsx",
-        "storyId": "listings-card-card-listing-organism--docs",
-        "storyTitle": "Card Listing Organism",
-        "storyTitlePath": "Listings / Card / Card Listing Organism",
-        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.tsx"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/04-templates/HomeTemplate.stories.tsx"
-      }
-    ]
   },
   "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx": {
     "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx",
