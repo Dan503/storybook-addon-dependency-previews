@@ -105,15 +105,26 @@ export const mealDbApi = axios.create({
 	baseURL: 'https://www.themealdb.com/api/json/v1/1/',
 	transformResponse: [
 		...(axios.defaults.transformResponse as []),
-		(data: MealDBResponse): Array<Meal> => data.meals.map(transformMealData),
+		(data: MealDBResponse): Array<Meal> => {
+			// Handle cases where meals is null or undefined
+			if (!data || !data.meals) {
+				console.error('MealDB API returned no meals', data)
+				return []
+			}
+			return data.meals.map(transformMealData)
+		},
 	],
 })
 
 export async function fetchMealById(mealId: string): Promise<Meal | null> {
-	const { data } = await mealDbApi.get<Array<Meal>>(`lookup.php?i=${mealId}`)
-	return data[0] || null
+	try {
+		const { data } = await mealDbApi.get<Array<Meal>>(`lookup.php?i=${mealId}`)
+		return data?.[0] || null
+	} catch (error) {
+		console.error('Error fetching meal:', error)
+		throw error
+	}
 }
-
 export async function fetchCategories(): Promise<Array<Category>> {
 	const { data } = await axios.get<Array<Category>>(
 		`https://www.themealdb.com/api/json/v1/1/categories.php`,
