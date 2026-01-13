@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Category } from '../data/example-meal-data'
+import type { CategoriesApiResponse, Category } from '../data/example-meal-data'
 
 // Ergonomic response shape (array, same as API)
 export interface MealDBTransformedResponse {
@@ -126,10 +126,10 @@ export async function fetchMealById(mealId: string): Promise<Meal | null> {
 	}
 }
 export async function fetchCategories(): Promise<Array<Category>> {
-	const { data } = await axios.get<Array<Category>>(
+	const { data } = await axios.get<CategoriesApiResponse>(
 		`https://www.themealdb.com/api/json/v1/1/categories.php`,
 	)
-	return data || []
+	return data.categories || []
 }
 
 export async function fetchMealsByCategory(
