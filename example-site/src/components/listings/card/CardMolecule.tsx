@@ -25,7 +25,7 @@ export function CardMolecule({
 			<Link
 				to={href}
 				params={hrefParams}
-				className="h-full flex @max-md:flex-col gap-2 border rounded-2xl overflow-hidden focus:bg-gray-200 hover:bg-gray-200 hover:shadow-lg hover:transform-[scale(1.02)] transition-all"
+				className="h-full flex @max-md:flex-col gap-2 border rounded-2xl overflow-hidden bg-white focus:bg-teal-200 hover:bg-teal-200 hover:shadow-lg hover:transform-[scale(1.02)] transition-all"
 			>
 				<img
 					src={imgSrc}

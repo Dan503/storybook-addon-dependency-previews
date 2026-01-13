@@ -22,7 +22,7 @@ export function HeroBlockOrganism({
 }: PropsForHeroBlockOrganism) {
 	return (
 		<BgImageContainer
-			className="HeroBlockOrganism text-center w-full min-h-100 grid place-items-center"
+			className="HeroBlockOrganism text-center w-full min-h-100 grid place-items-center border-b-2 border-teal-900"
 			imgSrc={imgSrc}
 			altText={altText}
 			tintColor={tintColor}
