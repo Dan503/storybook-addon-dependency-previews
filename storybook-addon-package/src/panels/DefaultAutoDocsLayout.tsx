@@ -18,8 +18,16 @@ export function DefaultAutoDocsLayout() {
 			<Subtitle />
 			<Description />
 			<Primary />
-			<Controls />
+			{/*
+				Placed DependencyPreviews above Controls because DependencyPreviews
+				always takes up a small amount of space so it is fast to scroll past.
+			*/}
 			<DependencyPreviews />
+			{/*
+				Controls can take up a very large amount of vertical space
+				which can take a lot of scrolling to get past
+			*/}
+			<Controls />
 			<Stories />
 		</>
 	)
