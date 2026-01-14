@@ -56,7 +56,18 @@ export type DependencyPreviewStorybookParameters = Omit<
 		 *
 		 * @example "https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site"
 		 */
-		sourceBaseUrl: string
+		sourceRootUrl: string
+		/**
+		 * Specify the absolute path of the root folder of your project source code.
+		 * This is used to open files in VS Code from the Storybook UI.
+		 *
+		 * @example "C:/Users/your-user-name/projects/your-project-name"
+		 *
+		 * // If you are using Vite, and the config you are writing is stored in the `.storybook` folder, you can use:
+		 *
+		 * @example new URL('..', import.meta.url).pathname
+		 */
+		projectRootPath: string
 		/**
 		 * The imported dependency-previews.json file.
 		 *
