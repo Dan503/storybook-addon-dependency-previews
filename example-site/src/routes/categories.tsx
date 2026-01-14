@@ -16,6 +16,7 @@ function RouteComponent() {
 				description: c.strCategoryDescription,
 				imgSrc: c.strCategoryThumb,
 				href: '/categories/$category',
+				hrefParams: { category: c.strCategory },
 			}))}
 			title="Food Categories"
 			introText="Explore what delicious types of food await you!"
