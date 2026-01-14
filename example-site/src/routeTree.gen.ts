@@ -10,8 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CategoriesIndexRouteImport } from './routes/categories.index'
 import { Route as MealMealIdRouteImport } from './routes/meal.$mealId'
 import { Route as CategoriesCategoryRouteImport } from './routes/categories.$category'
 import { Route as ApiDemoTqTodosRouteImport } from './routes/api.demo-tq-todos'
@@ -22,14 +22,14 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategoriesRoute = CategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
+  id: '/categories/',
+  path: '/categories/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MealMealIdRoute = MealMealIdRouteImport.update({
@@ -38,9 +38,9 @@ const MealMealIdRoute = MealMealIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoriesCategoryRoute = CategoriesCategoryRouteImport.update({
-  id: '/$category',
-  path: '/$category',
-  getParentRoute: () => CategoriesRoute,
+  id: '/categories/$category',
+  path: '/categories/$category',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDemoTqTodosRoute = ApiDemoTqTodosRouteImport.update({
   id: '/api/demo-tq-todos',
@@ -55,69 +55,70 @@ const ApiDemoNamesRoute = ApiDemoNamesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/api/demo-names': typeof ApiDemoNamesRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosRoute
   '/categories/$category': typeof CategoriesCategoryRoute
   '/meal/$mealId': typeof MealMealIdRoute
+  '/categories': typeof CategoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/api/demo-names': typeof ApiDemoNamesRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosRoute
   '/categories/$category': typeof CategoriesCategoryRoute
   '/meal/$mealId': typeof MealMealIdRoute
+  '/categories': typeof CategoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/api/demo-names': typeof ApiDemoNamesRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosRoute
   '/categories/$category': typeof CategoriesCategoryRoute
   '/meal/$mealId': typeof MealMealIdRoute
+  '/categories/': typeof CategoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/categories'
     | '/contact'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
     | '/categories/$category'
     | '/meal/$mealId'
+    | '/categories'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/categories'
     | '/contact'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
     | '/categories/$category'
     | '/meal/$mealId'
+    | '/categories'
   id:
     | '__root__'
     | '/'
-    | '/categories'
     | '/contact'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
     | '/categories/$category'
     | '/meal/$mealId'
+    | '/categories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CategoriesRoute: typeof CategoriesRouteWithChildren
   ContactRoute: typeof ContactRoute
   ApiDemoNamesRoute: typeof ApiDemoNamesRoute
   ApiDemoTqTodosRoute: typeof ApiDemoTqTodosRoute
+  CategoriesCategoryRoute: typeof CategoriesCategoryRoute
   MealMealIdRoute: typeof MealMealIdRoute
+  CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -129,18 +130,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/categories': {
-      id: '/categories'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof CategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/': {
+      id: '/categories/'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/meal/$mealId': {
@@ -152,10 +153,10 @@ declare module '@tanstack/react-router' {
     }
     '/categories/$category': {
       id: '/categories/$category'
-      path: '/$category'
+      path: '/categories/$category'
       fullPath: '/categories/$category'
       preLoaderRoute: typeof CategoriesCategoryRouteImport
-      parentRoute: typeof CategoriesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/demo-tq-todos': {
       id: '/api/demo-tq-todos'
@@ -174,25 +175,14 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface CategoriesRouteChildren {
-  CategoriesCategoryRoute: typeof CategoriesCategoryRoute
-}
-
-const CategoriesRouteChildren: CategoriesRouteChildren = {
-  CategoriesCategoryRoute: CategoriesCategoryRoute,
-}
-
-const CategoriesRouteWithChildren = CategoriesRoute._addFileChildren(
-  CategoriesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CategoriesRoute: CategoriesRouteWithChildren,
   ContactRoute: ContactRoute,
   ApiDemoNamesRoute: ApiDemoNamesRoute,
   ApiDemoTqTodosRoute: ApiDemoTqTodosRoute,
+  CategoriesCategoryRoute: CategoriesCategoryRoute,
   MealMealIdRoute: MealMealIdRoute,
+  CategoriesIndexRoute: CategoriesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
