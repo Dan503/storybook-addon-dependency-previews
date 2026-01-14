@@ -999,8 +999,8 @@
       ],
       "dependents": [
         "src/data/example-meal-data.ts",
-        "src/routes/categories.tsx",
         "src/routes/categories.$category.tsx",
+        "src/routes/categories.index.tsx",
         "src/routes/index.tsx",
         "src/components/04-templates/HomeTemplate.tsx",
         "src/routes/meal.$mealId.tsx",
@@ -1100,7 +1100,7 @@
               ]
             },
             {
-              "name": "src/routes/categories.tsx",
+              "name": "src/routes/categories.$category.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -1171,7 +1171,7 @@
               ]
             },
             {
-              "name": "src/routes/categories.tsx",
+              "name": "src/routes/categories.$category.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -1196,8 +1196,8 @@
       ],
       "dependents": [
         "src/components/04-templates/CardListTemplate.stories.tsx",
-        "src/routes/categories.tsx",
-        "src/routes/categories.$category.tsx"
+        "src/routes/categories.$category.tsx",
+        "src/routes/categories.index.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -1252,7 +1252,7 @@
               ]
             },
             {
-              "name": "src/routes/categories.tsx",
+              "name": "src/routes/categories.$category.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -1334,7 +1334,7 @@
               ]
             },
             {
-              "name": "src/routes/categories.tsx",
+              "name": "src/routes/categories.$category.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -1409,7 +1409,7 @@
               ]
             },
             {
-              "name": "src/routes/categories.tsx",
+              "name": "src/routes/categories.$category.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -1652,14 +1652,14 @@
         },
         {
           "dynamic": false,
-          "module": "./routes/categories",
+          "module": "./routes/categories.$category",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/routes/categories.tsx",
+          "resolved": "src/routes/categories.$category.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -1667,7 +1667,7 @@
           "circular": true,
           "cycle": [
             {
-              "name": "src/routes/categories.tsx",
+              "name": "src/routes/categories.$category.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -1721,14 +1721,14 @@
         },
         {
           "dynamic": false,
-          "module": "./routes/categories.$category",
+          "module": "./routes/categories.index",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/routes/categories.$category.tsx",
+          "resolved": "src/routes/categories.index.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -1736,7 +1736,7 @@
           "circular": true,
           "cycle": [
             {
-              "name": "src/routes/categories.$category.tsx",
+              "name": "src/routes/categories.index.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -1988,109 +1988,6 @@
       "valid": true
     },
     {
-      "source": "src/routes/categories.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../components/04-templates/CardListTemplate",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/04-templates/CardListTemplate.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": true,
-          "cycle": [
-            {
-              "name": "src/components/04-templates/CardListTemplate.tsx",
-              "dependencyTypes": [
-                "local",
-                "import"
-              ]
-            },
-            {
-              "name": "src/components/listings/card/CardListingOrganism.tsx",
-              "dependencyTypes": [
-                "local",
-                "import"
-              ]
-            },
-            {
-              "name": "src/components/listings/card/CardMolecule.tsx",
-              "dependencyTypes": [
-                "local",
-                "import"
-              ]
-            },
-            {
-              "name": "src/utils/routerUtilityTypes.ts",
-              "dependencyTypes": [
-                "local",
-                "type-only",
-                "import"
-              ]
-            },
-            {
-              "name": "src/router.tsx",
-              "dependencyTypes": [
-                "local",
-                "type-only",
-                "import"
-              ]
-            },
-            {
-              "name": "src/routeTree.gen.ts",
-              "dependencyTypes": [
-                "local",
-                "import"
-              ]
-            },
-            {
-              "name": "src/routes/categories.tsx",
-              "dependencyTypes": [
-                "local",
-                "import"
-              ]
-            }
-          ],
-          "valid": false,
-          "rules": [
-            {
-              "severity": "error",
-              "name": "no-circular"
-            }
-          ]
-        },
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/routeTree.gen.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/routes/categories.$category.tsx",
       "dependencies": [
         {
@@ -2155,6 +2052,109 @@
             },
             {
               "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "../utils/mealDbApiUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/utils/mealDbApiUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/categories.index.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/04-templates/CardListTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.index.tsx",
               "dependencyTypes": [
                 "local",
                 "import"
@@ -3655,7 +3655,7 @@
             ]
           },
           {
-            "name": "src/routes/categories.tsx",
+            "name": "src/routes/categories.$category.tsx",
             "dependencyTypes": [
               "local",
               "import"
@@ -3711,7 +3711,7 @@
             ]
           },
           {
-            "name": "src/routes/categories.tsx",
+            "name": "src/routes/categories.$category.tsx",
             "dependencyTypes": [
               "local",
               "import"
@@ -3842,7 +3842,7 @@
       },
       {
         "type": "cycle",
-        "from": "src/routes/categories.$category.tsx",
+        "from": "src/routes/categories.index.tsx",
         "to": "src/components/04-templates/CardListTemplate.tsx",
         "rule": {
           "severity": "error",
@@ -3894,7 +3894,7 @@
             ]
           },
           {
-            "name": "src/routes/categories.$category.tsx",
+            "name": "src/routes/categories.index.tsx",
             "dependencyTypes": [
               "local",
               "import"
@@ -3960,14 +3960,14 @@
       {
         "type": "cycle",
         "from": "src/routeTree.gen.ts",
-        "to": "src/routes/categories.tsx",
+        "to": "src/routes/categories.index.tsx",
         "rule": {
           "severity": "error",
           "name": "no-circular"
         },
         "cycle": [
           {
-            "name": "src/routes/categories.tsx",
+            "name": "src/routes/categories.index.tsx",
             "dependencyTypes": [
               "local",
               "import"
@@ -4075,7 +4075,7 @@
     "totalCruised": 78,
     "totalDependenciesCruised": 119,
     "optionsUsed": {
-      "baseDir": "C:\\Users\\Daniel.Tonon\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
+      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
       "detectJSDocImports": false,
       "detectProcessBuiltinModuleCalls": false,
@@ -4095,7 +4095,7 @@
       "outputTo": "-",
       "outputType": "json",
       "preserveSymlinks": false,
-      "rulesFile": "C:\\Users\\Daniel.Tonon\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\dist\\cli\\scripts\\depcruise.config.cjs",
+      "rulesFile": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\dist\\cli\\scripts\\depcruise.config.cjs",
       "skipAnalysisNotInRules": false,
       "tsPreCompilationDeps": true,
       "args": "."
