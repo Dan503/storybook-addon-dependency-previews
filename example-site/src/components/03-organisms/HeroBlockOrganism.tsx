@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { H, Section } from 'react-headings'
 import { BgImageContainer } from '../01-atoms/BgImageContainer'
 import { ScreenPaddingAtom } from '../01-atoms/ScreenPaddingAtom'
 
 export interface PropsForHeroBlockOrganism {
-	title: string
+	title: string | ReactElement
 	imgSrc?: string
 	tintPercent?: number
 	tintColor?: string

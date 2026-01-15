@@ -1,9 +1,10 @@
-import type { Meal } from '../../utils/mealDbApiUtils'
-import { HeroBlockOrganism } from '../03-organisms/HeroBlockOrganism'
 import { H, Section } from 'react-headings'
-import { CardListingOrganism } from '../listings/card/CardListingOrganism'
-import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
+import type { Meal } from '../../utils/mealDbApiUtils'
+import { ExternalLinkAtom } from '../01-atoms/ExternalLinkAtom'
 import { ScreenPaddingAtom } from '../01-atoms/ScreenPaddingAtom'
+import { HeroBlockOrganism } from '../03-organisms/HeroBlockOrganism'
+import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
+import { CardListingOrganism } from '../listings/card/CardListingOrganism'
 
 export interface PropsForHomeTemplate {
 	featuredMeals: Array<Meal>
@@ -15,7 +16,17 @@ export function HomeTemplate({ featuredMeals }: PropsForHomeTemplate) {
 		<SiteFrameOrganism>
 			<div className="HomeTemplate">
 				<HeroBlockOrganism
-					title="Welcome to the Storybook Dependency Previews example site"
+					title={
+						<>
+							Welcome to the
+							<br />
+							<ExternalLinkAtom href="https://github.com/Dan503/storybook-addon-dependency-previews">
+								Storybook Dependency Previews
+							</ExternalLinkAtom>
+							<br />
+							example site
+						</>
+					}
 					imgSrc={featureMeal.image}
 				>
 					<p>
