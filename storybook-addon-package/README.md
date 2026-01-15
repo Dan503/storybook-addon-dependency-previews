@@ -1,8 +1,20 @@
 # Storybook Add On - Dependency Previews
 
+![Dependency Previews logo](./readme-images/dependency-previews-logo.png)
+
 ## What is this?
 
+> **This plugin is built for Storybook 10**
+
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
+
+This is what you will see in Storybook after Dependency Previews have been installed and configured:
+
+![Dependency Previews - all closed](./readme-images/all-closed.png)
+
+The below image demonstrates what you will see when you open up some of the dependency segments:
+
+![Dependency Previews - all open](./readme-images/all-open.png)
 
 <!-- TODO: Provide a video/gif of the addon in action -->
 
@@ -138,9 +150,7 @@ import dependenciesJson from './dependency-previews.json'
 import '../src/styles.css'
 
 const previewConfig: StorybookPreviewConfig = {
-	decorators: [
-		...dependencyPreviewDecorators,
-	],
+	decorators: [...dependencyPreviewDecorators],
 	parameters: {
 		...defaultPreviewParameters,
 		dependencyPreviews: {
@@ -151,8 +161,12 @@ const previewConfig: StorybookPreviewConfig = {
 			),
 			// Replace this with the base url of your git repository
 			// This enables the addon to link to the source code of the component
-			sourceBaseUrl:
+			sourceRootUrl:
 				'https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site',
+			// This allows Source File Path to open the
+			// component file directly in VS Code when
+			// running in a local host environment.
+			projectRootPath: new URL('..', import.meta.url).pathname,
 		},
 	},
 }
@@ -168,9 +182,6 @@ Try running `npm run sb` to boot up storybook, leave it running as you work.
 
 As you create and delete story files, `sb-deps` will detect when new stories are created/deleted and automatically regenerate the dependency-previews.json for you.
 
-`sb-deps` also auto-scaffolds any new story files that you create so the workflow is:
+`sb-deps` also auto-scaffolds the component file and creates a matching story file for you when you create a new .tsx file in the components folder.
 
-1. Create draft component
-2. Create component story file (sb-deps will auto-scaffold it with boiler plate immediately upon file creation)
-
-This workflow allows you to focus on what matters instead of having to waste time writing lots of boilerplate code.
+This workflow allows you to focus on what matters instead of having to waste time writing lots of boilerplate code every time you want to create a new component.
