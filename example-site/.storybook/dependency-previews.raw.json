@@ -36,6 +36,42 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/ButtonAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ButtonAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ButtonAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ButtonAtom.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
       "dependencies": [
         {
@@ -2225,6 +2261,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../01-atoms/ButtonAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../01-atoms/ContentRestraintAtom",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -2324,6 +2377,23 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../forms/FormDataPreview/FormDataPreviewAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [
@@ -2336,6 +2406,23 @@
     {
       "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../01-atoms/ButtonAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "../TextAreaMolecule/TextAreaMolecule",
@@ -2517,6 +2604,16 @@
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
         "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
         "src/hooks/demo.form.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -3118,15 +3215,6 @@
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx",
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
         "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -4072,8 +4160,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 78,
-    "totalDependenciesCruised": 119,
+    "totalCruised": 80,
+    "totalDependenciesCruised": 123,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
