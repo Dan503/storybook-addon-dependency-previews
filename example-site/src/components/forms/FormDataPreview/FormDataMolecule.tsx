@@ -3,7 +3,7 @@ import { FormDataPreviewAtom } from './FormDataPreviewAtom'
 
 interface PropsForFormDataWrapper<FormValues extends Record<string, any>> {
 	formValues?: FormValues
-	children: ReactNode
+	children?: ReactNode
 }
 
 export function FormDataMolecule<FormValues extends Record<string, any>>({

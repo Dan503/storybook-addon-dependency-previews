@@ -2,6 +2,7 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
 import { useEffect } from 'react'
+import { ButtonAtom } from '../../01-atoms/ButtonAtom'
 
 export const defaultContactFormValues = {
 	name: '',
@@ -67,6 +68,10 @@ export function ContactFormOrganism({
 					/>
 				)}
 			</form.Field>
+
+			<div className="flex justify-end">
+				<ButtonAtom type="submit">Send</ButtonAtom>
+			</div>
 		</form>
 	)
 }

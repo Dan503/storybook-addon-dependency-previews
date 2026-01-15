@@ -28,7 +28,15 @@ export const Primary: Story = {
 
 		return (
 			<FormDataMolecule formValues={formValues}>
-				<ContactFormOrganism onValuesChange={setFormValues} />
+				<ContactFormOrganism
+					onValuesChange={setFormValues}
+					onSubmit={() =>
+						alert(
+							'Form submitted! with these values:\n' +
+								JSON.stringify(formValues, null, 2),
+						)
+					}
+				/>
 			</FormDataMolecule>
 		)
 	},
