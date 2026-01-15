@@ -5,6 +5,18 @@ import { CardListTemplate } from '../components/04-templates/CardListTemplate'
 export const Route = createFileRoute('/categories/')({
 	component: RouteComponent,
 	loader: fetchCategories,
+	head: () => ({
+		meta: [
+			{
+				title: 'Meal Categories | The Meal Place',
+			},
+			{
+				name: 'description',
+				content:
+					'Explore a variety of meal categories on The Meal Place. Find recipes, cooking tips, and more!',
+			},
+		],
+	}),
 })
 
 function RouteComponent() {
