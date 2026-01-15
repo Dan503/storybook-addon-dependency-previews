@@ -169,6 +169,151 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/ExternalLinkAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ExternalLinkAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ExternalLinkAtom.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./icons/ExternalLinkIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.stories.tsx",
+        "src/components/04-templates/HomeTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./Svg",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.tsx",
+        "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/iconTypes.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "src/components/01-atoms/icons/Svg.tsx",
+        "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
+        "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
+        "src/components/01-atoms/icons/MapPinIcon.tsx",
+        "src/components/01-atoms/icons/PhoneIcon.stories.tsx",
+        "src/components/01-atoms/icons/PhoneIcon.tsx",
+        "src/components/02-molecules/IconTextMolecule.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/Svg.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "src/components/01-atoms/icons/MapPinIcon.tsx",
+        "src/components/01-atoms/icons/PhoneIcon.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
       "dependencies": [
         {
@@ -198,6 +343,49 @@
             "import"
           ],
           "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ExternalLinkIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -254,20 +442,6 @@
       "valid": true
     },
     {
-      "source": "src/components/01-atoms/icons/iconTypes.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
-        "src/components/01-atoms/icons/MapPinIcon.tsx",
-        "src/components/01-atoms/icons/Svg.tsx",
-        "src/components/01-atoms/icons/PhoneIcon.stories.tsx",
-        "src/components/01-atoms/icons/PhoneIcon.tsx",
-        "src/components/02-molecules/IconTextMolecule.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/01-atoms/icons/MapPinIcon.tsx",
       "dependencies": [
         {
@@ -310,35 +484,6 @@
         "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
         "src/components/02-molecules/IconTextMolecule.stories.tsx",
         "src/components/04-templates/ContactTemplate.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/01-atoms/icons/Svg.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./iconTypes",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/01-atoms/icons/MapPinIcon.tsx",
-        "src/components/01-atoms/icons/PhoneIcon.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2744,6 +2889,23 @@
         },
         {
           "dynamic": false,
+          "module": "../01-atoms/ExternalLinkAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../01-atoms/ScreenPaddingAtom",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -4160,8 +4322,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 80,
-    "totalDependenciesCruised": 123,
+    "totalCruised": 84,
+    "totalDependenciesCruised": 130,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,

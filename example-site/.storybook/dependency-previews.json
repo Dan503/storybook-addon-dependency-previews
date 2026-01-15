@@ -197,46 +197,88 @@
       }
     ]
   },
-  "src/components/01-atoms/ScreenPaddingAtom.stories.tsx": {
-    "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+  "src/components/01-atoms/ExternalLinkAtom.stories.tsx": {
+    "componentPath": "src/components/01-atoms/ExternalLinkAtom.stories.tsx",
     "builtWith": [
       {
-        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
-        "storyId": "01-atoms-screen-padding-atom--docs",
-        "storyTitle": "Screen Padding Atom",
-        "storyTitlePath": "01 Atoms / Screen Padding Atom",
-        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
-        "storyId": "meta-components-child-content-atom--docs",
-        "storyTitle": "Child Content Atom",
-        "storyTitlePath": "Meta Components / Child Content Atom",
-        "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.tsx",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.tsx"
       }
     ],
     "usedIn": []
   },
-  "src/components/01-atoms/icons/MapPinIcon.stories.tsx": {
-    "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
+  "src/components/01-atoms/ExternalLinkAtom.tsx": {
+    "componentPath": "src/components/01-atoms/ExternalLinkAtom.tsx",
+    "storyId": "01-atoms-external-link-atom--docs",
+    "storyTitle": "External Link Atom",
+    "storyTitlePath": "01 Atoms / External Link Atom",
+    "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.tsx",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx"
+      }
+    ]
+  },
+  "src/components/01-atoms/icons/ExternalLinkIcon.tsx": {
+    "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+    "storyId": "01-atoms-icons-external-link-icon--docs",
+    "storyTitle": "External Link Icon",
+    "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+    "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
       },
       {
-        "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx",
-        "storyId": "01-atoms-icons-map-pin-icon--docs",
-        "storyTitle": "Map Pin Icon",
-        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
-        "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx"
+        "componentPath": "src/components/01-atoms/icons/Svg.tsx"
       }
     ],
-    "usedIn": []
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.tsx",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      }
+    ]
   },
   "src/components/01-atoms/icons/iconTypes.ts": {
     "componentPath": "src/components/01-atoms/icons/iconTypes.ts",
     "builtWith": [],
     "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      },
       {
         "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx"
       },
@@ -269,6 +311,89 @@
       }
     ]
   },
+  "src/components/01-atoms/icons/Svg.tsx": {
+    "componentPath": "src/components/01-atoms/icons/Svg.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/PhoneIcon.tsx",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "src/components/01-atoms/icons/PhoneIcon.stories.tsx"
+      }
+    ]
+  },
+  "src/components/01-atoms/ScreenPaddingAtom.stories.tsx": {
+    "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/ChildContentAtom.tsx",
+        "storyId": "meta-components-child-content-atom--docs",
+        "storyTitle": "Child Content Atom",
+        "storyTitlePath": "Meta Components / Child Content Atom",
+        "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx": {
+    "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/icons/MapPinIcon.stories.tsx": {
+    "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx"
+      }
+    ],
+    "usedIn": []
+  },
   "src/components/01-atoms/icons/MapPinIcon.tsx": {
     "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx",
     "storyId": "01-atoms-icons-map-pin-icon--docs",
@@ -296,30 +421,6 @@
         "storyTitle": "Contact Template",
         "storyTitlePath": "04 Templates / Contact Template",
         "storyFilePath": "src/components/04-templates/ContactTemplate.stories.tsx"
-      }
-    ]
-  },
-  "src/components/01-atoms/icons/Svg.tsx": {
-    "componentPath": "src/components/01-atoms/icons/Svg.tsx",
-    "builtWith": [
-      {
-        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx",
-        "storyId": "01-atoms-icons-map-pin-icon--docs",
-        "storyTitle": "Map Pin Icon",
-        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
-        "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/01-atoms/icons/PhoneIcon.tsx",
-        "storyId": "01-atoms-icons-phone-icon--docs",
-        "storyTitle": "Phone Icon",
-        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
-        "storyFilePath": "src/components/01-atoms/icons/PhoneIcon.stories.tsx"
       }
     ]
   },
@@ -1050,6 +1151,13 @@
     "storyTitlePath": "04 Templates / Home Template",
     "storyFilePath": "src/components/04-templates/HomeTemplate.stories.tsx",
     "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.tsx",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.tsx"
+      },
       {
         "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
         "storyId": "01-atoms-screen-padding-atom--docs",
