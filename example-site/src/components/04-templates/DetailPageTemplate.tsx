@@ -20,7 +20,9 @@ export function DetailPageTemplate({
 	return (
 		<SiteFrameOrganism>
 			<ScreenPaddingAtom padVertical>
-				<Section component={<H className="text-3xl font-bold">{meal.name}</H>}>
+				<Section
+					component={<H className="text-3xl font-bold mb-5">{meal.name}</H>}
+				>
 					<div className="grid gap-4 lg:grid-cols-[2fr_30rem]">
 						<div className="grid gap-4 sm:grid-cols-[1fr_2fr]">
 							<img src={meal.image} alt={meal.name} className="mt-2" />
@@ -32,7 +34,7 @@ export function DetailPageTemplate({
 								</Section>
 							</div>
 						</div>
-						<div className="grid gap-4 grid-rows-[auto_1fr]">
+						<div className="grid gap-4 grid-rows-[auto_1fr] items-start">
 							<Section
 								component={<H className="text-2xl font-bold">Ingredients</H>}
 							>
