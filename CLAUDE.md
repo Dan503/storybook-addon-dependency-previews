@@ -66,3 +66,7 @@ pnpm sb:deps      # One-off dependency graph generation
 - The `sb-deps` CLI binary is provided via the `bin` field in package.json
 - The example-site references the addon via `workspace:*`
 - Dependency graph data is generated into `.storybook/dependency-previews.json` and imported in `.storybook/preview.tsx`
+
+## Instructions
+
+If the query is a question, answer the question without making changes first, then ask if the developer wants the changes to be made for them.
