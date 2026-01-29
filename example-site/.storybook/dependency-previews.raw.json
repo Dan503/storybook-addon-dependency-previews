@@ -1388,6 +1388,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "./CardListingOrganism.module.css",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.module.css",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./CardMolecule",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -1467,6 +1484,23 @@
         "src/components/04-templates/CardListTemplate.tsx",
         "src/components/04-templates/HomeTemplate.tsx",
         "src/components/listings/card/CardListingOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.module.css",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -4322,8 +4356,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 84,
-    "totalDependenciesCruised": 130,
+    "totalCruised": 85,
+    "totalDependenciesCruised": 131,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
       "combinedDependencies": true,
