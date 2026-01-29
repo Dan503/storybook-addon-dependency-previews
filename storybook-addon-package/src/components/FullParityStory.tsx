@@ -8,6 +8,7 @@ type Props = {
 	args?: Record<string, unknown>
 	globals?: Record<string, unknown>
 	className?: string
+	onLoad?: () => void
 }
 
 const toCanvasId = (id: string) =>
@@ -18,7 +19,13 @@ const enc = (obj?: Record<string, unknown>) =>
 		? encodeURIComponent(JSON.stringify(obj))
 		: ''
 
-export function FullParityStory({ storyId, args, globals, className }: Props) {
+export function FullParityStory({
+	storyId,
+	args,
+	globals,
+	className,
+	onLoad,
+}: Props) {
 	const canvasId = React.useMemo(() => toCanvasId(storyId), [storyId])
 
 	const src = React.useMemo(() => {
@@ -44,6 +51,7 @@ export function FullParityStory({ storyId, args, globals, className }: Props) {
 			src={src}
 			loading="lazy"
 			className={className}
+			onLoad={onLoad}
 			style={{
 				width: '100%',
 				border: '1px solid var(--sb-border-color, #e5e7eb)',

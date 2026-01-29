@@ -1,13 +1,22 @@
 import type { ReactNode } from 'react'
 import type { IconProps } from './iconTypes'
 
-interface SvgProps extends IconProps {
+interface SvgProps extends IconProps, SVGAttributes<SVGElement> {
 	children?: ReactNode
 }
 
-export function Svg({ altText, className, children }: SvgProps) {
+export function Svg({
+	altText,
+	className,
+	children,
+	...svgOverrides
+}: SvgProps) {
 	return (
-		<svg {...defaultIconAttributes(altText)} className={className}>
+		<svg
+			{...defaultIconAttributes(altText)}
+			{...svgOverrides}
+			className={className}
+		>
 			{children}
 		</svg>
 	)
