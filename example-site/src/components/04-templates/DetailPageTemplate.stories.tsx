@@ -14,6 +14,19 @@ const meta: Meta<typeof DetailPageTemplate> = {
 		layout: 'fullscreen',
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
+	argTypes: {
+		// Use mapping to prevent large data from being serialized into URL
+		meal: {
+			mapping: {
+				example: exampleMeal,
+				none: undefined,
+			},
+			control: {
+				type: 'select',
+			},
+			options: ['example', 'none'],
+		},
+	},
 }
 
 export default meta
@@ -22,13 +35,13 @@ type Story = StoryObj<typeof meta>
 
 export const Primary: Story = {
 	args: {
-		meal: exampleMeal,
-	} satisfies PropsForDetailPageTemplate,
+		meal: 'example' as unknown as PropsForDetailPageTemplate['meal'],
+	},
 }
 
-export const Loading = {
+export const Loading: Story = {
 	args: {
-		meal: undefined,
+		meal: 'none' as unknown as PropsForDetailPageTemplate['meal'],
 		isLoading: true,
-	} satisfies PropsForDetailPageTemplate,
+	},
 }
