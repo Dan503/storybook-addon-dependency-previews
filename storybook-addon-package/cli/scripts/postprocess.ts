@@ -12,7 +12,13 @@ if (!existsSync(dirname(outPath)))
 
 const raw = JSON.parse(readFileSync(inPath, 'utf8'))
 const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
-const isComponent = (p: string) => /src\/(components|ui|lib)\//.test(p) // tweak later via options
+const isComponent = (p: string) => {
+	return (
+		/src\/(components|ui|lib)\//.test(p) &&
+		// Ignore css files
+		!/\.(css|scss|sass|less)$/.test(p)
+	)
+}
 
 /** Simple keyed-push to avoid duplicates */
 function pushUnique(list: Array<StoryInfo>, item: StoryInfo) {
