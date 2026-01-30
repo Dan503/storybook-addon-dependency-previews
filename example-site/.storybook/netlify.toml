@@ -1,0 +1,3 @@
+[build]
+  command = "npm run sb:build"
+  publish = "../storybook-static"

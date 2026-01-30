@@ -36,6 +36,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@netlify/vite-plugin-tanstack-start": "^1.2.8",
     "@storybook/addon-docs": "^10.0.2",
     "@storybook/react-vite": "^10.0.2",
     "@tanstack/eslint-config": "^0.3.0",
