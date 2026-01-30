@@ -4,7 +4,8 @@
       "WebFetch(domain:dependency-previews-storybook.netlify.app)",
       "Bash(pnpm exec storybook:*)",
       "Bash(git stash:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(pnpm build:*)"
     ]
   }
 }
