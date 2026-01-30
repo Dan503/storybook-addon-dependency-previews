@@ -12,7 +12,7 @@
     "format": "prettier",
     "check": "prettier --write . && eslint --fix",
     "sb": "sb-deps --watch --run-storybook",
-    "sb:build": "sb-deps && storybook build",
+    "sb:build": "pnpm --filter storybook-addon-dependency-previews build && sb-deps && storybook build",
     "sb:deps": "sb-deps"
   },
   "dependencies": {
