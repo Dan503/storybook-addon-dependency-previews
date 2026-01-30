@@ -27,12 +27,17 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 		.replace('.story.', '.') // remove .story extension
 		.replace(/\?.+$/, '') // remove any query string parameters
 
-	const graph = storyParams.dependencyPreviews.dependenciesJson
+	const graph = storyParams.dependencyPreviews?.dependenciesJson
 
-	const node = useMemo(
-		() => graph?.[refinedFilePath!]!,
-		[graph, refinedFilePath],
-	)
+	// Use componentPath from story index as fallback (more reliable in production)
+	// The componentPath comes from Storybook's index and is normalized (e.g., "./src/components/...")
+	const componentPath = storyParams._componentPath?.replace(/^\.\//, '') // remove leading "./"
+
+	const node = useMemo(() => {
+		if (!graph) return null
+		// Try refinedFilePath first (from import.meta.url), then componentPath (from index)
+		return graph[refinedFilePath!] ?? graph[componentPath!] ?? null
+	}, [graph, refinedFilePath, componentPath])
 
 	return (
 		<DependencyGraphContext.Provider
