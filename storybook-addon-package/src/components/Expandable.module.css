@@ -5,11 +5,20 @@
 	margin: 0.5rem 0;
 	overflow: hidden;
 
+	&:first-child {
+		margin-top: 0;
+	}
+	&:last-child {
+		margin-bottom: 0;
+	}
+
 	&::details-content {
 		@supports (interpolate-size: allow-keywords) and
 			(transition-behavior: allow-discrete) {
 			block-size: 0;
-			transition: block-size 0.3s, content-visibility 0.3s;
+			transition:
+				block-size 0.3s,
+				content-visibility 0.3s;
 			transition-behavior: allow-discrete;
 		}
 	}

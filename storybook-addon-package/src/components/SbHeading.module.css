@@ -1,0 +1,23 @@
+/** need double classes to override storybook specificity */
+.SbHeading.SbHeading {
+	h2 {
+		border: none;
+		font-size: 0.8rem;
+		font-weight: 700;
+		letter-spacing: 0.35em;
+		text-transform: uppercase;
+		color: var(--sb-color-text-secondary, #5c6870);
+		padding: 0;
+		margin-top: 56px;
+		margin-bottom: 0.7rem;
+
+		div:has(table) + div &,
+		:global(.sb-anchor) + div & {
+			margin-top: 16px;
+		}
+	}
+
+	& + div table {
+		margin-top: 0;
+	}
+}

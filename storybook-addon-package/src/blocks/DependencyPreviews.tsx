@@ -13,11 +13,11 @@ import { BuildIcon } from '../components/icons/BuildIcon'
 import { EyeOpen } from '../components/icons/EyeOpen'
 import { SquaresPlus } from '../components/icons/SquaresPlus'
 
-import { Heading } from '@storybook/addon-docs/blocks'
 import { ArrowToRectangle } from '../components/icons/ArrowToRectangleIcon'
-import { PathCopyMolecule } from '../components/PathCopyMolecule'
-import s from './DependencyPreviews.module.css'
 import { CubeIcon } from '../components/icons/CubeIcon'
+import { PathCopyMolecule } from '../components/PathCopyMolecule'
+import { SbHeading } from '../components/SbHeading'
+import s from './DependencyPreviews.module.css'
 
 export function DependencyPreviews() {
 	return (
@@ -33,9 +33,7 @@ function TopLevelDependencyPreviews() {
 
 	return (
 		<div className={s.topLevelWrapper}>
-			<div className={s.sbHeading}>
-				<Heading>Dependency previews</Heading>
-			</div>
+			<SbHeading>Dependency previews</SbHeading>
 			<DepsPreviewContent storyInfo={node} enablePreview={false} />
 		</div>
 	)
