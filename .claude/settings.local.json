@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:dependency-previews-storybook.netlify.app)"
+      "WebFetch(domain:dependency-previews-storybook.netlify.app)",
+      "Bash(pnpm exec storybook:*)",
+      "Bash(git stash:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
