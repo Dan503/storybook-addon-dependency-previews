@@ -28,26 +28,36 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 		.replace(/\?.+$/, '') // remove any query string parameters
 
 	const graph = storyParams.dependencyPreviews?.dependenciesJson
+	const currentStoryId = storyParams._storyId
 
-	// Use componentPath from story index as fallback (more reliable in production)
-	// The componentPath comes from Storybook's index and is normalized (e.g., "./src/components/...")
-	const componentPath = storyParams._componentPath?.replace(/^\.\//, '') // remove leading "./"
+	// Build a lookup map from storyId to graph entry
+	const storyIdToNode = useMemo(() => {
+		if (!graph) return null
+		const map: Record<string, Deps> = {}
+		for (const [_path, deps] of Object.entries(graph)) {
+			if (deps.storyId) {
+				map[deps.storyId] = deps
+			}
+		}
+		return map
+	}, [graph])
 
-	const node = useMemo(() => {
+	const node = useMemo((): Deps | null => {
 		if (!graph) {
-			console.log('[dependency-previews] No graph available')
 			return null
 		}
-		// Try refinedFilePath first (from import.meta.url), then componentPath (from index)
-		const result = graph[refinedFilePath!] ?? graph[componentPath!] ?? null
-		console.log('[dependency-previews] Lookup:', {
-			refinedFilePath,
-			componentPath,
-			found: !!result,
-			graphKeys: Object.keys(graph).slice(0, 5),
-		})
-		return result
-	}, [graph, refinedFilePath, componentPath])
+
+		// Try multiple lookup strategies:
+		// 1. By storyId (most reliable in production)
+		// 2. By refined file path (works in dev with import.meta.url)
+		const byStoryId =
+			currentStoryId && storyIdToNode?.[currentStoryId]
+				? storyIdToNode[currentStoryId]
+				: null
+		const byPath = refinedFilePath ? graph[refinedFilePath] : null
+
+		return byStoryId ?? byPath ?? null
+	}, [graph, storyIdToNode, currentStoryId, refinedFilePath])
 
 	return (
 		<DependencyGraphContext.Provider
