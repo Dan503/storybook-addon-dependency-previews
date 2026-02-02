@@ -34,9 +34,19 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 	const componentPath = storyParams._componentPath?.replace(/^\.\//, '') // remove leading "./"
 
 	const node = useMemo(() => {
-		if (!graph) return null
+		if (!graph) {
+			console.log('[dependency-previews] No graph available')
+			return null
+		}
 		// Try refinedFilePath first (from import.meta.url), then componentPath (from index)
-		return graph[refinedFilePath!] ?? graph[componentPath!] ?? null
+		const result = graph[refinedFilePath!] ?? graph[componentPath!] ?? null
+		console.log('[dependency-previews] Lookup:', {
+			refinedFilePath,
+			componentPath,
+			found: !!result,
+			graphKeys: Object.keys(graph).slice(0, 5),
+		})
+		return result
 	}, [graph, refinedFilePath, componentPath])
 
 	return (
