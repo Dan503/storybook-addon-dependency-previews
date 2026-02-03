@@ -1,21 +1,19 @@
 // This runs in the Storybook preview (the iframe)
 import '@iframe-resizer/child'
-import { useEffect, useRef } from 'react'
 import type { PartialStoryFn } from 'storybook/internal/csf'
 
 export const decorators = [
 	(Story: PartialStoryFn) => {
-		const ref = useRef<HTMLDivElement>(null)
+		// Use queueMicrotask to run after the story renders
+		queueMicrotask(() => {
+			// Find the story root element and set the attribute on its parent
+			const storyRoot = document.getElementById('storybook-root')
+			if (storyRoot) {
+				storyRoot.setAttribute('data-iframe-size', 'true')
+			}
+		})
 
-		useEffect(() => {
-			ref.current?.parentElement?.setAttribute('data-iframe-size', 'true')
-		}, [])
-
-		return (
-			<div className="iframe-size-child" ref={ref}>
-				<Story />
-			</div>
-		)
+		return Story()
 	},
 ]
 
