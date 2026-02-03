@@ -50,22 +50,21 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 		// Try multiple lookup strategies:
 		// 1. By storyId (most reliable in production)
 		// 2. By refined file path (works in dev with import.meta.url)
+
+		// The dependency graph stores --docs story IDs, but users may be viewing
+		// individual story variants (e.g., --primary, --secondary).
+		// Normalize by converting the current storyId to its --docs variant.
+		const docsStoryId = currentStoryId
+			? currentStoryId.replace(/--[^-]+$/, '--docs')
+			: null
+
 		const byStoryId =
-			currentStoryId && storyIdToNode?.[currentStoryId]
-				? storyIdToNode[currentStoryId]
+			docsStoryId && storyIdToNode?.[docsStoryId]
+				? storyIdToNode[docsStoryId]
 				: null
 		const byPath = refinedFilePath ? graph[refinedFilePath] : null
 
 		const result = byStoryId ?? byPath ?? null
-
-		console.log('[dependency-previews] v2 lookup:', {
-			currentStoryId,
-			refinedFilePath,
-			byStoryIdFound: !!byStoryId,
-			byPathFound: !!byPath,
-			resultFound: !!result,
-			storyIdMapKeys: storyIdToNode ? Object.keys(storyIdToNode).slice(0, 5) : [],
-		})
 
 		return result
 	}, [graph, storyIdToNode, currentStoryId, refinedFilePath])
