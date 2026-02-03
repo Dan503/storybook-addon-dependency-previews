@@ -5,7 +5,8 @@
       "Bash(pnpm exec storybook:*)",
       "Bash(git stash:*)",
       "WebFetch(domain:github.com)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(pnpm typecheck:*)"
     ]
   }
 }
