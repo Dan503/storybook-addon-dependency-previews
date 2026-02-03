@@ -56,7 +56,18 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 				: null
 		const byPath = refinedFilePath ? graph[refinedFilePath] : null
 
-		return byStoryId ?? byPath ?? null
+		const result = byStoryId ?? byPath ?? null
+
+		console.log('[dependency-previews] v2 lookup:', {
+			currentStoryId,
+			refinedFilePath,
+			byStoryIdFound: !!byStoryId,
+			byPathFound: !!byPath,
+			resultFound: !!result,
+			storyIdMapKeys: storyIdToNode ? Object.keys(storyIdToNode).slice(0, 5) : [],
+		})
+
+		return result
 	}, [graph, storyIdToNode, currentStoryId, refinedFilePath])
 
 	return (
