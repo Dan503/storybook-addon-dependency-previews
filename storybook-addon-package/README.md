@@ -16,6 +16,10 @@ The below image demonstrates what you will see when you open up some of the depe
 
 ![Dependency Previews - all open](./readme-images/all-open.png)
 
+See the dependency previews add on in action at the [Storybook addon demo site](https://dependency-previews-storybook.netlify.app/).
+
+You can also [visit the example website](https://dependency-previews-demo-site.netlify.app/) that the Storybook demo is built for.
+
 <!-- TODO: Provide a video/gif of the addon in action -->
 
 ## Installation guide
@@ -83,7 +87,7 @@ const meta: Meta<typeof ComponentName> = {
 	tags: ['autodocs'],
 	// The `__filePath` property must be applied to every story file
 	// for the addon to track dependencies effectively
-	// They are all given the same `import.meta.url` value
+	// `import.meta.url` is a Vite specific value that automatically generates the path for you
 	parameters: {
 		__filePath: import.meta.url,
 	},
@@ -91,7 +95,9 @@ const meta: Meta<typeof ComponentName> = {
 
 export default meta
 
-export const Default = {
+type Story = StoryObj<typeof meta>
+
+export const Primary: Story = {
 	args: {},
 }
 ```
@@ -166,6 +172,7 @@ const previewConfig: StorybookPreviewConfig = {
 			// This allows Source File Path to open the
 			// component file directly in VS Code when
 			// running in a local host environment.
+			// `import.meta.url` is a Vite specific feature
 			projectRootPath: new URL('..', import.meta.url).pathname,
 		},
 	},
@@ -180,8 +187,6 @@ You should be all set now.
 
 Try running `npm run sb` to boot up storybook, leave it running as you work.
 
-As you create and delete story files, `sb-deps` will detect when new stories are created/deleted and automatically regenerate the dependency-previews.json for you.
-
-`sb-deps` also auto-scaffolds the component file and creates a matching story file for you when you create a new .tsx file in the components folder.
+As you create new component files, the component will be auto-scaffolded for you and a matching story file will be created for it automatically. The dependency previews json file will also be auto-updated.
 
 This workflow allows you to focus on what matters instead of having to waste time writing lots of boilerplate code every time you want to create a new component.
