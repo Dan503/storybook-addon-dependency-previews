@@ -1,0 +1,186 @@
+{
+  "modules": [
+    {
+      "source": "src/app.d.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/Test.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./Test.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/Test.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/Test.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/Test.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/lib/index.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": false,
+      "rules": [
+        {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      ]
+    },
+    {
+      "source": "src/routes/+layout.svelte",
+      "dependencies": [
+        {
+          "module": "./layout.css",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/layout.css",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/layout.css",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/routes/+layout.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/+page.svelte",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    }
+  ],
+  "summary": {
+    "violations": [
+      {
+        "type": "module",
+        "from": "src/lib/index.ts",
+        "to": "src/lib/index.ts",
+        "rule": {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      }
+    ],
+    "error": 0,
+    "warn": 1,
+    "info": 0,
+    "ignore": 0,
+    "totalCruised": 7,
+    "totalDependenciesCruised": 2,
+    "optionsUsed": {
+      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
+      "combinedDependencies": true,
+      "detectJSDocImports": false,
+      "detectProcessBuiltinModuleCalls": false,
+      "doNotFollow": {
+        "path": "node_modules"
+      },
+      "exoticRequireStrings": [],
+      "externalModuleResolutionStrategy": "node_modules",
+      "includeOnly": "^src",
+      "metrics": false,
+      "moduleSystems": [
+        "es6",
+        "cjs",
+        "tsd",
+        "amd"
+      ],
+      "outputTo": "-",
+      "outputType": "json",
+      "preserveSymlinks": false,
+      "rulesFile": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\dist\\cli\\scripts\\depcruise.config.cjs",
+      "skipAnalysisNotInRules": false,
+      "tsPreCompilationDeps": true,
+      "args": "."
+    },
+    "ruleSetUsed": {
+      "forbidden": [
+        {
+          "name": "no-circular",
+          "severity": "error",
+          "from": {},
+          "to": {
+            "circular": true
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-node-modules-imports",
+          "severity": "warn",
+          "from": {
+            "path": "^src"
+          },
+          "to": {
+            "path": "^node_modules"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-orphans-in-components",
+          "severity": "warn",
+          "from": {
+            "orphan": true,
+            "path": "^src/(components|ui|lib)/"
+          },
+          "to": {},
+          "scope": "module"
+        }
+      ]
+    }
+  }
+}

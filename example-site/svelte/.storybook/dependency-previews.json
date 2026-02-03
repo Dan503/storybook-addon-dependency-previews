@@ -1,0 +1,33 @@
+{
+  "src/components/01-atoms/Test.stories.svelte": {
+    "componentPath": "src/components/01-atoms/Test.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/Test.svelte",
+        "storyId": "01-atoms-test--docs",
+        "storyTitle": "Test",
+        "storyTitlePath": "01 Atoms / Test",
+        "storyFilePath": "src/components/01-atoms/Test.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/Test.svelte": {
+    "componentPath": "src/components/01-atoms/Test.svelte",
+    "storyId": "01-atoms-test--docs",
+    "storyTitle": "Test",
+    "storyTitlePath": "01 Atoms / Test",
+    "storyFilePath": "src/components/01-atoms/Test.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/Test.stories.svelte"
+      }
+    ]
+  },
+  "src/lib/index.ts": {
+    "componentPath": "src/lib/index.ts",
+    "builtWith": [],
+    "usedIn": []
+  }
+}
