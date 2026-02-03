@@ -1,6 +1,6 @@
 # Storybook Add On - Dependency Previews
 
-![Dependency Previews logo](https://github.com/Dan503/storybook-addon-dependency-previews/raw/main/storybook-addon-package/readme-images/dependency-previews-logo.png)
+[![Dependency Previews logo](https://github.com/Dan503/storybook-addon-dependency-previews/raw/main/storybook-addon-package/readme-images/dependency-previews-logo.png)](https://dependency-previews-storybook.netlify.app/?path=/docs/04-templates-home-template--docs)
 
 ## What is this?
 
@@ -16,7 +16,7 @@ The below image demonstrates what you will see when you open up some of the depe
 
 ![Dependency Previews - all open](https://github.com/Dan503/storybook-addon-dependency-previews/raw/main/storybook-addon-package/readme-images/all-open.png)
 
-See the dependency previews add on in action at the [Storybook addon demo site](https://dependency-previews-storybook.netlify.app/).
+See the dependency previews add on in action at the [Storybook addon demo site](https://dependency-previews-storybook.netlify.app/?path=/docs/04-templates-home-template--docs).
 
 You can also [visit the example website](https://dependency-previews-demo-site.netlify.app/) that the Storybook demo is built for.
 
