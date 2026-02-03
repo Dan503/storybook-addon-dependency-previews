@@ -326,28 +326,22 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 	if (atomic) tags.push(atomic)
 
 	const storyTpl = `<script lang="ts" module>
-	import type { Meta } from '@storybook/svelte-vite'
 	import type { StoryParameters } from 'storybook-addon-dependency-previews'
 	import ${componentName} from './${componentName}.svelte'
+	import { defineMeta } from '@storybook/addon-svelte-csf';
 
-	export const meta: Meta<typeof ${componentName}> = {
-		title: '${title}',
+	const { Story } = defineMeta({
+		title: '01 Atoms / ${title}',
 		component: ${componentName},
-		tags: ${JSON.stringify(tags)},
+		tags: ["autodocs","atom"],
 		parameters: {
 			layout: 'padded',
 			__filePath: import.meta.url,
 		} satisfies StoryParameters,
-	}
+	})
 </script>
 
-<script lang="ts">
-	import { Story } from '@storybook/svelte-vite'
-</script>
-
-<Story name="Primary">
-	<${componentName} />
-</Story>
+<Story name="Primary" />
 `
 	const storyPath = storyPathForSvelteComponent(absCompPath)
 	writeFileSync(storyPath, storyTpl, 'utf8')
