@@ -1,18 +1,16 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte'
+	import type { Snippet } from 'svelte';
 
-	interface Props {
-		children?: Snippet
+	export interface PropsForButtonAtom {
+		children?: Snippet;
 	}
 
-	const { children }: Props = $props()
+	const { children }: PropsForButtonAtom = $props();
 </script>
 
 <div class="ButtonAtom">
 	<p>ButtonAtom</p>
-	{#if children}
-		{@render children()}
-	{/if}
+	{@render children?.()}
 </div>
 
 <style>

@@ -267,20 +267,18 @@ function scaffoldSvelteComponent(absCompPath: string) {
 	const componentName = toPascalCase(base)
 
 	const tpl = `<script lang="ts">
-	import type { Snippet } from 'svelte'
+	import type { Snippet } from 'svelte';
 
-	interface Props {
-		children?: Snippet
+	export interface PropsFor${componentName} {
+		children?: Snippet;
 	}
 
-	const { children }: Props = $props()
+	const { children }: PropsFor${componentName} = $props();
 </script>
 
 <div class="${componentName}">
 	<p>${componentName}</p>
-	{#if children}
-		{@render children()}
-	{/if}
+	{@render children?.()}
 </div>
 
 <style>
@@ -327,7 +325,7 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 
 	const storyTpl = `<script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews'
-	import ${componentName} from './${componentName}.svelte'
+	import ${componentName}, { type PropsFor${componentName} } from './${componentName}.svelte'
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
@@ -339,9 +337,12 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 			__filePath: import.meta.url,
 		} satisfies StoryParameters,
 	})
+	type Args = Omit<PropsFor${componentName}, 'children'>;
 </script>
 
-<Story name="Primary" />
+<Story name="Primary" args={{} satisfies Args}>
+	<p>${title}</p>
+</Story>
 `
 	const storyPath = storyPathForSvelteComponent(absCompPath)
 	writeFileSync(storyPath, storyTpl, 'utf8')
