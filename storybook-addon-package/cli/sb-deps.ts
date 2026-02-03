@@ -331,9 +331,9 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
-		title: '01 Atoms / ${title}',
+		title: '${title}',
 		component: ${componentName},
-		tags: ["autodocs","atom"],
+		tags: [${tags.map((t) => `'${t}'`).join(', ')}],
 		parameters: {
 			layout: 'padded',
 			__filePath: import.meta.url,

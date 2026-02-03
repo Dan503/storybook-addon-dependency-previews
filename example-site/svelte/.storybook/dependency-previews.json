@@ -1,27 +1,27 @@
 {
-  "src/components/01-atoms/Test.stories.svelte": {
-    "componentPath": "src/components/01-atoms/Test.stories.svelte",
+  "src/components/01-atoms/ButtonAtom.stories.svelte": {
+    "componentPath": "src/components/01-atoms/ButtonAtom.stories.svelte",
     "builtWith": [
       {
-        "componentPath": "src/components/01-atoms/Test.svelte",
-        "storyId": "01-atoms-test--docs",
-        "storyTitle": "Test",
-        "storyTitlePath": "01 Atoms / Test",
-        "storyFilePath": "src/components/01-atoms/Test.stories.svelte"
+        "componentPath": "src/components/01-atoms/ButtonAtom.svelte",
+        "storyId": "01-atoms-button-atom--docs",
+        "storyTitle": "Button Atom",
+        "storyTitlePath": "01 Atoms / Button Atom",
+        "storyFilePath": "src/components/01-atoms/ButtonAtom.stories.svelte"
       }
     ],
     "usedIn": []
   },
-  "src/components/01-atoms/Test.svelte": {
-    "componentPath": "src/components/01-atoms/Test.svelte",
-    "storyId": "01-atoms-test--docs",
-    "storyTitle": "Test",
-    "storyTitlePath": "01 Atoms / Test",
-    "storyFilePath": "src/components/01-atoms/Test.stories.svelte",
+  "src/components/01-atoms/ButtonAtom.svelte": {
+    "componentPath": "src/components/01-atoms/ButtonAtom.svelte",
+    "storyId": "01-atoms-button-atom--docs",
+    "storyTitle": "Button Atom",
+    "storyTitlePath": "01 Atoms / Button Atom",
+    "storyFilePath": "src/components/01-atoms/ButtonAtom.stories.svelte",
     "builtWith": [],
     "usedIn": [
       {
-        "componentPath": "src/components/01-atoms/Test.stories.svelte"
+        "componentPath": "src/components/01-atoms/ButtonAtom.stories.svelte"
       }
     ]
   },

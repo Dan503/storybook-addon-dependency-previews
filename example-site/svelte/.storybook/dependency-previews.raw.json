@@ -8,10 +8,10 @@
       "valid": true
     },
     {
-      "source": "src/components/01-atoms/Test.stories.svelte",
+      "source": "src/components/01-atoms/ButtonAtom.stories.svelte",
       "dependencies": [
         {
-          "module": "./Test.svelte",
+          "module": "./ButtonAtom.svelte",
           "moduleSystem": "es6",
           "dynamic": false,
           "exoticallyRequired": false,
@@ -19,7 +19,7 @@
             "local",
             "import"
           ],
-          "resolved": "src/components/01-atoms/Test.svelte",
+          "resolved": "src/components/01-atoms/ButtonAtom.svelte",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -33,10 +33,10 @@
       "valid": true
     },
     {
-      "source": "src/components/01-atoms/Test.svelte",
+      "source": "src/components/01-atoms/ButtonAtom.svelte",
       "dependencies": [],
       "dependents": [
-        "src/components/01-atoms/Test.stories.svelte"
+        "src/components/01-atoms/ButtonAtom.stories.svelte"
       ],
       "orphan": false,
       "valid": true
