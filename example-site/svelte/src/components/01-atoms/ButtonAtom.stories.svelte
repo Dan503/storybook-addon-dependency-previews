@@ -15,6 +15,6 @@
 	type Args = Omit<PropsForButtonAtom, 'children'>;
 </script>
 
-<Story name="Primary" args={{} satisfies Args}>
-	<p>01 Atoms / Button Atom</p>
+<Story name="Primary" args={{ onClick: () => alert('Button clicked!') } satisfies Args}>
+	Click me
 </Story>

@@ -8,7 +8,7 @@ import {
 
 import dependenciesJson from './dependency-previews.json';
 
-// import '../src/styles.css';
+import '../src/routes/layout.css';
 
 const previewConfig: StorybookPreviewConfig = {
 	// Essential configuration for storybook-addon-dependency-previews
