@@ -1,4 +1,6 @@
 packages:
-    - 'storybook-addon-dependency-previews' # ← includes your addon
-    - 'example-site-react' # ← includes your demo app
-    - 'example-site-svelte'
+    - 'storybook-addon-package' # ← includes your addon
+    - 'example-site/react' # ← includes your demo app
+    - 'example-site/svelte'
+onlyBuiltDependencies:
+    - esbuild

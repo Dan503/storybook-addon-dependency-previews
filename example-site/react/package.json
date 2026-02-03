@@ -53,7 +53,7 @@
     "jsdom": "^26.0.0",
     "prettier": "^3.5.3",
     "storybook": "^10.0.2",
-    "storybook-addon-dependency-previews": "workspace:*",
+    "storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vitest": "^3.0.5",
