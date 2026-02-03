@@ -1,6 +1,6 @@
 # Storybook Add On - Dependency Previews
 
-![Dependency Previews logo](./readme-images/dependency-previews-logo.png)
+![Dependency Previews logo](https://github.com/Dan503/storybook-addon-dependency-previews/raw/main/storybook-addon-package/readme-images/dependency-previews-logo.png)
 
 ## What is this?
 
@@ -10,15 +10,17 @@ A plugin for [Storybook](https://storybook.js.org/) that shows the full dependen
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
-![Dependency Previews - all closed](./readme-images/all-closed.png)
+![Dependency Previews - all closed](https://github.com/Dan503/storybook-addon-dependency-previews/raw/main/storybook-addon-package/readme-images/all-closed.png)
 
 The below image demonstrates what you will see when you open up some of the dependency segments:
 
-![Dependency Previews - all open](./readme-images/all-open.png)
+![Dependency Previews - all open](https://github.com/Dan503/storybook-addon-dependency-previews/raw/main/storybook-addon-package/readme-images/all-open.png)
 
 See the dependency previews add on in action at the [Storybook addon demo site](https://dependency-previews-storybook.netlify.app/).
 
 You can also [visit the example website](https://dependency-previews-demo-site.netlify.app/) that the Storybook demo is built for.
+
+Also [visit the npm page](https://www.npmjs.com/package/storybook-addon-dependency-previews) if you are reading this on GitHub
 
 <!-- TODO: Provide a video/gif of the addon in action -->
 
