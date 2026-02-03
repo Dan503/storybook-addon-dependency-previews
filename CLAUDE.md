@@ -70,3 +70,5 @@ pnpm sb:deps      # One-off dependency graph generation
 ## Instructions
 
 If the query is a question, answer the question without making changes first, then ask if the developer wants the changes to be made for them.
+
+Do not commit and push to git yourself. I want to review all changes you make before committing them into git.
