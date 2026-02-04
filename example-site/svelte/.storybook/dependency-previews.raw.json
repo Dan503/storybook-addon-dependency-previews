@@ -173,7 +173,8 @@
       "source": "src/components/01-atoms/ScreenPaddingAtom.svelte",
       "dependencies": [],
       "dependents": [
-        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
+        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
+        "src/components/03-organisms/HeaderOrganism.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -369,7 +370,8 @@
       "source": "src/components/02-molecules/MainNavMolecule.svelte",
       "dependencies": [],
       "dependents": [
-        "src/components/02-molecules/MainNavMolecule.stories.svelte"
+        "src/components/02-molecules/MainNavMolecule.stories.svelte",
+        "src/components/03-organisms/HeaderOrganism.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -422,6 +424,75 @@
       ],
       "dependents": [
         "src/components/03-organisms/FooterOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeaderOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./HeaderOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeaderOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeaderOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../02-molecules/MainNavMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/MainNavMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/HeaderOrganism.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -557,8 +628,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 31,
-    "totalDependenciesCruised": 14,
+    "totalCruised": 33,
+    "totalDependenciesCruised": 17,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
