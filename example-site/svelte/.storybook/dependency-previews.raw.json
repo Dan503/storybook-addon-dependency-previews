@@ -634,82 +634,6 @@
       "valid": true
     },
     {
-      "source": "src/lib/data/example-meal-data.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./categories.json",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/lib/data/categories.json",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./example-meal-list.json",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/lib/data/example-meal-list.json",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/lib/data/categories.json",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "local",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/lib/data/example-meal-data.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/lib/data/example-meal-list.json",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "local",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/lib/data/example-meal-data.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/lib/index.ts",
       "dependencies": [],
       "dependents": [],
@@ -806,8 +730,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 42,
-    "totalDependenciesCruised": 22,
+    "totalCruised": 39,
+    "totalDependenciesCruised": 20,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
