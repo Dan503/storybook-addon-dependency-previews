@@ -283,6 +283,13 @@
       },
       {
         "componentPath": "src/components/01-atoms/icons/Svg.svelte"
+      },
+      {
+        "componentPath": "src/components/02-molecules/IconTextMolecule.svelte",
+        "storyId": "02-molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "02 Molecules / Icon Text Molecule",
+        "storyFilePath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
       }
     ]
   },
@@ -316,6 +323,9 @@
     "usedIn": [
       {
         "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
       }
     ]
   },
@@ -349,6 +359,53 @@
     "usedIn": [
       {
         "componentPath": "src/components/01-atoms/icons/PhoneIcon.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
+      }
+    ]
+  },
+  "src/components/02-molecules/IconTextMolecule.stories.svelte": {
+    "componentPath": "src/components/02-molecules/IconTextMolecule.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.svelte",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/PhoneIcon.svelte",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "src/components/01-atoms/icons/PhoneIcon.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/02-molecules/IconTextMolecule.svelte",
+        "storyId": "02-molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "02 Molecules / Icon Text Molecule",
+        "storyFilePath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/02-molecules/IconTextMolecule.svelte": {
+    "componentPath": "src/components/02-molecules/IconTextMolecule.svelte",
+    "storyId": "02-molecules-icon-text-molecule--docs",
+    "storyTitle": "Icon Text Molecule",
+    "storyTitlePath": "02 Molecules / Icon Text Molecule",
+    "storyFilePath": "src/components/02-molecules/IconTextMolecule.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
       }
     ]
   },
