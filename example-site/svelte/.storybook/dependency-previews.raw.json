@@ -8,6 +8,40 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/BgImageContainerAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./BgImageContainerAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/BgImageContainerAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/BgImageContainerAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/BgImageContainerAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/ButtonAtom.stories.svelte",
       "dependencies": [
         {
@@ -266,8 +300,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 15,
-    "totalDependenciesCruised": 5,
+    "totalCruised": 17,
+    "totalDependenciesCruised": 6,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
