@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { HomeTemplate } from '../components/04-templates/HomeTemplate'
-import { fetchRandomMealList } from '../utils/mealDbApiUtils'
+import { fetchRandomMealList } from 'example-site-shared/utils'
 
 export const Route = createFileRoute('/')({
 	component: App,

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { fetchMealById } from '../utils/mealDbApiUtils'
+import { fetchMealById } from 'example-site-shared/utils'
 import { DetailPageTemplate } from '../components/04-templates/DetailPageTemplate'
 
 export const Route = createFileRoute('/meal/$mealId')({

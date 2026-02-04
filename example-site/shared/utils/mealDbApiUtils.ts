@@ -1,5 +1,15 @@
 import axios from 'axios'
-import type { CategoriesApiResponse, Category } from '../data/example-meal-data'
+
+export interface CategoriesApiResponse {
+	categories: Category[]
+}
+
+export interface Category {
+	idCategory: string
+	strCategory: string
+	strCategoryThumb: string
+	strCategoryDescription: string
+}
 
 // Ergonomic response shape (array, same as API)
 export interface MealDBTransformedResponse {

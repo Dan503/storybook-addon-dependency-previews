@@ -1,5 +1,5 @@
 import { H, Section } from 'react-headings'
-import type { Meal } from '../../utils/mealDbApiUtils'
+import type { Meal } from 'example-site-shared/utils'
 import { ExternalLinkAtom } from '../01-atoms/ExternalLinkAtom'
 import { ScreenPaddingAtom } from '../01-atoms/ScreenPaddingAtom'
 import { HeroBlockOrganism } from '../03-organisms/HeroBlockOrganism'

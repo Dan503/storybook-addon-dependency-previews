@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { exampleIngredientList } from '../../../data/example-meal-data'
+import { exampleIngredientList } from 'example-site-shared/data'
 import {
 	CompactListingOrganism,
 	type PropsForCompactListingOrganism,

@@ -16,6 +16,9 @@
 		"sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
 		"sb:deps": "sb-deps"
 	},
+	"dependencies": {
+		"example-site-shared": "workspace:*"
+	},
 	"devDependencies": {
 		"@chromatic-com/storybook": "^5.0.0",
 		"@eslint/compat": "^2.0.1",

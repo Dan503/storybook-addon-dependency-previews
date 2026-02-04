@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { exampleMeal } from '../../data/example-meal-data'
+import { exampleMeal } from 'example-site-shared/data'
 import {
 	DetailPageTemplate,
 	type PropsForDetailPageTemplate,

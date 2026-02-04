@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { categoryList, exampleMealList } from '../../data/example-meal-data'
+import { categoryList, exampleMealList } from 'example-site-shared/data'
 import {
 	CardListTemplate,
 	type PropsForCardListTemplate,

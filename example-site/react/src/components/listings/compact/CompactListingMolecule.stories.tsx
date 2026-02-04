@@ -3,7 +3,7 @@ import {
 	CompactListingMolecule,
 	type PropsForCompactListingMolecule,
 } from './CompactListingMolecule'
-import { exampleIngredient } from '../../../data/example-meal-data'
+import { exampleIngredient } from 'example-site-shared/data'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 
 const meta: Meta<typeof CompactListingMolecule> = {

@@ -12,7 +12,9 @@
       "Bash(pnpm exec depcruise:*)",
       "Bash(node -e:*)",
       "Bash(node --input-type=module -e:*)",
-      "Bash(pnpm sb:deps:*)"
+      "Bash(pnpm sb:deps:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx svelte-check:*)"
     ]
   }
 }
