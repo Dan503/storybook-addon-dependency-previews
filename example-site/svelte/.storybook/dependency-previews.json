@@ -114,6 +114,9 @@
         "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
       },
       {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+      },
+      {
         "componentPath": "src/components/zz-meta-components/ChildContentAtom.stories.svelte"
       }
     ]
@@ -501,6 +504,13 @@
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/FooterOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
       }
     ]
   },
@@ -542,6 +552,13 @@
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/HeaderOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
       }
     ]
   },
@@ -583,6 +600,54 @@
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/components/03-organisms/SiteFrameOrganism.stories.svelte": {
+    "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/ChildContentAtom.svelte",
+        "storyId": "zz-meta-components-child-content-atom--docs",
+        "storyTitle": "Child Content Atom",
+        "storyTitlePath": "Zz Meta Components / Child Content Atom",
+        "storyFilePath": "src/components/zz-meta-components/ChildContentAtom.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/03-organisms/SiteFrameOrganism.svelte": {
+    "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+    "storyId": "03-organisms-site-frame-organism--docs",
+    "storyTitle": "Site Frame Organism",
+    "storyTitlePath": "03 Organisms / Site Frame Organism",
+    "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/03-organisms/FooterOrganism.svelte",
+        "storyId": "03-organisms-footer-organism--docs",
+        "storyTitle": "Footer Organism",
+        "storyTitlePath": "03 Organisms / Footer Organism",
+        "storyFilePath": "src/components/03-organisms/FooterOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeaderOrganism.svelte",
+        "storyId": "03-organisms-header-organism--docs",
+        "storyTitle": "Header Organism",
+        "storyTitlePath": "03 Organisms / Header Organism",
+        "storyFilePath": "src/components/03-organisms/HeaderOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
       }
     ]
   },
