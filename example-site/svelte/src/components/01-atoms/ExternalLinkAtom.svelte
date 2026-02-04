@@ -4,14 +4,15 @@
 
 	export interface PropsForExternalLinkAtom {
 		href: string;
+		class?: string;
 		children?: Snippet;
 	}
 
-	const { href, children }: PropsForExternalLinkAtom = $props();
+	const { href, class: className, children }: PropsForExternalLinkAtom = $props();
 </script>
 
 <a
-	class="ExternalLinkAtom inline-flex items-center gap-1 text-teal-700 hover:text-teal-900 hover:underline"
+	class="ExternalLinkAtom inline-flex items-center gap-1 text-teal-700 underline hover:text-teal-900 hover:no-underline focus:no-underline {className}"
 	target="_blank"
 	rel="noopener noreferrer"
 	{href}

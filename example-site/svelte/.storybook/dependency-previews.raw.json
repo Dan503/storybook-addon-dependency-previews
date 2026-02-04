@@ -138,7 +138,8 @@
       "source": "src/components/01-atoms/ExternalLinkAtom.svelte",
       "dependencies": [],
       "dependents": [
-        "src/components/01-atoms/ExternalLinkAtom.stories.svelte"
+        "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
+        "src/components/03-organisms/FooterOrganism.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -374,6 +375,58 @@
       "valid": true
     },
     {
+      "source": "src/components/03-organisms/FooterOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./FooterOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/FooterOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/FooterOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ExternalLinkAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/FooterOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/zz-meta-components/ChildContentAtom.stories.svelte",
       "dependencies": [
         {
@@ -504,8 +557,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 29,
-    "totalDependenciesCruised": 12,
+    "totalCruised": 31,
+    "totalDependenciesCruised": 14,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
