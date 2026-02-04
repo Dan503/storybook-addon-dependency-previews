@@ -76,6 +76,74 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/ContentRestraintAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ContentRestraintAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ContentRestraintAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ContentRestraintAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte",
       "dependencies": [
         {
@@ -204,6 +272,40 @@
       ]
     },
     {
+      "source": "src/components/zz-meta-components/ChildContentAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/zz-meta-components/ChildContentAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/lib/index.ts",
       "dependencies": [],
       "dependents": [],
@@ -300,8 +402,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 17,
-    "totalDependenciesCruised": 6,
+    "totalCruised": 23,
+    "totalDependenciesCruised": 9,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
