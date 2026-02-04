@@ -110,6 +110,40 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ExternalLinkAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ExternalLinkAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
       "dependencies": [
         {
@@ -402,8 +436,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 23,
-    "totalDependenciesCruised": 9,
+    "totalCruised": 25,
+    "totalDependenciesCruised": 10,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

@@ -131,6 +131,67 @@
       }
     ]
   },
+  "src/components/01-atoms/ExternalLinkAtom.stories.svelte": {
+    "componentPath": "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.svelte",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/ExternalLinkAtom.svelte": {
+    "componentPath": "src/components/01-atoms/ExternalLinkAtom.svelte",
+    "storyId": "01-atoms-external-link-atom--docs",
+    "storyTitle": "External Link Atom",
+    "storyTitlePath": "01 Atoms / External Link Atom",
+    "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.stories.svelte"
+      }
+    ]
+  },
+  "src/components/01-atoms/icons/ExternalLinkIcon.svelte": {
+    "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+    "storyId": "01-atoms-icons-external-link-icon--docs",
+    "storyTitle": "External Link Icon",
+    "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+    "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/Svg.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.svelte",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte"
+      }
+    ]
+  },
   "src/components/01-atoms/ScreenPaddingAtom.stories.svelte": {
     "componentPath": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
     "builtWith": [
@@ -163,26 +224,6 @@
       }
     ],
     "usedIn": []
-  },
-  "src/components/01-atoms/icons/ExternalLinkIcon.svelte": {
-    "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
-    "storyId": "01-atoms-icons-external-link-icon--docs",
-    "storyTitle": "External Link Icon",
-    "storyTitlePath": "01 Atoms / Icons / External Link Icon",
-    "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte",
-    "builtWith": [
-      {
-        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
-      },
-      {
-        "componentPath": "src/components/01-atoms/icons/Svg.svelte"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte"
-      }
-    ]
   },
   "src/components/01-atoms/icons/Svg.svelte": {
     "componentPath": "src/components/01-atoms/icons/Svg.svelte",
