@@ -76,6 +76,40 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/icons/MapPinIcon.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./MapPinIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/MapPinIcon.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/icons/MapPinIcon.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/icons/Svg.svelte",
       "dependencies": [],
       "dependents": [],
@@ -198,8 +232,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 11,
-    "totalDependenciesCruised": 3,
+    "totalCruised": 13,
+    "totalDependenciesCruised": 4,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

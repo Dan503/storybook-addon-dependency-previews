@@ -1,11 +1,11 @@
 <script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
-	import ExternalLinkIcon from './ExternalLinkIcon.svelte';
+	import MapPinIcon from './MapPinIcon.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
-		title: '01 Atoms / Icons / External Link Icon',
-		component: ExternalLinkIcon,
+		title: '01 Atoms / Icons / Map Pin Icon',
+		component: MapPinIcon,
 		tags: ['autodocs', 'icon'],
 		parameters: {
 			layout: 'centered',

@@ -51,6 +51,32 @@
       }
     ]
   },
+  "src/components/01-atoms/icons/MapPinIcon.stories.svelte": {
+    "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.svelte",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/icons/MapPinIcon.svelte": {
+    "componentPath": "src/components/01-atoms/icons/MapPinIcon.svelte",
+    "storyId": "01-atoms-icons-map-pin-icon--docs",
+    "storyTitle": "Map Pin Icon",
+    "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+    "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.stories.svelte"
+      }
+    ]
+  },
   "src/components/01-atoms/icons/Svg.svelte": {
     "componentPath": "src/components/01-atoms/icons/Svg.svelte",
     "builtWith": [],
