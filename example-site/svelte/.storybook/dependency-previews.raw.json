@@ -498,6 +498,40 @@
       "valid": true
     },
     {
+      "source": "src/components/03-organisms/HeroBlockOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./HeroBlockOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeroBlockOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeroBlockOrganism.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/zz-meta-components/ChildContentAtom.stories.svelte",
       "dependencies": [
         {
@@ -628,8 +662,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 33,
-    "totalDependenciesCruised": 17,
+    "totalCruised": 35,
+    "totalDependenciesCruised": 18,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

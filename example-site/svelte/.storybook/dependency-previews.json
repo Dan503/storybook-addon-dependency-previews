@@ -22,6 +22,13 @@
     "usedIn": [
       {
         "componentPath": "src/components/01-atoms/BgImageContainerAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.svelte",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
       }
     ]
   },
@@ -135,6 +142,13 @@
         "storyTitle": "Header Organism",
         "storyTitlePath": "03 Organisms / Header Organism",
         "storyFilePath": "src/components/03-organisms/HeaderOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.svelte",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
       }
     ]
   },
@@ -528,6 +542,47 @@
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/HeaderOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/components/03-organisms/HeroBlockOrganism.stories.svelte": {
+    "componentPath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.svelte",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/03-organisms/HeroBlockOrganism.svelte": {
+    "componentPath": "src/components/03-organisms/HeroBlockOrganism.svelte",
+    "storyId": "03-organisms-hero-block-organism--docs",
+    "storyTitle": "Hero Block Organism",
+    "storyTitlePath": "03 Organisms / Hero Block Organism",
+    "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/BgImageContainerAtom.svelte",
+        "storyId": "01-atoms-bg-image-container-atom--docs",
+        "storyTitle": "Bg Image Container Atom",
+        "storyTitlePath": "01 Atoms / Bg Image Container Atom",
+        "storyFilePath": "src/components/01-atoms/BgImageContainerAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
       }
     ]
   },
