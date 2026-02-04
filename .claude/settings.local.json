@@ -6,7 +6,13 @@
       "Bash(git stash:*)",
       "WebFetch(domain:github.com)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm typecheck:*)"
+      "Bash(pnpm typecheck:*)",
+      "Bash(npx depcruise:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm exec depcruise:*)",
+      "Bash(node -e:*)",
+      "Bash(node --input-type=module -e:*)",
+      "Bash(pnpm sb:deps:*)"
     ]
   }
 }
