@@ -566,6 +566,40 @@
       "valid": true
     },
     {
+      "source": "src/components/listings/card/CardListingOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CardListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/listings/card/CardMolecule.stories.svelte",
       "dependencies": [
         {
@@ -730,8 +764,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 39,
-    "totalDependenciesCruised": 20,
+    "totalCruised": 41,
+    "totalDependenciesCruised": 21,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
