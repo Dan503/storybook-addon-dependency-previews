@@ -634,6 +634,40 @@
       "valid": true
     },
     {
+      "source": "src/components/listings/compact/CompactListingMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CompactListingMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingMolecule.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/zz-meta-components/ChildContentAtom.stories.svelte",
       "dependencies": [
         {
@@ -764,8 +798,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 41,
-    "totalDependenciesCruised": 21,
+    "totalCruised": 43,
+    "totalDependenciesCruised": 22,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

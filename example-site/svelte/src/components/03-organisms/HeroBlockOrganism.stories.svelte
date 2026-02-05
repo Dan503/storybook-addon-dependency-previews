@@ -2,6 +2,7 @@
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
 	import HeroBlockOrganism, { type PropsForHeroBlockOrganism } from './HeroBlockOrganism.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
+	import { Level } from 'svelte-headings';
 
 	const { Story } = defineMeta({
 		title: '03 Organisms / Hero Block Organism',
@@ -22,5 +23,11 @@
 		imgSrc: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg'
 	} satisfies Args}
 >
-	<p>This is where the hero block content goes.</p>
+	{#snippet template(args)}
+		<Level>
+			<HeroBlockOrganism {...args}>
+				<p>This is where the hero block content goes.</p>
+			</HeroBlockOrganism>
+		</Level>
+	{/snippet}
 </Story>

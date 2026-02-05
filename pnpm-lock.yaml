@@ -141,6 +141,9 @@ importers:
       example-site-shared:
         specifier: workspace:*
         version: link:../shared
+      svelte-headings:
+        specifier: ^0.1.3
+        version: 0.1.3(svelte@5.49.1)
     devDependencies:
       '@chromatic-com/storybook':
         specifier: ^5.0.0
@@ -5308,6 +5311,11 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-headings@0.1.3:
+    resolution: {integrity: sha512-5UGPZW2KWmdUs1Kxk6lwPDYqzrU/Lrv/F0phDpJxkq5Bw5YsqgyngghaxI1hWi2CP2Mas2NgRetWeciTj9Fl1g==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte2tsx@0.7.47:
     resolution: {integrity: sha512-1aw/MFKVPM96OBevJdC12do2an9t5Zwr3Va9amLgTLpJje36ibD1iIHpuqCYWUrdR9vw6g6btKGQPmsqE8ZYCw==}
@@ -11367,6 +11375,10 @@ snapshots:
       postcss-scss: 4.0.9(postcss@8.5.6)
       postcss-selector-parser: 7.1.1
     optionalDependencies:
+      svelte: 5.49.1
+
+  svelte-headings@0.1.3(svelte@5.49.1):
+    dependencies:
       svelte: 5.49.1
 
   svelte2tsx@0.7.47(svelte@5.49.1)(typescript@5.9.3):

@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import BgImageContainerAtom from '../01-atoms/BgImageContainerAtom.svelte';
 	import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.svelte';
+	import { H } from 'svelte-headings';
 
 	export interface PropsForHeroBlockOrganism {
 		title: string | Snippet;
@@ -24,7 +25,8 @@
 	{tintPercent}
 >
 	<ScreenPaddingAtom padVertical>
-		<h1 class="text-4xl font-bold">{title}</h1>
+		<!-- No need for a Level wrapper here because the Wrapper is in the SiteFrame component -->
+		<H class="text-4xl font-bold">{title}</H>
 		{@render children?.()}
 	</ScreenPaddingAtom>
 </BgImageContainerAtom>
