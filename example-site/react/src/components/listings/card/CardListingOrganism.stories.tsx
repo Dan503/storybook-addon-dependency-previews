@@ -1,19 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { exampleMealList } from 'example-site-shared/data'
+import { mealCards } from 'example-site-shared/data'
 import {
 	CardListingOrganism,
 	type PropsForCardListingOrganism,
 } from './CardListingOrganism'
-
-// Pre-transform data to avoid serializing large objects into URL args
-const mealCards = exampleMealList.map((meal) => ({
-	title: meal.name,
-	href: '/meal/$mealId',
-	hrefParams: { mealId: meal.id },
-	description: `${meal.area} ${meal.category} dish`,
-	imgSrc: meal.image,
-}))
 
 const meta: Meta<typeof CardListingOrganism> = {
 	title: 'Listings / Card / Card Listing Organism',

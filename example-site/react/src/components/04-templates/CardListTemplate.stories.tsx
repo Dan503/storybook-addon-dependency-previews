@@ -1,29 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { categoryList, exampleMealList } from 'example-site-shared/data'
+import { categoryCardList, mealCardList } from 'example-site-shared/data'
 import {
 	CardListTemplate,
 	type PropsForCardListTemplate,
 } from './CardListTemplate'
-
-// Pre-transform data to avoid serializing large objects into URL args
-const categoryCardList = categoryList?.map((category) => ({
-	id: category.idCategory,
-	title: category.strCategory,
-	imgSrc: category.strCategoryThumb,
-	description: category.strCategoryDescription,
-	href: '/categories/$category',
-	hrefParams: { category: category.strCategory },
-}))
-
-const mealCardList = exampleMealList?.map((meal) => ({
-	id: meal.id,
-	title: meal.name,
-	imgSrc: meal.image,
-	description: meal.area,
-	href: '/meal/$mealId',
-	hrefParams: { mealId: meal.id },
-}))
 
 const meta: Meta<typeof CardListTemplate> = {
 	title: '04 Templates / Card List Template',

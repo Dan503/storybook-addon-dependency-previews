@@ -76,3 +76,44 @@ export const exampleIngredient = exampleIngredientList[0]
 export const exampleMealList: Meal[] = rawExampleMealList.meals.map(
 	(meal: MealRawData) => transformMealData(meal),
 )
+
+// Pre-transformed data for Storybook stories to avoid serializing large objects into URL args
+
+/** Meal cards for CardListingOrganism */
+export const mealCards = exampleMealList.map((meal) => ({
+	title: meal.name,
+	href: '/meal/$mealId',
+	hrefParams: { mealId: meal.id },
+	description: `${meal.area} ${meal.category} dish`,
+	imgSrc: meal.image,
+}))
+
+/** Category cards for CardListTemplate */
+export const categoryCardList = categoryList?.map((category) => ({
+	id: category.idCategory,
+	title: category.strCategory,
+	imgSrc: category.strCategoryThumb,
+	description: category.strCategoryDescription,
+	href: '/categories/$category',
+	hrefParams: { category: category.strCategory },
+}))
+
+/** Meal cards for CardListTemplate (different shape than mealCards) */
+export const mealCardList = exampleMealList?.map((meal) => ({
+	id: meal.id,
+	title: meal.name,
+	imgSrc: meal.image,
+	description: meal.area,
+	href: '/meal/$mealId',
+	hrefParams: { mealId: meal.id },
+}))
+
+/** Ingredient items for CompactListingOrganism */
+export const ingredientItems = exampleIngredientList.map((ingredient) => ({
+	title: ingredient.ingredient,
+	imageSrc: ingredient.imageUrl.small,
+	description: ingredient.amount,
+}))
+
+/** Featured meals for HomeTemplate (first 7 meals) */
+export const featuredMealsData = exampleMealList.slice(0, 7)

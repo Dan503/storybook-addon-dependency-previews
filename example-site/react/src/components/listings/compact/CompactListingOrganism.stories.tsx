@@ -1,17 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { exampleIngredientList } from 'example-site-shared/data'
+import { ingredientItems } from 'example-site-shared/data'
 import {
 	CompactListingOrganism,
 	type PropsForCompactListingOrganism,
 } from './CompactListingOrganism'
-
-// Pre-transform data to avoid serializing large objects into URL args
-const ingredientItems = exampleIngredientList.map((ingredient) => ({
-	title: ingredient.ingredient,
-	imageSrc: ingredient.imageUrl.small,
-	description: ingredient.amount,
-}))
 
 const meta: Meta<typeof CompactListingOrganism> = {
 	title: 'Listings / Compact / Compact Listing Organism',
