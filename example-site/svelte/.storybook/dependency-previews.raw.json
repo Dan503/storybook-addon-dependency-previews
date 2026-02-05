@@ -36,7 +36,8 @@
       "source": "src/components/01-atoms/BgImageContainerAtom.svelte",
       "dependencies": [],
       "dependents": [
-        "src/components/01-atoms/BgImageContainerAtom.stories.svelte"
+        "src/components/01-atoms/BgImageContainerAtom.stories.svelte",
+        "src/components/03-organisms/HeroBlockOrganism.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -79,6 +80,23 @@
       "source": "src/components/01-atoms/ContentRestraintAtom.stories.svelte",
       "dependencies": [
         {
+          "module": "../zz-meta-components/ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
           "module": "./ContentRestraintAtom.svelte",
           "moduleSystem": "es6",
           "dynamic": false,
@@ -101,10 +119,52 @@
       "valid": true
     },
     {
-      "source": "src/components/01-atoms/ContentRestraintAtom.svelte",
+      "source": "src/components/zz-meta-components/ChildContentAtom.svelte",
       "dependencies": [],
       "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.svelte",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
+        "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
+        "src/components/zz-meta-components/ChildContentAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ContentRestraintAtom.svelte",
+      "dependencies": [
+        {
+          "module": "./ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
         "src/components/01-atoms/ContentRestraintAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.svelte",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
+        "src/components/03-organisms/HeaderOrganism.svelte",
+        "src/components/03-organisms/HeroBlockOrganism.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -136,7 +196,25 @@
     },
     {
       "source": "src/components/01-atoms/ExternalLinkAtom.svelte",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module": "./icons/ExternalLinkIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
         "src/components/03-organisms/FooterOrganism.svelte"
@@ -145,8 +223,64 @@
       "valid": true
     },
     {
+      "source": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+      "dependencies": [
+        {
+          "module": "./Svg.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.svelte",
+        "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/Svg.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+        "src/components/01-atoms/icons/MapPinIcon.svelte",
+        "src/components/01-atoms/icons/PhoneIcon.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
       "dependencies": [
+        {
+          "module": "../zz-meta-components/ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "module": "./ScreenPaddingAtom.svelte",
           "moduleSystem": "es6",
@@ -166,16 +300,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/01-atoms/ScreenPaddingAtom.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
-        "src/components/03-organisms/HeaderOrganism.svelte"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -201,15 +325,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -240,9 +355,28 @@
     },
     {
       "source": "src/components/01-atoms/icons/MapPinIcon.svelte",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module": "./Svg.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
-        "src/components/01-atoms/icons/MapPinIcon.stories.svelte"
+        "src/components/01-atoms/icons/MapPinIcon.stories.svelte",
+        "src/components/02-molecules/IconTextMolecule.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -274,25 +408,31 @@
     },
     {
       "source": "src/components/01-atoms/icons/PhoneIcon.svelte",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module": "./Svg.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
-        "src/components/01-atoms/icons/PhoneIcon.stories.svelte"
+        "src/components/01-atoms/icons/PhoneIcon.stories.svelte",
+        "src/components/02-molecules/IconTextMolecule.stories.svelte"
       ],
       "orphan": false,
       "valid": true
-    },
-    {
-      "source": "src/components/01-atoms/icons/Svg.svelte",
-      "dependencies": [],
-      "dependents": [],
-      "orphan": true,
-      "valid": false,
-      "rules": [
-        {
-          "severity": "warn",
-          "name": "no-orphans-in-components"
-        }
-      ]
     },
     {
       "source": "src/components/01-atoms/icons/iconTypes.ts",
@@ -310,6 +450,40 @@
     {
       "source": "src/components/02-molecules/IconTextMolecule.stories.svelte",
       "dependencies": [
+        {
+          "module": "../01-atoms/icons/MapPinIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/icons/PhoneIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "module": "./IconTextMolecule.svelte",
           "moduleSystem": "es6",
@@ -423,7 +597,8 @@
         }
       ],
       "dependents": [
-        "src/components/03-organisms/FooterOrganism.stories.svelte"
+        "src/components/03-organisms/FooterOrganism.stories.svelte",
+        "src/components/03-organisms/SiteFrameOrganism.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -492,7 +667,8 @@
         }
       ],
       "dependents": [
-        "src/components/03-organisms/HeaderOrganism.stories.svelte"
+        "src/components/03-organisms/HeaderOrganism.stories.svelte",
+        "src/components/03-organisms/SiteFrameOrganism.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -524,7 +700,42 @@
     },
     {
       "source": "src/components/03-organisms/HeroBlockOrganism.svelte",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module": "../01-atoms/BgImageContainerAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/BgImageContainerAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
       ],
@@ -534,6 +745,23 @@
     {
       "source": "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
       "dependencies": [
+        {
+          "module": "../zz-meta-components/ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "module": "./SiteFrameOrganism.svelte",
           "moduleSystem": "es6",
@@ -558,7 +786,42 @@
     },
     {
       "source": "src/components/03-organisms/SiteFrameOrganism.svelte",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module": "./FooterOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/FooterOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./HeaderOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeaderOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
       ],
@@ -592,9 +855,37 @@
     },
     {
       "source": "src/components/listings/card/CardListingOrganism.svelte",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module": "./CardMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/listings/card/CardListingOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardMolecule.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.svelte",
+        "src/components/listings/card/CardMolecule.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -621,15 +912,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/card/CardMolecule.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/listings/card/CardMolecule.stories.svelte"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -689,15 +971,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/zz-meta-components/ChildContentAtom.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/zz-meta-components/ChildContentAtom.stories.svelte"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -777,15 +1050,6 @@
       },
       {
         "type": "module",
-        "from": "src/components/01-atoms/icons/Svg.svelte",
-        "to": "src/components/01-atoms/icons/Svg.svelte",
-        "rule": {
-          "severity": "warn",
-          "name": "no-orphans-in-components"
-        }
-      },
-      {
-        "type": "module",
         "from": "src/lib/index.ts",
         "to": "src/lib/index.ts",
         "rule": {
@@ -795,11 +1059,11 @@
       }
     ],
     "error": 0,
-    "warn": 3,
+    "warn": 2,
     "info": 0,
     "ignore": 0,
     "totalCruised": 43,
-    "totalDependenciesCruised": 22,
+    "totalDependenciesCruised": 37,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
