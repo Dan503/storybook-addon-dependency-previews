@@ -944,7 +944,60 @@
       "source": "src/components/listings/compact/CompactListingMolecule.svelte",
       "dependencies": [],
       "dependents": [
-        "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+        "src/components/listings/compact/CompactListingMolecule.stories.svelte",
+        "src/components/listings/compact/CompactListingOrganism.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CompactListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./CompactListingMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/listings/compact/CompactListingOrganism.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1062,8 +1115,8 @@
     "warn": 2,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 43,
-    "totalDependenciesCruised": 37,
+    "totalCruised": 45,
+    "totalDependenciesCruised": 39,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

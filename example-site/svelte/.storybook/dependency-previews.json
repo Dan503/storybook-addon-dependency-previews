@@ -692,6 +692,47 @@
     "usedIn": [
       {
         "componentPath": "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/components/listings/compact/CompactListingOrganism.stories.svelte": {
+    "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/listings/compact/CompactListingOrganism.svelte": {
+    "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
+    "storyId": "listings-compact-compact-listing-organism--docs",
+    "storyTitle": "Compact Listing Organism",
+    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+    "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingMolecule.svelte",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
       }
     ]
   },
