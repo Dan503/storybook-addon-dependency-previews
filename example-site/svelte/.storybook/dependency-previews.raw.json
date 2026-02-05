@@ -829,6 +829,40 @@
       "valid": true
     },
     {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorMessageAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/listings/card/CardListingOrganism.stories.svelte",
       "dependencies": [
         {
@@ -1115,8 +1149,8 @@
     "warn": 2,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 45,
-    "totalDependenciesCruised": 39,
+    "totalCruised": 47,
+    "totalDependenciesCruised": 40,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

@@ -602,6 +602,32 @@
       }
     ]
   },
+  "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte": {
+    "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+        "storyId": "forms-error-messages-error-message-atom--docs",
+        "storyTitle": "Error Message Atom",
+        "storyTitlePath": "Forms / Error Messages / Error Message Atom",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte": {
+    "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+    "storyId": "forms-error-messages-error-message-atom--docs",
+    "storyTitle": "Error Message Atom",
+    "storyTitlePath": "Forms / Error Messages / Error Message Atom",
+    "storyFilePath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
+      }
+    ]
+  },
   "src/components/listings/card/CardListingOrganism.stories.svelte": {
     "componentPath": "src/components/listings/card/CardListingOrganism.stories.svelte",
     "builtWith": [
