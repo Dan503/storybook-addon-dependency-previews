@@ -5,10 +5,9 @@ import {
 	dependencyPreviewDecorators,
 	type StorybookPreviewConfig
 } from 'storybook-addon-dependency-previews';
-
-import dependenciesJson from './dependency-previews.json';
-
 import '../src/routes/layout.css';
+import dependenciesJson from './dependency-previews.json';
+import LevelDecorator from './decorators/LevelDecorator.svelte';
 
 const previewConfig: StorybookPreviewConfig = {
 	// Essential configuration for storybook-addon-dependency-previews
@@ -22,8 +21,7 @@ const previewConfig: StorybookPreviewConfig = {
 				'https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site/preview'
 		}
 	},
-	// Added Tanstack React Router decorator to provide routing context, not needed for the addon itself
-	decorators: [...dependencyPreviewDecorators]
+	decorators: [...dependencyPreviewDecorators, () => LevelDecorator]
 };
 
 export default previewConfig;

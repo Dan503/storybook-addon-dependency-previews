@@ -602,8 +602,25 @@
       }
     ]
   },
-  "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte": {
-    "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte",
+  "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte": {
+    "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+        "storyId": "forms-error-messages-error-block-organism--docs",
+        "storyTitle": "Error Block Organism",
+        "storyTitlePath": "Forms / Error Messages / Error Block Organism",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte": {
+    "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+    "storyId": "forms-error-messages-error-block-organism--docs",
+    "storyTitle": "Error Block Organism",
+    "storyTitlePath": "Forms / Error Messages / Error Block Organism",
+    "storyFilePath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte",
     "builtWith": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
@@ -613,7 +630,11 @@
         "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
       }
     ],
-    "usedIn": []
+    "usedIn": [
+      {
+        "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte"
+      }
+    ]
   },
   "src/components/forms/ErrorMessages/ErrorListMolecule.svelte": {
     "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
@@ -631,6 +652,13 @@
       }
     ],
     "usedIn": [
+      {
+        "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+        "storyId": "forms-error-messages-error-block-organism--docs",
+        "storyTitle": "Error Block Organism",
+        "storyTitlePath": "Forms / Error Messages / Error Block Organism",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte"
+      },
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
       }
@@ -655,6 +683,19 @@
         "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
       }
     ]
+  },
+  "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte": {
+    "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+        "storyId": "forms-error-messages-error-list-molecule--docs",
+        "storyTitle": "Error List Molecule",
+        "storyTitlePath": "Forms / Error Messages / Error List Molecule",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": []
   },
   "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte": {
     "componentPath": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte",
