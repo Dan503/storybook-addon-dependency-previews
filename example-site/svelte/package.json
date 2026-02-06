@@ -17,6 +17,7 @@
 		"sb:deps": "sb-deps"
 	},
 	"dependencies": {
+		"@tanstack/svelte-form": "^1.28.0",
 		"example-site-shared": "workspace:*",
 		"svelte-headings": "^0.1.3"
 	},

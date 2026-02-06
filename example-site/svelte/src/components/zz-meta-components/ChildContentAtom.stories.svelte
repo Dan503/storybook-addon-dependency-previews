@@ -4,7 +4,7 @@
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
-		title: 'Zz Meta Components / Child Content Atom',
+		title: 'ZZ Meta Components / Child Content Atom',
 		component: ChildContentAtom,
 		tags: ['autodocs', 'atom'],
 		parameters: {

@@ -125,7 +125,8 @@
         "src/components/01-atoms/ContentRestraintAtom.stories.svelte",
         "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
         "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
-        "src/components/zz-meta-components/ChildContentAtom.stories.svelte"
+        "src/components/zz-meta-components/ChildContentAtom.stories.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1168,6 +1169,110 @@
       "valid": true
     },
     {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "../ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "./FormDataPreviewAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./FormDataPreviewAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/lib/index.ts",
       "dependencies": [],
       "dependents": [],
@@ -1255,8 +1360,8 @@
     "warn": 2,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 51,
-    "totalDependenciesCruised": 44,
+    "totalCruised": 55,
+    "totalDependenciesCruised": 48,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
