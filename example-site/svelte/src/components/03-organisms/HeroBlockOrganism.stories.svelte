@@ -23,11 +23,5 @@
 		imgSrc: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg'
 	} satisfies Args}
 >
-	{#snippet template(args)}
-		<Level>
-			<HeroBlockOrganism {...args}>
-				<p>This is where the hero block content goes.</p>
-			</HeroBlockOrganism>
-		</Level>
-	{/snippet}
+	<p>This is where the hero block content goes.</p>
 </Story>
