@@ -829,6 +829,68 @@
       "valid": true
     },
     {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorListMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorMessageAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte",
       "dependencies": [
         {
@@ -850,15 +912,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -1149,8 +1202,8 @@
     "warn": 2,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 47,
-    "totalDependenciesCruised": 40,
+    "totalCruised": 49,
+    "totalDependenciesCruised": 42,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
