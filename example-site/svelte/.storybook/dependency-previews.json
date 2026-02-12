@@ -666,6 +666,13 @@
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
       },
       {
+        "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+        "storyId": "forms-text-area-molecule--docs",
+        "storyTitle": "Text Area Molecule",
+        "storyTitlePath": "Forms / Text Area Molecule",
+        "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte"
+      },
+      {
         "componentPath": "src/components/forms/TextFieldMolecule.svelte",
         "storyId": "forms-text-field-molecule--docs",
         "storyTitle": "Text Field Molecule",
@@ -725,6 +732,117 @@
     "builtWith": [],
     "usedIn": []
   },
+  "src/components/forms/TextAreaMolecule.decorator.svelte": {
+    "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+        "storyId": "forms-text-area-molecule--docs",
+        "storyTitle": "Text Area Molecule",
+        "storyTitlePath": "Forms / Text Area Molecule",
+        "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
+        "storyTitle": "Form Data Molecule",
+        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Molecule",
+        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule.stories.svelte"
+      }
+    ]
+  },
+  "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte": {
+    "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+    "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
+    "storyTitle": "Form Data Molecule",
+    "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Molecule",
+    "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+        "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
+        "storyTitle": "Form Data Preview Atom",
+        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
+        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte"
+      },
+      {
+        "componentPath": "src/components/forms/TextFieldMolecule.decorator.svelte"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      }
+    ]
+  },
+  "src/components/forms/TextAreaMolecule.svelte": {
+    "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+    "storyId": "forms-text-area-molecule--docs",
+    "storyTitle": "Text Area Molecule",
+    "storyTitlePath": "Forms / Text Area Molecule",
+    "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+        "storyId": "forms-error-messages-error-list-molecule--docs",
+        "storyTitle": "Error List Molecule",
+        "storyTitlePath": "Forms / Error Messages / Error List Molecule",
+        "storyFilePath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte"
+      },
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule.stories.svelte"
+      }
+    ]
+  },
+  "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte": {
+    "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+    "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
+    "storyTitle": "Form Data Preview Atom",
+    "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
+    "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
+        "storyTitle": "Form Data Molecule",
+        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Molecule",
+        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
+      }
+    ]
+  },
+  "src/components/forms/TextAreaMolecule.stories.svelte": {
+    "componentPath": "src/components/forms/TextAreaMolecule.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte"
+      },
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+        "storyId": "forms-text-area-molecule--docs",
+        "storyTitle": "Text Area Molecule",
+        "storyTitlePath": "Forms / Text Area Molecule",
+        "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
   "src/components/forms/TextFieldMolecule.decorator.svelte": {
     "componentPath": "src/components/forms/TextFieldMolecule.decorator.svelte",
     "builtWith": [
@@ -749,30 +867,6 @@
       }
     ]
   },
-  "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte": {
-    "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
-    "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
-    "storyTitle": "Form Data Molecule",
-    "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Molecule",
-    "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte",
-    "builtWith": [
-      {
-        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
-        "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
-        "storyTitle": "Form Data Preview Atom",
-        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
-        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/forms/TextFieldMolecule.decorator.svelte"
-      },
-      {
-        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
-      }
-    ]
-  },
   "src/components/forms/TextFieldMolecule.svelte": {
     "componentPath": "src/components/forms/TextFieldMolecule.svelte",
     "storyId": "forms-text-field-molecule--docs",
@@ -794,26 +888,6 @@
       },
       {
         "componentPath": "src/components/forms/TextFieldMolecule.stories.svelte"
-      }
-    ]
-  },
-  "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte": {
-    "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
-    "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
-    "storyTitle": "Form Data Preview Atom",
-    "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
-    "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
-        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
-        "storyTitle": "Form Data Molecule",
-        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Molecule",
-        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
-      },
-      {
-        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
       }
     ]
   },

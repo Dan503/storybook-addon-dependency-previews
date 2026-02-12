@@ -905,6 +905,7 @@
       "dependents": [
         "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
         "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte",
+        "src/components/forms/TextAreaMolecule.svelte",
         "src/components/forms/TextFieldMolecule.svelte"
       ],
       "orphan": false,
@@ -984,6 +985,159 @@
       ]
     },
     {
+      "source": "src/components/forms/TextAreaMolecule.decorator.svelte",
+      "dependencies": [
+        {
+          "module": "../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextAreaMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "./FormDataPreviewAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule.decorator.svelte",
+        "src/components/forms/TextFieldMolecule.decorator.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorMessages/ErrorListMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule.decorator.svelte",
+        "src/components/forms/TextAreaMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./TextAreaMolecule.decorator.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextAreaMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/forms/TextFieldMolecule.decorator.svelte",
       "dependencies": [
         {
@@ -1023,44 +1177,6 @@
       ],
       "dependents": [
         "src/components/forms/TextFieldMolecule.stories.svelte"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
-      "dependencies": [
-        {
-          "module": "./FormDataPreviewAtom.svelte",
-          "moduleSystem": "es6",
-          "dynamic": false,
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/TextFieldMolecule.decorator.svelte",
-        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
-        "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1498,8 +1614,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 59,
-    "totalDependenciesCruised": 53,
+    "totalCruised": 62,
+    "totalDependenciesCruised": 58,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

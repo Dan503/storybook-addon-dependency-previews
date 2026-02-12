@@ -971,23 +971,6 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "./CardListTemplate",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -1005,188 +988,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/data/example-meal-data.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": true,
-          "cycle": [
-            {
-              "name": "src/utils/mealDbApiUtils.ts",
-              "dependencyTypes": [
-                "local",
-                "import"
-              ]
-            },
-            {
-              "name": "src/data/example-meal-data.ts",
-              "dependencyTypes": [
-                "local",
-                "type-only",
-                "import"
-              ]
-            }
-          ],
-          "valid": false,
-          "rules": [
-            {
-              "severity": "error",
-              "name": "no-circular"
-            }
-          ]
-        },
-        {
-          "dynamic": false,
-          "module": "./categories.json",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/categories.json",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./example-meal-list.json",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-list.json",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/04-templates/CardListTemplate.stories.tsx",
-        "src/utils/mealDbApiUtils.ts",
-        "src/components/04-templates/DetailPageTemplate.stories.tsx",
-        "src/components/04-templates/HomeTemplate.stories.tsx",
-        "src/components/listings/card/CardListingOrganism.stories.tsx",
-        "src/components/listings/card/CardMolecule.stories.tsx",
-        "src/components/listings/compact/CompactListingMolecule.stories.tsx",
-        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/data/categories.json",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "local",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/data/example-meal-data.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/data/example-meal-list.json",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "local",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/data/example-meal-data.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/utils/mealDbApiUtils.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": true,
-          "cycle": [
-            {
-              "name": "src/data/example-meal-data.ts",
-              "dependencyTypes": [
-                "local",
-                "type-only",
-                "import"
-              ]
-            },
-            {
-              "name": "src/utils/mealDbApiUtils.ts",
-              "dependencyTypes": [
-                "local",
-                "import"
-              ]
-            }
-          ],
-          "valid": false,
-          "rules": [
-            {
-              "severity": "error",
-              "name": "no-circular"
-            }
-          ]
-        }
-      ],
-      "dependents": [
-        "src/data/example-meal-data.ts",
-        "src/routes/categories.$category.tsx",
-        "src/routes/categories.index.tsx",
-        "src/routes/index.tsx",
-        "src/components/04-templates/HomeTemplate.tsx",
-        "src/routes/meal.$mealId.tsx",
-        "src/components/04-templates/DetailPageTemplate.tsx"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -2280,23 +2081,6 @@
               "name": "no-circular"
             }
           ]
-        },
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
         }
       ],
       "dependents": [
@@ -2383,23 +2167,6 @@
               "name": "no-circular"
             }
           ]
-        },
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
         }
       ],
       "dependents": [
@@ -2875,23 +2642,6 @@
               "name": "no-circular"
             }
           ]
-        },
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
         }
       ],
       "dependents": [
@@ -2903,24 +2653,6 @@
     {
       "source": "src/components/04-templates/HomeTemplate.tsx",
       "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
         {
           "dynamic": false,
           "module": "../01-atoms/ExternalLinkAtom",
@@ -3092,23 +2824,6 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
         }
       ],
       "dependents": [
@@ -3120,24 +2835,6 @@
     {
       "source": "src/components/04-templates/DetailPageTemplate.tsx",
       "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../utils/mealDbApiUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/utils/mealDbApiUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
         {
           "dynamic": false,
           "module": "../01-atoms/ScreenPaddingAtom",
@@ -3265,23 +2962,6 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "./DetailPageTemplate",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3305,23 +2985,6 @@
     {
       "source": "src/components/04-templates/HomeTemplate.stories.tsx",
       "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
         {
           "dynamic": false,
           "module": "./HomeTemplate",
@@ -3650,23 +3313,6 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "./CardListingOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3690,23 +3336,6 @@
     {
       "source": "src/components/listings/card/CardMolecule.stories.tsx",
       "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
         {
           "dynamic": false,
           "module": "./CardMolecule",
@@ -3734,23 +3363,6 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "./CompactListingMolecule",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3774,23 +3386,6 @@
     {
       "source": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
       "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../../../data/example-meal-data",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/data/example-meal-data.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
         {
           "dynamic": false,
           "module": "./CompactListingOrganism",
@@ -4074,32 +3669,6 @@
       },
       {
         "type": "cycle",
-        "from": "src/data/example-meal-data.ts",
-        "to": "src/utils/mealDbApiUtils.ts",
-        "rule": {
-          "severity": "error",
-          "name": "no-circular"
-        },
-        "cycle": [
-          {
-            "name": "src/utils/mealDbApiUtils.ts",
-            "dependencyTypes": [
-              "local",
-              "import"
-            ]
-          },
-          {
-            "name": "src/data/example-meal-data.ts",
-            "dependencyTypes": [
-              "local",
-              "type-only",
-              "import"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "cycle",
         "from": "src/router.tsx",
         "to": "src/routeTree.gen.ts",
         "rule": {
@@ -4352,14 +3921,14 @@
         ]
       }
     ],
-    "error": 9,
+    "error": 8,
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 85,
-    "totalDependenciesCruised": 131,
+    "totalCruised": 81,
+    "totalDependenciesCruised": 114,
     "optionsUsed": {
-      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site",
+      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\react",
       "combinedDependencies": true,
       "detectJSDocImports": false,
       "detectProcessBuiltinModuleCalls": false,
