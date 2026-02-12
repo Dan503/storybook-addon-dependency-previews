@@ -23,7 +23,7 @@ export function TextAreaMolecule<FieldApi extends AnyFieldApi>({
 		<div>
 			<label htmlFor={id} className="block font-bold mb-1 text-xl w-full">
 				{label}
-				<div className="grid">
+				<div className="grid grid-cols-[minmax(0,1fr)]">
 					<textarea
 						id={id}
 						value={field.state.value}

@@ -8,7 +8,7 @@ export function FormDataPreviewAtom<FormApi extends AnyFormApi>({
 	formValues,
 }: Props<FormApi>) {
 	return (
-		<pre>
+		<pre className="overflow-auto">
 			<code>{JSON.stringify(formValues, null, 3)}</code>
 		</pre>
 	)

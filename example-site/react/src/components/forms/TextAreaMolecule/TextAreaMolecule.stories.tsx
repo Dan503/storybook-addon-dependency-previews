@@ -13,7 +13,7 @@ const meta: Meta<typeof TextAreaMolecule> = {
 	component: TextAreaMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {
-		layout: 'centered',
+		layout: 'padded',
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
 }
