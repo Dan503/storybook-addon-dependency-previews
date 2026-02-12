@@ -666,18 +666,18 @@
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
       },
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
         "storyId": "forms-text-area-molecule--docs",
         "storyTitle": "Text Area Molecule",
         "storyTitlePath": "Forms / Text Area Molecule",
-        "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte"
+        "storyFilePath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
       },
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.svelte",
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
         "storyId": "forms-text-field-molecule--docs",
         "storyTitle": "Text Field Molecule",
         "storyTitlePath": "Forms / Text Field Molecule",
-        "storyFilePath": "src/components/forms/TextFieldMolecule.stories.svelte"
+        "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
       }
     ]
   },
@@ -732,15 +732,15 @@
     "builtWith": [],
     "usedIn": []
   },
-  "src/components/forms/TextAreaMolecule.decorator.svelte": {
-    "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte",
+  "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte": {
+    "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
     "builtWith": [
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
         "storyId": "forms-text-area-molecule--docs",
         "storyTitle": "Text Area Molecule",
         "storyTitlePath": "Forms / Text Area Molecule",
-        "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte"
+        "storyFilePath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
       },
       {
         "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
@@ -752,7 +752,7 @@
     ],
     "usedIn": [
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.stories.svelte"
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
       }
     ]
   },
@@ -773,22 +773,22 @@
     ],
     "usedIn": [
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte"
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte"
       },
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.decorator.svelte"
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte"
       },
       {
         "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
       }
     ]
   },
-  "src/components/forms/TextAreaMolecule.svelte": {
-    "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+  "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte": {
+    "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
     "storyId": "forms-text-area-molecule--docs",
     "storyTitle": "Text Area Molecule",
     "storyTitlePath": "Forms / Text Area Molecule",
-    "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte",
+    "storyFilePath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte",
     "builtWith": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
@@ -800,10 +800,10 @@
     ],
     "usedIn": [
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte"
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte"
       },
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.stories.svelte"
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
       }
     ]
   },
@@ -827,31 +827,31 @@
       }
     ]
   },
-  "src/components/forms/TextAreaMolecule.stories.svelte": {
-    "componentPath": "src/components/forms/TextAreaMolecule.stories.svelte",
+  "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte": {
+    "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte",
     "builtWith": [
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.decorator.svelte"
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte"
       },
       {
-        "componentPath": "src/components/forms/TextAreaMolecule.svelte",
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
         "storyId": "forms-text-area-molecule--docs",
         "storyTitle": "Text Area Molecule",
         "storyTitlePath": "Forms / Text Area Molecule",
-        "storyFilePath": "src/components/forms/TextAreaMolecule.stories.svelte"
+        "storyFilePath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
       }
     ],
     "usedIn": []
   },
-  "src/components/forms/TextFieldMolecule.decorator.svelte": {
-    "componentPath": "src/components/forms/TextFieldMolecule.decorator.svelte",
+  "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte": {
+    "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
     "builtWith": [
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.svelte",
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
         "storyId": "forms-text-field-molecule--docs",
         "storyTitle": "Text Field Molecule",
         "storyTitlePath": "Forms / Text Field Molecule",
-        "storyFilePath": "src/components/forms/TextFieldMolecule.stories.svelte"
+        "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
       },
       {
         "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
@@ -863,16 +863,16 @@
     ],
     "usedIn": [
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.stories.svelte"
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
       }
     ]
   },
-  "src/components/forms/TextFieldMolecule.svelte": {
-    "componentPath": "src/components/forms/TextFieldMolecule.svelte",
+  "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte": {
+    "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
     "storyId": "forms-text-field-molecule--docs",
     "storyTitle": "Text Field Molecule",
     "storyTitlePath": "Forms / Text Field Molecule",
-    "storyFilePath": "src/components/forms/TextFieldMolecule.stories.svelte",
+    "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte",
     "builtWith": [
       {
         "componentPath": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
@@ -884,25 +884,25 @@
     ],
     "usedIn": [
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.decorator.svelte"
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte"
       },
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.stories.svelte"
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
       }
     ]
   },
-  "src/components/forms/TextFieldMolecule.stories.svelte": {
-    "componentPath": "src/components/forms/TextFieldMolecule.stories.svelte",
+  "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte": {
+    "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte",
     "builtWith": [
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.decorator.svelte"
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte"
       },
       {
-        "componentPath": "src/components/forms/TextFieldMolecule.svelte",
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
         "storyId": "forms-text-field-molecule--docs",
         "storyTitle": "Text Field Molecule",
         "storyTitlePath": "Forms / Text Field Molecule",
-        "storyFilePath": "src/components/forms/TextFieldMolecule.stories.svelte"
+        "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
       }
     ],
     "usedIn": []

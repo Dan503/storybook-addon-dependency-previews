@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { WithField } from './FormTypes';
+	import type { WithField } from '../FormTypes';
 	import { useStore, type AnyFieldApi } from '@tanstack/svelte-form';
-	import ErrorListMolecule from './ErrorMessages/ErrorListMolecule.svelte';
+	import ErrorListMolecule from '../ErrorMessages/ErrorListMolecule.svelte';
 
 	export interface PropsForTextAreaMolecule {
 		label: string;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createForm, useStore } from '@tanstack/svelte-form';
 	import TextAreaMolecule, { type PropsForTextAreaMolecule } from './TextAreaMolecule.svelte';
-	import FormDataMolecule from '../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
+	import FormDataMolecule from '../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
 
 	const { label, placeholder }: PropsForTextAreaMolecule = $props();
 
