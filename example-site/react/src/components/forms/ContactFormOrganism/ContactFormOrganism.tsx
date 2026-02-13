@@ -1,16 +1,12 @@
 import { useForm, useStore } from '@tanstack/react-form'
+import {
+	defaultContactFormValues,
+	type ContactFormValues,
+} from 'example-site-shared/data'
 import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
 import { useEffect } from 'react'
 import { ButtonAtom } from '../../01-atoms/ButtonAtom'
-
-export const defaultContactFormValues = {
-	name: '',
-	email: '',
-	message: '',
-}
-
-export type ContactFormValues = typeof defaultContactFormValues
 
 export interface PropsForContactFormOrganism {
 	onSubmit?: () => void

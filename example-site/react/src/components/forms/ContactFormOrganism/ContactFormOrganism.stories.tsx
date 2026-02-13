@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { defaultContactFormValues } from 'example-site-shared/data'
 import { useState } from 'react'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
 import {
 	ContactFormOrganism,
-	defaultContactFormValues,
 	type PropsForContactFormOrganism,
 } from './ContactFormOrganism'
 

@@ -13,6 +13,11 @@ export {
 	featuredMealsData,
 } from './example-meal-data'
 
+export {
+	defaultContactFormValues,
+	type ContactFormValues,
+} from './default-form-values'
+
 // Re-export types from utils for convenience
 export type {
 	Category,
