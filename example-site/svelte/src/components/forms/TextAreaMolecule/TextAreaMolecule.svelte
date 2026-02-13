@@ -18,7 +18,7 @@
 </script>
 
 <div class="TextAreaMolecule">
-	<label for={id} class="mb-1 block">
+	<label for={id} class="mb-1 grid gap-2">
 		<span class="text-xl font-bold">
 			{label}
 		</span>
