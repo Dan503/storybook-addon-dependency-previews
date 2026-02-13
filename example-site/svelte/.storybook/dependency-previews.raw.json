@@ -165,7 +165,8 @@
         "src/components/01-atoms/ContentRestraintAtom.svelte",
         "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
         "src/components/03-organisms/HeaderOrganism.svelte",
-        "src/components/03-organisms/HeroBlockOrganism.svelte"
+        "src/components/03-organisms/HeroBlockOrganism.svelte",
+        "src/components/04-templates/CardListTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -824,7 +825,132 @@
         }
       ],
       "dependents": [
-        "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+        "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
+        "src/components/04-templates/CardListTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CardListTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../listings/card/CardListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./CardMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/listings/card/CardListingOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardMolecule.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.svelte",
+        "src/components/listings/card/CardMolecule.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1403,43 +1529,6 @@
       "valid": true
     },
     {
-      "source": "src/components/listings/card/CardListingOrganism.svelte",
-      "dependencies": [
-        {
-          "module": "./CardMolecule.svelte",
-          "moduleSystem": "es6",
-          "dynamic": false,
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/card/CardMolecule.svelte",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/listings/card/CardListingOrganism.stories.svelte"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/card/CardMolecule.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/listings/card/CardListingOrganism.svelte",
-        "src/components/listings/card/CardMolecule.stories.svelte"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/listings/card/CardMolecule.stories.svelte",
       "dependencies": [
         {
@@ -1740,8 +1829,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 64,
-    "totalDependenciesCruised": 64,
+    "totalCruised": 66,
+    "totalDependenciesCruised": 68,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,

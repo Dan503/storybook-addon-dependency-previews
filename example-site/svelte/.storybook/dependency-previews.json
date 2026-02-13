@@ -155,6 +155,13 @@
         "storyTitle": "Hero Block Organism",
         "storyTitlePath": "03 Organisms / Hero Block Organism",
         "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/CardListTemplate.svelte",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
       }
     ]
   },
@@ -602,6 +609,109 @@
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/CardListTemplate.svelte",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      }
+    ]
+  },
+  "src/components/04-templates/CardListTemplate.stories.svelte": {
+    "componentPath": "src/components/04-templates/CardListTemplate.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/CardListTemplate.svelte",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/04-templates/CardListTemplate.svelte": {
+    "componentPath": "src/components/04-templates/CardListTemplate.svelte",
+    "storyId": "04-templates-card-list-template--docs",
+    "storyTitle": "Card List Template",
+    "storyTitlePath": "04 Templates / Card List Template",
+    "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/card/CardListingOrganism.svelte",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      }
+    ]
+  },
+  "src/components/listings/card/CardListingOrganism.svelte": {
+    "componentPath": "src/components/listings/card/CardListingOrganism.svelte",
+    "storyId": "listings-card-card-listing-organism--docs",
+    "storyTitle": "Card Listing Organism",
+    "storyTitlePath": "Listings / Card / Card Listing Organism",
+    "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/card/CardMolecule.svelte",
+        "storyId": "listings-card-card-molecule--docs",
+        "storyTitle": "Card Molecule",
+        "storyTitlePath": "Listings / Card / Card Molecule",
+        "storyFilePath": "src/components/listings/card/CardMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/CardListTemplate.svelte",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/card/CardListingOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/components/listings/card/CardMolecule.svelte": {
+    "componentPath": "src/components/listings/card/CardMolecule.svelte",
+    "storyId": "listings-card-card-molecule--docs",
+    "storyTitle": "Card Molecule",
+    "storyTitlePath": "Listings / Card / Card Molecule",
+    "storyFilePath": "src/components/listings/card/CardMolecule.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/listings/card/CardListingOrganism.svelte",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/card/CardMolecule.stories.svelte"
       }
     ]
   },
@@ -985,47 +1095,6 @@
       }
     ],
     "usedIn": []
-  },
-  "src/components/listings/card/CardListingOrganism.svelte": {
-    "componentPath": "src/components/listings/card/CardListingOrganism.svelte",
-    "storyId": "listings-card-card-listing-organism--docs",
-    "storyTitle": "Card Listing Organism",
-    "storyTitlePath": "Listings / Card / Card Listing Organism",
-    "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte",
-    "builtWith": [
-      {
-        "componentPath": "src/components/listings/card/CardMolecule.svelte",
-        "storyId": "listings-card-card-molecule--docs",
-        "storyTitle": "Card Molecule",
-        "storyTitlePath": "Listings / Card / Card Molecule",
-        "storyFilePath": "src/components/listings/card/CardMolecule.stories.svelte"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/listings/card/CardListingOrganism.stories.svelte"
-      }
-    ]
-  },
-  "src/components/listings/card/CardMolecule.svelte": {
-    "componentPath": "src/components/listings/card/CardMolecule.svelte",
-    "storyId": "listings-card-card-molecule--docs",
-    "storyTitle": "Card Molecule",
-    "storyTitlePath": "Listings / Card / Card Molecule",
-    "storyFilePath": "src/components/listings/card/CardMolecule.stories.svelte",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/listings/card/CardListingOrganism.svelte",
-        "storyId": "listings-card-card-listing-organism--docs",
-        "storyTitle": "Card Listing Organism",
-        "storyTitlePath": "Listings / Card / Card Listing Organism",
-        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte"
-      },
-      {
-        "componentPath": "src/components/listings/card/CardMolecule.stories.svelte"
-      }
-    ]
   },
   "src/components/listings/card/CardMolecule.stories.svelte": {
     "componentPath": "src/components/listings/card/CardMolecule.stories.svelte",
