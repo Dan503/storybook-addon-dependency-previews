@@ -21,8 +21,8 @@ export function TextAreaMolecule<FieldApi extends AnyFieldApi>({
 
 	return (
 		<div>
-			<label htmlFor={id} className="block font-bold mb-1 text-xl w-full">
-				{label}
+			<label htmlFor={id} className="block mb-1 w-full">
+				<span className="font-bold text-xl">{label}</span>
 				<div className="grid grid-cols-[minmax(0,1fr)]">
 					<textarea
 						id={id}
@@ -30,7 +30,7 @@ export function TextAreaMolecule<FieldApi extends AnyFieldApi>({
 						placeholder={placeholder}
 						onBlur={field.handleBlur}
 						onChange={(e) => field.handleChange(e.target.value)}
-						className="col-start-1 row-start-1 w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						className={`col-start-1 row-start-1 w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${showErrors ? 'placeholder-red-900/60' : ''}`}
 					/>
 					<span className="col-start-1 row-start-1 px-4 py-2 pointer-events-none whitespace-pre-wrap invisible">
 						{field.state.value}{' '}

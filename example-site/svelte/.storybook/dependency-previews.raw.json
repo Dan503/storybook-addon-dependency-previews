@@ -1051,7 +1051,9 @@
       ],
       "dependents": [
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
+        "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte",
         "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte",
         "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
       ],
       "orphan": false,
@@ -1090,7 +1092,8 @@
       ],
       "dependents": [
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte",
+        "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1131,9 +1134,70 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "module": "./TextAreaMoleculeError.decorator.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte",
+      "dependencies": [
+        {
+          "module": "../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextAreaMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
+      ],
       "orphan": false,
       "valid": true
     },
@@ -1204,7 +1268,8 @@
       ],
       "dependents": [
         "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1245,9 +1310,70 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "module": "./TextFieldMoleculeError.decorator.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte",
+      "dependencies": [
+        {
+          "module": "../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextFieldMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
+      ],
       "orphan": false,
       "valid": true
     },
@@ -1614,8 +1740,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 62,
-    "totalDependenciesCruised": 58,
+    "totalCruised": 64,
+    "totalDependenciesCruised": 64,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
