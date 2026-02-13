@@ -35,7 +35,7 @@
 				class:text-red-900={showErrors}
 			></textarea>
 			<span
-				class="pointer-events-none col-start-1 row-start-1 min-w-0 overflow-hidden px-4 py-2 wrap-break-word whitespace-pre-wrap"
+				class="pointer-events-none invisible col-start-1 row-start-1 min-w-0 overflow-hidden px-4 py-2 wrap-break-word whitespace-pre-wrap"
 			>
 				{field.state.value}
 			</span>
