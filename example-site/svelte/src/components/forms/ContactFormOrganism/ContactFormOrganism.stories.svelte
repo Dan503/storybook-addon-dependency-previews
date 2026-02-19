@@ -1,8 +1,6 @@
 <script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
-	import ContactFormOrganism, {
-		type PropsForContactFormOrganism
-	} from './ContactFormOrganism.svelte';
+	import ContactFormOrganism from './ContactFormOrganism.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
 
@@ -23,7 +21,7 @@
 	}
 </script>
 
-<Story name="Primary" args={{ onSubmit }}>
+<Story name="Primary">
 	{#snippet template()}
 		<ContactFormOrganism {onSubmit} bind:formValues />
 	{/snippet}

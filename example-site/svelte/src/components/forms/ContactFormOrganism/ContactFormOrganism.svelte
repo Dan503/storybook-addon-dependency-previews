@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { createForm, useStore } from '@tanstack/svelte-form';
-	import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
+	import { createForm, revalidateLogic, useStore } from '@tanstack/svelte-form';
+	import {
+		defaultContactFormValues,
+		contactFormValuesSchema,
+		type ContactFormValues
+	} from 'example-site-shared/data';
 	import TextAreaMolecule from '../TextAreaMolecule/TextAreaMolecule.svelte';
 	import ButtonAtom from '../../01-atoms/ButtonAtom.svelte';
 	import TextFieldMolecule from '../TextFieldMolecule/TextFieldMolecule.svelte';
@@ -15,7 +19,11 @@
 
 	const form = createForm(() => ({
 		defaultValues: defaultContactFormValues,
-		onSubmit: onSubmit
+		onSubmit: onSubmit,
+		validationLogic: revalidateLogic(),
+		validators: {
+			onDynamic: contactFormValuesSchema
+		}
 	}));
 
 	const values = useStore(form.store, (s) => s.values);
@@ -27,11 +35,11 @@
 
 <form
 	id="form"
+	class="grid gap-4"
 	onsubmit={(e) => {
 		e.preventDefault();
 		form.handleSubmit();
 	}}
-	class="grid gap-4"
 >
 	<form.Field name="name">
 		{#snippet children(field)}
@@ -45,18 +53,7 @@
 		{/snippet}
 	</form.Field>
 
-	<form.Field
-		name="message"
-		validators={{
-			onChange: ({ value }) => {
-				if (!value) {
-					return 'Message is required';
-				} else if (value.length < 10) {
-					return 'Message must be at least 10 characters';
-				}
-			}
-		}}
-	>
+	<form.Field name="message">
 		{#snippet children(field)}
 			<TextAreaMolecule label="Message" placeholder="Type your message here..." {field} />
 		{/snippet}

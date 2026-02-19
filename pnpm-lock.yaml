@@ -135,6 +135,9 @@ importers:
       axios:
         specifier: ^1.13.2
         version: 1.13.2
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
   example-site/svelte:
     dependencies:

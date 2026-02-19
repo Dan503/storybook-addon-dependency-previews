@@ -15,6 +15,7 @@ export {
 
 export {
 	defaultContactFormValues,
+	contactFormValuesSchema,
 	type ContactFormValues,
 } from './default-form-values'
 
