@@ -57,6 +57,13 @@
         "componentPath": "src/components/01-atoms/ButtonAtom.stories.svelte"
       },
       {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
+      },
+      {
         "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
         "storyId": "forms-contact-form-organism--docs",
         "storyTitle": "Contact Form Organism",
@@ -128,6 +135,13 @@
     "usedIn": [
       {
         "componentPath": "src/components/01-atoms/ContentRestraintAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
       }
     ]
   },
@@ -327,6 +341,13 @@
       },
       {
         "componentPath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
       }
     ]
   },
@@ -360,6 +381,13 @@
       },
       {
         "componentPath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
       }
     ]
   },
@@ -405,6 +433,13 @@
     "usedIn": [
       {
         "componentPath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
       }
     ]
   },
@@ -623,6 +658,13 @@
         "storyTitle": "Card List Template",
         "storyTitlePath": "04 Templates / Card List Template",
         "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
       }
     ]
   },
@@ -722,18 +764,88 @@
       }
     ]
   },
-  "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte": {
-    "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
+  "src/components/04-templates/ContactTemplate.stories.svelte": {
+    "componentPath": "src/components/04-templates/ContactTemplate.stories.svelte",
     "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/04-templates/ContactTemplate.svelte": {
+    "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+    "storyId": "04-templates-contact-template--docs",
+    "storyTitle": "Contact Template",
+    "storyTitlePath": "04 Templates / Contact Template",
+    "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ButtonAtom.svelte",
+        "storyId": "01-atoms-button-atom--docs",
+        "storyTitle": "Button Atom",
+        "storyTitlePath": "01 Atoms / Button Atom",
+        "storyFilePath": "src/components/01-atoms/ButtonAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/ContentRestraintAtom.svelte",
+        "storyId": "01-atoms-content-restraint-atom--docs",
+        "storyTitle": "Content Restraint Atom",
+        "storyTitlePath": "01 Atoms / Content Restraint Atom",
+        "storyFilePath": "src/components/01-atoms/ContentRestraintAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.svelte",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "src/components/01-atoms/icons/MapPinIcon.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/PhoneIcon.svelte",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "src/components/01-atoms/icons/PhoneIcon.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/02-molecules/IconTextMolecule.svelte",
+        "storyId": "02-molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "02 Molecules / Icon Text Molecule",
+        "storyFilePath": "src/components/02-molecules/IconTextMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+      },
       {
         "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
         "storyId": "forms-contact-form-organism--docs",
         "storyTitle": "Contact Form Organism",
         "storyTitlePath": "Forms / Contact Form Organism",
         "storyFilePath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+        "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
+        "storyTitle": "Form Data Preview Atom",
+        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
+        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
       }
     ],
-    "usedIn": []
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.stories.svelte"
+      }
+    ]
   },
   "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte": {
     "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
@@ -766,7 +878,41 @@
     ],
     "usedIn": [
       {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
+      },
+      {
         "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte": {
+    "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+    "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
+    "storyTitle": "Form Data Preview Atom",
+    "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
+    "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
+        "storyTitle": "Form Data Molecule",
+        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Molecule",
+        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
       }
     ]
   },
@@ -900,6 +1046,19 @@
       }
     ]
   },
+  "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte": {
+    "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+        "storyId": "forms-contact-form-organism--docs",
+        "storyTitle": "Contact Form Organism",
+        "storyTitlePath": "Forms / Contact Form Organism",
+        "storyFilePath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
   "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte": {
     "componentPath": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte",
     "builtWith": [
@@ -1019,26 +1178,6 @@
       },
       {
         "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
-      }
-    ]
-  },
-  "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte": {
-    "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
-    "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
-    "storyTitle": "Form Data Preview Atom",
-    "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
-    "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
-        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
-        "storyTitle": "Form Data Molecule",
-        "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Molecule",
-        "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
-      },
-      {
-        "componentPath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
       }
     ]
   },
