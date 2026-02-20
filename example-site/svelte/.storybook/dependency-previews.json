@@ -197,6 +197,13 @@
         "storyTitle": "Detail Page Template",
         "storyTitlePath": "04 Templates / Detail Page Template",
         "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte"
       }
     ]
   },
@@ -238,6 +245,13 @@
         "storyTitle": "Footer Organism",
         "storyTitlePath": "03 Organisms / Footer Organism",
         "storyFilePath": "src/components/03-organisms/FooterOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte"
       }
     ]
   },
@@ -311,6 +325,39 @@
       }
     ],
     "usedIn": []
+  },
+  "src/components/01-atoms/StringOrSnippetAtom.stories.svelte": {
+    "componentPath": "src/components/01-atoms/StringOrSnippetAtom.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+        "storyId": "01-atoms-string-or-snippet-atom--docs",
+        "storyTitle": "String Or Snippet Atom",
+        "storyTitlePath": "01 Atoms / String Or Snippet Atom",
+        "storyFilePath": "src/components/01-atoms/StringOrSnippetAtom.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/StringOrSnippetAtom.svelte": {
+    "componentPath": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+    "storyId": "01-atoms-string-or-snippet-atom--docs",
+    "storyTitle": "String Or Snippet Atom",
+    "storyTitlePath": "01 Atoms / String Or Snippet Atom",
+    "storyFilePath": "src/components/01-atoms/StringOrSnippetAtom.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/StringOrSnippetAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.svelte",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+      }
+    ]
   },
   "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte": {
     "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte",
@@ -612,11 +659,25 @@
         "storyTitle": "Screen Padding Atom",
         "storyTitlePath": "01 Atoms / Screen Padding Atom",
         "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+        "storyId": "01-atoms-string-or-snippet-atom--docs",
+        "storyTitle": "String Or Snippet Atom",
+        "storyTitlePath": "01 Atoms / String Or Snippet Atom",
+        "storyFilePath": "src/components/01-atoms/StringOrSnippetAtom.stories.svelte"
       }
     ],
     "usedIn": [
       {
         "componentPath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte"
       }
     ]
   },
@@ -686,6 +747,13 @@
         "storyTitle": "Detail Page Template",
         "storyTitlePath": "04 Templates / Detail Page Template",
         "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte"
       }
     ]
   },
@@ -759,6 +827,13 @@
         "storyTitle": "Card List Template",
         "storyTitlePath": "04 Templates / Card List Template",
         "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte"
       },
       {
         "componentPath": "src/components/listings/card/CardListingOrganism.stories.svelte"
@@ -1167,6 +1242,68 @@
         "storyTitle": "Compact Listing Organism",
         "storyTitlePath": "Listings / Compact / Compact Listing Organism",
         "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/components/04-templates/HomeTemplate.stories.svelte": {
+    "componentPath": "src/components/04-templates/HomeTemplate.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/04-templates/HomeTemplate.svelte": {
+    "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+    "storyId": "04-templates-home-template--docs",
+    "storyTitle": "Home Template",
+    "storyTitlePath": "04 Templates / Home Template",
+    "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ExternalLinkAtom.svelte",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "src/components/01-atoms/ExternalLinkAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/HeroBlockOrganism.svelte",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/card/CardListingOrganism.svelte",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.stories.svelte"
       }
     ]
   },

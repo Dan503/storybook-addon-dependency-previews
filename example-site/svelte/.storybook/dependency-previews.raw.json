@@ -171,7 +171,8 @@
         "src/components/03-organisms/HeaderOrganism.svelte",
         "src/components/03-organisms/HeroBlockOrganism.svelte",
         "src/components/04-templates/CardListTemplate.svelte",
-        "src/components/04-templates/DetailPageTemplate.svelte"
+        "src/components/04-templates/DetailPageTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -224,7 +225,8 @@
       ],
       "dependents": [
         "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
-        "src/components/03-organisms/FooterOrganism.svelte"
+        "src/components/03-organisms/FooterOrganism.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -307,6 +309,41 @@
         }
       ],
       "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/StringOrSnippetAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./StringOrSnippetAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/StringOrSnippetAtom.stories.svelte",
+        "src/components/03-organisms/HeroBlockOrganism.svelte"
+      ],
       "orphan": false,
       "valid": true
     },
@@ -744,10 +781,28 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "module": "../01-atoms/StringOrSnippetAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [
-        "src/components/03-organisms/HeroBlockOrganism.stories.svelte"
+        "src/components/03-organisms/HeroBlockOrganism.stories.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -836,7 +891,8 @@
         "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
         "src/components/04-templates/CardListTemplate.svelte",
         "src/components/04-templates/ContactTemplate.svelte",
-        "src/components/04-templates/DetailPageTemplate.svelte"
+        "src/components/04-templates/DetailPageTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -950,6 +1006,7 @@
       ],
       "dependents": [
         "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte",
         "src/components/listings/card/CardListingOrganism.stories.svelte"
       ],
       "orphan": false,
@@ -1446,6 +1503,126 @@
       "dependents": [
         "src/components/listings/compact/CompactListingOrganism.svelte",
         "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/HomeTemplate.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./HomeTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/HomeTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/HomeTemplate.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ExternalLinkAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/HeroBlockOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeroBlockOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../listings/card/CardListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/HomeTemplate.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -2204,8 +2381,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 72,
-    "totalDependenciesCruised": 86,
+    "totalCruised": 76,
+    "totalDependenciesCruised": 94,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
