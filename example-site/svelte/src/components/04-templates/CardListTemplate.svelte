@@ -4,6 +4,7 @@
 	import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.svelte';
 	import CardListingOrganism from '../listings/card/CardListingOrganism.svelte';
 	import type { PropsForCardMolecule } from '../listings/card/CardMolecule.svelte';
+	import { activeNavItem } from '../../lib/store';
 
 	export interface PropsForCardListTemplate {
 		title: string;
@@ -12,6 +13,8 @@
 	}
 
 	const { title, cardList, introText }: PropsForCardListTemplate = $props();
+
+	activeNavItem.set('categories');
 </script>
 
 <SiteFrameOrganism>

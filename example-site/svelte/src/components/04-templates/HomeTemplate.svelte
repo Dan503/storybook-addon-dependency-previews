@@ -6,6 +6,7 @@
 	import ExternalLinkAtom from '../01-atoms/ExternalLinkAtom.svelte';
 	import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.svelte';
 	import CardListingOrganism from '../listings/card/CardListingOrganism.svelte';
+	import { activeNavItem } from '../../lib/store';
 
 	export interface PropsForHomeTemplate {
 		featuredMeals: Array<Meal>;
@@ -13,6 +14,8 @@
 
 	const { featuredMeals }: PropsForHomeTemplate = $props();
 	const [featureMeal, ...otherMeals] = $derived(featuredMeals);
+
+	activeNavItem.set('home');
 </script>
 
 <SiteFrameOrganism>

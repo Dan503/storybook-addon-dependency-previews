@@ -9,9 +9,12 @@
 	import MapPinIcon from '../01-atoms/icons/MapPinIcon.svelte';
 	import FormDataPreviewAtom from '../zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte';
 	import ButtonAtom from '../01-atoms/ButtonAtom.svelte';
+	import { activeNavItem } from '../../lib/store';
 
 	let contactFormValues = $state(defaultContactFormValues);
 	let isSubmitted = $state(false);
+
+	activeNavItem.set('contact');
 </script>
 
 <SiteFrameOrganism>
