@@ -64,6 +64,13 @@
         "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
       },
       {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.svelte",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
+      },
+      {
         "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
         "storyId": "forms-contact-form-organism--docs",
         "storyTitle": "Contact Form Organism",
@@ -183,6 +190,13 @@
         "storyTitle": "Card List Template",
         "storyTitlePath": "04 Templates / Card List Template",
         "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.svelte",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
       }
     ]
   },
@@ -665,6 +679,13 @@
         "storyTitle": "Contact Template",
         "storyTitlePath": "04 Templates / Contact Template",
         "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.svelte",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
       }
     ]
   },
@@ -1046,6 +1067,109 @@
       }
     ]
   },
+  "src/components/04-templates/DetailPageTemplate.stories.svelte": {
+    "componentPath": "src/components/04-templates/DetailPageTemplate.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.svelte",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/04-templates/DetailPageTemplate.svelte": {
+    "componentPath": "src/components/04-templates/DetailPageTemplate.svelte",
+    "storyId": "04-templates-detail-page-template--docs",
+    "storyTitle": "Detail Page Template",
+    "storyTitlePath": "04 Templates / Detail Page Template",
+    "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ButtonAtom.svelte",
+        "storyId": "01-atoms-button-atom--docs",
+        "storyTitle": "Button Atom",
+        "storyTitlePath": "01 Atoms / Button Atom",
+        "storyFilePath": "src/components/01-atoms/ButtonAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/03-organisms/SiteFrameOrganism.svelte",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "src/components/03-organisms/SiteFrameOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
+      }
+    ]
+  },
+  "src/components/listings/compact/CompactListingOrganism.svelte": {
+    "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
+    "storyId": "listings-compact-compact-listing-organism--docs",
+    "storyTitle": "Compact Listing Organism",
+    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+    "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
+    "builtWith": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingMolecule.svelte",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/04-templates/DetailPageTemplate.svelte",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "src/components/04-templates/DetailPageTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/components/listings/compact/CompactListingMolecule.svelte": {
+    "componentPath": "src/components/listings/compact/CompactListingMolecule.svelte",
+    "storyId": "listings-compact-compact-listing-molecule--docs",
+    "storyTitle": "Compact Listing Molecule",
+    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+    "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.svelte",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      }
+    ]
+  },
   "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte": {
     "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
     "builtWith": [
@@ -1330,26 +1454,6 @@
     ],
     "usedIn": []
   },
-  "src/components/listings/compact/CompactListingMolecule.svelte": {
-    "componentPath": "src/components/listings/compact/CompactListingMolecule.svelte",
-    "storyId": "listings-compact-compact-listing-molecule--docs",
-    "storyTitle": "Compact Listing Molecule",
-    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-    "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.svelte",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingMolecule.stories.svelte"
-      },
-      {
-        "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
-        "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Compact Listing Organism",
-        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-        "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
-      }
-    ]
-  },
   "src/components/listings/compact/CompactListingOrganism.stories.svelte": {
     "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
     "builtWith": [
@@ -1362,27 +1466,6 @@
       }
     ],
     "usedIn": []
-  },
-  "src/components/listings/compact/CompactListingOrganism.svelte": {
-    "componentPath": "src/components/listings/compact/CompactListingOrganism.svelte",
-    "storyId": "listings-compact-compact-listing-organism--docs",
-    "storyTitle": "Compact Listing Organism",
-    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-    "storyFilePath": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
-    "builtWith": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingMolecule.svelte",
-        "storyId": "listings-compact-compact-listing-molecule--docs",
-        "storyTitle": "Compact Listing Molecule",
-        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-        "storyFilePath": "src/components/listings/compact/CompactListingMolecule.stories.svelte"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "src/components/listings/compact/CompactListingOrganism.stories.svelte"
-      }
-    ]
   },
   "src/components/zz-meta-components/ChildContentAtom.stories.svelte": {
     "componentPath": "src/components/zz-meta-components/ChildContentAtom.stories.svelte",

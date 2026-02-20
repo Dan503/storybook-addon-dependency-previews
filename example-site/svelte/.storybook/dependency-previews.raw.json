@@ -73,7 +73,8 @@
       "dependents": [
         "src/components/01-atoms/ButtonAtom.stories.svelte",
         "src/components/04-templates/ContactTemplate.svelte",
-        "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte"
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+        "src/components/04-templates/DetailPageTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -169,7 +170,8 @@
         "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
         "src/components/03-organisms/HeaderOrganism.svelte",
         "src/components/03-organisms/HeroBlockOrganism.svelte",
-        "src/components/04-templates/CardListTemplate.svelte"
+        "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/04-templates/DetailPageTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -833,7 +835,8 @@
       "dependents": [
         "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
         "src/components/04-templates/CardListTemplate.svelte",
-        "src/components/04-templates/ContactTemplate.svelte"
+        "src/components/04-templates/ContactTemplate.svelte",
+        "src/components/04-templates/DetailPageTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1302,6 +1305,147 @@
         "src/components/04-templates/ContactTemplate.svelte",
         "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
         "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/DetailPageTemplate.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./DetailPageTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/DetailPageTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/DetailPageTemplate.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ButtonAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../listings/compact/CompactListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/DetailPageTemplate.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./CompactListingMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/DetailPageTemplate.svelte",
+        "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingMolecule.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/compact/CompactListingOrganism.svelte",
+        "src/components/listings/compact/CompactListingMolecule.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1847,16 +1991,6 @@
       "valid": true
     },
     {
-      "source": "src/components/listings/compact/CompactListingMolecule.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/listings/compact/CompactListingMolecule.stories.svelte",
-        "src/components/listings/compact/CompactListingOrganism.svelte"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
       "dependencies": [
         {
@@ -1878,33 +2012,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/listings/compact/CompactListingOrganism.svelte",
-      "dependencies": [
-        {
-          "module": "./CompactListingMolecule.svelte",
-          "moduleSystem": "es6",
-          "dynamic": false,
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/listings/compact/CompactListingMolecule.svelte",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/listings/compact/CompactListingOrganism.stories.svelte"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -2097,8 +2204,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 70,
-    "totalDependenciesCruised": 81,
+    "totalCruised": 72,
+    "totalDependenciesCruised": 86,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
