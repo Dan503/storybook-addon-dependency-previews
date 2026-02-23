@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-	<title>Categories - [SVELTE] The Storybook Dependency Previews Example Site</title>
+	<title>Categories</title>
 	<meta
 		name="description"
 		content="Explore a variety of food categories at The Meal Place! Discover new recipes, ingredients, and culinary inspiration."

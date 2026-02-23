@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PageProps } from '../$types';
 	import type { Meal } from 'example-site-shared/data';
 	import DetailPageTemplate from '../../../components/04-templates/DetailPageTemplate.svelte';
+	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
 
@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-	<title>{name} - [SVELTE] The Storybook Dependency Previews Example Site</title>
+	<title>{name}</title>
 	<meta
 		name="description"
 		content="Learn more about {name} at The Meal Place! Discover its recipe, ingredients, and cooking instructions."
