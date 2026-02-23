@@ -6,7 +6,6 @@
 </script>
 
 <svelte:head>
-	<title>The Meal Place</title>
 	<meta
 		name="description"
 		content="This is an example site to demonstrate the dependency preview addon in a realistic environment."

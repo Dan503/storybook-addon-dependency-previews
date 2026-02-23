@@ -3,7 +3,6 @@
 </script>
 
 <svelte:head>
-	<title>Contact Us</title>
 	<meta
 		name="description"
 		content="Get in touch with us at The Meal Place! We'd love to hear from you, whether you have questions, feedback, or just want to say hello."

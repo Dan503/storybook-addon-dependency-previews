@@ -9,7 +9,6 @@
 </script>
 
 <svelte:head>
-	<title>{name}</title>
 	<meta
 		name="description"
 		content="Learn more about {name} at The Meal Place! Discover its recipe, ingredients, and cooking instructions."

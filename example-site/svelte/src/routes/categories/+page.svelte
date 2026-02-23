@@ -19,7 +19,6 @@
 </script>
 
 <svelte:head>
-	<title>Categories</title>
 	<meta
 		name="description"
 		content="Explore a variety of food categories at The Meal Place! Discover new recipes, ingredients, and culinary inspiration."
