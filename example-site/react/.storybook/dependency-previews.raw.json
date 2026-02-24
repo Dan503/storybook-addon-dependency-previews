@@ -1,0 +1,3991 @@
+{
+  "modules": [
+    {
+      "source": "src/components/01-atoms/BgImageContainer.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./BgImageContainer",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/BgImageContainer.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/BgImageContainer.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/BgImageContainer.stories.tsx",
+        "src/components/03-organisms/HeroBlockOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ButtonAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ButtonAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ButtonAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ButtonAtom.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../zz-meta-components/ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./ContentRestraintAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ContentRestraintAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+        "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
+        "src/components/zz-meta-components/ChildContentAtom.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ContentRestraintAtom.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.tsx",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+        "src/components/03-organisms/HeaderOrganism.tsx",
+        "src/components/03-organisms/HeroBlockOrganism.tsx",
+        "src/components/04-templates/CardListTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/04-templates/DetailPageTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ExternalLinkAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ExternalLinkAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ExternalLinkAtom.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./icons/ExternalLinkIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.stories.tsx",
+        "src/components/04-templates/HomeTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./Svg",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.tsx",
+        "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/iconTypes.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "src/components/01-atoms/icons/Svg.tsx",
+        "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
+        "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
+        "src/components/01-atoms/icons/MapPinIcon.tsx",
+        "src/components/01-atoms/icons/PhoneIcon.stories.tsx",
+        "src/components/01-atoms/icons/PhoneIcon.tsx",
+        "src/components/02-molecules/IconTextMolecule.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/Svg.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "src/components/01-atoms/icons/MapPinIcon.tsx",
+        "src/components/01-atoms/icons/PhoneIcon.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../zz-meta-components/ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ExternalLinkIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./MapPinIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/MapPinIcon.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./Svg",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/icons/MapPinIcon.stories.tsx",
+        "src/components/02-molecules/IconTextMolecule.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/PhoneIcon.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./PhoneIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/PhoneIcon.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./Svg",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/icons/PhoneIcon.stories.tsx",
+        "src/components/02-molecules/IconTextMolecule.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/IconTextMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/MapPinIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/PhoneIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./IconTextMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/IconTextMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/IconTextMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/iconTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/iconTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/02-molecules/IconTextMolecule.stories.tsx",
+        "src/components/04-templates/ContactTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/MainNavMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./MainNavMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/MainNavMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/MainNavMolecule.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/02-molecules/MainNavMolecule.stories.tsx",
+        "src/components/03-organisms/HeaderOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/FooterOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./FooterOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/FooterOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/FooterOrganism.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/03-organisms/FooterOrganism.stories.tsx",
+        "src/components/03-organisms/SiteFrameOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeaderOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./HeaderOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeaderOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeaderOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../02-molecules/MainNavMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/MainNavMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/HeaderOrganism.stories.tsx",
+        "src/components/03-organisms/SiteFrameOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeroBlockOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./HeroBlockOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeroBlockOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeroBlockOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/BgImageContainer",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/BgImageContainer.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/HeroBlockOrganism.stories.tsx",
+        "src/components/04-templates/HomeTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../zz-meta-components/ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/SiteFrameOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./FooterOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/FooterOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./HeaderOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeaderOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/SiteFrameOrganism.stories.tsx",
+        "src/components/04-templates/CardListTemplate.tsx",
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/04-templates/DetailPageTemplate.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CardListTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/card/CardListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/card/CardMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.stories.tsx",
+        "src/routes/categories.$category.tsx",
+        "src/routes/categories.index.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CardListingOrganism.module.css",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.module.css",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./CardMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.tsx",
+        "src/components/04-templates/HomeTemplate.tsx",
+        "src/components/listings/card/CardListingOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.module.css",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../../utils/routerUtilityTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/utils/routerUtilityTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.tsx",
+        "src/components/listings/card/CardListingOrganism.tsx",
+        "src/components/listings/card/CardMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/utils/routerUtilityTypes.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../router",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/router.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "../routeTree.gen",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/routeTree.gen.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/listings/card/CardMolecule.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/router.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./integrations/tanstack-query/root-provider",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/integrations/tanstack-query/root-provider.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routeTree.gen",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routeTree.gen.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/utils/routerUtilityTypes.ts",
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/integrations/tanstack-query/root-provider.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/router.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routeTree.gen.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./router.tsx",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/router.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/__root",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/__root.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/api.demo-names",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/api.demo-names.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/api.demo-tq-todos",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/api.demo-tq-todos.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/categories.$category",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/categories.$category.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/categories.index",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/categories.index.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/routes/categories.index.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/contact",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/contact.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/index",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/index.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/routes/index.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/HomeTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        },
+        {
+          "dynamic": false,
+          "module": "./routes/meal.$mealId",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/meal.$mealId.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/utils/routerUtilityTypes.ts",
+        "src/router.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/__root.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../integrations/tanstack-query/devtools",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/integrations/tanstack-query/devtools.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../styles.css?url",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/styles.css",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/styles.css",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/integrations/tanstack-query/devtools.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/routes/__root.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/api.demo-names.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/api.demo-tq-todos.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/categories.$category.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/04-templates/CardListTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.$category.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/categories.index.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/04-templates/CardListTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/04-templates/CardListTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/categories.index.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/contact.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/04-templates/ContactTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/ContactTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/ContactTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ButtonAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ContentRestraintAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ContentRestraintAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/MapPinIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/icons/PhoneIcon",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../02-molecules/IconTextMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/IconTextMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../forms/ContactFormOrganism/ContactFormOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../forms/FormDataPreview/FormDataPreviewAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routes/contact.tsx",
+        "src/components/04-templates/ContactTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../01-atoms/ButtonAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../TextAreaMolecule/TextAreaMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../TextFieldMolecule/TextFieldMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../ErrorMessages/ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../FormTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorMessageAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/FormTypes.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../ErrorMessages/ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../FormTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
+        "src/hooks/demo.form.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.tsx",
+        "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/index.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/04-templates/HomeTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/HomeTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/04-templates/HomeTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/index.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/HomeTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ExternalLinkAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/HeroBlockOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeroBlockOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/card/CardListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": true,
+          "cycle": [
+            {
+              "name": "src/components/listings/card/CardListingOrganism.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/listings/card/CardMolecule.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/utils/routerUtilityTypes.ts",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/router.tsx",
+              "dependencyTypes": [
+                "local",
+                "type-only",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routeTree.gen.ts",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/routes/index.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            },
+            {
+              "name": "src/components/04-templates/HomeTemplate.tsx",
+              "dependencyTypes": [
+                "local",
+                "import"
+              ]
+            }
+          ],
+          "valid": false,
+          "rules": [
+            {
+              "severity": "error",
+              "name": "no-circular"
+            }
+          ]
+        }
+      ],
+      "dependents": [
+        "src/routes/index.tsx",
+        "src/components/04-templates/HomeTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/meal.$mealId.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/04-templates/DetailPageTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/DetailPageTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routeTree.gen.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/DetailPageTemplate.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../01-atoms/ScreenPaddingAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../03-organisms/SiteFrameOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../listings/compact/CompactListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/routes/meal.$mealId.tsx",
+        "src/components/04-templates/DetailPageTemplate.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CompactListingMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/DetailPageTemplate.tsx",
+        "src/components/listings/compact/CompactListingOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingMolecule.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/compact/CompactListingOrganism.tsx",
+        "src/components/listings/compact/CompactListingMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/ContactTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ContactTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/ContactTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/DetailPageTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./DetailPageTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/DetailPageTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/HomeTemplate.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./HomeTemplate",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/HomeTemplate.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../FormDataPreview/FormDataMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormDataPreview/FormDataMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./ContactFormOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/FormDataPreview/FormDataMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./FormDataPreviewAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorBlockOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorMessageAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../FormDataPreview/FormDataMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormDataPreview/FormDataMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../formUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/formUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./TextAreaMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/formUtils.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../FormDataPreview/FormDataMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormDataPreview/FormDataMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../formUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/formUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./TextFieldMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CardListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CardMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingMolecule.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CompactListingMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CompactListingOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.stories.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ChildContentAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/hooks/demo.form-context.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/hooks/demo.form.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/hooks/demo.form.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../components/forms/TextFieldMolecule/TextFieldMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./demo.form-context",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/hooks/demo.form-context.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    }
+  ],
+  "summary": {
+    "violations": [
+      {
+        "type": "cycle",
+        "from": "src/components/04-templates/CardListTemplate.tsx",
+        "to": "src/components/listings/card/CardListingOrganism.tsx",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/components/listings/card/CardListingOrganism.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardMolecule.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/utils/routerUtilityTypes.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/router.tsx",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routes/categories.$category.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/04-templates/CardListTemplate.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cycle",
+        "from": "src/components/04-templates/CardListTemplate.tsx",
+        "to": "src/components/listings/card/CardMolecule.tsx",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/components/listings/card/CardMolecule.tsx",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/utils/routerUtilityTypes.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/router.tsx",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routes/categories.$category.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/04-templates/CardListTemplate.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cycle",
+        "from": "src/components/04-templates/HomeTemplate.tsx",
+        "to": "src/components/listings/card/CardListingOrganism.tsx",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/components/listings/card/CardListingOrganism.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardMolecule.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/utils/routerUtilityTypes.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/router.tsx",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routes/index.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/04-templates/HomeTemplate.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cycle",
+        "from": "src/router.tsx",
+        "to": "src/routeTree.gen.ts",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/router.tsx",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cycle",
+        "from": "src/routes/categories.index.tsx",
+        "to": "src/components/04-templates/CardListTemplate.tsx",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/components/04-templates/CardListTemplate.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardListingOrganism.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardMolecule.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/utils/routerUtilityTypes.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/router.tsx",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routes/categories.index.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cycle",
+        "from": "src/routeTree.gen.ts",
+        "to": "src/routes/categories.$category.tsx",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/routes/categories.$category.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/04-templates/CardListTemplate.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardListingOrganism.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardMolecule.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/utils/routerUtilityTypes.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cycle",
+        "from": "src/routeTree.gen.ts",
+        "to": "src/routes/categories.index.tsx",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/routes/categories.index.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/04-templates/CardListTemplate.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardListingOrganism.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardMolecule.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/utils/routerUtilityTypes.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cycle",
+        "from": "src/routeTree.gen.ts",
+        "to": "src/routes/index.tsx",
+        "rule": {
+          "severity": "error",
+          "name": "no-circular"
+        },
+        "cycle": [
+          {
+            "name": "src/routes/index.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/04-templates/HomeTemplate.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardListingOrganism.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/components/listings/card/CardMolecule.tsx",
+            "dependencyTypes": [
+              "local",
+              "import"
+            ]
+          },
+          {
+            "name": "src/utils/routerUtilityTypes.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          },
+          {
+            "name": "src/routeTree.gen.ts",
+            "dependencyTypes": [
+              "local",
+              "type-only",
+              "import"
+            ]
+          }
+        ]
+      }
+    ],
+    "error": 8,
+    "warn": 0,
+    "info": 0,
+    "ignore": 0,
+    "totalCruised": 81,
+    "totalDependenciesCruised": 114,
+    "optionsUsed": {
+      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\react",
+      "combinedDependencies": true,
+      "detectJSDocImports": false,
+      "detectProcessBuiltinModuleCalls": false,
+      "doNotFollow": {
+        "path": "node_modules"
+      },
+      "exoticRequireStrings": [],
+      "externalModuleResolutionStrategy": "node_modules",
+      "includeOnly": "^src",
+      "metrics": false,
+      "moduleSystems": [
+        "es6",
+        "cjs",
+        "tsd",
+        "amd"
+      ],
+      "outputTo": "-",
+      "outputType": "json",
+      "preserveSymlinks": false,
+      "rulesFile": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\dist\\cli\\scripts\\depcruise.config.cjs",
+      "skipAnalysisNotInRules": false,
+      "tsPreCompilationDeps": true,
+      "args": "."
+    },
+    "ruleSetUsed": {
+      "forbidden": [
+        {
+          "name": "no-circular",
+          "severity": "error",
+          "from": {},
+          "to": {
+            "circular": true
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-node-modules-imports",
+          "severity": "warn",
+          "from": {
+            "path": "^src"
+          },
+          "to": {
+            "path": "^node_modules"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-orphans-in-components",
+          "severity": "warn",
+          "from": {
+            "orphan": true,
+            "path": "^src/(components|ui|lib)/"
+          },
+          "to": {},
+          "scope": "module"
+        }
+      ]
+    }
+  }
+}

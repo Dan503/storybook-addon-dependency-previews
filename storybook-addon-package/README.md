@@ -28,18 +28,18 @@ Also [visit the npm page](https://www.npmjs.com/package/storybook-addon-dependen
 
 ### Package download
 
-First you will need to install the plugin via npm
+First you will need to install the plugin via npm as well as [dependency-cruiser](https://www.npmjs.com/package/dependency-cruiser)
 
 ```
-npm install storybook-addon-dependency-previews
+npm install -D storybook-addon-dependency-previews dependency-cruiser
 ```
 
 <details>
 	<summary>Other package managers</summary>
-	<p><pre><code>pnpm add storybook-addon-dependency-previews</code></pre></p>
-	<p><pre><code>yarn add storybook-addon-dependency-previews</code></pre></p>
-	<p><pre><code>bun add storybook-addon-dependency-previews</code></pre></p>
-	<p><pre><code>deno add npm:storybook-addon-dependency-previews</code></pre></p>
+	<p><pre><code>pnpm add -D storybook-addon-dependency-previews dependency-cruiser</code></pre></p>
+	<p><pre><code>yarn add -D storybook-addon-dependency-previews dependency-cruiser</code></pre></p>
+	<p><pre><code>bun add -D storybook-addon-dependency-previews dependency-cruiser</code></pre></p>
+	<p><pre><code>deno add --dev npm:storybook-addon-dependency-previews npm:dependency-cruiser</code></pre></p>
 </details>
 
 ### Register the add-on

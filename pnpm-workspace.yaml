@@ -1,4 +1,7 @@
 packages:
-    - 'storybook-addon-package' # ← includes your addon
-    - 'example-site' # ← includes your demo app
-    - 'example-site-temp'
+    - 'storybook-addon-package' # ← The addon package that gets published to npm
+    - 'example-site/shared' # ← shared data and utils
+    - 'example-site/react' # ← React demo app
+    - 'example-site/svelte' # ← Svelte demo app
+onlyBuiltDependencies:
+    - esbuild

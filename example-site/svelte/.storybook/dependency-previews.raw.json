@@ -1,0 +1,2686 @@
+{
+  "modules": [
+    {
+      "source": "src/app.d.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/BgImageContainerAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./BgImageContainerAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/BgImageContainerAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/BgImageContainerAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/BgImageContainerAtom.stories.svelte",
+        "src/components/03-organisms/HeroBlockOrganism.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ButtonAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ButtonAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ButtonAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ButtonAtom.stories.svelte",
+        "src/components/04-templates/ContactTemplate.svelte",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+        "src/components/04-templates/DetailPageTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ContentRestraintAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "../zz-meta-components/ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./ContentRestraintAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ContentRestraintAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.svelte",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
+        "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
+        "src/components/zz-meta-components/ChildContentAtom.stories.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ContentRestraintAtom.svelte",
+      "dependencies": [
+        {
+          "module": "./ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.stories.svelte",
+        "src/components/04-templates/ContactTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/ContentRestraintAtom.svelte",
+        "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
+        "src/components/03-organisms/HeaderOrganism.svelte",
+        "src/components/03-organisms/HeroBlockOrganism.svelte",
+        "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/04-templates/DetailPageTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ExternalLinkAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ExternalLinkAtom.svelte",
+      "dependencies": [
+        {
+          "module": "./icons/ExternalLinkIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.stories.svelte",
+        "src/components/03-organisms/FooterOrganism.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+      "dependencies": [
+        {
+          "module": "./Svg.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/ExternalLinkAtom.svelte",
+        "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/Svg.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+        "src/components/01-atoms/icons/MapPinIcon.svelte",
+        "src/components/01-atoms/icons/PhoneIcon.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/ScreenPaddingAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "../zz-meta-components/ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/StringOrSnippetAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./StringOrSnippetAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/01-atoms/StringOrSnippetAtom.stories.svelte",
+        "src/components/03-organisms/HeroBlockOrganism.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/ExternalLinkIcon.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ExternalLinkIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/ExternalLinkIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/MapPinIcon.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./MapPinIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/MapPinIcon.svelte",
+      "dependencies": [
+        {
+          "module": "./Svg.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/icons/MapPinIcon.stories.svelte",
+        "src/components/02-molecules/IconTextMolecule.stories.svelte",
+        "src/components/04-templates/ContactTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/PhoneIcon.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./PhoneIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/PhoneIcon.svelte",
+      "dependencies": [
+        {
+          "module": "./Svg.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/Svg.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/01-atoms/icons/PhoneIcon.stories.svelte",
+        "src/components/02-molecules/IconTextMolecule.stories.svelte",
+        "src/components/04-templates/ContactTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/01-atoms/icons/iconTypes.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": false,
+      "rules": [
+        {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      ]
+    },
+    {
+      "source": "src/components/02-molecules/IconTextMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/icons/MapPinIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/icons/PhoneIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./IconTextMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/IconTextMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/IconTextMolecule.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/02-molecules/IconTextMolecule.stories.svelte",
+        "src/components/04-templates/ContactTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/MainNavMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./MainNavMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/MainNavMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/02-molecules/MainNavMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/02-molecules/MainNavMolecule.stories.svelte",
+        "src/components/03-organisms/HeaderOrganism.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/lib/store.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/02-molecules/MainNavMolecule.svelte",
+        "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/04-templates/ContactTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/FooterOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./FooterOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/FooterOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/FooterOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ExternalLinkAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/FooterOrganism.stories.svelte",
+        "src/components/03-organisms/SiteFrameOrganism.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeaderOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./HeaderOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeaderOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeaderOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../02-molecules/MainNavMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/MainNavMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/HeaderOrganism.stories.svelte",
+        "src/components/03-organisms/SiteFrameOrganism.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeroBlockOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./HeroBlockOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeroBlockOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/HeroBlockOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/BgImageContainerAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/BgImageContainerAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/StringOrSnippetAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/StringOrSnippetAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/HeroBlockOrganism.stories.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "../zz-meta-components/ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/03-organisms/SiteFrameOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./FooterOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/FooterOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./HeaderOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeaderOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/03-organisms/SiteFrameOrganism.stories.svelte",
+        "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/04-templates/ContactTemplate.svelte",
+        "src/components/04-templates/DetailPageTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CardListTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/CardListTemplate.svelte",
+      "dependencies": [
+        {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../listings/card/CardListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.stories.svelte",
+        "src/routes/categories/+page.svelte",
+        "src/routes/category/[categoryName]/+page.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./CardMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte",
+        "src/components/listings/card/CardListingOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardMolecule.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/card/CardListingOrganism.svelte",
+        "src/components/listings/card/CardMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/ContactTemplate.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ContactTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/ContactTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/ContactTemplate.svelte",
+      "dependencies": [
+        {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ButtonAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ContentRestraintAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ContentRestraintAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/icons/MapPinIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/MapPinIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/icons/PhoneIcon.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/icons/PhoneIcon.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../02-molecules/IconTextMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/02-molecules/IconTextMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../forms/ContactFormOrganism/ContactFormOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.stories.svelte",
+        "src/routes/contact/+page.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "../../01-atoms/ButtonAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../TextAreaMolecule/TextAreaMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../TextFieldMolecule/TextFieldMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.svelte",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "../ErrorMessages/ErrorListMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte",
+        "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorMessageAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "../ErrorMessages/ErrorListMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/04-templates/ContactTemplate.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/DetailPageTemplate.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./DetailPageTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/DetailPageTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/DetailPageTemplate.svelte",
+      "dependencies": [
+        {
+          "module": "../01-atoms/ButtonAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ButtonAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../listings/compact/CompactListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/DetailPageTemplate.stories.svelte",
+        "src/routes/meal/[mealId]/+page.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./CompactListingMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/DetailPageTemplate.svelte",
+        "src/components/listings/compact/CompactListingOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingMolecule.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/listings/compact/CompactListingOrganism.svelte",
+        "src/components/listings/compact/CompactListingMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/HomeTemplate.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./HomeTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/HomeTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/04-templates/HomeTemplate.svelte",
+      "dependencies": [
+        {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ExternalLinkAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ExternalLinkAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../01-atoms/ScreenPaddingAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/01-atoms/ScreenPaddingAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/HeroBlockOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/HeroBlockOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../03-organisms/SiteFrameOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/03-organisms/SiteFrameOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "../listings/card/CardListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/04-templates/HomeTemplate.stories.svelte",
+        "src/routes/+page.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ContactFormOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorBlockOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorListMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorListMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorMessageAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/FormTypes.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": false,
+      "rules": [
+        {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      ]
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
+      "dependencies": [
+        {
+          "module": "../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextAreaMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "./FormDataPreviewAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
+        "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte",
+        "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./TextAreaMolecule.decorator.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextAreaMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextAreaMoleculeError.decorator.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte",
+      "dependencies": [
+        {
+          "module": "../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextAreaMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
+      "dependencies": [
+        {
+          "module": "../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextFieldMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./TextFieldMolecule.decorator.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextFieldMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextFieldMoleculeError.decorator.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TextFieldMolecule/TextFieldMoleculeError.decorator.svelte",
+      "dependencies": [
+        {
+          "module": "../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./TextFieldMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardListingOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CardListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/card/CardMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CardMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/card/CardMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CompactListingMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/listings/compact/CompactListingOrganism.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./CompactListingOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/listings/compact/CompactListingOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/ChildContentAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.svelte",
+      "dependencies": [
+        {
+          "module": "../ChildContentAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/ChildContentAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./FormDataMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte",
+      "dependencies": [
+        {
+          "module": "./FormDataPreviewAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/lib/index.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": false,
+      "rules": [
+        {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      ]
+    },
+    {
+      "source": "src/routes/+layout.svelte",
+      "dependencies": [
+        {
+          "module": "./layout.css",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/routes/layout.css",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/layout.css",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/routes/+layout.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../components/04-templates/HomeTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/HomeTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/categories/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/categories/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../components/04-templates/CardListTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/category/[categoryName]/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/category/[categoryName]/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../../components/04-templates/CardListTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/contact/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/contact/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../components/04-templates/ContactTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/ContactTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/meal/[mealId]/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/meal/[mealId]/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../../components/04-templates/DetailPageTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/DetailPageTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    }
+  ],
+  "summary": {
+    "violations": [
+      {
+        "type": "module",
+        "from": "src/components/01-atoms/icons/iconTypes.ts",
+        "to": "src/components/01-atoms/icons/iconTypes.ts",
+        "rule": {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      },
+      {
+        "type": "module",
+        "from": "src/components/forms/FormTypes.ts",
+        "to": "src/components/forms/FormTypes.ts",
+        "rule": {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      },
+      {
+        "type": "module",
+        "from": "src/lib/index.ts",
+        "to": "src/lib/index.ts",
+        "rule": {
+          "severity": "warn",
+          "name": "no-orphans-in-components"
+        }
+      }
+    ],
+    "error": 0,
+    "warn": 3,
+    "info": 0,
+    "ignore": 0,
+    "totalCruised": 86,
+    "totalDependenciesCruised": 103,
+    "optionsUsed": {
+      "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
+      "combinedDependencies": true,
+      "detectJSDocImports": false,
+      "detectProcessBuiltinModuleCalls": false,
+      "doNotFollow": {
+        "path": "node_modules"
+      },
+      "exoticRequireStrings": [],
+      "externalModuleResolutionStrategy": "node_modules",
+      "includeOnly": "^src",
+      "metrics": false,
+      "moduleSystems": [
+        "es6",
+        "cjs",
+        "tsd",
+        "amd"
+      ],
+      "outputTo": "-",
+      "outputType": "json",
+      "preserveSymlinks": false,
+      "rulesFile": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\storybook-addon-package\\dist\\cli\\scripts\\depcruise.config.cjs",
+      "skipAnalysisNotInRules": false,
+      "tsPreCompilationDeps": true,
+      "args": "."
+    },
+    "ruleSetUsed": {
+      "forbidden": [
+        {
+          "name": "no-circular",
+          "severity": "error",
+          "from": {},
+          "to": {
+            "circular": true
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-node-modules-imports",
+          "severity": "warn",
+          "from": {
+            "path": "^src"
+          },
+          "to": {
+            "path": "^node_modules"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-orphans-in-components",
+          "severity": "warn",
+          "from": {
+            "orphan": true,
+            "path": "^src/(components|ui|lib)/"
+          },
+          "to": {},
+          "scope": "module"
+        }
+      ]
+    }
+  }
+}

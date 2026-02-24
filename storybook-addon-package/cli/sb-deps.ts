@@ -124,8 +124,21 @@ function isComponentsTsx(absPath: string) {
 	)
 }
 
+// src/components/**/Thing.svelte ? (and not a story file)
+function isComponentsSvelte(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return (
+		/\/src\/components\/.+\.svelte$/i.test(norm) &&
+		!/\.stories?\.svelte$/i.test(norm)
+	)
+}
+
 function componentBaseFromComponent(absCompPath: string) {
 	return basename(absCompPath, '.tsx')
+}
+
+function componentBaseFromSvelteComponent(absCompPath: string) {
+	return basename(absCompPath, '.svelte')
 }
 
 function detectAtomicTag(absPath: string) {
@@ -144,6 +157,12 @@ function storyPathForComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromComponent(absCompPath)
 	return join(dir, `${base}.stories.tsx`)
+}
+
+function storyPathForSvelteComponent(absCompPath: string) {
+	const dir = dirname(absCompPath)
+	const base = componentBaseFromSvelteComponent(absCompPath)
+	return join(dir, `${base}.stories.svelte`)
 }
 
 function makeTitleFromComponent(absCompPath: string) {
@@ -241,6 +260,103 @@ function ensureStoryForComponent(absCompPath: string) {
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
+// Svelte scaffolding
+// ───────────────────────────────────────────────────────────────────────────────
+function scaffoldSvelteComponent(absCompPath: string) {
+	const base = componentBaseFromSvelteComponent(absCompPath)
+	const componentName = toPascalCase(base)
+
+	const tpl = `<script lang="ts">
+	import type { Snippet } from 'svelte';
+
+	export interface PropsFor${componentName} {
+		children?: Snippet;
+	}
+
+	const { children }: PropsFor${componentName} = $props();
+</script>
+
+<div class="${componentName}">
+	<p>${componentName}</p>
+	{@render children?.()}
+</div>
+
+<style>
+	.${componentName} {
+		/* styles go here */
+	}
+</style>
+`
+	writeFileSync(absCompPath, tpl, 'utf8')
+	info(`scaffolded svelte component → ${rel(absCompPath)}`)
+}
+
+function makeTitleFromSvelteComponent(absCompPath: string) {
+	const srcRoot = join(projectRoot, 'src') + sep
+	const normAbs = absCompPath.replace(/\\/g, '/')
+	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
+		? normAbs.slice(srcRoot.length)
+		: absCompPath.replace(projectRoot + sep, '').replace(/\\/g, '/')
+
+	const dir = posix.dirname(relFromSrc)
+	let segments = dir.split('/').filter(Boolean)
+	if (segments[0] && /^components?$/i.test(segments[0]))
+		segments = segments.slice(1)
+
+	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
+	const compName = componentBaseFromSvelteComponent(absCompPath)
+	const compTitle = toTitleCase(toWords(compName))
+
+	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
+
+	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
+	const dedupedStoryPath = [...new Set(fullStoryPath)]
+
+	return dedupedStoryPath.join(' / ')
+}
+
+function scaffoldStoryForSvelteComponent(absCompPath: string) {
+	const base = componentBaseFromSvelteComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const title = makeTitleFromSvelteComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const storyTpl = `<script lang="ts" module>
+	import type { StoryParameters } from 'storybook-addon-dependency-previews'
+	import ${componentName}, { type PropsFor${componentName} } from './${componentName}.svelte'
+	import { defineMeta } from '@storybook/addon-svelte-csf';
+
+	const { Story } = defineMeta({
+		title: '${title}',
+		component: ${componentName},
+		tags: [${tags.map((t) => `'${t}'`).join(', ')}],
+		parameters: {
+			layout: 'padded',
+			__filePath: import.meta.url,
+		} satisfies StoryParameters,
+	})
+	type Args = Omit<PropsFor${componentName}, 'children'>;
+</script>
+
+<Story name="Primary" args={{} satisfies Args}>
+	<p>${title}</p>
+</Story>
+`
+	const storyPath = storyPathForSvelteComponent(absCompPath)
+	writeFileSync(storyPath, storyTpl, 'utf8')
+	info(`scaffolded svelte story → ${rel(storyPath)}`)
+	return storyPath
+}
+
+function ensureStoryForSvelteComponent(absCompPath: string) {
+	const sPath = storyPathForSvelteComponent(absCompPath)
+	if (existsSync(sPath)) return null
+	return scaffoldStoryForSvelteComponent(absCompPath)
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
 // Watcher
 // ───────────────────────────────────────────────────────────────────────────────
 function startWatcher() {
@@ -303,6 +419,12 @@ function startWatcher() {
 						continue
 					}
 
+					// SVELTE COMPONENT CREATE — scaffold if empty and ensure story
+					if (isComponentsSvelte(abs) && ev.type === 'create') {
+						await handleSvelteComponentCreation(abs, relPath)
+						continue
+					}
+
 					// normal rebuild
 					kick(ev.type, abs)
 				}
@@ -322,6 +444,17 @@ function startWatcher() {
 
 		console.log('Component creation detected:', relPath)
 		const createdStory = ensureStoryForComponent(abs)
+		if (createdStory) {
+			kick('create:story', createdStory)
+		}
+	}
+
+	async function handleSvelteComponentCreation(abs: string, relPath: string) {
+		if (isEmptyOrWhitespace(abs)) {
+			scaffoldSvelteComponent(abs)
+		}
+
+		const createdStory = ensureStoryForSvelteComponent(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
