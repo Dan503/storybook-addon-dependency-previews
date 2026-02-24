@@ -454,7 +454,6 @@ function startWatcher() {
 			scaffoldSvelteComponent(abs)
 		}
 
-		console.log('Svelte component creation detected:', relPath)
 		const createdStory = ensureStoryForSvelteComponent(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
