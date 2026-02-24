@@ -7,7 +7,6 @@
 	}
 
 	const { errors }: PropsForErrorBlockOrganism = $props();
-	console.log('Errors passed to ErrorBlockOrganism:', errors);
 </script>
 
 <div role="alert" class="ErrorBlockOrganism">
