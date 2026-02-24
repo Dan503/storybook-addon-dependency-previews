@@ -523,7 +523,11 @@
     "storyTitle": "Main Nav Molecule",
     "storyTitlePath": "02 Molecules / Main Nav Molecule",
     "storyFilePath": "src/components/02-molecules/MainNavMolecule.stories.svelte",
-    "builtWith": [],
+    "builtWith": [
+      {
+        "componentPath": "src/lib/store.ts"
+      }
+    ],
     "usedIn": [
       {
         "componentPath": "src/components/02-molecules/MainNavMolecule.stories.svelte"
@@ -534,6 +538,40 @@
         "storyTitle": "Header Organism",
         "storyTitlePath": "03 Organisms / Header Organism",
         "storyFilePath": "src/components/03-organisms/HeaderOrganism.stories.svelte"
+      }
+    ]
+  },
+  "src/lib/store.ts": {
+    "componentPath": "src/lib/store.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/02-molecules/MainNavMolecule.svelte",
+        "storyId": "02-molecules-main-nav-molecule--docs",
+        "storyTitle": "Main Nav Molecule",
+        "storyTitlePath": "02 Molecules / Main Nav Molecule",
+        "storyFilePath": "src/components/02-molecules/MainNavMolecule.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/CardListTemplate.svelte",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "src/components/04-templates/CardListTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/ContactTemplate.svelte",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "src/components/04-templates/ContactTemplate.stories.svelte"
+      },
+      {
+        "componentPath": "src/components/04-templates/HomeTemplate.svelte",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "src/components/04-templates/HomeTemplate.stories.svelte"
       }
     ]
   },
@@ -797,6 +835,9 @@
         "storyTitle": "Card Listing Organism",
         "storyTitlePath": "Listings / Card / Card Listing Organism",
         "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/lib/store.ts"
       }
     ],
     "usedIn": [
@@ -935,6 +976,9 @@
         "storyTitle": "Form Data Preview Atom",
         "storyTitlePath": "ZZ Meta Components / Form Data Preview / Form Data Preview Atom",
         "storyFilePath": "src/components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.svelte"
+      },
+      {
+        "componentPath": "src/lib/store.ts"
       }
     ],
     "usedIn": [
@@ -1299,6 +1343,9 @@
         "storyTitle": "Card Listing Organism",
         "storyTitlePath": "Listings / Card / Card Listing Organism",
         "storyFilePath": "src/components/listings/card/CardListingOrganism.stories.svelte"
+      },
+      {
+        "componentPath": "src/lib/store.ts"
       }
     ],
     "usedIn": [

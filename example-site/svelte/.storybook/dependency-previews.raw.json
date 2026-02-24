@@ -589,10 +589,40 @@
     },
     {
       "source": "src/components/02-molecules/MainNavMolecule.svelte",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/02-molecules/MainNavMolecule.stories.svelte",
         "src/components/03-organisms/HeaderOrganism.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/lib/store.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/02-molecules/MainNavMolecule.svelte",
+        "src/components/04-templates/CardListTemplate.svelte",
+        "src/components/04-templates/ContactTemplate.svelte",
+        "src/components/04-templates/HomeTemplate.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -926,6 +956,23 @@
       "source": "src/components/04-templates/CardListTemplate.svelte",
       "dependencies": [
         {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
           "module": "../01-atoms/ScreenPaddingAtom.svelte",
           "moduleSystem": "es6",
           "dynamic": false,
@@ -978,7 +1025,9 @@
         }
       ],
       "dependents": [
-        "src/components/04-templates/CardListTemplate.stories.svelte"
+        "src/components/04-templates/CardListTemplate.stories.svelte",
+        "src/routes/categories/+page.svelte",
+        "src/routes/category/[categoryName]/+page.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1050,6 +1099,23 @@
     {
       "source": "src/components/04-templates/ContactTemplate.svelte",
       "dependencies": [
+        {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "module": "../01-atoms/ButtonAtom.svelte",
           "moduleSystem": "es6",
@@ -1188,7 +1254,8 @@
         }
       ],
       "dependents": [
-        "src/components/04-templates/ContactTemplate.stories.svelte"
+        "src/components/04-templates/ContactTemplate.stories.svelte",
+        "src/routes/contact/+page.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1464,7 +1531,8 @@
         }
       ],
       "dependents": [
-        "src/components/04-templates/DetailPageTemplate.stories.svelte"
+        "src/components/04-templates/DetailPageTemplate.stories.svelte",
+        "src/routes/meal/[mealId]/+page.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1535,6 +1603,23 @@
     {
       "source": "src/components/04-templates/HomeTemplate.svelte",
       "dependencies": [
+        {
+          "module": "../../lib/store",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/lib/store.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "module": "../01-atoms/ExternalLinkAtom.svelte",
           "moduleSystem": "es6",
@@ -1622,7 +1707,8 @@
         }
       ],
       "dependents": [
-        "src/components/04-templates/HomeTemplate.stories.svelte"
+        "src/components/04-templates/HomeTemplate.stories.svelte",
+        "src/routes/+page.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -2340,10 +2426,163 @@
       "valid": true
     },
     {
-      "source": "src/routes/+page.svelte",
+      "source": "src/routes/+page.server.ts",
       "dependencies": [],
       "dependents": [],
       "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../components/04-templates/HomeTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/HomeTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/categories/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/categories/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../components/04-templates/CardListTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/category/[categoryName]/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/category/[categoryName]/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../../components/04-templates/CardListTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/CardListTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/contact/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/contact/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../components/04-templates/ContactTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/ContactTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/routes/meal/[mealId]/+page.server.ts",
+      "dependencies": [],
+      "dependents": [],
+      "orphan": true,
+      "valid": true
+    },
+    {
+      "source": "src/routes/meal/[mealId]/+page.svelte",
+      "dependencies": [
+        {
+          "module": "../../../components/04-templates/DetailPageTemplate.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/04-templates/DetailPageTemplate.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
       "valid": true
     }
   ],
@@ -2381,8 +2620,8 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 76,
-    "totalDependenciesCruised": 94,
+    "totalCruised": 86,
+    "totalDependenciesCruised": 103,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
       "combinedDependencies": true,
