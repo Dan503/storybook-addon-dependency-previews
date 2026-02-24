@@ -1,14 +1,12 @@
 import { useState } from 'react'
 import { H, Section } from 'react-headings'
+import { defaultContactFormValues } from 'example-site-shared/data'
 import { ContentRestraintAtom } from '../01-atoms/ContentRestraintAtom'
 import { MapPinIcon } from '../01-atoms/icons/MapPinIcon'
 import { PhoneIcon } from '../01-atoms/icons/PhoneIcon'
 import { IconTextMolecule } from '../02-molecules/IconTextMolecule'
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
-import {
-	ContactFormOrganism,
-	defaultContactFormValues,
-} from '../forms/ContactFormOrganism/ContactFormOrganism'
+import { ContactFormOrganism } from '../forms/ContactFormOrganism/ContactFormOrganism'
 import { FormDataPreviewAtom } from '../forms/FormDataPreview/FormDataPreviewAtom'
 import { ButtonAtom } from '../01-atoms/ButtonAtom'
 
