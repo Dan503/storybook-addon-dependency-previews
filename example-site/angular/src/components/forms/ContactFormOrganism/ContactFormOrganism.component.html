@@ -1,0 +1,20 @@
+<form class="ContactFormOrganism grid gap-4" (ngSubmit)="onSubmit()">
+	<app-text-field-molecule
+		label="Name"
+		placeholder="Your name"
+		[control]="form.get('name')"
+	/>
+	<app-text-field-molecule
+		label="Email"
+		placeholder="example@email.com"
+		[control]="form.get('email')"
+	/>
+	<app-text-area-molecule
+		label="Message"
+		placeholder="Type your message here..."
+		[control]="form.get('message')"
+	/>
+	<div class="flex justify-end">
+		<app-button-atom type="submit">Send</app-button-atom>
+	</div>
+</form>

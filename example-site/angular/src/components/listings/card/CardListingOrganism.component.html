@@ -1,0 +1,10 @@
+<div class="CardListingOrganism grid gap-6" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))">
+	@for (card of cards(); track card.title) {
+		<app-card-molecule
+			[title]="card.title"
+			[imgSrc]="card.imgSrc"
+			[description]="card.description"
+			[href]="card.href"
+		/>
+	}
+</div>

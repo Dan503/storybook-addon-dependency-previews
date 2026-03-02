@@ -1,0 +1,13 @@
+<div
+	class="CompactListingOrganism grid gap-3"
+	style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))"
+>
+	@for (item of items(); track item.title) {
+		<app-compact-listing-molecule
+			[title]="item.title"
+			[description]="item.description ?? ''"
+			[imageSrc]="item.imageSrc"
+			[href]="item.href"
+		/>
+	}
+</div>

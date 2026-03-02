@@ -26,6 +26,9 @@ const SB_PORT =
 	PORT_ARGI && argv[PORT_ARGI + 1]
 		? Number(argv[PORT_ARGI + 1]) || 6006
 		: 6006
+const SB_CMD_ARGI = argv.indexOf('--storybook-cmd')
+const SB_CUSTOM_CMD =
+	SB_CMD_ARGI !== -1 && argv[SB_CMD_ARGI + 1] ? argv[SB_CMD_ARGI + 1] : null
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Paths
@@ -660,8 +663,18 @@ function startWatcher() {
 let sbChild: ChildProcess | null = null
 async function startStorybook() {
 	const isWin = process.platform === 'win32'
-	const cmd = 'npx'
-	const args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
+	let cmd: string
+	let args: string[]
+
+	if (SB_CUSTOM_CMD) {
+		// Custom command provided via --storybook-cmd (e.g. for Angular: "ng run angular:storybook")
+		const parts = SB_CUSTOM_CMD.split(' ')
+		cmd = parts[0]
+		args = parts.slice(1)
+	} else {
+		cmd = 'npx'
+		args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
+	}
 
 	info(`[sb-deps] launching: ${cmd} ${args.join(' ')}`)
 

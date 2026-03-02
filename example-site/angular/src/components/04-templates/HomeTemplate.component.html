@@ -1,0 +1,19 @@
+<app-site-frame-organism>
+	<div class="HomeTemplate">
+		<app-hero-block-organism
+			title="Welcome to the Storybook Dependency Previews example site"
+			[imgSrc]="featureMeal?.image"
+		>
+			<p>
+				This is an example site to demonstrate the dependency preview addon in a realistic environment.
+			</p>
+			<app-external-link-atom href="https://github.com/Dan503/storybook-addon-dependency-previews">
+				Storybook Dependency Previews
+			</app-external-link-atom>
+		</app-hero-block-organism>
+		<app-screen-padding-atom [padVertical]="true">
+			<h2 class="text-2xl font-bold mb-4">Featured meals:</h2>
+			<app-card-listing-organism [cards]="otherMealCards" />
+		</app-screen-padding-atom>
+	</div>
+</app-site-frame-organism>

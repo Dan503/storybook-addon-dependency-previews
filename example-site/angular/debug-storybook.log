@@ -1,0 +1,23 @@
+[17:05:30.014] [INFO] storybook v10.2.13
+[17:05:31.747] [DEBUG] Getting package.json info for C:/Users/danie/projects/npm/storybook-addon-dependency-previews/example-site/angular/package.json...
+[17:05:35.633] [DEBUG] Serving static files from [36mexample-site/angular/public[39m at [36m/[39m
+[17:05:35.642] [INFO] Starting...
+[17:05:35.721] [WARN] No story files found for the specified pattern: [34msrc\**\*.mdx[39m
+[17:05:36.139] [DEBUG] Starting preview..
+[17:05:36.177] [INFO] Addon-docs: using MDX3
+[17:05:36.267] [INFO] Using implicit CSS loaders
+[17:05:36.286] [ERROR] Failed to build the preview
+[17:05:36.291] [ERROR] [38;2;241;97;97mSB_FRAMEWORK_ANGULAR_0001 (AngularLegacyBuildOptionsError): Your Storybook startup script uses a solution that is not supported anymore.
+You must use Angular builder to have an explicit configuration on the project used in angular.json.
+
+Please run 'npx storybook automigrate' to automatically fix your config.
+
+More info: 
+	- https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#angular-drop-support-for-calling-storybook-directly
+	- https://github.com/storybookjs/storybook/tree/next/code/frameworks/angular#how-do-i-migrate-to-an-angular-storybook-builder
+[39m
+    at checkForLegacyBuildOptions (file:///C:/Users/danie/projects/npm/storybook-addon-dependency-previews/node_modules/.pnpm/@storybook+angular@10.2.13_cc22501ee814de6577dbec0daea4abb8/node_modules/@storybook/angular/dist/server/framework-preset-angular-cli.js:310:11)
+    at Object.webpackFinal (file:///C:/Users/danie/projects/npm/storybook-addon-dependency-previews/node_modules/.pnpm/@storybook+angular@10.2.13_cc22501ee814de6577dbec0daea4abb8/node_modules/@storybook/angular/dist/server/framework-preset-angular-cli.js:244:3)
+    at file:///C:/Users/danie/projects/npm/storybook-addon-dependency-previews/node_modules/.pnpm/storybook@10.2.13_@testing-_f4d08d543fedc0994d2d123f9e3850fa/node_modules/storybook/dist/_node-chunks/chunk-CUCNHZNT.js:10114:36
+[17:05:36.303] [WARN] Broken build, fix the error above.
+You may need to refresh the browser.

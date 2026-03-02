@@ -1,0 +1,33 @@
+<app-site-frame-organism>
+	<div class="grid place-items-center h-full">
+		<app-content-restraint-atom [padVertical]="true">
+			<div class="ContactTemplate grid gap-4">
+				<h2 class="text-3xl font-bold">Contact Us</h2>
+				<app-icon-text-molecule>
+					<app-phone-icon icon />
+					0412 345 678
+				</app-icon-text-molecule>
+				<app-icon-text-molecule>
+					<app-map-pin-icon icon />
+					123 Main St, Anytown, Australia
+				</app-icon-text-molecule>
+				@if (isSubmitted()) {
+					<div class="grid gap-4">
+						<p>Thank you for your message!</p>
+						<p>This website is just a demo so your message was not sent anywhere.</p>
+						<p>Here is what you submitted:</p>
+						<app-form-data-preview-atom [formValues]="contactFormValues()" />
+						<div class="flex justify-start">
+							<app-button-atom (onClick)="resetForm()">Back to the contact form</app-button-atom>
+						</div>
+					</div>
+				} @else {
+					<app-contact-form-organism
+						(formSubmitted)="onSubmit()"
+						(valuesChange)="onValuesChange($event)"
+					/>
+				}
+			</div>
+		</app-content-restraint-atom>
+	</div>
+</app-site-frame-organism>

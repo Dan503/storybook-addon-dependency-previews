@@ -1,0 +1,6 @@
+@if (errors().length) {
+	<div class="ErrorBlockOrganism rounded-lg border-2 border-red-300 bg-red-50 p-4 grid gap-2">
+		<p class="font-bold text-red-700">{{ title() }}</p>
+		<app-error-list-molecule [errors]="errors()" />
+	</div>
+}

@@ -1,0 +1,12 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./dist/out-tsc",
+		"types": ["node", "webpack-env"],
+		"resolveJsonModule": true
+	},
+	"include": [
+		"../src",
+		"./**/*.ts"
+	]
+}

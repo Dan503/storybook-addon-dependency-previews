@@ -1,0 +1,12 @@
+<app-bg-image-container-atom
+	className="HeroBlockOrganism text-center w-full min-h-[25rem] grid place-items-center border-b-2 border-teal-900"
+	[imgSrc]="imgSrc()"
+	[altText]="altText()"
+	[tintColor]="tintColor()"
+	[tintPercent]="tintPercent()"
+>
+	<app-screen-padding-atom [padVertical]="true">
+		<h2 class="text-4xl font-bold">{{ title() }}</h2>
+		<ng-content />
+	</app-screen-padding-atom>
+</app-bg-image-container-atom>
