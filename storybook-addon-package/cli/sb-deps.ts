@@ -107,6 +107,11 @@ function toTitleCase(words: Array<string>) {
 function toPascalCase(input: string) {
 	return toTitleCase(toWords(input)).replace(/\s+/g, '')
 }
+function toKebabCase(input: string) {
+	return toWords(input)
+		.map((w) => w.toLowerCase())
+		.join('-')
+}
 
 function isEmptyOrWhitespace(absPath: string) {
 	try {
@@ -137,12 +142,33 @@ function isComponentsSvelte(absPath: string) {
 	)
 }
 
+// src/components/**/Thing.component.ts ? (and not a story file)
+function isComponentsAngularTs(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return /\/src\/components\/.+\.component\.ts$/i.test(norm)
+}
+
+// src/components/**/Thing.component.html ?
+function isComponentsAngularHtml(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return /\/src\/components\/.+\.component\.html$/i.test(norm)
+}
+
 function componentBaseFromComponent(absCompPath: string) {
 	return basename(absCompPath, '.tsx')
 }
 
 function componentBaseFromSvelteComponent(absCompPath: string) {
 	return basename(absCompPath, '.svelte')
+}
+
+function componentBaseFromAngularComponent(absCompPath: string) {
+	return basename(absCompPath).replace(/\.component\.(ts|html)$/i, '')
+}
+
+function angularComponentTsPath(absPath: string) {
+	const base = componentBaseFromAngularComponent(absPath)
+	return join(dirname(absPath), `${base}.component.ts`)
 }
 
 function detectAtomicTag(absPath: string) {
@@ -361,6 +387,143 @@ function ensureStoryForSvelteComponent(absCompPath: string) {
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
+// Angular scaffolding
+// ───────────────────────────────────────────────────────────────────────────────
+function storyPathForAngularComponent(absCompPath: string) {
+	const dir = dirname(absCompPath)
+	const base = componentBaseFromAngularComponent(absCompPath)
+	return join(dir, `${base}.stories.ts`)
+}
+
+function makeTitleFromAngularComponent(absCompPath: string) {
+	const srcRoot = join(projectRoot, 'src') + sep
+	const normAbs = absCompPath.replace(/\\/g, '/')
+	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
+		? normAbs.slice(srcRoot.length)
+		: absCompPath.replace(projectRoot + sep, '').replace(/\\/g, '/')
+
+	const dir = posix.dirname(relFromSrc)
+	let segments = dir.split('/').filter(Boolean)
+	if (segments[0] && /^components?$/i.test(segments[0]))
+		segments = segments.slice(1)
+
+	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
+	const compName = componentBaseFromAngularComponent(absCompPath)
+	const compTitle = toTitleCase(toWords(compName))
+
+	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
+
+	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
+	const dedupedStoryPath = [...new Set(fullStoryPath)]
+
+	return dedupedStoryPath.join(' / ')
+}
+
+function scaffoldAngularComponent(
+	absCompPath: string,
+	templateStyle: 'internal' | 'external',
+) {
+	const base = componentBaseFromAngularComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const className = `${componentName}Component`
+	const selector = `app-${toKebabCase(componentName)}`
+	const dir = dirname(absCompPath)
+	const tsPath = join(dir, `${base}.component.ts`)
+	const htmlPath = join(dir, `${base}.component.html`)
+
+	if (!existsSync(tsPath) || isEmptyOrWhitespace(tsPath)) {
+		const tsTpl =
+			templateStyle === 'external'
+				? `import { Component } from '@angular/core'
+import { CommonModule } from '@angular/common'
+
+@Component({
+	selector: '${selector}',
+	templateUrl: './${base}.component.html',
+	standalone: true,
+	imports: [CommonModule],
+})
+export class ${className} {}
+`
+				: `import { Component } from '@angular/core'
+import { CommonModule } from '@angular/common'
+
+@Component({
+	selector: '${selector}',
+	template: \`
+		<div class="${componentName}">
+			<p>${componentName}</p>
+			<ng-content />
+		</div>
+	\`,
+	standalone: true,
+	imports: [CommonModule],
+})
+export class ${className} {}
+`
+		writeFileSync(tsPath, tsTpl, 'utf8')
+		info(`scaffolded angular component → ${rel(tsPath)}`)
+	}
+
+	// Only scaffold the HTML file when using an external template
+	if (
+		templateStyle === 'external' &&
+		(!existsSync(htmlPath) || isEmptyOrWhitespace(htmlPath))
+	) {
+		const htmlTpl = `<div class="${componentName}">
+	<p>${componentName}</p>
+	<ng-content />
+</div>
+`
+		writeFileSync(htmlPath, htmlTpl, 'utf8')
+		info(`scaffolded angular template → ${rel(htmlPath)}`)
+	}
+}
+
+function scaffoldStoryForAngularComponent(absCompPath: string) {
+	const base = componentBaseFromAngularComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const className = `${componentName}Component`
+	const title = makeTitleFromAngularComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const storyTpl = `import type { Meta, StoryObj } from '@storybook/angular'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { ${className} } from './${base}.component'
+
+const meta: Meta<${className}> = {
+	title: '${title}',
+	component: ${className},
+	tags: ${JSON.stringify(tags)},
+	parameters: {
+		layout: 'padded',
+		__filePath: import.meta.url,
+	} satisfies StoryParameters,
+}
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Primary: Story = {
+	args: {},
+}
+`
+	const storyPath = storyPathForAngularComponent(absCompPath)
+	writeFileSync(storyPath, storyTpl, 'utf8')
+	info(`scaffolded angular story → ${rel(storyPath)}`)
+	return storyPath
+}
+
+function ensureStoryForAngularComponent(absCompPath: string) {
+	const sPath = storyPathForAngularComponent(absCompPath)
+	if (existsSync(sPath)) return null
+	return scaffoldStoryForAngularComponent(absCompPath)
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
 // Watcher
 // ───────────────────────────────────────────────────────────────────────────────
 function startWatcher() {
@@ -369,6 +532,7 @@ function startWatcher() {
 		'**/*.stories.{ts,tsx,js,jsx,mdx,svelte}',
 		'**/*.story.{ts,tsx,js,jsx,mdx,svelte}',
 		'src/**/*.{ts,tsx,js,jsx,svelte}',
+		'src/**/*.component.html',
 		'depcruise.config.cjs',
 		'.dependency-cruiser.{js,cjs}',
 	]
@@ -429,6 +593,19 @@ function startWatcher() {
 						continue
 					}
 
+					// ANGULAR .component.ts CREATE — scaffold with inline template
+					if (isComponentsAngularTs(abs) && ev.type === 'create') {
+						await handleAngularComponentCreation(abs, relPath, 'internal')
+						continue
+					}
+
+					// ANGULAR .component.html CREATE — scaffold with external templateUrl
+					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
+						const tsPath = angularComponentTsPath(abs)
+						await handleAngularComponentCreation(tsPath, rel(tsPath), 'external')
+						continue
+					}
+
 					// normal rebuild
 					kick(ev.type, abs)
 				}
@@ -459,6 +636,22 @@ function startWatcher() {
 		}
 
 		const createdStory = ensureStoryForSvelteComponent(abs)
+		if (createdStory) {
+			kick('create:story', createdStory)
+		}
+	}
+
+	async function handleAngularComponentCreation(
+		abs: string,
+		relPath: string,
+		templateStyle: 'internal' | 'external',
+	) {
+		if (isEmptyOrWhitespace(abs)) {
+			scaffoldAngularComponent(abs, templateStyle)
+		}
+
+		console.log('Angular component creation detected:', relPath)
+		const createdStory = ensureStoryForAngularComponent(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}

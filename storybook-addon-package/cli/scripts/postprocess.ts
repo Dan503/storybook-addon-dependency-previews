@@ -15,8 +15,8 @@ const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
 const isComponent = (p: string) => {
 	return (
 		/src\/(components|ui|lib)\//.test(p) &&
-		// Ignore css files
-		!/\.(css|scss|sass|less)$/.test(p)
+		// Ignore css and html template files
+		!/\.(css|scss|sass|less|html)$/.test(p)
 	)
 }
 
@@ -129,11 +129,33 @@ function getRawStoryFileData(componentPath: string) {
 
 	const storiesData = getRawFileData(storiesPath)
 	const storyData = getRawFileData(storyPath)
+	const ext = extname(componentPath)
+
+	// Angular: strip .component suffix and look for e.g. Button.stories.ts
+	const angularBase = base.replace(/\.component$/, '')
+	const isAngular = angularBase !== base
+	const angularStoriesPath = isAngular ? `${angularBase}.stories${ext}` : null
+	const angularStoryPath = isAngular ? `${angularBase}.story${ext}` : null
+	const angularStoriesData = angularStoriesPath
+		? getRawFileData(angularStoriesPath)
+		: null
+	const angularStoryData = angularStoryPath
+		? getRawFileData(angularStoryPath)
+		: null
 
 	return {
-		storyFileData: storiesData || storyData || null,
+		storyFileData:
+			storiesData ||
+			storyData ||
+			angularStoriesData ||
+			angularStoryData ||
+			null,
 		storyFilePath:
-			(storiesData && storiesPath) || (storyData && storyPath) || null,
+			(storiesData && storiesPath) ||
+			(storyData && storyPath) ||
+			(angularStoriesData && angularStoriesPath) ||
+			(angularStoryData && angularStoryPath) ||
+			null,
 	}
 }
 
