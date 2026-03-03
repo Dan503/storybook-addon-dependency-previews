@@ -1,0 +1,9 @@
+{
+	"name": "storybook-addon-dependency-previews",
+	"private": true,
+	"pnpm": {
+		"overrides": {
+			"webpack": "5.105.3"
+		}
+	}
+}
