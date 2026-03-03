@@ -16,17 +16,19 @@ declare const __PROJECT_ROOT__: string
 // the storyFilePath values from dependency-previews.json
 const req = require.context('../src', true, /\.stories\.(ts|js)$/)
 const storyModules: StoryModules = Object.fromEntries(
-	req.keys().map((key) => [
-		'/src/' + key.replace(/^\.\//, ''),
-		() => Promise.resolve(req(key)),
-	]),
+	req
+		.keys()
+		.map((key) => [
+			'/src/' + key.replace(/^\.\//, ''),
+			() => Promise.resolve(req(key)),
+		]),
 )
 
 const previewConfig: StorybookPreviewConfig = {
 	parameters: {
 		...defaultPreviewParameters,
 		docs: {
-			...defaultPreviewParameters.parameters?.docs,
+			...defaultPreviewParameters?.['parameters']?.docs,
 			// Provide an explicit Storybook theme so that @storybook/addon-docs styled
 			// components (withReset etc.) receive a properly-shaped theme object via the
 			// emotion ThemeProvider.  Without this, Angular Storybook renders docs pages
