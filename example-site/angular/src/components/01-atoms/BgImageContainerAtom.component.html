@@ -1,14 +1,23 @@
-<div class="BgImageContainerAtom relative" [class]="className()">
+<div
+	class="BgImageContainerAtom relative grid grid-cols-1 grid-rows-1"
+	[class]="className()"
+>
 	<img
 		[src]="imgSrc()"
 		[alt]="altText()"
-		class="object-cover h-full w-full absolute top-0 left-0"
+		class="object-cover h-full w-full absolute top-0 left-0 col-start-1 row-start-1"
 	/>
 	<div
-		class="h-full w-full absolute top-0 left-0"
-		[ngStyle]="{ 'background-color': tintColor(), opacity: tintPercent() / 100 }"
+		class="h-full w-full absolute top-0 left-0 col-start-1 row-start-1"
+		[ngStyle]="{
+			'background-color': tintColor(),
+			opacity: tintPercent() / 100,
+		}"
 	></div>
-	<div class="grid relative z-10" [class]="innerClassName()">
+	<div
+		class="relative z-10 text-black text-2xl font-bold p-4 col-start-1 row-start-1 grid place-items-center"
+		[class]="innerClassName()"
+	>
 		<ng-content />
 	</div>
 </div>
