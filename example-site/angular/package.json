@@ -31,13 +31,14 @@
 		"@angular/compiler-cli": "^21.0.0",
 		"@storybook/addon-docs": "^10.2.13",
 		"@storybook/angular": "^10.2.13",
-		"@tailwindcss/postcss": "^4.1.0",
+		"@tailwindcss/postcss": "^4.2.1",
 		"@types/node": "^25.3.3",
 		"@types/webpack-env": "^1.18.0",
 		"dependency-cruiser": "^17.3.8",
+		"postcss": "^8.5.8",
 		"storybook": "^10.2.13",
 		"storybook-addon-dependency-previews": "workspace:*",
-		"tailwindcss": "^4.1.0",
+		"tailwindcss": "^4.1.18",
 		"typescript": "~5.9.0"
 	}
 }
