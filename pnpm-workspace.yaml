@@ -3,5 +3,6 @@ packages:
     - 'example-site/shared' # ← shared data and utils
     - 'example-site/react' # ← React demo app
     - 'example-site/svelte' # ← Svelte demo app
+    - 'example-site/angular' # ← Angular demo app
 onlyBuiltDependencies:
     - esbuild
