@@ -17,9 +17,14 @@ export default meta
 type Story = StoryObj<BgImageContainerAtomComponent>
 
 export const Primary: Story = {
+	args: {
+		imgSrc: 'https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg',
+		altText: 'A tasty meal',
+		tintPercent: 50,
+	},
 	render: (args) => ({
 		props: args,
-		template: `<app-bg-image-container-atom imgSrc="https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg" altText="A tasty meal" className="min-h-64 w-full" [tintPercent]="50">
+		template: `<app-bg-image-container-atom imgSrc="https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg" altText="A tasty meal" className="border-red-600 border-2 border-dashed" [tintPercent]="50">
 			<p>Content on top</p>
 		</app-bg-image-container-atom>`,
 	}),

@@ -6,7 +6,7 @@ import {
 // Note: src/styles.css is NOT imported here because Angular's @storybook/angular
 // builder automatically applies it from the `styles` array in angular.json.
 import dependenciesJson from './dependency-previews.json'
-import { themes } from 'storybook/theming'
+import { ensure, themes } from 'storybook/theming'
 
 // Injected at build time by webpack DefinePlugin in .storybook/main.ts
 declare const __PROJECT_ROOT__: string
@@ -26,15 +26,15 @@ const storyModules: StoryModules = Object.fromEntries(
 
 const previewConfig: StorybookPreviewConfig = {
 	parameters: {
-		...defaultPreviewParameters,
-		docs: {
-			...defaultPreviewParameters?.['parameters']?.docs,
-			// Provide an explicit Storybook theme so that @storybook/addon-docs styled
-			// components (withReset etc.) receive a properly-shaped theme object via the
-			// emotion ThemeProvider.  Without this, Angular Storybook renders docs pages
-			// with an empty theme and throws "theme.typography is undefined".
-			theme: themes.light,
-		},
+		// ...defaultPreviewParameters,
+		// docs: {
+		// 	...defaultPreviewParameters?.['docs'],
+		// 	// Provide an explicit Storybook theme so that @storybook/addon-docs styled
+		// 	// components (withReset etc.) receive a properly-shaped theme object via the
+		// 	// emotion ThemeProvider.  Without this, Angular Storybook renders docs pages
+		// 	// with an empty theme and throws "theme.typography is undefined".
+		// 	theme: ensure(themes.light),
+		// },
 		dependencyPreviews: {
 			dependenciesJson,
 			projectRootPath: __PROJECT_ROOT__,
