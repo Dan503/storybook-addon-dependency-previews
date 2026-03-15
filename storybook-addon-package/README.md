@@ -187,6 +187,16 @@ Don't run any of these yet, you are not finished with the installation.
 
 `npm run sb:alt-port` (optional) will run storybook in watch mode and run it using a specific port number.
 
+#### Angular projects
+
+`@storybook/angular@10+` requires Storybook to be launched through the Angular CLI builder rather than the default `storybook dev` command. Pass the Angular CLI target as an argument to `--run-storybook`:
+
+```json
+"sb": "sb-deps --watch --run-storybook \"ng run <project-name>:storybook\""
+```
+
+Replace `<project-name>` with the name of your Angular project as defined in `angular.json`.
+
 ### Create the preview file
 
 First run `npm run sb:deps` to generate a fresh `dependency-previews.json` file in the `.storybook` folder.

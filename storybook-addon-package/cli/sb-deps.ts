@@ -20,7 +20,11 @@ import micromatch from 'micromatch'
 // ───────────────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2)
 const WATCH = argv.includes('--watch')
-const RUN_SB = argv.includes('--run-storybook')
+const RUN_SB_IDX = argv.indexOf('--run-storybook')
+const RUN_SB = RUN_SB_IDX !== -1
+const _RUN_SB_NEXT = RUN_SB ? argv[RUN_SB_IDX + 1] : undefined
+const SB_CUSTOM_CMD =
+	_RUN_SB_NEXT && !_RUN_SB_NEXT.startsWith('--') ? _RUN_SB_NEXT : undefined
 const PORT_ARGI = Math.max(argv.indexOf('--sb-port'), 0)
 const SB_PORT =
 	PORT_ARGI && argv[PORT_ARGI + 1]
@@ -467,8 +471,16 @@ function startWatcher() {
 let sbChild: ChildProcess | null = null
 async function startStorybook() {
 	const isWin = process.platform === 'win32'
-	const cmd = 'npx'
-	const args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
+	let cmd: string
+	let args: string[]
+	if (SB_CUSTOM_CMD) {
+		const parts = SB_CUSTOM_CMD.split(' ')
+		cmd = parts[0]
+		args = parts.slice(1)
+	} else {
+		cmd = 'npx'
+		args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
+	}
 
 	info(`[sb-deps] launching: ${cmd} ${args.join(' ')}`)
 

@@ -19,7 +19,10 @@
     "test": "ng test",
     "storybook": "ng run taskbox:storybook",
     "build-storybook": "ng run taskbox:build-storybook",
-    "init-msw": "msw init public/"
+    "init-msw": "msw init public/",
+    "sb": "sb-deps --watch --run-storybook \"ng run taskbox:storybook\"",
+    "sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
+    "sb:deps": "sb-deps"
   },
   "private": true,
   "dependencies": {
