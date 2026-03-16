@@ -128,7 +128,7 @@ function isEmptyOrWhitespace(absPath: string) {
 function isComponentsTsx(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
 	return (
-		/\/src\/components\/.+\.tsx$/i.test(norm) &&
+		/(?:^|\/)src\/components\/.+\.tsx$/i.test(norm) &&
 		!/\.stories?\.tsx$/i.test(norm)
 	)
 }
@@ -137,7 +137,7 @@ function isComponentsTsx(absPath: string) {
 function isComponentsSvelte(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
 	return (
-		/\/src\/components\/.+\.svelte$/i.test(norm) &&
+		/(?:^|\/)src\/components\/.+\.svelte$/i.test(norm) &&
 		!/\.stories?\.svelte$/i.test(norm)
 	)
 }
@@ -145,13 +145,13 @@ function isComponentsSvelte(absPath: string) {
 // src/components/**/Thing.component.ts ? (and not a story file)
 function isComponentsAngularTs(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /\/src\/components\/.+\.component\.ts$/i.test(norm)
+	return /(?:^|\/)src\/components\/.+\.component\.ts$/i.test(norm)
 }
 
 // src/components/**/Thing.component.html ?
 function isComponentsAngularHtml(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /\/src\/components\/.+\.component\.html$/i.test(norm)
+	return /(?:^|\/)src\/components\/.+\.component\.html$/i.test(norm)
 }
 
 function componentBaseFromComponent(absCompPath: string) {
@@ -426,7 +426,7 @@ function scaffoldAngularComponent(
 	const base = componentBaseFromAngularComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const className = `${componentName}Component`
-	const selector = `app-${toKebabCase(componentName)}`
+	const selector = toKebabCase(componentName)
 	const dir = dirname(absCompPath)
 	const tsPath = join(dir, `${base}.component.ts`)
 	const htmlPath = join(dir, `${base}.component.html`)
@@ -595,14 +595,22 @@ function startWatcher() {
 
 					// ANGULAR .component.ts CREATE — scaffold with inline template
 					if (isComponentsAngularTs(abs) && ev.type === 'create') {
-						await handleAngularComponentCreation(abs, relPath, 'internal')
+						await handleAngularComponentCreation(
+							abs,
+							relPath,
+							'internal',
+						)
 						continue
 					}
 
 					// ANGULAR .component.html CREATE — scaffold with external templateUrl
 					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
 						const tsPath = angularComponentTsPath(abs)
-						await handleAngularComponentCreation(tsPath, rel(tsPath), 'external')
+						await handleAngularComponentCreation(
+							tsPath,
+							rel(tsPath),
+							'external',
+						)
 						continue
 					}
 
