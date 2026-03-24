@@ -434,7 +434,7 @@ function scaffoldAngularComponent(
 	if (!existsSync(tsPath) || isEmptyOrWhitespace(tsPath)) {
 		const tsTpl =
 			templateStyle === 'external'
-				? `import { Component } from '@angular/core'
+				? `import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common'
 
 @Component({
@@ -443,15 +443,17 @@ import { CommonModule } from '@angular/common'
 	standalone: true,
 	imports: [CommonModule],
 })
-export class ${className} {}
+export class ${className} {
+  class = input<string>('');
+}
 `
-				: `import { Component } from '@angular/core'
+				: `import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common'
 
 @Component({
 	selector: '${selector}',
 	template: \`
-		<div class="${componentName}">
+		<div [class]="'${componentName} ' + class()">
 			<p>${componentName}</p>
 			<ng-content />
 		</div>
@@ -459,7 +461,9 @@ import { CommonModule } from '@angular/common'
 	standalone: true,
 	imports: [CommonModule],
 })
-export class ${className} {}
+export class ${className} {
+	class = input<string>('');
+}
 `
 		writeFileSync(tsPath, tsTpl, 'utf8')
 		info(`scaffolded angular component → ${rel(tsPath)}`)
@@ -470,7 +474,7 @@ export class ${className} {}
 		templateStyle === 'external' &&
 		(!existsSync(htmlPath) || isEmptyOrWhitespace(htmlPath))
 	) {
-		const htmlTpl = `<div class="${componentName}">
+		const htmlTpl = `<div [class]="'${componentName} ' + class()">
 	<p>${componentName}</p>
 	<ng-content />
 </div>
