@@ -419,6 +419,82 @@ function makeTitleFromAngularComponent(absCompPath: string) {
 	return dedupedStoryPath.join(' / ')
 }
 
+function gcd(a: number, b: number): number {
+	return b === 0 ? a : gcd(b, a % b)
+}
+
+/**
+ * Re-indents extracted HTML so that each indent level is exactly one unit deep.
+ * Detects whether the content uses tabs or spaces (and how many spaces per level)
+ * and enforces that indentation only ever increases by one level at a time.
+ */
+function normalizeHtmlIndentation(html: string): string {
+	const lines = html.split('\n')
+	const indentedLines = lines.filter((l) => l.trim() && /^\s/.test(l))
+	if (indentedLines.length === 0) return html
+
+	const usesTabs = indentedLines.some((l) => l.startsWith('\t'))
+	let unitSize: number
+	let unitChar: string
+
+	if (usesTabs) {
+		unitSize = 1
+		unitChar = '\t'
+	} else {
+		const spaceCounts = indentedLines
+			.map((l) => (l.match(/^ +/) ?? [''])[0].length)
+			.filter((n) => n > 0)
+		const g = spaceCounts.reduce((a, b) => gcd(a, b), spaceCounts[0])
+		unitSize = g
+		unitChar = ' '.repeat(g)
+	}
+
+	const rawLevels = lines.map((line) => {
+		if (!line.trim()) return -1
+		const ws = line.match(/^(\s*)/)?.[1] ?? ''
+		if (usesTabs) return [...ws].filter((c) => c === '\t').length
+		return Math.round(ws.length / unitSize)
+	})
+
+	// Normalize: enforce max +1 increase per step.
+	// knownMappings stays sorted by rawLevel.
+	const knownMappings: Array<[number, number]> = [[0, 0]]
+	let prevRaw = 0
+	let prevNorm = 0
+
+	const normLevels = rawLevels.map((raw) => {
+		if (raw === -1) return -1
+		if (raw === prevRaw) return prevNorm
+
+		if (raw > prevRaw) {
+			const existing = knownMappings.find(([r]) => r === raw)
+			if (existing) {
+				;[prevRaw, prevNorm] = [raw, existing[1]]
+				return prevNorm
+			}
+			prevNorm += 1
+			prevRaw = raw
+			const insertIdx = knownMappings.findIndex(([r]) => r > raw)
+			if (insertIdx === -1) knownMappings.push([raw, prevNorm])
+			else knownMappings.splice(insertIdx, 0, [raw, prevNorm])
+			return prevNorm
+		}
+
+		// Decrease: find the largest known rawLevel <= current
+		const below = knownMappings.filter(([r]) => r <= raw)
+		const norm = below.length > 0 ? below[below.length - 1][1] : 0
+		;[prevRaw, prevNorm] = [raw, norm]
+		return norm
+	})
+
+	return lines
+		.map((line, i) => {
+			if (normLevels[i] === -1) return ''
+			return unitChar.repeat(normLevels[i]) + line.trimStart()
+		})
+		.join('\n')
+}
+
 function defaultAngularHtmlTemplate(componentName: string) {
 	return `<div [class]="'${componentName} ' + class()">
 	<p>${componentName}</p>
@@ -498,7 +574,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 		const tsContent = readFileSync(absTsPath, 'utf8')
 		const match = tsContent.match(/template:\s*`([\s\S]*?)`/)
 		if (match) {
-			htmlContent = match[1].trim() + '\n'
+			htmlContent = normalizeHtmlIndentation(match[1].trim()) + '\n'
 			// Swap template: `...` → templateUrl in the .ts file
 			const updated = tsContent.replace(
 				/template:\s*`[\s\S]*?`/,
