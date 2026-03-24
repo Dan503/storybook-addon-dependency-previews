@@ -14,7 +14,7 @@ const meta: Meta<ExternalLinkIconComponent> = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<ExternalLinkIconComponent>;
 
 export const Primary: Story = {
 	args: {},

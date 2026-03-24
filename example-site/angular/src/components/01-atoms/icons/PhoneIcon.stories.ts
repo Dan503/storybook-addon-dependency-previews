@@ -14,7 +14,7 @@ const meta: Meta<PhoneIconComponent> = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<PhoneIconComponent>;
 
 export const Primary: Story = {
 	args: {},

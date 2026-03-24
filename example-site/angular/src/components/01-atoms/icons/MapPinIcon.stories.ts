@@ -14,7 +14,7 @@ const meta: Meta<MapPinIconComponent> = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<MapPinIconComponent>;
 
 export const Primary: Story = {
 	args: {},
