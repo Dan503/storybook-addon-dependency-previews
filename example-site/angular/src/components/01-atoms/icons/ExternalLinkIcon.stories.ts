@@ -1,21 +1,21 @@
-import type { Meta, StoryObj } from '@storybook/angular'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ExternalLinkIconComponent } from './ExternalLinkIcon.component'
+import type { Meta, StoryObj } from '@storybook/angular';
+import type { StoryParameters } from 'storybook-addon-dependency-previews';
+import { ExternalLinkIconComponent } from './ExternalLinkIcon.component';
 
 const meta: Meta<ExternalLinkIconComponent> = {
 	title: '01 Atoms / Icons / External Link Icon',
 	component: ExternalLinkIconComponent,
-	tags: ["autodocs","icon"],
+	tags: ['autodocs', 'icon'],
 	parameters: {
-		layout: 'padded',
+		layout: 'centered',
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
-}
+};
 
-export default meta
+export default meta;
 
-type Story = StoryObj<typeof meta>
+type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
 	args: {},
-}
+};
