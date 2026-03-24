@@ -509,7 +509,7 @@ const meta: Meta<${className}> = {
 
 export default meta
 
-type Story = StoryObj<typeof meta>
+type Story = StoryObj<${className}>
 
 export const Primary: Story = {
 	args: {},
