@@ -50,6 +50,7 @@
     "@compodoc/compodoc": "^1.1.32",
     "@storybook/addon-docs": "^10.2.14",
     "@storybook/angular": "^10.2.14",
+    "dependency-cruiser": "^17.3.9",
     "jsdom": "^27.1.0",
     "msw": "^2.12.7",
     "msw-storybook-addon": "^2.0.6",
