@@ -1,17 +1,38 @@
-import type { Preview } from '@storybook/angular';
-import { setCompodocJson } from '@storybook/addon-docs/angular';
-import docJson from '../documentation.json';
-setCompodocJson(docJson);
+import type { Preview } from '@storybook/angular'
+import { setCompodocJson } from '@storybook/addon-docs/angular'
+import {
+	defaultPreviewParameters,
+	dependencyPreviewDecorators,
+} from 'storybook-addon-dependency-previews'
+import { create } from 'storybook/theming'
+import docJson from '../documentation.json'
+import dependenciesJson from './dependency-previews.json'
+
+setCompodocJson(docJson)
+
+declare const __PROJECT_ROOT__: string
 
 const preview: Preview = {
-  parameters: {
-    controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/i,
-      },
-    },
-  },
-};
+	parameters: {
+		...defaultPreviewParameters,
+		controls: {
+			matchers: {
+				// show color picker for args with "color" or "background" in the name
+				color: /(background|color)$/i,
+				// show date picker for args with "date" in the name
+				date: /Date$/i,
+			},
+		},
+		docs: {
+			...defaultPreviewParameters?.['docs'],
+			theme: create({ base: 'light' }),
+		},
+		dependencyPreviews: {
+			dependenciesJson,
+			projectRootPath: __PROJECT_ROOT__,
+		},
+	},
+	decorators: [...dependencyPreviewDecorators],
+}
 
-export default preview;
+export default preview

@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'svg-atom',
+  standalone: true,
   template: `
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -21,7 +22,7 @@ import { Component, input } from '@angular/core';
     </svg>
   `,
 })
-export class SvgComponent {
+export class SvgAtomComponent {
   altText = input<string>();
   class = input<string>();
   size = input<number>(24);
