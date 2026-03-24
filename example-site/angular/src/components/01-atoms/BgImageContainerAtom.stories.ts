@@ -35,3 +35,27 @@ export const Primary: Story = {
 		`,
 	}),
 };
+
+export const DarkTint: Story = {
+	args: {
+		imgSrc: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg',
+		altText: 'Placeholder Image',
+		class: 'h-64 w-full grid place-items-center',
+		tintColor: 'black',
+		tintPercent: 80,
+	},
+	render: (args) => ({
+		props: args,
+		template: `
+			<bg-image-container-atom
+				[class]="class"
+				[imgSrc]="imgSrc"
+				[altText]="altText"
+				[tintColor]="tintColor"
+				[tintPercent]="tintPercent"
+			>
+				<p style="color: white">Child content</p>
+			</bg-image-container-atom>
+		`,
+	}),
+};
