@@ -419,6 +419,14 @@ function makeTitleFromAngularComponent(absCompPath: string) {
 	return dedupedStoryPath.join(' / ')
 }
 
+function defaultAngularHtmlTemplate(componentName: string) {
+	return `<div [class]="'${componentName} ' + class()">
+	<p>${componentName}</p>
+	<ng-content />
+</div>
+`
+}
+
 function scaffoldAngularComponent(
 	absCompPath: string,
 	templateStyle: 'internal' | 'external',
@@ -474,14 +482,40 @@ export class ${className} {
 		templateStyle === 'external' &&
 		(!existsSync(htmlPath) || isEmptyOrWhitespace(htmlPath))
 	) {
-		const htmlTpl = `<div [class]="'${componentName} ' + class()">
-	<p>${componentName}</p>
-	<ng-content />
-</div>
-`
-		writeFileSync(htmlPath, htmlTpl, 'utf8')
+		writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
 		info(`scaffolded angular template → ${rel(htmlPath)}`)
 	}
+}
+
+function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
+	const base = componentBaseFromAngularComponent(absHtmlPath)
+	const componentName = toPascalCase(base)
+
+	let htmlContent: string | null = null
+
+	// Try to extract inline template from the existing .ts file
+	if (existsSync(absTsPath) && !isEmptyOrWhitespace(absTsPath)) {
+		const tsContent = readFileSync(absTsPath, 'utf8')
+		const match = tsContent.match(/template:\s*`([\s\S]*?)`/)
+		if (match) {
+			htmlContent = match[1].trim() + '\n'
+			// Swap template: `...` → templateUrl in the .ts file
+			const updated = tsContent.replace(
+				/template:\s*`[\s\S]*?`/,
+				`templateUrl: './${base}.component.html'`,
+			)
+			writeFileSync(absTsPath, updated, 'utf8')
+			info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
+		}
+	}
+
+	// Fall back to default scaffold
+	if (htmlContent === null) {
+		htmlContent = defaultAngularHtmlTemplate(componentName)
+	}
+
+	writeFileSync(absHtmlPath, htmlContent, 'utf8')
+	info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 }
 
 function scaffoldStoryForAngularComponent(absCompPath: string) {
@@ -607,14 +641,23 @@ function startWatcher() {
 						continue
 					}
 
-					// ANGULAR .component.html CREATE — scaffold with external templateUrl
+					// ANGULAR .component.html CREATE
 					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
 						const tsPath = angularComponentTsPath(abs)
-						await handleAngularComponentCreation(
-							tsPath,
-							rel(tsPath),
-							'external',
-						)
+						if (existsSync(tsPath) && !isEmptyOrWhitespace(tsPath)) {
+							// .ts already exists — scaffold HTML from it (migrate inline template if present)
+							if (isEmptyOrWhitespace(abs)) {
+								scaffoldAngularHtmlFromTs(abs, tsPath)
+							}
+							console.log('Angular component creation detected:', rel(abs))
+							const createdStory = ensureStoryForAngularComponent(tsPath)
+							if (createdStory) {
+								kick('create:story', createdStory)
+							}
+						} else {
+							// .ts doesn't exist yet — existing behavior: scaffold both with external templateUrl
+							await handleAngularComponentCreation(tsPath, rel(tsPath), 'external')
+						}
 						continue
 					}
 
