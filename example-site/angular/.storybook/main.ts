@@ -25,6 +25,11 @@ const config: StorybookConfig = {
 			new URL('./css-modules-loader.cjs', import.meta.url),
 		)
 
+		// Absolute path to our global CSS loader (PostCSS + Tailwind, CJS)
+		const globalCssLoader = fileURLToPath(
+			new URL('./global-css-loader.cjs', import.meta.url),
+		)
+
 		config.plugins = config.plugins ?? []
 		config.plugins.push(
 			new webpack.DefinePlugin({
@@ -58,6 +63,13 @@ const config: StorybookConfig = {
 								) {
 									resolveData.createData.loaders = [
 										{ loader: cssModulesLoader, options: {} },
+									]
+								}
+								// Process the Angular global stylesheet through PostCSS so
+								// Tailwind v4's @import 'tailwindcss' directive is resolved.
+								if (resource.replace(/\\/g, '/').endsWith('src/styles.css')) {
+									resolveData.createData.loaders = [
+										{ loader: globalCssLoader, options: {} },
 									]
 								}
 							},
