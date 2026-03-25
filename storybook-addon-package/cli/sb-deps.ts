@@ -59,6 +59,50 @@ const configPath =
 const post = resolve(__dirname, 'scripts', 'postprocess.mjs')
 
 // ───────────────────────────────────────────────────────────────────────────────
+// Config
+// ───────────────────────────────────────────────────────────────────────────────
+interface SbDepsConfig {
+	angularSelectorPrefix?: string
+}
+
+function checkIsProjectEsm(): boolean {
+	try {
+		const pkg = JSON.parse(
+			readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+		)
+		return pkg.type === 'module'
+	} catch {
+		return false
+	}
+}
+
+async function loadSbDepsConfig(): Promise<SbDepsConfig> {
+	const candidates = [
+		{ path: resolve(projectRoot, 'sb-deps.config.js'), isEsm: checkIsProjectEsm() },
+		{ path: resolve(projectRoot, 'sb-deps.config.mjs'), isEsm: true },
+		{ path: resolve(projectRoot, 'sb-deps.config.cjs'), isEsm: false },
+	]
+	for (const { path: cfgPath, isEsm } of candidates) {
+		if (!existsSync(cfgPath)) continue
+		try {
+			if (isEsm) {
+				const mod = await import(pathToFileURL(cfgPath).href)
+				return (mod.default ?? mod) as SbDepsConfig
+			} else {
+				const req = createRequire(import.meta.url)
+				const mod = req(cfgPath)
+				return (mod?.default ?? mod) as SbDepsConfig
+			}
+		} catch (e) {
+			error(`failed to load sb-deps config: ${e}`)
+		}
+	}
+	return {}
+}
+
+let ANGULAR_SELECTOR_PREFIX = 'app-'
+
+// ───────────────────────────────────────────────────────────────────────────────
 // Runners
 // ───────────────────────────────────────────────────────────────────────────────
 function runDepCruiseOnce() {
@@ -510,7 +554,7 @@ function scaffoldAngularComponent(
 	const base = componentBaseFromAngularComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const className = `${componentName}Component`
-	const selector = toKebabCase(componentName)
+	const selector = ANGULAR_SELECTOR_PREFIX + toKebabCase(componentName)
 	const dir = dirname(absCompPath)
 	const tsPath = join(dir, `${base}.component.ts`)
 	const htmlPath = join(dir, `${base}.component.html`)
@@ -828,21 +872,26 @@ async function startStorybook() {
 // ───────────────────────────────────────────────────────────────────────────────
 // Boot
 // ───────────────────────────────────────────────────────────────────────────────
-banner('sb-deps')
-info(`outDir: ${rel(outDir)}`)
-info(configPath ? `config: ${rel(configPath)}` : 'config: (none)')
-buildOnce()
+;(async () => {
+	const cfg = await loadSbDepsConfig()
+	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 
-let watcher: watcherParcel.AsyncSubscription | null = null
-if (WATCH) startWatcher().then((w) => (watcher = w || null))
-if (RUN_SB) startStorybook()
+	banner('sb-deps')
+	info(`outDir: ${rel(outDir)}`)
+	info(configPath ? `config: ${rel(configPath)}` : 'config: (none)')
+	buildOnce()
 
-process.on('SIGINT', async () => {
-	info('shutting down…')
-	await watcher?.unsubscribe()
-	sbChild?.kill('SIGINT')
-	process.exit(0)
-})
+	let watcher: watcherParcel.AsyncSubscription | null = null
+	if (WATCH) startWatcher().then((w) => (watcher = w || null))
+	if (RUN_SB) startStorybook()
+
+	process.on('SIGINT', async () => {
+		info('shutting down…')
+		await watcher?.unsubscribe()
+		sbChild?.kill('SIGINT')
+		process.exit(0)
+	})
+})()
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Utils

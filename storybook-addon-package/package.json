@@ -40,6 +40,11 @@
 			"require": "./dist/addon/index.cjs",
 			"types": "./dist/addon/index.d.mts"
 		},
+		"./config": {
+			"import": "./dist/config.mjs",
+			"require": "./dist/config.cjs",
+			"types": "./dist/config.d.mts"
+		},
 		"./cli/sb-deps": {
 			"import": "./dist/cli/sb-deps.mjs",
 			"require": "./dist/cli/sb-deps.cjs",
