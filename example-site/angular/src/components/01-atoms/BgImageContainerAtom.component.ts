@@ -1,5 +1,4 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'bg-image-container-atom',
@@ -22,7 +21,7 @@ import { CommonModule } from '@angular/common';
 		</div>
 	`,
 	standalone: true,
-	imports: [CommonModule],
+	imports: [],
 })
 export class BgImageContainerAtomComponent {
 	class = input<string>('');

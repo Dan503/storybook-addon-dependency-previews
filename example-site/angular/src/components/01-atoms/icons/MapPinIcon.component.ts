@@ -1,5 +1,4 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { SvgAtomComponent } from './SvgAtom.component';
 
 @Component({
@@ -14,7 +13,7 @@ import { SvgAtomComponent } from './SvgAtom.component';
 		</svg-atom>
 	`,
 	standalone: true,
-	imports: [CommonModule, SvgAtomComponent],
+	imports: [SvgAtomComponent],
 })
 export class MapPinIconComponent {
 	class = input<string>('');

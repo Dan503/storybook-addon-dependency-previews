@@ -519,20 +519,18 @@ function scaffoldAngularComponent(
 		const tsTpl =
 			templateStyle === 'external'
 				? `import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common'
 
 @Component({
 	selector: '${selector}',
 	templateUrl: './${base}.component.html',
 	standalone: true,
-	imports: [CommonModule],
+	imports: [],
 })
 export class ${className} {
   class = input<string>('');
 }
 `
 				: `import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common'
 
 @Component({
 	selector: '${selector}',
@@ -543,7 +541,7 @@ import { CommonModule } from '@angular/common'
 		</div>
 	\`,
 	standalone: true,
-	imports: [CommonModule],
+	imports: [],
 })
 export class ${className} {
 	class = input<string>('');
