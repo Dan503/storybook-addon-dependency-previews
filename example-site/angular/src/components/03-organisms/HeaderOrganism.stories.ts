@@ -1,7 +1,7 @@
-import { applicationConfig, type Meta, type StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular';
 import type { StoryParameters } from 'storybook-addon-dependency-previews';
 import { HeaderOrganismComponent } from './HeaderOrganism.component';
-import { provideRouter } from '@angular/router';
+import { withSiteProviders } from '../../app/siteProviders';
 
 const meta: Meta<HeaderOrganismComponent> = {
 	title: '03 Organisms / Header Organism',
@@ -11,7 +11,7 @@ const meta: Meta<HeaderOrganismComponent> = {
 		layout: 'padded',
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
-	decorators: [applicationConfig({ providers: [provideRouter([])] })],
+	decorators: withSiteProviders,
 };
 
 export default meta;
