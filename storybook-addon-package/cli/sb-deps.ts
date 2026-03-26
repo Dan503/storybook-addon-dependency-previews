@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
 /* eslint-disable no-console */
+import watcherParcel from '@parcel/watcher'
+import micromatch from 'micromatch'
 import { execSync, spawn, type ChildProcess } from 'node:child_process'
 import {
 	existsSync,
 	mkdirSync,
-	writeFileSync,
-	statSync,
 	readFileSync,
+	statSync,
+	writeFileSync,
 } from 'node:fs'
-import { resolve, join, dirname, posix, sep, basename } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createRequire } from 'node:module'
-import watcherParcel from '@parcel/watcher'
-import micromatch from 'micromatch'
+import { basename, dirname, join, posix, resolve, sep } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import type { SbDepsConfig } from '../src/config.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
@@ -61,10 +62,6 @@ const post = resolve(__dirname, 'scripts', 'postprocess.mjs')
 // ───────────────────────────────────────────────────────────────────────────────
 // Config
 // ───────────────────────────────────────────────────────────────────────────────
-interface SbDepsConfig {
-	angularSelectorPrefix?: string
-}
-
 function checkIsProjectEsm(): boolean {
 	try {
 		const pkg = JSON.parse(
@@ -78,7 +75,10 @@ function checkIsProjectEsm(): boolean {
 
 async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 	const candidates = [
-		{ path: resolve(projectRoot, 'sb-deps.config.js'), isEsm: checkIsProjectEsm() },
+		{
+			path: resolve(projectRoot, 'sb-deps.config.js'),
+			isEsm: checkIsProjectEsm(),
+		},
 		{ path: resolve(projectRoot, 'sb-deps.config.mjs'), isEsm: true },
 		{ path: resolve(projectRoot, 'sb-deps.config.cjs'), isEsm: false },
 	]
@@ -101,6 +101,7 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 }
 
 let ANGULAR_SELECTOR_PREFIX = 'app-'
+let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -271,7 +272,9 @@ function scaffoldComponent(absCompPath: string) {
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
 
-	const tpl = `import type { ReactNode } from 'react'
+	const tpl =
+		SCAFFOLD_CONFIG?.react?.component?.({ componentName, propsName }) ??
+		`import type { ReactNode } from 'react'
 
 export interface ${propsName} {
   children?: ReactNode
@@ -299,7 +302,15 @@ function scaffoldStoryForComponent(absCompPath: string) {
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 
-	const storyTpl = `import type { Meta, StoryObj } from '@storybook/react-vite'
+	const storyTpl =
+		SCAFFOLD_CONFIG?.react?.story?.({
+			componentName,
+			propsName,
+			title,
+			tags,
+			base,
+		}) ??
+		`import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${componentName}'
 
@@ -340,7 +351,9 @@ function scaffoldSvelteComponent(absCompPath: string) {
 	const base = componentBaseFromSvelteComponent(absCompPath)
 	const componentName = toPascalCase(base)
 
-	const tpl = `<script lang="ts">
+	const tpl =
+		SCAFFOLD_CONFIG?.svelte?.component?.({ componentName }) ??
+		`<script lang="ts">
 	import type { Snippet } from 'svelte';
 
 	export interface PropsFor${componentName} {
@@ -397,7 +410,9 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 
-	const storyTpl = `<script lang="ts" module>
+	const storyTpl =
+		SCAFFOLD_CONFIG?.svelte?.story?.({ componentName, title, tags }) ??
+		`<script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews'
 	import ${componentName}, { type PropsFor${componentName} } from './${componentName}.svelte'
 	import { defineMeta } from '@storybook/addon-svelte-csf';
@@ -540,16 +555,19 @@ function normalizeHtmlIndentation(html: string): string {
 }
 
 function defaultAngularHtmlTemplate(componentName: string) {
-	return `<div [class]="'${componentName} ' + class()">
+	return (
+		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ??
+		`<div [class]="'${componentName} ' + class()">
 	<p>${componentName}</p>
 	<ng-content />
 </div>
 `
+	)
 }
 
 function scaffoldAngularComponent(
 	absCompPath: string,
-	templateStyle: 'internal' | 'external',
+	templateLocation: 'internal' | 'external',
 ) {
 	const base = componentBaseFromAngularComponent(absCompPath)
 	const componentName = toPascalCase(base)
@@ -560,8 +578,8 @@ function scaffoldAngularComponent(
 	const htmlPath = join(dir, `${base}.component.html`)
 
 	if (!existsSync(tsPath) || isEmptyOrWhitespace(tsPath)) {
-		const tsTpl =
-			templateStyle === 'external'
+		const defaultTsTpl =
+			templateLocation === 'external'
 				? `import { Component, input } from '@angular/core';
 
 @Component({
@@ -591,16 +609,28 @@ export class ${className} {
 	class = input<string>('');
 }
 `
+		const tsTpl =
+			SCAFFOLD_CONFIG?.angular?.component?.({
+				componentName,
+				className,
+				selector,
+				base,
+				templateLocation,
+			}) ?? defaultTsTpl
 		writeFileSync(tsPath, tsTpl, 'utf8')
 		info(`scaffolded angular component → ${rel(tsPath)}`)
 	}
 
 	// Only scaffold the HTML file when using an external template
 	if (
-		templateStyle === 'external' &&
+		templateLocation === 'external' &&
 		(!existsSync(htmlPath) || isEmptyOrWhitespace(htmlPath))
 	) {
-		writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
+		writeFileSync(
+			htmlPath,
+			defaultAngularHtmlTemplate(componentName),
+			'utf8',
+		)
 		info(`scaffolded angular template → ${rel(htmlPath)}`)
 	}
 }
@@ -623,7 +653,9 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				`templateUrl: './${base}.component.html'`,
 			)
 			writeFileSync(absTsPath, updated, 'utf8')
-			info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
+			info(
+				`updated angular component to use templateUrl → ${rel(absTsPath)}`,
+			)
 		}
 	}
 
@@ -645,7 +677,15 @@ function scaffoldStoryForAngularComponent(absCompPath: string) {
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 
-	const storyTpl = `import type { Meta, StoryObj } from '@storybook/angular'
+	const storyTpl =
+		SCAFFOLD_CONFIG?.angular?.story?.({
+			componentName,
+			className,
+			base,
+			title,
+			tags,
+		}) ??
+		`import type { Meta, StoryObj } from '@storybook/angular'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${className} } from './${base}.component'
 
@@ -762,19 +802,30 @@ function startWatcher() {
 					// ANGULAR .component.html CREATE
 					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
 						const tsPath = angularComponentTsPath(abs)
-						if (existsSync(tsPath) && !isEmptyOrWhitespace(tsPath)) {
+						if (
+							existsSync(tsPath) &&
+							!isEmptyOrWhitespace(tsPath)
+						) {
 							// .ts already exists — scaffold HTML from it (migrate inline template if present)
 							if (isEmptyOrWhitespace(abs)) {
 								scaffoldAngularHtmlFromTs(abs, tsPath)
 							}
-							console.log('Angular component creation detected:', rel(abs))
-							const createdStory = ensureStoryForAngularComponent(tsPath)
+							console.log(
+								'Angular component creation detected:',
+								rel(abs),
+							)
+							const createdStory =
+								ensureStoryForAngularComponent(tsPath)
 							if (createdStory) {
 								kick('create:story', createdStory)
 							}
 						} else {
 							// .ts doesn't exist yet — existing behavior: scaffold both with external templateUrl
-							await handleAngularComponentCreation(tsPath, rel(tsPath), 'external')
+							await handleAngularComponentCreation(
+								tsPath,
+								rel(tsPath),
+								'external',
+							)
 						}
 						continue
 					}
@@ -875,6 +926,7 @@ async function startStorybook() {
 ;(async () => {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
+	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
 
 	banner('sb-deps')
 	info(`outDir: ${rel(outDir)}`)
