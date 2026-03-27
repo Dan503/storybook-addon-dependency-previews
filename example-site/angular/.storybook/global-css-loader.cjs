@@ -20,6 +20,8 @@ module.exports = async function globalCssLoader(source) {
 		for (const msg of result.messages) {
 			if (msg.type === 'dependency' && msg.file) {
 				this.addDependency(msg.file)
+			} else if (msg.type === 'dir-dependency' && msg.dir) {
+				this.addContextDependency(msg.dir)
 			}
 		}
 		const hash = crypto
