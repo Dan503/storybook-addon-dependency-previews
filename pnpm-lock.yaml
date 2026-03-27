@@ -78,6 +78,9 @@ importers:
       dependency-cruiser:
         specifier: ^17.3.9
         version: 17.3.9
+      example-site-shared:
+        specifier: workspace:*
+        version: link:../shared
       jsdom:
         specifier: ^27.1.0
         version: 27.4.0

@@ -30,7 +30,37 @@ const config: StorybookConfig = {
 			new URL('./global-css-loader.cjs', import.meta.url),
 		)
 
+		// -----------------------------------------------------------------------
+		// NOTE: Everything in this block (the axios/zod aliases, the
+		// NormalModuleReplacementPlugin, and the associated stub files) only
+		// exists because this example site imports from `example-site-shared`,
+		// a cross-workspace TypeScript package that depends on zod and axios.
+		// In a normal Angular Storybook project you would not need any of this.
+		// -----------------------------------------------------------------------
+
+		config.resolve = config.resolve ?? {}
+		config.resolve.alias = {
+			...(config.resolve.alias as object ?? {}),
+			// Safety-net stubs in case any other path introduces axios/zod into the bundle.
+			'axios': fileURLToPath(new URL('./axios-stub.cjs', import.meta.url)),
+			'zod': fileURLToPath(new URL('./zod-stub.cjs', import.meta.url)),
+		}
+
 		config.plugins = config.plugins ?? []
+
+		// NormalModuleReplacementPlugin fires at `normalModuleFactory.beforeResolve` —
+		// BEFORE tsconfig-paths-webpack-plugin (which runs at the resolve phase).
+		// This ensures 'example-site-shared/data' is redirected to our plain-CJS stub
+		// before Angular's path resolver can map it to the TypeScript source, which would
+		// trigger @ngtools/webpack trying to compile zod v4's complex types (causing a hang).
+		const sharedDataStub = fileURLToPath(new URL('./shared-data-stub.cjs', import.meta.url))
+		config.plugins.push(
+			new webpack.NormalModuleReplacementPlugin(
+				/^example-site-shared\/data$/,
+				sharedDataStub,
+			),
+		)
+
 		config.plugins.push(
 			new webpack.DefinePlugin({
 				__PROJECT_ROOT__: JSON.stringify(

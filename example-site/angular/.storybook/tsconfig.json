@@ -2,7 +2,11 @@
   "extends": "../tsconfig.app.json",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "example-site-shared/data": ["./shared-data"],
+      "example-site-shared/*": ["../../shared/*"]
+    }
   },
   "exclude": ["../src/test.ts", "../src/**/*.spec.ts"],
   "include": ["../src/**/*.stories.*", "./preview.ts"],
