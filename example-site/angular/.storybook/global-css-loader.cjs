@@ -8,8 +8,28 @@
 // style-loader's circular TDZ error in webpack 5.
 
 const crypto = require('crypto')
+const fs = require('fs')
+const path = require('path')
 const postcss = require('postcss')
 const tailwindPlugin = require('@tailwindcss/postcss')
+
+// Recursively collect all files with any of the given extensions under `dir`.
+// Used to add individual file dependencies so webpack invalidates the loader
+// cache when existing source files are modified (addContextDependency only
+// tracks directory-level changes like add/remove, not file modifications).
+function collectFiles(dir, extensions, result = []) {
+	let entries
+	try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch (_) { return result }
+	for (const entry of entries) {
+		const full = path.join(dir, entry.name)
+		if (entry.isDirectory()) {
+			collectFiles(full, extensions, result)
+		} else if (extensions.some((ext) => entry.name.endsWith(ext))) {
+			result.push(full)
+		}
+	}
+	return result
+}
 
 module.exports = async function globalCssLoader(source) {
 	const callback = this.async()
@@ -22,6 +42,14 @@ module.exports = async function globalCssLoader(source) {
 				this.addDependency(msg.file)
 			} else if (msg.type === 'dir-dependency' && msg.dir) {
 				this.addContextDependency(msg.dir)
+				// Also add each file individually so modifications (not just
+				// add/remove) invalidate the webpack loader cache.
+				const exts = msg.glob
+					? (msg.glob.match(/\.\w+/g) ?? ['.ts', '.html'])
+					: ['.ts', '.html']
+				for (const file of collectFiles(msg.dir, exts)) {
+					this.addDependency(file)
+				}
 			}
 		}
 		const hash = crypto
