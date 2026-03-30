@@ -25,7 +25,7 @@ export class CompactListingMoleculeComponent {
 	href = input<string>('');
 }
 
-export type CompactListingMolecule = AngularComponentProps<
+export type PropsForCompactListingMolecule = AngularComponentProps<
 	CompactListingMoleculeComponent,
 	'class'
 >;
