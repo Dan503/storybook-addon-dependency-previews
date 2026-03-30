@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/angular'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { mealCards } from 'example-site-shared/data'
-import { CardListingOrganismComponent } from './CardListingOrganism.component'
-import { type PropsForCardMolecule } from './CardMolecule.component'
+import type { Meta, StoryObj } from '@storybook/angular';
+import type { StoryParameters } from 'storybook-addon-dependency-previews';
+import { mealCards } from 'example-site-shared/data';
+import { CardListingOrganismComponent } from './CardListingOrganism.component';
+import { type PropsForCardMolecule } from './CardMolecule.component';
 
 const meta: Meta<CardListingOrganismComponent> = {
 	title: 'Listings / Card / Card Listing Organism',
@@ -21,13 +21,13 @@ const meta: Meta<CardListingOrganismComponent> = {
 			options: ['meals'],
 		},
 	},
-}
+};
 
-export default meta
+export default meta;
 
-type Story = StoryObj<CardListingOrganismComponent>
+type Story = StoryObj<CardListingOrganismComponent>;
 
-export const Primary: Story = {
+export const GridView: Story = {
 	args: {
 		cards: 'meals' as unknown as Array<Partial<PropsForCardMolecule>>,
 	},
@@ -35,4 +35,15 @@ export const Primary: Story = {
 		props: args,
 		template: `<card-listing-organism [cards]="cards" />`,
 	}),
-}
+};
+
+export const ListView: Story = {
+	args: {
+		cards: 'meals' as unknown as Array<Partial<PropsForCardMolecule>>,
+		view: 'list',
+	},
+	render: (args) => ({
+		props: args,
+		template: `<card-listing-organism [cards]="cards" [view]="view" />`,
+	}),
+};

@@ -5,7 +5,7 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 	selector: 'card-listing-organism',
 	template: `
 		<div class="@container grid">
-			<div class="CardListingOrganism grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-6">
+			<div class="CardListingOrganism grid gap-6" [attr.data-view]="view()">
 				@for (card of cards(); track card.href) {
 					<card-molecule
 						[title]="card.title ?? ''"
@@ -18,7 +18,7 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 		</div>
 	`,
 	styles: `
-		.CardListingOrganism {
+		.CardListingOrganism[data-view='grid'] {
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 
 			@container (width < 800px) {
@@ -35,4 +35,5 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 })
 export class CardListingOrganismComponent {
 	cards = input<Array<Partial<PropsForCardMolecule>>>([]);
+	view = input<'grid' | 'list'>('grid');
 }
