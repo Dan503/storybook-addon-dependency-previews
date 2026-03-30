@@ -121,3 +121,26 @@ export type DecoratorFn = (
 	Story: (ctx: StoryContext) => ReactNode,
 	ctx: StoryContext,
 ) => ReactNode
+
+// Angular utility — uses a structural match for InputSignal<T> so the addon
+// does not need a hard dependency on @angular/core.
+// T[K] extends () => infer U matches InputSignal (and ModelSignal) because
+// Angular signals are callable getters.
+type _InputSignalValue<T> = T extends () => infer U ? U : never
+type _InputSignalKeys<T> = {
+	[K in keyof T]: T[K] extends () => unknown ? K : never
+}[keyof T]
+
+/**
+ * Extracts plain prop types from an Angular component's input signals.
+ *
+ * Filters to only callable signal properties (InputSignal / ModelSignal),
+ * mapping each to its unwrapped value type.
+ *
+ * @example
+ * export type PropsForCardMolecule = AngularComponentProps<CardMoleculeComponent, 'class'>
+ * // → { title: string; href: string; description: string; imgSrc: string }
+ */
+export type AngularComponentProps<T, ExcludeKeys extends keyof T = never> = {
+	[K in Exclude<_InputSignalKeys<T>, ExcludeKeys>]: _InputSignalValue<T[K]>
+}
