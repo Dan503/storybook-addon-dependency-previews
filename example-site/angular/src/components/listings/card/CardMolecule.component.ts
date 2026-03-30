@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import type { AngularComponentProps } from 'storybook-addon-dependency-previews';
 
 @Component({
 	selector: 'card-molecule',
@@ -27,3 +28,5 @@ export class CardMoleculeComponent {
 	description = input<string>('');
 	href = input<string>('');
 }
+
+export type PropsForCardMolecule = AngularComponentProps<CardMoleculeComponent, 'class'>
