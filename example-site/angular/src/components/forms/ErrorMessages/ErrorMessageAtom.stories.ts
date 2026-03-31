@@ -18,12 +18,12 @@ type Story = StoryObj<ErrorMessageAtomComponent>;
 
 export const ErrorString: Story = {
 	args: {
-		errorString: 'This is an error message string.',
+		error: 'This is an error message string.',
 	},
 };
 
 export const ErrorObject: Story = {
 	args: {
-		errorObject: new Error('This is an error message from an Error object.'),
+		error: new Error('This is an error message from an Error object.'),
 	},
 };

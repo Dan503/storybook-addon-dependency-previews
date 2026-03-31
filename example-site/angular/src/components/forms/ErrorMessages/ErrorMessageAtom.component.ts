@@ -1,10 +1,11 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 @Component({
 	selector: 'error-message-atom',
+	host: { class: 'block' },
 	template: `
 		<p [class]="'ErrorMessageAtom text-red-900 font-bold leading-none ' + class()">
-			{{ errorObject()?.message ?? errorString() ?? 'An error occurred' }}
+			{{ errorMessage() }}
 		</p>
 	`,
 	standalone: true,
@@ -12,6 +13,15 @@ import { Component, input } from '@angular/core';
 })
 export class ErrorMessageAtomComponent {
 	class = input<string>('');
-	errorString = input<string>();
-	errorObject = input<Error>();
+	error = input<string | Error>();
+	errorMessage = computed(() => {
+		const err = this.error();
+		if (typeof err === 'string') {
+			return err;
+		}
+		if (err instanceof Error) {
+			return err.message;
+		}
+		return 'An error occurred';
+	});
 }
