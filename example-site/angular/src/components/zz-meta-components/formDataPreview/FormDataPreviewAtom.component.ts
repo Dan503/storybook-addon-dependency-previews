@@ -2,7 +2,11 @@ import { Component, input } from '@angular/core';
 
 @Component({
 	selector: 'form-data-preview-atom',
-	template: ` <pre class="overflow-auto"><code>{{ stringify(formValues()) }}</code></pre> `,
+	template: `
+		<pre
+			class="overflow-auto bg-gray-200 rounded-lg p-2"
+		><code>{{ stringify(formValues()) }}</code></pre>
+	`,
 	standalone: true,
 	imports: [],
 })
