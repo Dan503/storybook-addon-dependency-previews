@@ -1,24 +1,28 @@
-import { Component } from '@angular/core'
-import { injectForm } from '@tanstack/angular-form'
-import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { TextFieldMoleculeComponent } from './TextFieldMolecule.component'
+import { Component } from '@angular/core';
+import { injectForm, injectStore } from '@tanstack/angular-form';
+import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
+import type { StoryParameters } from 'storybook-addon-dependency-previews';
+import { TextFieldMoleculeComponent } from './TextFieldMolecule.component';
+import { FormDataMoleculeComponent } from '../../zz-meta-components/formDataPreview/FormDataMolecule.component';
 
 @Component({
 	selector: 'text-field-story-wrapper',
 	standalone: true,
-	imports: [TextFieldMoleculeComponent],
+	imports: [TextFieldMoleculeComponent, FormDataMoleculeComponent],
 	template: `
-		<text-field-molecule
-			label="Name"
-			placeholder="Your name"
-			[tanstackField]="form"
-			name="name"
-		/>
+		<form-data-molecule [formValues]="formValues()">
+			<text-field-molecule
+				label="Name"
+				placeholder="Your name"
+				[tanstackField]="form"
+				name="name"
+			/>
+		</form-data-molecule>
 	`,
 })
 class TextFieldStoryWrapperComponent {
-	form = injectForm({ defaultValues: { name: '' } })
+	form = injectForm({ defaultValues: { name: '' } });
+	formValues = injectStore(this.form, (s) => s.values);
 }
 
 const meta: Meta<TextFieldMoleculeComponent> = {
@@ -29,11 +33,11 @@ const meta: Meta<TextFieldMoleculeComponent> = {
 		layout: 'padded',
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
-}
+};
 
-export default meta
+export default meta;
 
-type Story = StoryObj<TextFieldMoleculeComponent>
+type Story = StoryObj<TextFieldMoleculeComponent>;
 
 export const Primary: Story = {
 	decorators: [
@@ -44,4 +48,4 @@ export const Primary: Story = {
 	render: () => ({
 		template: '<text-field-story-wrapper />',
 	}),
-}
+};
