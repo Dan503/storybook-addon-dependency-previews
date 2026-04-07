@@ -25,6 +25,37 @@ class TextFieldStoryWrapperComponent {
 	formValues = injectStore(this.form, (s) => s.values);
 }
 
+@Component({
+	selector: 'text-field-error-story-wrapper',
+	standalone: true,
+	imports: [TextFieldMoleculeComponent, FormDataMoleculeComponent],
+	template: `
+		<form-data-molecule [formValues]="formValues()">
+			<text-field-molecule
+				label="Name"
+				placeholder="Your name"
+				[tanstackField]="form"
+				name="name"
+				[validators]="validators"
+				[required]="true"
+			/>
+		</form-data-molecule>
+	`,
+})
+class TextFieldErrorStoryWrapperComponent {
+	form = injectForm({ defaultValues: { name: '' } });
+	formValues = injectStore(this.form, (s) => s.values);
+
+	validators = {
+		onChange: ({ value }: { value: string }) =>
+			!value
+				? 'Name is required'
+				: value.length < 2
+					? 'Name must be at least 2 characters'
+					: undefined,
+	};
+}
+
 const meta: Meta<TextFieldMoleculeComponent> = {
 	title: 'Forms / Text Field Molecule',
 	component: TextFieldMoleculeComponent,
@@ -47,5 +78,16 @@ export const Primary: Story = {
 	],
 	render: () => ({
 		template: '<text-field-story-wrapper />',
+	}),
+};
+
+export const ErrorState: Story = {
+	decorators: [
+		moduleMetadata({
+			imports: [TextFieldErrorStoryWrapperComponent],
+		}),
+	],
+	render: () => ({
+		template: '<text-field-error-story-wrapper />',
 	}),
 };
