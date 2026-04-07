@@ -4,7 +4,7 @@ import type { AngularComponentProps } from 'storybook-addon-dependency-previews'
 @Component({
 	selector: 'card-molecule',
 	template: `
-		<div [class]="'CardMolecule @container grid ' + class()">
+		<div [class]="'CardMolecule @container h-full grid ' + class()">
 			<a
 				[href]="href()"
 				class="grid @max-sm:grid-rows-[auto_1fr] @min-sm:grid-cols-[200px_1fr] h-full @min-sm:gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
@@ -29,4 +29,4 @@ export class CardMoleculeComponent {
 	href = input<string>('');
 }
 
-export type PropsForCardMolecule = AngularComponentProps<CardMoleculeComponent, 'class'>
+export type PropsForCardMolecule = AngularComponentProps<CardMoleculeComponent, 'class'>;
