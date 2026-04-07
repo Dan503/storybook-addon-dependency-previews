@@ -55,7 +55,7 @@ export function DependencyGraphProvider({ children }: { children: ReactNode }) {
 		// individual story variants (e.g., --primary, --secondary).
 		// Normalize by converting the current storyId to its --docs variant.
 		const docsStoryId = currentStoryId
-			? currentStoryId.replace(/--[^-]+$/, '--docs')
+			? currentStoryId.replace(/--[^-].*$/, '--docs')
 			: null
 
 		const byStoryId =
