@@ -26,7 +26,7 @@ import { Component, input } from '@angular/core';
 export class BgImageContainerAtomComponent {
 	class = input<string>('');
 	innerClass = input<string>('');
-	imgSrc = input<string>('');
+	imgSrc = input<string>();
 	altText = input<string>('');
 	tintColor = input<string>('white');
 	tintPercent = input<number>(70);

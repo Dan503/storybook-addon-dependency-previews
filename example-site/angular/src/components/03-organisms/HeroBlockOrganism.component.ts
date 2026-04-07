@@ -29,7 +29,7 @@ import { StringOrTemplateAtomComponent } from '../01-atoms/StringOrTemplateAtom.
 export class HeroBlockOrganismComponent {
 	class = input<string>('');
 	title = input<string | TemplateRef<unknown>>('');
-	imgSrc = input<string>('');
+	imgSrc = input<string>();
 	tintPercentage = input<number>(70);
 	tintColor = input<string>('white');
 	altText = input<string>('');

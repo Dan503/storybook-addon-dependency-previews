@@ -34,6 +34,6 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 	imports: [CardMoleculeComponent],
 })
 export class CardListingOrganismComponent {
-	cards = input<Array<Partial<PropsForCardMolecule>>>([]);
+	cards = input<Array<Partial<PropsForCardMolecule>>>();
 	view = input<'grid' | 'list'>('grid');
 }
