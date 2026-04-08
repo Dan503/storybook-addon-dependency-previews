@@ -9,7 +9,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 				>Home</a
 			>
 			<a routerLink="/categories" routerLinkActive="underline">Food categories</a>
-			<a routerLink="/contact" routerLinkActive="underline">Contact us</a>
+			<a routerLink="/contact-us" routerLinkActive="underline">Contact us</a>
 		</nav>
 	`,
 	standalone: true,
