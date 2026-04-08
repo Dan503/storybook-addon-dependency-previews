@@ -15,7 +15,7 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "example-site-shared/*": ["../../shared/*"]
+      "example-site-shared/*": ["../../shared/dist/*"]
     }
   },
   "angularCompilerOptions": {

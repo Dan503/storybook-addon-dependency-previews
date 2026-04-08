@@ -41,6 +41,9 @@ const config: StorybookConfig = {
 		config.resolve = config.resolve ?? {}
 		config.resolve.alias = {
 			...(config.resolve.alias as object ?? {}),
+			// Redirect example-site-shared/data to a plain CJS stub via resolve.alias
+			// (checked before tsconfig-paths runs, so the TypeScript source is never loaded).
+			'example-site-shared/data': sharedDataStub,
 			// Safety-net stubs in case any other path introduces axios/zod into the bundle.
 			'axios': fileURLToPath(new URL('./axios-stub.cjs', import.meta.url)),
 			'zod': fileURLToPath(new URL('./zod-stub.cjs', import.meta.url)),
