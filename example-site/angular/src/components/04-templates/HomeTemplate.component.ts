@@ -14,7 +14,7 @@ import type { PropsForCardMolecule } from '../listings/card/CardMolecule.compone
 		@let otherMeals = allMeals().slice(1);
 		<site-frame-organism>
 			<div class="HomeTemplate">
-				<hero-block-organism [imgSrc]="featureMeal.imgSrc" [title]="titleTemplate">
+				<hero-block-organism [imgSrc]="featureMeal?.imgSrc" [title]="titleTemplate">
 					<ng-template #titleTemplate>
 						Welcome to the
 						<br />

@@ -5,7 +5,7 @@ import { FooterOrganismComponent } from './FooterOrganism.component';
 @Component({
 	selector: 'site-frame-organism',
 	template: `
-		<div [class]="'SiteFrameOrganism grid min-h-full grid-rows-[auto_1fr_auto] ' + class()">
+		<div [class]="'SiteFrameOrganism grid min-h-screen grid-rows-[auto_1fr_auto] ' + class()">
 			<header-organism />
 			<div class="grid flex-1">
 				<ng-content />
