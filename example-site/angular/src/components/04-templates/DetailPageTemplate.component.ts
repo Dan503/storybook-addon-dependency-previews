@@ -1,7 +1,6 @@
 import { Component, input } from '@angular/core';
 import { SiteFrameOrganismComponent } from '../03-organisms/SiteFrameOrganism.component';
 import { ScreenPaddingAtomComponent } from '../01-atoms/ScreenPaddingAtom.component';
-import { ButtonAtomComponent } from '../01-atoms/ButtonAtom.component';
 import { CompactListingOrganismComponent } from '../listings/compact/CompactListingOrganism.component';
 import { Meal } from 'example-site-shared/data';
 
@@ -43,7 +42,6 @@ import { Meal } from 'example-site-shared/data';
 	imports: [
 		SiteFrameOrganismComponent,
 		ScreenPaddingAtomComponent,
-		ButtonAtomComponent,
 		CompactListingOrganismComponent,
 	],
 })
