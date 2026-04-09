@@ -557,10 +557,8 @@ function normalizeHtmlIndentation(html: string): string {
 function defaultAngularHtmlTemplate(componentName: string) {
 	return (
 		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ??
-		`<div [class]="'${componentName} ' + class()">
-	<p>${componentName}</p>
+		`<p>${componentName}</p>
 	<ng-content />
-</div>
 `
 	)
 }
@@ -584,6 +582,7 @@ function scaffoldAngularComponent(
 
 @Component({
 	selector: '${selector}',
+	host: { '[class]': '["${componentName}", class()].join(" ")' },
 	templateUrl: './${base}.component.html',
 	standalone: true,
 	imports: [],
@@ -596,11 +595,10 @@ export class ${className} {
 
 @Component({
 	selector: '${selector}',
+	host: { '[class]': '["${componentName}", class()].join(" ")' },
 	template: \`
-		<div [class]="'${componentName} ' + class()">
-			<p>${componentName}</p>
-			<ng-content />
-		</div>
+		<p>${componentName}</p>
+		<ng-content />
 	\`,
 	standalone: true,
 	imports: [],
