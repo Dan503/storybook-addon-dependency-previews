@@ -5,6 +5,8 @@ import { StringOrTemplateAtomComponent } from '../01-atoms/StringOrTemplateAtom.
 
 @Component({
 	selector: 'hero-block-organism',
+	host: { '[class]': '["HeroBlockOrganism", class()].join(" ")' },
+
 	template: `
 		<bg-image-container-atom
 			[imgSrc]="imgSrc()"

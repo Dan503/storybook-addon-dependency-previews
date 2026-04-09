@@ -3,18 +3,17 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 
 @Component({
 	selector: 'card-listing-organism',
+	host: { '[class]': '["@container", "grid", class()].join(" ")' },
 	template: `
-		<div class="@container grid">
-			<div class="CardListingOrganism grid gap-6" [attr.data-view]="view()">
-				@for (card of cards(); track card.href) {
-					<card-molecule
-						[title]="card.title ?? ''"
-						[href]="card.href ?? ''"
-						[description]="card.description ?? ''"
-						[imgSrc]="card.imgSrc ?? ''"
-					/>
-				}
-			</div>
+		<div class="CardListingOrganism grid gap-6" [attr.data-view]="view()">
+			@for (card of cards(); track card.href) {
+				<card-molecule
+					[title]="card.title ?? ''"
+					[href]="card.href ?? ''"
+					[description]="card.description ?? ''"
+					[imgSrc]="card.imgSrc ?? ''"
+				/>
+			}
 		</div>
 	`,
 	styles: `
@@ -34,6 +33,7 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 	imports: [CardMoleculeComponent],
 })
 export class CardListingOrganismComponent {
+	class = input<string>('');
 	cards = input<Array<Partial<PropsForCardMolecule>>>();
 	view = input<'grid' | 'list'>('grid');
 }

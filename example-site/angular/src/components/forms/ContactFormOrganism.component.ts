@@ -1,4 +1,4 @@
-import { Component, effect, output } from '@angular/core';
+import { Component, effect, input, output } from '@angular/core';
 import { injectForm, injectStore } from '@tanstack/angular-form';
 import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
 import { TextFieldMoleculeComponent } from './TextFieldMolecule/TextFieldMolecule.component';
@@ -7,10 +7,11 @@ import { ButtonAtomComponent } from '../01-atoms/ButtonAtom.component';
 
 @Component({
 	selector: 'contact-form-organism',
+	host: { '[class]': '["ContactFormOrganism", class()].join(" ")' },
 	standalone: true,
 	imports: [TextFieldMoleculeComponent, TextAreaMoleculeComponent, ButtonAtomComponent],
 	template: `
-		<form (submit)="handleSubmit($event)" class="ContactFormOrganism grid gap-4">
+		<form (submit)="handleSubmit($event)" class="grid gap-4">
 			<text-field-molecule
 				label="Name"
 				placeholder="Your name"
@@ -39,6 +40,7 @@ import { ButtonAtomComponent } from '../01-atoms/ButtonAtom.component';
 	`,
 })
 export class ContactFormOrganismComponent {
+	class = input<string>('');
 	onSubmit = output<void>();
 	valuesChange = output<ContactFormValues>();
 

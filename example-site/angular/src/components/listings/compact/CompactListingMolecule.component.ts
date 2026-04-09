@@ -3,15 +3,21 @@ import type { AngularComponentProps } from 'storybook-addon-dependency-previews'
 
 @Component({
 	selector: 'compact-listing-molecule',
+	host: {
+		'[class]': `[
+			"CompactListingMolecule",
+			"grid",
+			"grid-cols-[auto_1fr]",
+			"items-center",
+			"gap-4",
+			class()
+		].join(" ")`,
+	},
 	template: `
-		<div
-			[class]="'CompactListingMolecule grid grid-cols-[auto_1fr] items-center gap-4 ' + class()"
-		>
-			<img [src]="imageSrc()" alt="" class="h-15" />
-			<div>
-				<h3 class="text-xl leading-none font-bold">{{ title() }}</h3>
-				<p>{{ description() }}</p>
-			</div>
+		<img [src]="imageSrc()" alt="" class="h-15" />
+		<div>
+			<h3 class="text-xl leading-none font-bold">{{ title() }}</h3>
+			<p>{{ description() }}</p>
 		</div>
 	`,
 	standalone: true,

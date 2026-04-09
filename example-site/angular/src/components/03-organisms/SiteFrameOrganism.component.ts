@@ -4,14 +4,21 @@ import { FooterOrganismComponent } from './FooterOrganism.component';
 
 @Component({
 	selector: 'site-frame-organism',
+	host: {
+		'[class]': `[
+			"SiteFrameOrganism",
+			"grid",
+			"min-h-screen",
+			"grid-rows-[auto_1fr_auto]",
+			class()
+		].join(" ")`,
+	},
 	template: `
-		<div [class]="'SiteFrameOrganism grid min-h-screen grid-rows-[auto_1fr_auto] ' + class()">
-			<header-organism />
-			<div class="grid flex-1">
-				<ng-content />
-			</div>
-			<footer-organism />
+		<header-organism />
+		<div class="grid flex-1">
+			<ng-content />
 		</div>
+		<footer-organism />
 	`,
 	standalone: true,
 	imports: [HeaderOrganismComponent, FooterOrganismComponent],

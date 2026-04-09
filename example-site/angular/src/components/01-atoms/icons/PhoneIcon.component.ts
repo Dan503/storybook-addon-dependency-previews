@@ -3,8 +3,9 @@ import { SvgAtomComponent } from './SvgAtom.component';
 
 @Component({
 	selector: 'phone-icon',
+	host: { '[class]': '["PhoneIcon", "h-[1em]", "w-[1em]", class()].join(" ")' },
 	template: `
-		<svg-atom [class]="'PhoneIcon ' + class()" [altText]="altText()">
+		<svg-atom class="block h-full w-full" [altText]="altText()">
 			<svg:path
 				strokeLinecap="round"
 				strokeLinejoin="round"

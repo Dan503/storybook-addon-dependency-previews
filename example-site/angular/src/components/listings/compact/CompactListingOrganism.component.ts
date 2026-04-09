@@ -6,13 +6,9 @@ import {
 
 @Component({
 	selector: 'compact-listing-organism',
+	host: { '[class]': '["CompactListingOrganism", class()].join(" ")' },
 	template: `
-		<ul
-			[class]="
-				'CompactListingOrganism grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] ' +
-				class()
-			"
-		>
+		<ul class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
 			@for (card of items(); track card.href) {
 				<li>
 					<compact-listing-molecule

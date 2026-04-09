@@ -2,9 +2,9 @@ import { Component, computed, input } from '@angular/core';
 
 @Component({
 	selector: 'error-message-atom',
-	host: { class: 'block' },
+	host: { '[class]': '["ErrorMessageAtom", "block", class()].join(" ")' },
 	template: `
-		<p [class]="'ErrorMessageAtom text-red-900 font-bold leading-none ' + class()">
+		<p class="text-red-900 font-bold leading-none">
 			{{ errorMessage() }}
 		</p>
 	`,

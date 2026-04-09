@@ -3,14 +3,13 @@ import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'screen-padding-atom',
+	host: {
+		'[class]': '["ScreenPaddingAtom", "w-full", class()].join(" ")',
+		'[class.p-6]': 'padVertical()',
+		'[class.px-6]': '!padVertical()',
+	},
 	template: `
-		<div
-			[class]="'ScreenPaddingAtom w-full ' + class()"
-			[class.p-6]="padVertical()"
-			[class.px-6]="!padVertical()"
-		>
-			<ng-content />
-		</div>
+		<ng-content />
 	`,
 	standalone: true,
 	imports: [CommonModule],

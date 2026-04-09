@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'svg-atom',
+  host: { '[class]': '["h-[1em]", "w-[1em]", class()].join(" ")' },
   standalone: true,
   template: `
     <svg
@@ -14,7 +15,7 @@ import { Component, input } from '@angular/core';
       [attr.width]="size()"
       focusable="false"
       role="img"
-      [class]="class()"
+      class="h-full w-full"
       [attr.aria-label]="altText() ?? null"
       [attr.aria-hidden]="altText() ? null : true"
     >

@@ -3,11 +3,18 @@ import { FormDataPreviewAtomComponent } from './FormDataPreviewAtom.component';
 
 @Component({
 	selector: 'form-data-molecule',
+	host: {
+		'[class]': `[
+			"FormDataMolecule",
+			"grid",
+			"grid-cols-[minmax(0,1fr)]",
+			"gap-2",
+			class()
+		].join(" ")`,
+	},
 	template: `
-		<div [class]="'FormDataMolecule grid grid-cols-[minmax(0,1fr)] gap-2 ' + class()">
-			<ng-content />
-			<form-data-preview-atom [formValues]="formValues()" />
-		</div>
+		<ng-content />
+		<form-data-preview-atom [formValues]="formValues()" />
 	`,
 	standalone: true,
 	imports: [FormDataPreviewAtomComponent],

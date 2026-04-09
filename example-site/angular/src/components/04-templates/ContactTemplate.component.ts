@@ -11,11 +11,12 @@ import { defaultContactFormValues, type ContactFormValues } from 'example-site-s
 
 @Component({
 	selector: 'contact-template',
+	host: { '[class]': '["ContactTemplate", class()].join(" ")' },
 	template: `
 		<site-frame-organism>
 			<div class="grid h-full place-items-center">
 				<content-restraint-atom [padVertical]="true">
-					<div class="ContactTemplate grid gap-4">
+					<div class="grid gap-4">
 						<h1 class="text-3xl font-bold">Contact Us</h1>
 						<icon-text-molecule [icon]="phoneIcon" [text]="'0412 345 678'" />
 						<icon-text-molecule

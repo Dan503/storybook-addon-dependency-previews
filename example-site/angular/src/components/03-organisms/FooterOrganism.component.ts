@@ -3,15 +3,25 @@ import { ExternalLinkAtomComponent } from '../01-atoms/ExternalLinkAtom.componen
 
 @Component({
 	selector: 'footer-organism',
+	host: {
+		'[class]': `[
+			"FooterOrganism",
+			"border-t-2",
+			"border-teal-900",
+			"bg-teal-200",
+			"p-4",
+			"text-center",
+			"text-black",
+			class()
+		].join(" ")`,
+	},
 	template: `
-		<div class="FooterOrganism border-t-2 border-teal-900 bg-teal-200 p-4 text-center text-black">
-			<p>
-				Meal data provided by
-				<external-link-atom href="https://www.themealdb.com/">
-					TheMealDB.com
-				</external-link-atom>
-			</p>
-		</div>
+		<p>
+			Meal data provided by
+			<external-link-atom href="https://www.themealdb.com/">
+				TheMealDB.com
+			</external-link-atom>
+		</p>
 	`,
 	standalone: true,
 	imports: [ExternalLinkAtomComponent],

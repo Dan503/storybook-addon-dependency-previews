@@ -6,10 +6,11 @@ import type { PropsForCardMolecule } from '../listings/card/CardMolecule.compone
 
 @Component({
 	selector: 'card-list-template',
+	host: { '[class]': '["MealListTemplate", class()].join(" ")' },
 	template: `
 		<site-frame-organism>
 			<screen-padding-atom class="py-8">
-				<div class="MealListTemplate grid gap-4">
+				<div class="grid gap-4">
 					<h1 class="text-4xl font-bold">{{ title() }}</h1>
 					<p class="mb-2">{{ introText() }}</p>
 					<card-listing-organism [cards]="cardList()" [view]="view()" />
@@ -21,6 +22,7 @@ import type { PropsForCardMolecule } from '../listings/card/CardMolecule.compone
 	imports: [SiteFrameOrganismComponent, ScreenPaddingAtomComponent, CardListingOrganismComponent],
 })
 export class CardListTemplateComponent {
+	class = input<string>('');
 	title = input<string>('');
 	introText = input<string>('');
 	cardList = input<Array<PropsForCardMolecule>>([]);

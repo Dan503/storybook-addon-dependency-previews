@@ -3,8 +3,9 @@ import { SvgAtomComponent } from './SvgAtom.component';
 
 @Component({
   selector: 'external-link-icon',
+  host: { '[class]': '["ExternalLinkIcon", "h-[1em]", "w-[1em]", class()].join(" ")' },
   template: `
-    <svg-atom [class]="'ExternalLinkIcon ' + class()" [altText]="altText()">
+    <svg-atom class="block h-full w-full" [altText]="altText()">
       <svg:path
         stroke-linecap="round"
         stroke-linejoin="round"

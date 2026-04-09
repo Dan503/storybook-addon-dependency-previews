@@ -3,9 +3,10 @@ import { ErrorMessageAtomComponent } from './ErrorMessageAtom.component';
 
 @Component({
 	selector: 'error-list-molecule',
+	host: { '[class]': '["ErrorListMolecule", class()].join(" ")' },
 	template: `
 		@if (errors().length > 0) {
-			<ul [class]="'ErrorListMolecule grid gap-1 pl-6 ' + class()">
+			<ul class="grid gap-1 pl-6">
 				@for (err of errors(); track $index) {
 					<li class="list-outside list-disc">
 						<error-message-atom [error]="err" />

@@ -4,8 +4,11 @@ import { ScreenPaddingAtomComponent } from '../01-atoms/ScreenPaddingAtom.compon
 
 @Component({
 	selector: 'header-organism',
+	host: {
+		'[class]': `[ "HeaderOrganism", class() ].join(" ")`,
+	},
 	template: `
-		<header class="HeaderOrganism border-b-2 border-teal-900 bg-teal-100 p-2 text-black">
+		<header class="border-b-2 border-teal-900 bg-teal-100 p-2 text-black">
 			<screen-padding-atom>
 				<div
 					class="flex w-full items-center justify-between gap-2 max-md:flex-col max-md:justify-center"
@@ -22,4 +25,6 @@ import { ScreenPaddingAtomComponent } from '../01-atoms/ScreenPaddingAtom.compon
 	standalone: true,
 	imports: [MainNavMoleculeComponent, ScreenPaddingAtomComponent],
 })
-export class HeaderOrganismComponent {}
+export class HeaderOrganismComponent {
+	class = input<string>('');
+}

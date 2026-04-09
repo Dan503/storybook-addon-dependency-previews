@@ -4,6 +4,7 @@ import { ErrorListMoleculeComponent } from '../ErrorMessages/ErrorListMolecule.c
 
 @Component({
 	selector: 'text-field-molecule',
+	host: { '[class]': '["TextFieldMolecule", class()].join(" ")' },
 	hostDirectives: [
 		{
 			directive: TanStackAppField,
@@ -14,28 +15,27 @@ import { ErrorListMoleculeComponent } from '../ErrorMessages/ErrorListMolecule.c
 		@if (fieldApi()) {
 			@let hasErrors =
 				fieldApi()!.state.meta.isTouched && fieldApi()!.state.meta.errors.length > 0;
-			<div class="TextFieldMolecule">
-				<label [for]="id()" class="mb-1 grid gap-2">
-					<span class="text-xl font-bold">{{ label() }}</span>
-					<input
-						[id]="id()"
-						[value]="fieldApi()!.state.value"
-						[placeholder]="placeholder() ?? ''"
-						(blur)="fieldApi()!.handleBlur()"
-						(input)="fieldApi()!.handleChange($any($event).target.value)"
-						[class]="getInputClass(hasErrors)"
-					/>
-				</label>
-				@if (hasErrors) {
-					<error-list-molecule [errors]="fieldApi()!.state.meta.errors" />
-				}
-			</div>
+			<label [for]="id()" class="mb-1 grid gap-2">
+				<span class="text-xl font-bold">{{ label() }}</span>
+				<input
+					[id]="id()"
+					[value]="fieldApi()!.state.value"
+					[placeholder]="placeholder() ?? ''"
+					(blur)="fieldApi()!.handleBlur()"
+					(input)="fieldApi()!.handleChange($any($event).target.value)"
+					[class]="getInputClass(hasErrors)"
+				/>
+			</label>
+			@if (hasErrors) {
+				<error-list-molecule [errors]="fieldApi()!.state.meta.errors" />
+			}
 		}
 	`,
 	standalone: true,
 	imports: [ErrorListMoleculeComponent],
 })
 export class TextFieldMoleculeComponent {
+	class = input<string>('');
 	label = input.required<string>();
 	placeholder = input<string>();
 	required = input<boolean>(false);
