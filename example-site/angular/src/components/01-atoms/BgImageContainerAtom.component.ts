@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 
 @Component({
 	selector: 'bg-image-container-atom',
-	host: { '[class]': '["BgImageContainerAtom", "relative", class()].join(" ")' },
+	host: { '[class]': '["BgImageContainerAtom", "relative", "h-full", class()].join(" ")' },
 	template: `
 		<img
 			[src]="imgSrc()"
@@ -15,7 +15,7 @@ import { Component, input } from '@angular/core';
 				['background-color: ' + tintColor(), 'opacity: ' + tintPercent() / 100].join('; ')
 			"
 		></div>
-		<div [class]="'relative z-10 grid' + innerClass()">
+		<div [class]="'relative z-10 grid place-items-center h-full ' + innerClass()">
 			<ng-content />
 		</div>
 	`,

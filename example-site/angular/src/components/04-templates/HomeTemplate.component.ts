@@ -9,35 +9,33 @@ import type { PropsForCardMolecule } from '../listings/card/CardMolecule.compone
 
 @Component({
 	selector: 'home-template',
-	host: { '[class]': '["HomeTemplate", class()].join(" ")' },
+	host: { '[class]': '["HomeTemplate", "h-full", class()].join(" ")' },
 	template: `
 		@let featureMeal = allMeals()[0];
 		@let otherMeals = allMeals().slice(1);
-		<site-frame-organism>
-			<div>
-				<hero-block-organism [imgSrc]="featureMeal?.imgSrc" [title]="titleTemplate">
-					<ng-template #titleTemplate>
-						Welcome to the
-						<br />
-						<external-link-atom
-							href="https://github.com/Dan503/storybook-addon-dependency-previews"
-						>
-							Storybook Dependency Previews
-						</external-link-atom>
-						<br />
-						example site
-					</ng-template>
+		<site-frame-organism [class]="'grid grid-rows-2 h-full'">
+			<hero-block-organism [imgSrc]="featureMeal?.imgSrc" [title]="titleTemplate">
+				<ng-template #titleTemplate>
+					Welcome to the
+					<br />
+					<external-link-atom
+						href="https://github.com/Dan503/storybook-addon-dependency-previews"
+					>
+						Storybook Dependency Previews
+					</external-link-atom>
+					<br />
+					example site
+				</ng-template>
 
-					<p class="text-center">
-						This is an example site to demonstrate the dependency preview addon in a realistic
-						environment.
-					</p>
-				</hero-block-organism>
-				<screen-padding-atom [padVertical]="true">
-					<h2 class="mb-4 text-2xl font-bold">Featured meals:</h2>
-					<card-listing-organism [cards]="otherMeals" />
-				</screen-padding-atom>
-			</div>
+				<p class="text-center">
+					This is an example site to demonstrate the dependency preview addon in a realistic
+					environment.
+				</p>
+			</hero-block-organism>
+			<screen-padding-atom [padVertical]="true">
+				<h2 class="mb-4 text-2xl font-bold">Featured meals:</h2>
+				<card-listing-organism [cards]="otherMeals" />
+			</screen-padding-atom>
 		</site-frame-organism>
 	`,
 	standalone: true,
