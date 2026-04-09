@@ -38,6 +38,8 @@ const config: StorybookConfig = {
 		// In a normal Angular Storybook project you would not need any of this.
 		// -----------------------------------------------------------------------
 
+		const sharedDataStub = fileURLToPath(new URL('./shared-data-stub.cjs', import.meta.url))
+
 		config.resolve = config.resolve ?? {}
 		config.resolve.alias = {
 			...(config.resolve.alias as object ?? {}),
@@ -56,7 +58,6 @@ const config: StorybookConfig = {
 		// This ensures 'example-site-shared/data' is redirected to our plain-CJS stub
 		// before Angular's path resolver can map it to the TypeScript source, which would
 		// trigger @ngtools/webpack trying to compile zod v4's complex types (causing a hang).
-		const sharedDataStub = fileURLToPath(new URL('./shared-data-stub.cjs', import.meta.url))
 		config.plugins.push(
 			new webpack.NormalModuleReplacementPlugin(
 				/^example-site-shared\/data$/,
