@@ -3,6 +3,7 @@ import { HomePageComponent } from '../components/05-pages/HomePage.component';
 import { ContactPageComponent } from '../components/05-pages/ContactPage.component';
 import { CategoriesPageComponent } from '../components/05-pages/CategoriesPage.component';
 import { CategoryListingPageComponent } from '../components/05-pages/CategoryListingPage.component';
+import { MealDetailPageComponent } from '../components/05-pages/MealDetailPage.component';
 
 export const routes: Routes = [
 	{
@@ -23,5 +24,9 @@ export const routes: Routes = [
 	{
 		path: 'categories/:categoryName',
 		component: CategoryListingPageComponent,
+	},
+	{
+		path: 'meal/:mealId',
+		component: MealDetailPageComponent,
 	},
 ];
