@@ -2,7 +2,9 @@ import { Component, input } from '@angular/core';
 
 @Component({
 	selector: 'bg-image-container-atom',
-	host: { '[class]': '["BgImageContainerAtom", "relative", "h-full", class()].join(" ")' },
+	host: {
+		'[class]': '["BgImageContainerAtom", "relative", "h-full", "min-h-50", class()].join(" ")',
+	},
 	template: `
 		<img
 			[src]="imgSrc()"
