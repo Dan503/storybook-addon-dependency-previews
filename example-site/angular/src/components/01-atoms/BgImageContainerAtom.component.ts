@@ -17,7 +17,7 @@ import { Component, input } from '@angular/core';
 				['background-color: ' + tintColor(), 'opacity: ' + tintPercent() / 100].join('; ')
 			"
 		></div>
-		<div [class]="'relative z-10 grid place-items-center h-full ' + innerClass()">
+		<div [class]="'absolute inset-0 z-10 grid place-items-center h-full ' + innerClass()">
 			<ng-content />
 		</div>
 	`,
