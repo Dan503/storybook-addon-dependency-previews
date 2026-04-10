@@ -8,7 +8,7 @@ const meta: Meta<ScreenPaddingAtomComponent> = {
 	component: ScreenPaddingAtomComponent,
 	tags: ['autodocs', 'atom'],
 	parameters: {
-		layout: 'padded',
+		layout: 'fullscreen',
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
 };
