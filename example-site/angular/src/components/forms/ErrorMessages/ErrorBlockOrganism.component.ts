@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { afterNextRender, Component, ElementRef, inject, input } from '@angular/core';
 import { ErrorListMoleculeComponent } from './ErrorListMolecule.component';
 
 @Component({
@@ -14,6 +14,7 @@ import { ErrorListMoleculeComponent } from './ErrorListMolecule.component';
 			class()
 		].join(" ")`,
 		role: 'alert',
+		'[tabindex]': '-1',
 	},
 	template: `
 		@if (errors().length > 0) {
@@ -31,4 +32,9 @@ import { ErrorListMoleculeComponent } from './ErrorListMolecule.component';
 export class ErrorBlockOrganismComponent {
 	class = input<string>('');
 	errors = input<Array<string | Error>>([]);
+
+	constructor() {
+		const el = inject(ElementRef<HTMLElement>);
+		afterNextRender(() => el.nativeElement.focus());
+	}
 }

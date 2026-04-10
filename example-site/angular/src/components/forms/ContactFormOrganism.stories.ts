@@ -1,9 +1,9 @@
-import { Component } from '@angular/core'
-import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data'
-import { FormDataMoleculeComponent } from '../zz-meta-components/formDataPreview/FormDataMolecule.component'
-import { ContactFormOrganismComponent } from './ContactFormOrganism.component'
+import { Component } from '@angular/core';
+import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
+import type { StoryParameters } from 'storybook-addon-dependency-previews';
+import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
+import { FormDataMoleculeComponent } from '../zz-meta-components/formDataPreview/FormDataMolecule.component';
+import { ContactFormOrganismComponent } from './ContactFormOrganism.component';
 
 @Component({
 	selector: 'contact-form-story-wrapper',
@@ -11,18 +11,15 @@ import { ContactFormOrganismComponent } from './ContactFormOrganism.component'
 	imports: [ContactFormOrganismComponent, FormDataMoleculeComponent],
 	template: `
 		<form-data-molecule [formValues]="formValues">
-			<contact-form-organism
-				(valuesChange)="formValues = $event"
-				(submitted)="onSubmit()"
-			/>
+			<contact-form-organism (valuesChange)="formValues = $event" (submitted)="onSubmit()" />
 		</form-data-molecule>
 	`,
 })
 class ContactFormStoryWrapperComponent {
-	formValues: ContactFormValues = defaultContactFormValues
+	formValues: ContactFormValues = defaultContactFormValues;
 
 	onSubmit() {
-		alert('Form submitted! with these values:\n' + JSON.stringify(this.formValues, null, 2))
+		alert('Form submitted! with these values:\n' + JSON.stringify(this.formValues, null, 2));
 	}
 }
 
@@ -34,11 +31,11 @@ const meta: Meta<ContactFormOrganismComponent> = {
 		layout: 'padded',
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
-}
+};
 
-export default meta
+export default meta;
 
-type Story = StoryObj<ContactFormOrganismComponent>
+type Story = StoryObj<ContactFormOrganismComponent>;
 
 export const Primary: Story = {
 	decorators: [
@@ -49,4 +46,4 @@ export const Primary: Story = {
 	render: () => ({
 		template: '<contact-form-story-wrapper />',
 	}),
-}
+};
