@@ -14,15 +14,16 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "pnpm run prep-sb-addon && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "storybook": "ng run taskbox:storybook",
     "build-storybook": "ng run taskbox:build-storybook",
     "init-msw": "msw init public/",
     "sb": "sb-deps --watch --run-storybook \"ng run taskbox:storybook\"",
-    "sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
-    "sb:deps": "sb-deps"
+    "sb:build": "pnpm run prep-sb-addon && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
+    "sb:deps": "sb-deps",
+    "prep-sb-addon": "pnpm --filter storybook-addon-dependency-previews build"
   },
   "private": true,
   "dependencies": {
