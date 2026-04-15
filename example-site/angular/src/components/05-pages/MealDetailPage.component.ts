@@ -6,7 +6,7 @@ import { fetchMealById } from 'example-site-shared/utils/mealDbApiUtils';
 
 @Component({
 	selector: 'meal-detail-page',
-	template: `<detail-page-template [meal]="meal()" [isLoading]="!meal()" />`,
+	template: `<detail-page-template [meal]="meal()" [isLoading]="isLoading()" />`,
 	standalone: true,
 	imports: [DetailPageTemplateComponent],
 })

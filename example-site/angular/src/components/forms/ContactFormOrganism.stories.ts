@@ -11,7 +11,7 @@ import { ContactFormOrganismComponent } from './ContactFormOrganism.component';
 	imports: [ContactFormOrganismComponent, FormDataMoleculeComponent],
 	template: `
 		<form-data-molecule [formValues]="formValues">
-			<contact-form-organism (valuesChange)="formValues = $event" (submitted)="onSubmit()" />
+			<contact-form-organism (valuesChange)="formValues = $event" (onSubmit)="onSubmit()" />
 		</form-data-molecule>
 	`,
 })

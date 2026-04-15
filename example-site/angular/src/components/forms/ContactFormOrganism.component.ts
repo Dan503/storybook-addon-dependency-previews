@@ -100,6 +100,5 @@ export class ContactFormOrganismComponent {
 	handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		this.form.handleSubmit();
-		console.log('errors:', this.errors());
 	}
 }

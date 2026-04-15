@@ -888,13 +888,15 @@ async function startStorybook() {
 	const isWin = process.platform === 'win32'
 	let cmd: string
 	let args: string[]
+	let shellMode: boolean
 	if (SB_CUSTOM_CMD) {
-		const parts = SB_CUSTOM_CMD.split(' ')
-		cmd = parts[0]
-		args = parts.slice(1)
+		cmd = SB_CUSTOM_CMD
+		args = []
+		shellMode = true // shell:true handles quoted args and paths with spaces
 	} else {
 		cmd = 'npx'
 		args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
+		shellMode = isWin // ← critical to avoid EINVAL on Win + Git Bash
 	}
 
 	info(`[sb-deps] launching: ${cmd} ${args.join(' ')}`)
@@ -902,7 +904,7 @@ async function startStorybook() {
 	sbChild = spawn(cmd, args, {
 		cwd: projectRoot,
 		stdio: 'inherit',
-		shell: isWin, // ← critical to avoid EINVAL on Win + Git Bash
+		shell: shellMode,
 		env: process.env,
 	})
 

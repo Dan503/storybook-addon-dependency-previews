@@ -125,17 +125,21 @@ export type DecoratorFn = (
 // Angular utility — uses a structural match for InputSignal<T> so the addon
 // does not need a hard dependency on @angular/core.
 // T[K] extends () => infer U matches InputSignal (and ModelSignal) because
-// Angular signals are callable getters.
+// Angular signals are callable getters. Note: this also captures other zero-arg
+// callable properties (computed signals, plain methods) — use ExcludeKeys to
+// omit anything that isn't a true input prop (e.g. 'class', lifecycle hooks).
 type _InputSignalValue<T> = T extends () => infer U ? U : never
 type _InputSignalKeys<T> = {
 	[K in keyof T]: T[K] extends () => unknown ? K : never
 }[keyof T]
 
 /**
- * Extracts plain prop types from an Angular component's input signals.
+ * Extracts plain prop types from an Angular component's signal-based inputs.
  *
- * Filters to only callable signal properties (InputSignal / ModelSignal),
- * mapping each to its unwrapped value type.
+ * Uses a structural match (`() => unknown`) to identify callable properties,
+ * which covers `input()` and `model()` signals but will also match computed
+ * signals and zero-arg methods. Use `ExcludeKeys` to omit any non-input
+ * properties (e.g. `'class'`, lifecycle hooks).
  *
  * @example
  * export type PropsForCardMolecule = AngularComponentProps<CardMoleculeComponent, 'class'>

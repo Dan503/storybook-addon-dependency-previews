@@ -8,10 +8,10 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 		<div class="CardListingOrganism grid gap-6" [attr.data-view]="view()">
 			@for (card of cards(); track card.href) {
 				<card-molecule
-					[title]="card.title ?? ''"
-					[href]="card.href ?? ''"
-					[description]="card.description ?? ''"
-					[imgSrc]="card.imgSrc ?? ''"
+					[title]="card.title"
+					[href]="card.href"
+					[description]="card.description"
+					[imgSrc]="card.imgSrc"
 				/>
 			}
 		</div>
@@ -34,6 +34,6 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 })
 export class CardListingOrganismComponent {
 	class = input<string>('');
-	cards = input<Array<Partial<PropsForCardMolecule>>>();
+	cards = input<Array<PropsForCardMolecule>>([]);
 	view = input<'grid' | 'list'>('grid');
 }
