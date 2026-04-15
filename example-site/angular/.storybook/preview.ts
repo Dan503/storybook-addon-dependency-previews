@@ -4,7 +4,6 @@ import {
 	defaultPreviewParameters,
 	dependencyPreviewDecorators,
 } from 'storybook-addon-dependency-previews'
-import { create } from 'storybook/theming'
 import docJson from '../documentation.json'
 import dependenciesJson from './dependency-previews.json'
 
@@ -22,10 +21,6 @@ const preview: Preview = {
 				// show date picker for args with "date" in the name
 				date: /Date$/i,
 			},
-		},
-		docs: {
-			...defaultPreviewParameters?.['docs'],
-			theme: create({ base: 'light' }),
 		},
 		dependencyPreviews: {
 			dependenciesJson,

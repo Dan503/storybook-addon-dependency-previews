@@ -6,6 +6,7 @@ import {
 	Subtitle,
 	Title,
 } from '@storybook/addon-docs/blocks'
+import { themes } from 'storybook/theming'
 import { DependencyPreviews } from '../blocks'
 import type { StorybookParameters } from '../types'
 
@@ -28,5 +29,6 @@ export function DefaultAutoDocsLayout() {
 export const defaultPreviewParameters: StorybookParameters = {
 	docs: {
 		page: () => <DefaultAutoDocsLayout />,
+		theme: themes.light,
 	},
 }
