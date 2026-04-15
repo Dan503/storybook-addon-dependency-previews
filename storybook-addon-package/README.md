@@ -105,12 +105,21 @@ const config: StorybookConfig = {
 	framework: '@storybook/sveltekit',
 	// Required to prevent a "TypeError: e.typography is undefined" error in
 	// static/production builds. Vite can split styled-components (used internally
-	// by Storybook) into multiple chunks, creating separate ThemeContext instances.
-	// This deduplication ensures only one instance is used.
+	// by Storybook) into multiple chunks across the iframe and DocsRenderer
+	// bundles, creating separate ThemeContext instances. Forcing styled-components
+	// into a single shared chunk ensures only one instance exists at runtime.
 	async viteFinal(config) {
 		return mergeConfig(config, {
-			resolve: {
-				dedupe: ['styled-components'],
+			build: {
+				rollupOptions: {
+					output: {
+						manualChunks(id) {
+							if (/[/\\]styled-components[/\\]/.test(id)) {
+								return 'vendor-styled-components'
+							}
+						},
+					},
+				},
 			},
 		})
 	},
