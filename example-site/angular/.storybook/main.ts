@@ -93,7 +93,8 @@ const config: StorybookConfig = {
 									resolveData.createData?.resource ?? ''
 								if (
 									resource.endsWith('.module.css') &&
-									resource.includes('storybook-addon-dependency-previews')
+									(resource.includes('storybook-addon-dependency-previews') ||
+										resource.includes('storybook-addon-package'))
 								) {
 									resolveData.createData.loaders = [
 										{ loader: cssModulesLoader, options: {} },
