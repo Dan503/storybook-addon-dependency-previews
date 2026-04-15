@@ -1,0 +1,41 @@
+/** set up the layers for determining what rules take priority */
+@layer base;
+@layer utilities;
+
+/** Tailwind imports itself into a "utilities" layer */
+@import 'tailwindcss';
+@source './**/*.{ts,html}';
+
+@layer base {
+	/* You can add global styles to this file, and also import other style files */
+	* {
+		box-sizing: border-box;
+		-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	/** Set Angular component host elements to display block by default */
+	:where(:not(:defined)) {
+		display: block;
+	}
+
+	html,
+	body {
+		margin: 0;
+		padding: 0;
+		font-size: 100%;
+		outline: none;
+		font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-style: 400;
+		color: #333;
+		font-size: 16px;
+		-webkit-text-size-adjust: 100%;
+		-ms-text-size-adjust: 100%;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	button {
+		cursor: pointer;
+	}
+}

@@ -1,26 +1,31 @@
 #!/usr/bin/env node
 
 /* eslint-disable no-console */
+import watcherParcel from '@parcel/watcher'
+import micromatch from 'micromatch'
 import { execSync, spawn, type ChildProcess } from 'node:child_process'
 import {
 	existsSync,
 	mkdirSync,
-	writeFileSync,
-	statSync,
 	readFileSync,
+	statSync,
+	writeFileSync,
 } from 'node:fs'
-import { resolve, join, dirname, posix, sep, basename } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createRequire } from 'node:module'
-import watcherParcel from '@parcel/watcher'
-import micromatch from 'micromatch'
+import { basename, dirname, join, posix, resolve, sep } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import type { SbDepsConfig } from '../src/config.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
 // ───────────────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2)
 const WATCH = argv.includes('--watch')
-const RUN_SB = argv.includes('--run-storybook')
+const RUN_SB_IDX = argv.indexOf('--run-storybook')
+const RUN_SB = RUN_SB_IDX !== -1
+const _RUN_SB_NEXT = RUN_SB ? argv[RUN_SB_IDX + 1] : undefined
+const SB_CUSTOM_CMD =
+	_RUN_SB_NEXT && !_RUN_SB_NEXT.startsWith('--') ? _RUN_SB_NEXT : undefined
 const PORT_ARGI = Math.max(argv.indexOf('--sb-port'), 0)
 const SB_PORT =
 	PORT_ARGI && argv[PORT_ARGI + 1]
@@ -53,6 +58,50 @@ const configPath =
 
 // Path to postprocess helper (built as ESM)
 const post = resolve(__dirname, 'scripts', 'postprocess.mjs')
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Config
+// ───────────────────────────────────────────────────────────────────────────────
+function checkIsProjectEsm(): boolean {
+	try {
+		const pkg = JSON.parse(
+			readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+		)
+		return pkg.type === 'module'
+	} catch {
+		return false
+	}
+}
+
+async function loadSbDepsConfig(): Promise<SbDepsConfig> {
+	const candidates = [
+		{
+			path: resolve(projectRoot, 'sb-deps.config.js'),
+			isEsm: checkIsProjectEsm(),
+		},
+		{ path: resolve(projectRoot, 'sb-deps.config.mjs'), isEsm: true },
+		{ path: resolve(projectRoot, 'sb-deps.config.cjs'), isEsm: false },
+	]
+	for (const { path: cfgPath, isEsm } of candidates) {
+		if (!existsSync(cfgPath)) continue
+		try {
+			if (isEsm) {
+				const mod = await import(pathToFileURL(cfgPath).href)
+				return (mod.default ?? mod) as SbDepsConfig
+			} else {
+				const req = createRequire(import.meta.url)
+				const mod = req(cfgPath)
+				return (mod?.default ?? mod) as SbDepsConfig
+			}
+		} catch (e) {
+			error(`failed to load sb-deps config: ${e}`)
+		}
+	}
+	return {}
+}
+
+let ANGULAR_SELECTOR_PREFIX = 'app-'
+let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -103,6 +152,11 @@ function toTitleCase(words: Array<string>) {
 function toPascalCase(input: string) {
 	return toTitleCase(toWords(input)).replace(/\s+/g, '')
 }
+function toKebabCase(input: string) {
+	return toWords(input)
+		.map((w) => w.toLowerCase())
+		.join('-')
+}
 
 function isEmptyOrWhitespace(absPath: string) {
 	try {
@@ -119,7 +173,7 @@ function isEmptyOrWhitespace(absPath: string) {
 function isComponentsTsx(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
 	return (
-		/\/src\/components\/.+\.tsx$/i.test(norm) &&
+		/(?:^|\/)src\/components\/.+\.tsx$/i.test(norm) &&
 		!/\.stories?\.tsx$/i.test(norm)
 	)
 }
@@ -128,9 +182,21 @@ function isComponentsTsx(absPath: string) {
 function isComponentsSvelte(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
 	return (
-		/\/src\/components\/.+\.svelte$/i.test(norm) &&
+		/(?:^|\/)src\/components\/.+\.svelte$/i.test(norm) &&
 		!/\.stories?\.svelte$/i.test(norm)
 	)
+}
+
+// src/components/**/Thing.component.ts ? (and not a story file)
+function isComponentsAngularTs(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return /(?:^|\/)src\/components\/.+\.component\.ts$/i.test(norm)
+}
+
+// src/components/**/Thing.component.html ?
+function isComponentsAngularHtml(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return /(?:^|\/)src\/components\/.+\.component\.html$/i.test(norm)
 }
 
 function componentBaseFromComponent(absCompPath: string) {
@@ -139,6 +205,15 @@ function componentBaseFromComponent(absCompPath: string) {
 
 function componentBaseFromSvelteComponent(absCompPath: string) {
 	return basename(absCompPath, '.svelte')
+}
+
+function componentBaseFromAngularComponent(absCompPath: string) {
+	return basename(absCompPath).replace(/\.component\.(ts|html)$/i, '')
+}
+
+function angularComponentTsPath(absPath: string) {
+	const base = componentBaseFromAngularComponent(absPath)
+	return join(dirname(absPath), `${base}.component.ts`)
 }
 
 function detectAtomicTag(absPath: string) {
@@ -197,7 +272,9 @@ function scaffoldComponent(absCompPath: string) {
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
 
-	const tpl = `import type { ReactNode } from 'react'
+	const tpl =
+		SCAFFOLD_CONFIG?.react?.component?.({ componentName, propsName }) ??
+		`import type { ReactNode } from 'react'
 
 export interface ${propsName} {
   children?: ReactNode
@@ -225,7 +302,15 @@ function scaffoldStoryForComponent(absCompPath: string) {
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 
-	const storyTpl = `import type { Meta, StoryObj } from '@storybook/react-vite'
+	const storyTpl =
+		SCAFFOLD_CONFIG?.react?.story?.({
+			componentName,
+			propsName,
+			title,
+			tags,
+			base,
+		}) ??
+		`import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${componentName}'
 
@@ -266,7 +351,9 @@ function scaffoldSvelteComponent(absCompPath: string) {
 	const base = componentBaseFromSvelteComponent(absCompPath)
 	const componentName = toPascalCase(base)
 
-	const tpl = `<script lang="ts">
+	const tpl =
+		SCAFFOLD_CONFIG?.svelte?.component?.({ componentName }) ??
+		`<script lang="ts">
 	import type { Snippet } from 'svelte';
 
 	export interface PropsFor${componentName} {
@@ -323,7 +410,9 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 
-	const storyTpl = `<script lang="ts" module>
+	const storyTpl =
+		SCAFFOLD_CONFIG?.svelte?.story?.({ componentName, title, tags }) ??
+		`<script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews'
 	import ${componentName}, { type PropsFor${componentName} } from './${componentName}.svelte'
 	import { defineMeta } from '@storybook/addon-svelte-csf';
@@ -357,6 +446,278 @@ function ensureStoryForSvelteComponent(absCompPath: string) {
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
+// Angular scaffolding
+// ───────────────────────────────────────────────────────────────────────────────
+function storyPathForAngularComponent(absCompPath: string) {
+	const dir = dirname(absCompPath)
+	const base = componentBaseFromAngularComponent(absCompPath)
+	return join(dir, `${base}.stories.ts`)
+}
+
+function makeTitleFromAngularComponent(absCompPath: string) {
+	const srcRoot = join(projectRoot, 'src') + sep
+	const normAbs = absCompPath.replace(/\\/g, '/')
+	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
+		? normAbs.slice(srcRoot.length)
+		: absCompPath.replace(projectRoot + sep, '').replace(/\\/g, '/')
+
+	const dir = posix.dirname(relFromSrc)
+	let segments = dir.split('/').filter(Boolean)
+	if (segments[0] && /^components?$/i.test(segments[0]))
+		segments = segments.slice(1)
+
+	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
+	const compName = componentBaseFromAngularComponent(absCompPath)
+	const compTitle = toTitleCase(toWords(compName))
+
+	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
+
+	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
+	const dedupedStoryPath = [...new Set(fullStoryPath)]
+
+	return dedupedStoryPath.join(' / ')
+}
+
+function gcd(a: number, b: number): number {
+	return b === 0 ? a : gcd(b, a % b)
+}
+
+/**
+ * Re-indents extracted HTML so that each indent level is exactly one unit deep.
+ * Detects whether the content uses tabs or spaces (and how many spaces per level)
+ * and enforces that indentation only ever increases by one level at a time.
+ */
+function normalizeHtmlIndentation(html: string): string {
+	const lines = html.split('\n')
+	const indentedLines = lines.filter((l) => l.trim() && /^\s/.test(l))
+	if (indentedLines.length === 0) return html
+
+	const usesTabs = indentedLines.some((l) => l.startsWith('\t'))
+	let unitSize: number
+	let unitChar: string
+
+	if (usesTabs) {
+		unitSize = 1
+		unitChar = '\t'
+	} else {
+		const spaceCounts = indentedLines
+			.map((l) => (l.match(/^ +/) ?? [''])[0].length)
+			.filter((n) => n > 0)
+		const g = spaceCounts.reduce((a, b) => gcd(a, b), spaceCounts[0])
+		unitSize = g
+		unitChar = ' '.repeat(g)
+	}
+
+	const rawLevels = lines.map((line) => {
+		if (!line.trim()) return -1
+		const ws = line.match(/^(\s*)/)?.[1] ?? ''
+		if (usesTabs) return [...ws].filter((c) => c === '\t').length
+		return Math.round(ws.length / unitSize)
+	})
+
+	// Normalize: enforce max +1 increase per step.
+	// knownMappings stays sorted by rawLevel.
+	const knownMappings: Array<[number, number]> = [[0, 0]]
+	let prevRaw = 0
+	let prevNorm = 0
+
+	const normLevels = rawLevels.map((raw) => {
+		if (raw === -1) return -1
+		if (raw === prevRaw) return prevNorm
+
+		if (raw > prevRaw) {
+			const existing = knownMappings.find(([r]) => r === raw)
+			if (existing) {
+				;[prevRaw, prevNorm] = [raw, existing[1]]
+				return prevNorm
+			}
+			prevNorm += 1
+			prevRaw = raw
+			const insertIdx = knownMappings.findIndex(([r]) => r > raw)
+			if (insertIdx === -1) knownMappings.push([raw, prevNorm])
+			else knownMappings.splice(insertIdx, 0, [raw, prevNorm])
+			return prevNorm
+		}
+
+		// Decrease: find the largest known rawLevel <= current
+		const below = knownMappings.filter(([r]) => r <= raw)
+		const norm = below.length > 0 ? below[below.length - 1][1] : 0
+		;[prevRaw, prevNorm] = [raw, norm]
+		return norm
+	})
+
+	return lines
+		.map((line, i) => {
+			if (normLevels[i] === -1) return ''
+			return unitChar.repeat(normLevels[i]) + line.trimStart()
+		})
+		.join('\n')
+}
+
+function defaultAngularHtmlTemplate(componentName: string) {
+	return (
+		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ??
+		`<p>${componentName}</p>
+	<ng-content />
+`
+	)
+}
+
+function scaffoldAngularComponent(
+	absCompPath: string,
+	templateLocation: 'internal' | 'external',
+) {
+	const base = componentBaseFromAngularComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const className = `${componentName}Component`
+	const selector = ANGULAR_SELECTOR_PREFIX + toKebabCase(componentName)
+	const dir = dirname(absCompPath)
+	const tsPath = join(dir, `${base}.component.ts`)
+	const htmlPath = join(dir, `${base}.component.html`)
+
+	if (!existsSync(tsPath) || isEmptyOrWhitespace(tsPath)) {
+		const defaultTsTpl =
+			templateLocation === 'external'
+				? `import { Component, input } from '@angular/core';
+
+@Component({
+	selector: '${selector}',
+	host: { '[class]': '["${componentName}", class()].join(" ")' },
+	templateUrl: './${base}.component.html',
+	standalone: true,
+	imports: [],
+})
+export class ${className} {
+  class = input<string>('');
+}
+`
+				: `import { Component, input } from '@angular/core';
+
+@Component({
+	selector: '${selector}',
+	host: { '[class]': '["${componentName}", class()].join(" ")' },
+	template: \`
+		<p>${componentName}</p>
+		<ng-content />
+	\`,
+	standalone: true,
+	imports: [],
+})
+export class ${className} {
+	class = input<string>('');
+}
+`
+		const tsTpl =
+			SCAFFOLD_CONFIG?.angular?.component?.({
+				componentName,
+				className,
+				selector,
+				base,
+				templateLocation,
+			}) ?? defaultTsTpl
+		writeFileSync(tsPath, tsTpl, 'utf8')
+		info(`scaffolded angular component → ${rel(tsPath)}`)
+	}
+
+	// Only scaffold the HTML file when using an external template
+	if (
+		templateLocation === 'external' &&
+		(!existsSync(htmlPath) || isEmptyOrWhitespace(htmlPath))
+	) {
+		writeFileSync(
+			htmlPath,
+			defaultAngularHtmlTemplate(componentName),
+			'utf8',
+		)
+		info(`scaffolded angular template → ${rel(htmlPath)}`)
+	}
+}
+
+function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
+	const base = componentBaseFromAngularComponent(absHtmlPath)
+	const componentName = toPascalCase(base)
+
+	let htmlContent: string | null = null
+
+	// Try to extract inline template from the existing .ts file
+	if (existsSync(absTsPath) && !isEmptyOrWhitespace(absTsPath)) {
+		const tsContent = readFileSync(absTsPath, 'utf8')
+		const match = tsContent.match(/template:\s*`([\s\S]*?)`/)
+		if (match) {
+			htmlContent = normalizeHtmlIndentation(match[1].trim()) + '\n'
+			// Swap template: `...` → templateUrl in the .ts file
+			const updated = tsContent.replace(
+				/template:\s*`[\s\S]*?`/,
+				`templateUrl: './${base}.component.html'`,
+			)
+			writeFileSync(absTsPath, updated, 'utf8')
+			info(
+				`updated angular component to use templateUrl → ${rel(absTsPath)}`,
+			)
+		}
+	}
+
+	// Fall back to default scaffold
+	if (htmlContent === null) {
+		htmlContent = defaultAngularHtmlTemplate(componentName)
+	}
+
+	writeFileSync(absHtmlPath, htmlContent, 'utf8')
+	info(`scaffolded angular template → ${rel(absHtmlPath)}`)
+}
+
+function scaffoldStoryForAngularComponent(absCompPath: string) {
+	const base = componentBaseFromAngularComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const className = `${componentName}Component`
+	const title = makeTitleFromAngularComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const storyTpl =
+		SCAFFOLD_CONFIG?.angular?.story?.({
+			componentName,
+			className,
+			base,
+			title,
+			tags,
+		}) ??
+		`import type { Meta, StoryObj } from '@storybook/angular'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { ${className} } from './${base}.component'
+
+const meta: Meta<${className}> = {
+	title: '${title}',
+	component: ${className},
+	tags: ${JSON.stringify(tags)},
+	parameters: {
+		layout: 'padded',
+		__filePath: import.meta.url,
+	} satisfies StoryParameters,
+}
+
+export default meta
+
+type Story = StoryObj<${className}>
+
+export const Primary: Story = {
+	args: {},
+}
+`
+	const storyPath = storyPathForAngularComponent(absCompPath)
+	writeFileSync(storyPath, storyTpl, 'utf8')
+	info(`scaffolded angular story → ${rel(storyPath)}`)
+	return storyPath
+}
+
+function ensureStoryForAngularComponent(absCompPath: string) {
+	const sPath = storyPathForAngularComponent(absCompPath)
+	if (existsSync(sPath)) return null
+	return scaffoldStoryForAngularComponent(absCompPath)
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
 // Watcher
 // ───────────────────────────────────────────────────────────────────────────────
 function startWatcher() {
@@ -365,6 +726,7 @@ function startWatcher() {
 		'**/*.stories.{ts,tsx,js,jsx,mdx,svelte}',
 		'**/*.story.{ts,tsx,js,jsx,mdx,svelte}',
 		'src/**/*.{ts,tsx,js,jsx,svelte}',
+		'src/**/*.component.html',
 		'depcruise.config.cjs',
 		'.dependency-cruiser.{js,cjs}',
 	]
@@ -425,6 +787,47 @@ function startWatcher() {
 						continue
 					}
 
+					// ANGULAR .component.ts CREATE — scaffold with inline template
+					if (isComponentsAngularTs(abs) && ev.type === 'create') {
+						await handleAngularComponentCreation(
+							abs,
+							relPath,
+							'internal',
+						)
+						continue
+					}
+
+					// ANGULAR .component.html CREATE
+					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
+						const tsPath = angularComponentTsPath(abs)
+						if (
+							existsSync(tsPath) &&
+							!isEmptyOrWhitespace(tsPath)
+						) {
+							// .ts already exists — scaffold HTML from it (migrate inline template if present)
+							if (isEmptyOrWhitespace(abs)) {
+								scaffoldAngularHtmlFromTs(abs, tsPath)
+							}
+							console.log(
+								'Angular component creation detected:',
+								rel(abs),
+							)
+							const createdStory =
+								ensureStoryForAngularComponent(tsPath)
+							if (createdStory) {
+								kick('create:story', createdStory)
+							}
+						} else {
+							// .ts doesn't exist yet — existing behavior: scaffold both with external templateUrl
+							await handleAngularComponentCreation(
+								tsPath,
+								rel(tsPath),
+								'external',
+							)
+						}
+						continue
+					}
+
 					// normal rebuild
 					kick(ev.type, abs)
 				}
@@ -459,6 +862,22 @@ function startWatcher() {
 			kick('create:story', createdStory)
 		}
 	}
+
+	async function handleAngularComponentCreation(
+		abs: string,
+		relPath: string,
+		templateStyle: 'internal' | 'external',
+	) {
+		if (isEmptyOrWhitespace(abs)) {
+			scaffoldAngularComponent(abs, templateStyle)
+		}
+
+		console.log('Angular component creation detected:', relPath)
+		const createdStory = ensureStoryForAngularComponent(abs)
+		if (createdStory) {
+			kick('create:story', createdStory)
+		}
+	}
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -467,15 +886,25 @@ function startWatcher() {
 let sbChild: ChildProcess | null = null
 async function startStorybook() {
 	const isWin = process.platform === 'win32'
-	const cmd = 'npx'
-	const args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
+	let cmd: string
+	let args: string[]
+	let shellMode: boolean
+	if (SB_CUSTOM_CMD) {
+		cmd = SB_CUSTOM_CMD
+		args = []
+		shellMode = true // shell:true handles quoted args and paths with spaces
+	} else {
+		cmd = 'npx'
+		args = ['-y', 'storybook', 'dev', '-p', String(SB_PORT)]
+		shellMode = isWin // ← critical to avoid EINVAL on Win + Git Bash
+	}
 
 	info(`[sb-deps] launching: ${cmd} ${args.join(' ')}`)
 
 	sbChild = spawn(cmd, args, {
 		cwd: projectRoot,
 		stdio: 'inherit',
-		shell: isWin, // ← critical to avoid EINVAL on Win + Git Bash
+		shell: shellMode,
 		env: process.env,
 	})
 
@@ -494,21 +923,27 @@ async function startStorybook() {
 // ───────────────────────────────────────────────────────────────────────────────
 // Boot
 // ───────────────────────────────────────────────────────────────────────────────
-banner('sb-deps')
-info(`outDir: ${rel(outDir)}`)
-info(configPath ? `config: ${rel(configPath)}` : 'config: (none)')
-buildOnce()
+;(async () => {
+	const cfg = await loadSbDepsConfig()
+	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
+	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
 
-let watcher: watcherParcel.AsyncSubscription | null = null
-if (WATCH) startWatcher().then((w) => (watcher = w || null))
-if (RUN_SB) startStorybook()
+	banner('sb-deps')
+	info(`outDir: ${rel(outDir)}`)
+	info(configPath ? `config: ${rel(configPath)}` : 'config: (none)')
+	buildOnce()
 
-process.on('SIGINT', async () => {
-	info('shutting down…')
-	await watcher?.unsubscribe()
-	sbChild?.kill('SIGINT')
-	process.exit(0)
-})
+	let watcher: watcherParcel.AsyncSubscription | null = null
+	if (WATCH) startWatcher().then((w) => (watcher = w || null))
+	if (RUN_SB) startStorybook()
+
+	process.on('SIGINT', async () => {
+		info('shutting down…')
+		await watcher?.unsubscribe()
+		sbChild?.kill('SIGINT')
+		process.exit(0)
+	})
+})()
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Utils

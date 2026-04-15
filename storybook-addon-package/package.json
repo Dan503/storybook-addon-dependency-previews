@@ -1,7 +1,7 @@
 {
 	"name": "storybook-addon-dependency-previews",
 	"description": "A Storybook 10 addon to automatically generate a visual dependency tree for your components.",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"private": false,
 	"license": "Apache-2.0",
 	"homepage": "https://dependency-previews-storybook.netlify.app/?path=/docs/04-templates-home-template--docs",
@@ -39,6 +39,11 @@
 			"import": "./dist/addon/index.mjs",
 			"require": "./dist/addon/index.cjs",
 			"types": "./dist/addon/index.d.mts"
+		},
+		"./config": {
+			"import": "./dist/config.mjs",
+			"require": "./dist/config.cjs",
+			"types": "./dist/config.d.mts"
 		},
 		"./cli/sb-deps": {
 			"import": "./dist/cli/sb-deps.mjs",
@@ -99,7 +104,7 @@
 		"cross-spawn": "^7.0.6",
 		"dependency-cruiser": "^17.3.8",
 		"npm-watch": "^0.13.0",
-		"storybook": "^10.0.2",
+		"storybook": "^10.2.0",
 		"ts-dedent": "^2.2.0",
 		"tsdown": "^0.15.12",
 		"typescript": "^5.6.3",

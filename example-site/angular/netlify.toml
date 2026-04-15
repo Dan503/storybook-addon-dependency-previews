@@ -1,0 +1,2 @@
+[build]
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- example-site/angular example-site/shared storybook-addon-package pnpm-lock.yaml"

@@ -3,5 +3,10 @@ packages:
     - 'example-site/shared' # ← shared data and utils
     - 'example-site/react' # ← React demo app
     - 'example-site/svelte' # ← Svelte demo app
+    - 'example-site/angular' # ← Angular demo app
 onlyBuiltDependencies:
     - esbuild
+peerDependencyRules:
+    allowedVersions:
+        # @angular-devkit/core@21 peer dep declaration hasn't caught up to chokidar v5 yet
+        chokidar: '5'

@@ -18,6 +18,7 @@ export default defineConfig([
 		entry: {
 			index: './src/index.ts',
 			manager: './src/manager.tsx',
+			config: './src/config.ts',
 		},
 		platform: 'browser',
 	},
