@@ -21,7 +21,7 @@
     "build-storybook": "ng run taskbox:build-storybook",
     "init-msw": "msw init public/",
     "sb": "sb-deps --watch --run-storybook \"ng run taskbox:storybook\"",
-    "sb:build": "pnpm run prep-sb-addon && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
+    "sb:build": "pnpm run prep-sb-addon && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && ng run taskbox:build-storybook",
     "sb:deps": "sb-deps",
     "prep-sb-addon": "pnpm --filter storybook-addon-dependency-previews build"
   },
