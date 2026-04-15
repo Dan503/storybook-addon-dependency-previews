@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React** and **Svelte**. Angular support is coming soon.
+Currently works with **React**, **Svelte**, and **Angular**.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -31,6 +31,12 @@ The below image demonstrates what you will see when you open up some of the depe
 - [Svelte Storybook demo site](https://dependency-previews-storybook-svelte.netlify.app/)
 - [Svelte rendered example website](https://dependency-previews-demo-site-svelte.netlify.app/)
 - [Svelte demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/svelte)
+
+#### Angular demos
+
+- [Angular Storybook demo site](https://dependency-previews-storybook-angular.netlify.app/?path=/docs/04-templates-home-template--docs)
+- [Angular rendered example website](https://dependency-previews-demo-site-angular.netlify.app/)
+- [Angular demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/angular)
 
 <!-- TODO: Provide a video/gif of the addon in action -->
 
@@ -101,6 +107,86 @@ const config: StorybookConfig = {
 export default config
 ```
 
+#### Register with Angular
+
+`@storybook/angular` uses webpack5 exclusively. The addon requires two webpack additions in `webpackFinal`: a `DefinePlugin` to inject `__PROJECT_ROOT__` (needed for the VS Code "open file" feature), and a `NormalModuleFactory` plugin to handle the addon's CSS modules correctly.
+
+You will also need a `css-modules-loader.cjs` file alongside your `.storybook/main.ts`. Copy it from the [Angular example source](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site/angular/.storybook/css-modules-loader.cjs).
+
+```ts
+import type { StorybookConfig } from '@storybook/angular'
+import { createRequire } from 'module'
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+const require = createRequire(import.meta.url)
+
+const config: StorybookConfig = {
+	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+	addons: [
+		// autodocs is required for this addon to work
+		'@storybook/addon-docs',
+		// the storybook dependency previews addon registration
+		'storybook-addon-dependency-previews/addon',
+	],
+	framework: {
+		name: '@storybook/angular',
+		options: {},
+	},
+	webpackFinal: async (config) => {
+		const sbAngularRequire = createRequire(
+			import.meta.resolve('@storybook/angular'),
+		)
+		const webpack = sbAngularRequire('webpack') as any
+
+		// Path to the css-modules-loader.cjs file (copy from the Angular example source)
+		const cssModulesLoader = fileURLToPath(
+			new URL('./css-modules-loader.cjs', import.meta.url),
+		)
+
+		config.plugins = config.plugins ?? []
+
+		// Inject __PROJECT_ROOT__ so preview.ts can pass it to projectRootPath
+		config.plugins.push(
+			new webpack.DefinePlugin({
+				__PROJECT_ROOT__: JSON.stringify(
+					path.resolve(fileURLToPath(new URL('..', import.meta.url))),
+				),
+			}),
+		)
+
+		// Handle CSS modules for the addon's dist files
+		config.plugins.push({
+			apply(compiler: any) {
+				compiler.hooks.normalModuleFactory.tap(
+					'AddonCssModules',
+					(factory: any) => {
+						factory.hooks.afterResolve.tap(
+							'AddonCssModules',
+							(resolveData: any) => {
+								const resource: string =
+									resolveData.createData?.resource ?? ''
+								if (
+									resource.endsWith('.module.css') &&
+									resource.includes('storybook-addon-dependency-previews')
+								) {
+									resolveData.createData.loaders = [
+										{ loader: cssModulesLoader, options: {} },
+									]
+								}
+							},
+						)
+					},
+				)
+			},
+		})
+
+		return config
+	},
+}
+export default config
+```
+
 ### Bare minimum storybook story example
 
 Get a story ready so you have something to test with.
@@ -156,6 +242,34 @@ export const Primary: Story = {
 </script>
 
 <Story name="Primary" />
+```
+
+#### Angular `.stories.ts` file example
+
+```ts
+import type { Meta, StoryObj } from '@storybook/angular'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { ComponentName } from './ComponentName.component'
+
+const meta: Meta<ComponentName> = {
+	// You can use spaces here to make the title of the story page more human readable
+	title: 'Component Name',
+	component: ComponentName,
+	// autodocs tag is required
+	tags: ['autodocs'],
+	// The `__filePath` property must be applied to every story file
+	// for the addon to track dependencies effectively
+	// `import.meta.url` is a webpack feature available in Angular Storybook
+	parameters: {
+		__filePath: import.meta.url,
+	} satisfies StoryParameters,
+}
+
+export default meta
+
+type Story = StoryObj<ComponentName>
+
+export const Primary: Story = {}
 ```
 
 ### package.json scripts
@@ -245,6 +359,43 @@ const previewConfig: StorybookPreviewConfig = {
 
 export default previewConfig
 ```
+
+#### Angular `preview.ts`
+
+Angular uses webpack, so `import.meta.glob` and Vite-specific APIs are not available. Use the `__PROJECT_ROOT__` value injected via `DefinePlugin` in `main.ts` instead:
+
+```ts
+import type { Preview } from '@storybook/angular'
+import {
+	defaultPreviewParameters,
+	dependencyPreviewDecorators,
+} from 'storybook-addon-dependency-previews'
+import dependenciesJson from './dependency-previews.json'
+
+declare const __PROJECT_ROOT__: string
+
+const preview: Preview = {
+	parameters: {
+		...defaultPreviewParameters,
+		dependencyPreviews: {
+			dependenciesJson,
+			// Replace this with the URL to your src folder in your git repository.
+			// This enables the addon to link to the source code of the component.
+			sourceRootUrl:
+				'https://github.com/your-org/your-repo/blob/main/src',
+			// __PROJECT_ROOT__ is injected by DefinePlugin in main.ts.
+			// This allows Source File Path to open the component file
+			// directly in VS Code when running in a local host environment.
+			projectRootPath: __PROJECT_ROOT__,
+		},
+	},
+	decorators: [...dependencyPreviewDecorators],
+}
+
+export default preview
+```
+
+> **Note:** Angular does not use `storyModules` (no `import.meta.glob`). The addon still generates the full dependency tree via the CLI — only the VS Code "open file" shortcut needs `projectRootPath`.
 
 ### Run it!
 
