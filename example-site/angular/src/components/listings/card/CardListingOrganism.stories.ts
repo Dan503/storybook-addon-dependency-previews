@@ -29,7 +29,7 @@ type Story = StoryObj<CardListingOrganismComponent>;
 
 export const GridView: Story = {
 	args: {
-		cards: 'meals' as unknown as Array<Partial<PropsForCardMolecule>>,
+		cards: 'meals' as unknown as Array<PropsForCardMolecule>,
 	},
 	render: (args) => ({
 		props: args,
@@ -39,7 +39,7 @@ export const GridView: Story = {
 
 export const ListView: Story = {
 	args: {
-		cards: 'meals' as unknown as Array<Partial<PropsForCardMolecule>>,
+		cards: 'meals' as unknown as Array<PropsForCardMolecule>,
 		view: 'list',
 	},
 	render: (args) => ({
