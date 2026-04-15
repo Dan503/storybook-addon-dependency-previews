@@ -90,6 +90,7 @@ export default config
 
 ```ts
 import type { StorybookConfig } from '@storybook/sveltekit'
+import { mergeConfig } from 'vite'
 
 const config: StorybookConfig = {
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'],
@@ -102,6 +103,17 @@ const config: StorybookConfig = {
 		'storybook-addon-dependency-previews/addon',
 	],
 	framework: '@storybook/sveltekit',
+	// Required to prevent a "TypeError: e.typography is undefined" error in
+	// static/production builds. Vite can split styled-components (used internally
+	// by Storybook) into multiple chunks, creating separate ThemeContext instances.
+	// This deduplication ensures only one instance is used.
+	async viteFinal(config) {
+		return mergeConfig(config, {
+			resolve: {
+				dedupe: ['styled-components'],
+			},
+		})
+	},
 }
 
 export default config
