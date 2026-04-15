@@ -168,10 +168,15 @@ const config: StorybookConfig = {
 									resolveData.createData?.resource ?? ''
 								if (
 									resource.endsWith('.module.css') &&
-									resource.includes('storybook-addon-dependency-previews')
+									resource.includes(
+										'storybook-addon-dependency-previews',
+									)
 								) {
 									resolveData.createData.loaders = [
-										{ loader: cssModulesLoader, options: {} },
+										{
+											loader: cssModulesLoader,
+											options: {},
+										},
 									]
 								}
 							},
@@ -406,3 +411,87 @@ Try running `npm run sb` to boot up storybook, leave it running as you work.
 As you create new component files, the component will be auto-scaffolded for you and a matching story file will be created for it automatically. The dependency previews json file will also be auto-updated.
 
 This workflow allows you to focus on what matters instead of having to waste time writing lots of boilerplate code every time you want to create a new component.
+
+## Configuration file (optional)
+
+The `sb-deps` CLI can be customized via a `sb-deps.config.mjs` file in your project root (alongside `package.json`). Supported formats: `.mjs`, `.js`, or `.cjs`.
+
+Use the `defineSbDepsConfig` helper from `storybook-addon-dependency-previews/config` for type safety and editor autocomplete:
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	// options go here
+})
+```
+
+### `angularSelectorPrefix`
+
+_(Angular only)_ The prefix prepended to Angular component selectors when auto-scaffolding new components.
+
+**Default:** `'app-'`
+
+| Value              | Resulting selector |
+| ------------------ | ------------------ |
+| `'app-'` (default) | `app-button-atom`  |
+| `'my-'`            | `my-button-atom`   |
+| `''`               | `button-atom`      |
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	angularSelectorPrefix: '', // no prefix
+})
+```
+
+### `scaffold`
+
+Override the templates used when `sb-deps` auto-scaffolds new component and story files. Each template function receives a context object with relevant variables and must return the full file content as a string.
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	scaffold: {
+		react: {
+			/** Customize the generated .tsx component file */
+			component: ({ componentName, propsName }) =>
+				`export interface ${propsName} {}
+
+export function ${componentName}({}: ${propsName}) {
+	return <div>${componentName}</div>
+}
+`,
+			/** Customize the generated .stories.tsx file */
+			story: ({ componentName, propsName, title, tags, base }) => '...',
+		},
+		svelte: {
+			/** Customize the generated .svelte component file */
+			component: ({ componentName }) => '...',
+			/** Customize the generated .stories.svelte file */
+			story: ({ componentName, title, tags }) => '...',
+		},
+		angular: {
+			/** Customize the generated .component.ts file */
+			component: ({
+				componentName,
+				className,
+				selector,
+				base,
+				templateLocation,
+			}) => '...',
+			/** Customize the generated .component.html file (external templates only) */
+			componentHtml: ({ componentName }) => '...',
+			/** Customize the generated .stories.ts file */
+			story: ({ componentName, className, base, title, tags }) => '...',
+		},
+	},
+})
+```
+
+All scaffold options are optional — omit any key to keep the default template for that file type.
