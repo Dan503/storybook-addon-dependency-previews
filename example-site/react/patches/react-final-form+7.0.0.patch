@@ -1,0 +1,21 @@
+diff --git a/dist/Field.d.ts b/dist/Field.d.ts
+index 1234567..abcdefg 100644
+--- a/dist/Field.d.ts
++++ b/dist/Field.d.ts
+@@ -1,6 +1,12 @@
+ import * as React from "react";
+-import type { FieldProps } from "./types";
+-declare const Field: <FieldValue = any, T extends HTMLElement = HTMLElement, FormValues = Record<string, any>>(props: FieldProps<FieldValue, T, FormValues> & {
+-    ref?: React.Ref<T>;
+-}) => React.ReactElement | null;
++import type { FieldRenderProps, UseFieldConfig, RenderableProps } from "./types";
++type FieldProps<FormValues extends Record<string, any>, T extends HTMLElement> = {
++    [K in keyof FormValues]: UseFieldConfig & Omit<RenderableProps<FieldRenderProps<FormValues[K], T>>, "children"> & {
++        name: K;
++        children?: ((props: FieldRenderProps<FormValues[K], T>) => React.ReactNode) | React.ReactNode;
++        ref?: React.Ref<T>;
++        [key: string]: any;
++    };
++}[keyof FormValues];
++declare const Field: <FormValues extends Record<string, any> = Record<string, any>, T extends HTMLElement = HTMLElement>(props: FieldProps<FormValues, T>) => React.ReactElement | null;
+ export default Field;
