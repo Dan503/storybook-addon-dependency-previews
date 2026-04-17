@@ -1,12 +1,17 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import { defaultContactFormValues } from 'example-site-shared/data'
-import { useState } from 'react'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
 import {
-	ContactFormOrganism,
-	type PropsForContactFormOrganism,
-} from './ContactFormOrganism'
+	contactFormValuesSchema,
+	defaultContactFormValues,
+} from 'example-site-shared/data'
+import { Form } from 'react-final-form'
+import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
+import { TriggerErrors } from '../TriggerErrors'
+import { ContactFormOrganism } from './ContactFormOrganism'
+import type {
+	ContactFormErrors,
+	ContactFormValues,
+} from 'example-site-shared/data'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import type { Meta } from '@storybook/react-vite'
 
 const meta: Meta<typeof ContactFormOrganism> = {
 	title: 'Forms / Contact Form Organism',
@@ -19,25 +24,46 @@ const meta: Meta<typeof ContactFormOrganism> = {
 
 export default meta
 
-type Story = StoryObj<typeof meta>
+function validate(values: ContactFormValues): ContactFormErrors {
+	const result = contactFormValuesSchema.safeParse(values)
+	if (result.success) return {}
+	const errors: ContactFormErrors = {}
+	for (const issue of result.error.issues) {
+		const field = issue.path[0] as keyof ContactFormValues
+		if (!errors[field]) errors[field] = issue.message
+	}
+	return errors
+}
 
-export const Primary: Story = {
-	args: {} satisfies PropsForContactFormOrganism,
-	render: () => {
-		const [formValues, setFormValues] = useState(defaultContactFormValues)
+export const Primary = {
+	render: () => (
+		<Form
+			onSubmit={(values) =>
+				alert('Form submitted!\n' + JSON.stringify(values, null, 2))
+			}
+			initialValues={defaultContactFormValues}
+			validate={validate}
+			render={(formProps) => (
+				<FormDataMolecule formValues={formProps.values}>
+					<ContactFormOrganism {...formProps} />
+				</FormDataMolecule>
+			)}
+		/>
+	),
+}
 
-		return (
-			<FormDataMolecule formValues={formValues}>
-				<ContactFormOrganism
-					onValuesChange={setFormValues}
-					onSubmit={() =>
-						alert(
-							'Form submitted! with these values:\n' +
-								JSON.stringify(formValues, null, 2),
-						)
-					}
-				/>
-			</FormDataMolecule>
-		)
-	},
+export const ErrorState = {
+	render: () => (
+		<Form
+			onSubmit={() => {}}
+			initialValues={defaultContactFormValues}
+			validate={validate}
+			render={(formProps) => (
+				<FormDataMolecule formValues={formProps.values}>
+					<TriggerErrors />
+					<ContactFormOrganism {...formProps} />
+				</FormDataMolecule>
+			)}
+		/>
+	),
 }

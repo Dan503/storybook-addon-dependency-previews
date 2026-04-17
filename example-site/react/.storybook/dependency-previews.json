@@ -1327,6 +1327,9 @@
       },
       {
         "componentPath": "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
+      },
+      {
+        "componentPath": "src/components/forms/TriggerErrors.tsx"
       }
     ],
     "usedIn": []
@@ -1338,6 +1341,21 @@
         "componentPath": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx"
       }
     ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      }
+    ]
+  },
+  "src/components/forms/TriggerErrors.tsx": {
+    "componentPath": "src/components/forms/TriggerErrors.tsx",
+    "builtWith": [],
     "usedIn": [
       {
         "componentPath": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx"
@@ -1417,29 +1435,17 @@
         "componentPath": "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
       },
       {
-        "componentPath": "src/components/forms/formUtils.ts"
-      },
-      {
         "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
         "storyId": "forms-text-area-molecule--docs",
         "storyTitle": "Text Area Molecule",
         "storyTitlePath": "Forms / Text Area Molecule",
         "storyFilePath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/forms/TriggerErrors.tsx"
       }
     ],
     "usedIn": []
-  },
-  "src/components/forms/formUtils.ts": {
-    "componentPath": "src/components/forms/formUtils.ts",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx"
-      },
-      {
-        "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
-      }
-    ]
   },
   "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx": {
     "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
@@ -1448,14 +1454,14 @@
         "componentPath": "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
       },
       {
-        "componentPath": "src/components/forms/formUtils.ts"
-      },
-      {
         "componentPath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
         "storyId": "forms-text-field-molecule--docs",
         "storyTitle": "Text Field Molecule",
         "storyTitlePath": "Forms/Text Field Molecule",
         "storyFilePath": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/forms/TriggerErrors.tsx"
       }
     ],
     "usedIn": []

@@ -3029,6 +3029,23 @@
         },
         {
           "dynamic": false,
+          "module": "../TriggerErrors",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/TriggerErrors.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./ContactFormOrganism",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3070,6 +3087,17 @@
           "valid": true
         }
       ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/TriggerErrors.tsx",
+      "dependencies": [],
       "dependents": [
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx",
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
@@ -3202,14 +3230,14 @@
         },
         {
           "dynamic": false,
-          "module": "../formUtils",
+          "module": "../TriggerErrors",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/forms/formUtils.ts",
+          "resolved": "src/components/forms/TriggerErrors.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3240,16 +3268,6 @@
       "valid": true
     },
     {
-      "source": "src/components/forms/formUtils.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
       "dependencies": [
         {
@@ -3271,14 +3289,14 @@
         },
         {
           "dynamic": false,
-          "module": "../formUtils",
+          "module": "../TriggerErrors",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/forms/formUtils.ts",
+          "resolved": "src/components/forms/TriggerErrors.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3926,7 +3944,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 81,
-    "totalDependenciesCruised": 114,
+    "totalDependenciesCruised": 115,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\react",
       "combinedDependencies": true,

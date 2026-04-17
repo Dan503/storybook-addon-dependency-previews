@@ -1,6 +1,6 @@
 import * as z from 'zod'
 
-export const defaultContactFormValues = {
+export const defaultContactFormValues: ContactFormValues = {
 	name: '',
 	email: '',
 	message: '',
@@ -13,3 +13,5 @@ export const contactFormValuesSchema = z.object({
 })
 
 export type ContactFormValues = z.infer<typeof contactFormValuesSchema>
+
+export type ContactFormErrors = Partial<Record<keyof ContactFormValues, string>>

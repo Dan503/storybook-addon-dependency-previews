@@ -1,69 +1,40 @@
-import { useForm, useStore } from '@tanstack/react-form'
-import {
-	defaultContactFormValues,
-	type ContactFormValues,
-} from 'example-site-shared/data'
+import { Field } from 'react-final-form'
 import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
-import { useEffect } from 'react'
 import { ButtonAtom } from '../../01-atoms/ButtonAtom'
+import type { FormRenderProps } from 'react-final-form'
+import type { ContactFormValues } from 'example-site-shared/data'
 
-export interface PropsForContactFormOrganism {
-	onSubmit?: () => void
-	onValuesChange?: (values: ContactFormValues) => void
-}
+export interface PropsForContactFormOrganism extends FormRenderProps<ContactFormValues> {}
 
 export function ContactFormOrganism({
-	onSubmit,
-	onValuesChange,
-}: PropsForContactFormOrganism) {
-	const form = useForm({
-		defaultValues: defaultContactFormValues,
-		onSubmit: onSubmit,
-	})
-	const values = useStore(form.store, (state) => state.values)
-
-	useEffect(() => {
-		onValuesChange?.(values)
-	}, [values])
-
+	handleSubmit,
+}: FormRenderProps<ContactFormValues>) {
 	return (
-		<form
-			className="ContactFormOrganism grid gap-4"
-			onSubmit={(event) => {
-				event.preventDefault()
-				form.handleSubmit(event)
-			}}
-		>
-			<form.Field name="name">
-				{(field) => (
-					<TextFieldMolecule
-						label="Name"
-						placeholder="Your name"
-						field={field}
-					/>
+		<form className="ContactFormOrganism grid gap-4" onSubmit={handleSubmit}>
+			<Field<ContactFormValues> name="name">
+				{(props) => (
+					<TextFieldMolecule {...props} label="Name" placeholder="John Smith" />
 				)}
-			</form.Field>
-
-			<form.Field name="email">
-				{(field) => (
+			</Field>
+			<Field<ContactFormValues> name="email">
+				{(props) => (
 					<TextFieldMolecule
+						{...props}
 						label="Email"
-						placeholder="example@email.com"
-						field={field}
+						placeholder="someone@email.com"
 					/>
 				)}
-			</form.Field>
-
-			<form.Field name="message">
-				{(field) => (
+			</Field>
+			<Field<ContactFormValues> name="message">
+				{(props) => (
 					<TextAreaMolecule
+						{...props}
 						label="Message"
 						placeholder="Type your message here..."
-						field={field}
 					/>
 				)}
-			</form.Field>
+			</Field>
 
 			<div className="flex justify-end">
 				<ButtonAtom type="submit">Send</ButtonAtom>

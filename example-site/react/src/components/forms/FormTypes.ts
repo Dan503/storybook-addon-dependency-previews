@@ -1,31 +1,19 @@
-import type {
-  AnyFieldApi,
-  AnyFormApi,
-  ReactFormExtendedApi,
-} from '@tanstack/react-form'
+import type { ContactFormValues } from 'example-site-shared/data'
+import type { FieldRenderProps, FormProps } from 'react-final-form'
 
-export type AnyExtendedFormApi = ReactFormExtendedApi<
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any
->
+export type SupportedInputs = 'input' | 'select' | 'textarea'
 
-export interface WithField<FieldApi extends AnyFieldApi> {
-  field: FieldApi
-}
+export type ContactForm = FormProps<ContactFormValues>
 
-export interface WithForm<FormApi extends AnyFormApi> {
-  form: FormApi
-}
-export interface WithExtendedForm<FormApi extends AnyExtendedFormApi> {
-  form: FormApi
+export type TextInputProps = FieldRenderProps<string, HTMLInputElement>
+export type TextAreaProps = FieldRenderProps<string, HTMLTextAreaElement>
+
+export interface FinalFormInputProps<
+	FieldValue,
+	Elem extends HTMLElement,
+	DisplayValue = FieldValue,
+> {
+	name: string
+	input: FieldRenderProps<DisplayValue, Elem>['input']
+	meta: FieldRenderProps<FieldValue, Elem>['meta']
 }

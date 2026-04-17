@@ -1,23 +1,22 @@
 import { ErrorListMolecule } from '../ErrorMessages/ErrorListMolecule'
-import type { WithField } from '../FormTypes'
-import { useStore, type AnyFieldApi } from '@tanstack/react-form'
+import type { FinalFormInputProps } from '../FormTypes'
 
-export interface PropsForTextAreaMolecule {
+interface PropsForTextAreaMolecule
+	extends FinalFormInputProps<string, HTMLTextAreaElement> {
 	label: string
 	placeholder?: string
 }
 
-export type FieldPropsForTextFieldMolecule<FieldApi extends AnyFieldApi> =
-	PropsForTextAreaMolecule & WithField<FieldApi>
-
-export function TextAreaMolecule<FieldApi extends AnyFieldApi>({
-	field,
+export function TextAreaMolecule({
 	label,
+	name,
 	placeholder,
-}: FieldPropsForTextFieldMolecule<FieldApi>) {
-	const errors = useStore(field.store, (s) => s.meta.errors)
-	const id = field.name.replace(/\W/g, '')
-	const showErrors = field.state.meta.isTouched && errors?.length > 0
+	input,
+	meta,
+}: PropsForTextAreaMolecule) {
+	const id = `field-${name}`
+	const showErrors = Boolean((meta.touched || meta.submitFailed) && meta.error)
+	const errors = showErrors ? [meta.error] : []
 
 	return (
 		<div>
@@ -26,14 +25,12 @@ export function TextAreaMolecule<FieldApi extends AnyFieldApi>({
 				<div className="grid grid-cols-[minmax(0,1fr)]">
 					<textarea
 						id={id}
-						value={field.state.value}
+						{...input}
 						placeholder={placeholder}
-						onBlur={field.handleBlur}
-						onChange={(e) => field.handleChange(e.target.value)}
 						className={`col-start-1 row-start-1 w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${showErrors ? 'placeholder-red-900/60' : ''}`}
 					/>
 					<span className="col-start-1 row-start-1 px-4 py-2 pointer-events-none whitespace-pre-wrap invisible">
-						{field.state.value}{' '}
+						{input.value}{' '}
 					</span>
 				</div>
 			</label>
