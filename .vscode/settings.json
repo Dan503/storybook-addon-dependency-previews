@@ -1,3 +1,10 @@
 {
-	"css.lint.unknownAtRules": "ignore"
+	"css.lint.unknownAtRules": "ignore",
+	"eslint.workingDirectories": [
+		{ "directory": "example-site/react", "changeProcessCWD": true },
+		{ "directory": "example-site/svelte", "changeProcessCWD": true },
+		{ "directory": "example-site/angular", "changeProcessCWD": true },
+		{ "directory": "example-site/shared", "changeProcessCWD": true },
+		{ "directory": "storybook-addon-package", "changeProcessCWD": true }
+	]
 }
