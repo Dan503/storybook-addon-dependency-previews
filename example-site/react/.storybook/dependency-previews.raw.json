@@ -2371,6 +2371,23 @@
         },
         {
           "dynamic": false,
+          "module": "../ErrorMessages/ErrorBlockOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../TextAreaMolecule/TextAreaMolecule",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -2407,6 +2424,74 @@
       "dependents": [
         "src/components/04-templates/ContactTemplate.tsx",
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorListMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ErrorMessageAtom",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2453,46 +2538,6 @@
       "dependents": [
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./ErrorMessageAtom",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
-        "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
-        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.tsx",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -3128,33 +3173,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.tsx",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./ErrorListMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.tsx"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -3944,7 +3962,7 @@
     "info": 0,
     "ignore": 0,
     "totalCruised": 81,
-    "totalDependenciesCruised": 115,
+    "totalDependenciesCruised": 116,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\react",
       "combinedDependencies": true,

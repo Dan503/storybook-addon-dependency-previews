@@ -2,6 +2,7 @@ import { Field } from 'react-final-form'
 import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
 import { ButtonAtom } from '../../01-atoms/ButtonAtom'
+import { ErrorBlockOrganism } from '../ErrorMessages/ErrorBlockOrganism'
 import type { FormRenderProps } from 'react-final-form'
 import type { ContactFormValues } from 'example-site-shared/data'
 
@@ -9,9 +10,12 @@ export interface PropsForContactFormOrganism extends FormRenderProps<ContactForm
 
 export function ContactFormOrganism({
 	handleSubmit,
+	errors,
+	submitFailed,
 }: FormRenderProps<ContactFormValues>) {
 	return (
 		<form className="ContactFormOrganism grid gap-4" onSubmit={handleSubmit}>
+			{submitFailed && <ErrorBlockOrganism errors={errors} />}
 			<Field<ContactFormValues> name="name">
 				{(props) => (
 					<TextFieldMolecule {...props} label="Name" placeholder="John Smith" />
