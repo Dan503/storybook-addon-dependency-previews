@@ -2593,8 +2593,7 @@
       ],
       "dependents": [
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
-        "src/hooks/demo.form.ts"
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -3468,57 +3467,6 @@
       "dependents": [],
       "orphan": false,
       "valid": true
-    },
-    {
-      "source": "src/hooks/demo.form-context.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/hooks/demo.form.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/hooks/demo.form.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../components/forms/TextFieldMolecule/TextFieldMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./demo.form-context",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/hooks/demo.form-context.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
     }
   ],
   "summary": {
@@ -3961,8 +3909,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 81,
-    "totalDependenciesCruised": 116,
+    "totalCruised": 79,
+    "totalDependenciesCruised": 114,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\react",
       "combinedDependencies": true,

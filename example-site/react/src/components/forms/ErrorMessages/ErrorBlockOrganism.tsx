@@ -1,12 +1,16 @@
 import { clsx } from 'clsx'
 import { ErrorListMolecule } from './ErrorListMolecule'
-import type { ValidationErrors } from 'final-form'
+import type { FormApi, ValidationErrors } from 'final-form'
 
-export interface PropsForErrorBlockOrganism {
+export interface PropsForErrorBlockOrganism<FormValues extends object> {
 	errors: ValidationErrors
+	form?: FormApi<FormValues>
 }
 
-export function ErrorBlockOrganism({ errors }: PropsForErrorBlockOrganism) {
+export function ErrorBlockOrganism<FormValues extends object>({
+	errors,
+	form,
+}: PropsForErrorBlockOrganism<FormValues>) {
 	const hasErrors = errors && Object.keys(errors).length > 0
 	if (!hasErrors) return null
 	return (
@@ -16,7 +20,7 @@ export function ErrorBlockOrganism({ errors }: PropsForErrorBlockOrganism) {
 					Please resolve the following errors
 				</h2>
 				<div className="pt-3 pb-4">
-					<ErrorListMolecule errors={errors} />
+					<ErrorListMolecule errors={errors} form={form} />
 				</div>
 			</div>
 		</div>
