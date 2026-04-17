@@ -1,12 +1,8 @@
-import { type AnyFormApi } from '@tanstack/react-form'
-
-interface Props<FormApi extends AnyFormApi> {
-	formValues?: FormApi['state']['values']
+interface Props {
+	formValues?: Record<string, unknown>
 }
 
-export function FormDataPreviewAtom<FormApi extends AnyFormApi>({
-	formValues,
-}: Props<FormApi>) {
+export function FormDataPreviewAtom({ formValues }: Props) {
 	return (
 		<pre className="overflow-auto">
 			<code>{JSON.stringify(formValues, null, 3)}</code>
