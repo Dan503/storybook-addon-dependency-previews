@@ -22,3 +22,42 @@ index 1234567..abcdefg 100644
 +}[keyof FormValues];
 +declare const Field: <FormValues extends Record<string, any> = Record<string, any>, T extends HTMLElement = HTMLElement>(props: FieldProps<FormValues, T>) => React.ReactElement | null;
  export default Field;
+diff --git a/dist/react-final-form.cjs.js b/dist/react-final-form.cjs.js
+index 1234567..abcdefg 100644
+--- a/dist/react-final-form.cjs.js
++++ b/dist/react-final-form.cjs.js
+@@ -464,7 +464,7 @@
+   return value === undefined ? "" : value;
+ };
+ var defaultParse = function defaultParse(value, _name) {
+-  return value === "" ? undefined : value;
++  return value;
+ };
+ var defaultIsEqual = function defaultIsEqual(a, b) {
+   return a === b;
+diff --git a/dist/react-final-form.es.js b/dist/react-final-form.es.js
+index 1234567..abcdefg 100644
+--- a/dist/react-final-form.es.js
++++ b/dist/react-final-form.es.js
+@@ -444,7 +444,7 @@
+   return value === undefined ? "" : value;
+ };
+ var defaultParse = function defaultParse(value, _name) {
+-  return value === "" ? undefined : value;
++  return value;
+ };
+ var defaultIsEqual = function defaultIsEqual(a, b) {
+   return a === b;
+diff --git a/dist/react-final-form.umd.js b/dist/react-final-form.umd.js
+index 1234567..abcdefg 100644
+--- a/dist/react-final-form.umd.js
++++ b/dist/react-final-form.umd.js
+@@ -482,7 +482,7 @@
+     return value === undefined ? "" : value;
+   };
+   var defaultParse = function defaultParse(value, _name) {
+-    return value === "" ? undefined : value;
++    return value;
+   };
+   var defaultIsEqual = function defaultIsEqual(a, b) {
+     return a === b;
