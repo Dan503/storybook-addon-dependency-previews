@@ -1,8 +1,10 @@
 import { ErrorListMolecule } from '../ErrorMessages/ErrorListMolecule'
 import type { FinalFormInputProps } from '../FormTypes'
 
-interface PropsForTextAreaMolecule
-	extends FinalFormInputProps<string, HTMLTextAreaElement> {
+interface PropsForTextAreaMolecule extends FinalFormInputProps<
+	string,
+	HTMLTextAreaElement
+> {
 	label: string
 	placeholder?: string
 }
@@ -13,8 +15,9 @@ export function TextAreaMolecule({
 	placeholder,
 	input,
 	meta,
+	idPrefix = 'field',
 }: PropsForTextAreaMolecule) {
-	const id = `field-${name}`
+	const id = [idPrefix, name].join('-')
 	const showErrors = Boolean((meta.touched || meta.submitFailed) && meta.error)
 	const errors = showErrors ? [meta.error] : []
 

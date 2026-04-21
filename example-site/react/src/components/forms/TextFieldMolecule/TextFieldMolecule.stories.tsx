@@ -33,6 +33,7 @@ export const Default = {
 							{(props) => (
 								<TextFieldMolecule
 									{...props}
+									idPrefix="primary"
 									label="First name"
 									placeholder="Placeholder text"
 								/>
@@ -67,6 +68,7 @@ export const ErrorState = {
 									<TriggerErrors<FormValues> fieldName="firstName" />
 									<TextFieldMolecule
 										{...props}
+										idPrefix="errorState"
 										label="First name"
 										placeholder="Placeholder text"
 									/>

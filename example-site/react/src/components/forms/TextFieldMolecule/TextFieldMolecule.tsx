@@ -15,9 +15,10 @@ export function TextFieldMolecule({
 	name,
 	input,
 	meta,
+	idPrefix = 'field',
 }: PropsForTextFieldMolecule) {
 	const showErrors = Boolean((meta.touched || meta.submitFailed) && meta.error)
-	const id = `field-${name}`
+	const id = [idPrefix, name].join('-')
 
 	return (
 		<div>

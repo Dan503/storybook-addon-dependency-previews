@@ -32,6 +32,7 @@ export const Primary = {
 							{(props) => (
 								<TextAreaMolecule
 									{...props}
+									idPrefix="primary"
 									label="Your message"
 									placeholder="Type your message here..."
 								/>
@@ -66,6 +67,7 @@ export const ErrorState = {
 									<TriggerErrors<FormValues> fieldName="message" />
 									<TextAreaMolecule
 										{...props}
+										idPrefix="errorState"
 										label="Your message"
 										placeholder="Type your message here..."
 									/>

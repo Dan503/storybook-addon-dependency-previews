@@ -6,20 +6,28 @@ import { ErrorBlockOrganism } from '../ErrorMessages/ErrorBlockOrganism'
 import type { FormRenderProps } from 'react-final-form'
 import type { ContactFormValues } from 'example-site-shared/data'
 
-export interface PropsForContactFormOrganism extends FormRenderProps<ContactFormValues> {}
+export interface PropsForContactFormOrganism extends FormRenderProps<ContactFormValues> {
+	idPrefix?: string
+}
 
 export function ContactFormOrganism({
 	handleSubmit,
 	errors,
 	submitFailed,
-}: FormRenderProps<ContactFormValues>) {
+	idPrefix,
+}: PropsForContactFormOrganism) {
 	const form = useForm()
 	return (
 		<form className="ContactFormOrganism grid gap-4" onSubmit={handleSubmit}>
 			{submitFailed && <ErrorBlockOrganism errors={errors} form={form} />}
 			<Field<ContactFormValues> name="name">
 				{(props) => (
-					<TextFieldMolecule {...props} label="Name" placeholder="John Smith" />
+					<TextFieldMolecule
+						{...props}
+						label="Name"
+						placeholder="John Smith"
+						idPrefix={idPrefix}
+					/>
 				)}
 			</Field>
 			<Field<ContactFormValues> name="email">
@@ -28,6 +36,7 @@ export function ContactFormOrganism({
 						{...props}
 						label="Email"
 						placeholder="someone@email.com"
+						idPrefix={idPrefix}
 					/>
 				)}
 			</Field>
@@ -37,6 +46,7 @@ export function ContactFormOrganism({
 						{...props}
 						label="Message"
 						placeholder="Type your message here..."
+						idPrefix={idPrefix}
 					/>
 				)}
 			</Field>

@@ -45,7 +45,7 @@ export const Primary = {
 			validate={validate}
 			render={(formProps) => (
 				<FormDataMolecule formValues={formProps.values}>
-					<ContactFormOrganism {...formProps} />
+					<ContactFormOrganism {...formProps} idPrefix="primary" />
 				</FormDataMolecule>
 			)}
 		/>
@@ -61,7 +61,7 @@ export const ErrorState = {
 			render={(formProps) => (
 				<FormDataMolecule formValues={formProps.values}>
 					<TriggerErrors />
-					<ContactFormOrganism {...formProps} />
+					<ContactFormOrganism {...formProps} idPrefix="errorState" />
 				</FormDataMolecule>
 			)}
 		/>

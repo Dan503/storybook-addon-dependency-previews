@@ -16,4 +16,6 @@ export interface FinalFormInputProps<
 	name: string
 	input: FieldRenderProps<DisplayValue, Elem>['input']
 	meta: FieldRenderProps<FieldValue, Elem>['meta']
+	/** Each Storybook story needs a unique ID prefix for form fields to avoid same ID name collisions */
+	idPrefix?: string
 }
