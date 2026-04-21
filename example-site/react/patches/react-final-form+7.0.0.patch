@@ -1,7 +1,7 @@
-diff --git a/dist/Field.d.ts b/dist/Field.d.ts
+diff --git a/node_modules/react-final-form/dist/Field.d.ts b/node_modules/react-final-form/dist/Field.d.ts
 index 1234567..abcdefg 100644
---- a/dist/Field.d.ts
-+++ b/dist/Field.d.ts
+--- a/node_modules/react-final-form/dist/Field.d.ts
++++ b/node_modules/react-final-form/dist/Field.d.ts
 @@ -1,6 +1,15 @@
  import * as React from "react";
 -import type { FieldProps } from "./types";
@@ -22,10 +22,10 @@ index 1234567..abcdefg 100644
 +}[keyof FormValues];
 +declare const Field: <FormValues extends Record<string, any> = Record<string, any>, T extends HTMLElement = HTMLElement>(props: FieldProps<FormValues, T>) => React.ReactElement | null;
  export default Field;
-diff --git a/dist/react-final-form.cjs.js b/dist/react-final-form.cjs.js
+diff --git a/node_modules/react-final-form/dist/react-final-form.cjs.js b/node_modules/react-final-form/dist/react-final-form.cjs.js
 index 1234567..abcdefg 100644
---- a/dist/react-final-form.cjs.js
-+++ b/dist/react-final-form.cjs.js
+--- a/node_modules/react-final-form/dist/react-final-form.cjs.js
++++ b/node_modules/react-final-form/dist/react-final-form.cjs.js
 @@ -464,7 +464,7 @@
    return value === undefined ? "" : value;
  };
@@ -35,10 +35,18 @@ index 1234567..abcdefg 100644
  };
  var defaultIsEqual = function defaultIsEqual(a, b) {
    return a === b;
-diff --git a/dist/react-final-form.es.js b/dist/react-final-form.es.js
+@@ -744,6 +744,6 @@
+   });
+   if (typeof children === "function") {
+-    return children(_extends({}, field, rest));
++    return children({...field, name, ...rest });
+   }
+   if (typeof component === "string") {
+     // ignore meta, combine input with any other props
+diff --git a/node_modules/react-final-form/dist/react-final-form.es.js b/node_modules/react-final-form/dist/react-final-form.es.js
 index 1234567..abcdefg 100644
---- a/dist/react-final-form.es.js
-+++ b/dist/react-final-form.es.js
+--- a/node_modules/react-final-form/dist/react-final-form.es.js
++++ b/node_modules/react-final-form/dist/react-final-form.es.js
 @@ -444,7 +444,7 @@
    return value === undefined ? "" : value;
  };
@@ -48,10 +56,18 @@ index 1234567..abcdefg 100644
  };
  var defaultIsEqual = function defaultIsEqual(a, b) {
    return a === b;
-diff --git a/dist/react-final-form.umd.js b/dist/react-final-form.umd.js
+@@ -724,6 +724,6 @@
+   });
+   if (typeof children === "function") {
+-    return children(_extends({}, field, rest));
++    return children({...field, name, ...rest });
+   }
+   if (typeof component === "string") {
+     // ignore meta, combine input with any other props
+diff --git a/node_modules/react-final-form/dist/react-final-form.umd.js b/node_modules/react-final-form/dist/react-final-form.umd.js
 index 1234567..abcdefg 100644
---- a/dist/react-final-form.umd.js
-+++ b/dist/react-final-form.umd.js
+--- a/node_modules/react-final-form/dist/react-final-form.umd.js
++++ b/node_modules/react-final-form/dist/react-final-form.umd.js
 @@ -482,7 +482,7 @@
      return value === undefined ? "" : value;
    };
@@ -61,3 +77,11 @@ index 1234567..abcdefg 100644
    };
    var defaultIsEqual = function defaultIsEqual(a, b) {
      return a === b;
+@@ -762,6 +762,6 @@
+     });
+     if (typeof children === "function") {
+-      return children(_extends({}, field, rest));
++      return children({...field, name, ...rest });
+     }
+     if (typeof component === "string") {
+       // ignore meta, combine input with any other props
