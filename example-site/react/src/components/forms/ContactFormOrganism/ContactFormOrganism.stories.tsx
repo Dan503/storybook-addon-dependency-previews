@@ -1,4 +1,7 @@
-import { contactFormSchema } from 'example-site-shared/data'
+import {
+	contactFormSchema,
+	defaultContactFormValues,
+} from 'example-site-shared/data'
 import { useForm } from '@formisch/react'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
 import { ContactFormOrganism } from './ContactFormOrganism'
@@ -30,6 +33,30 @@ export const Primary: Story = {
 	render: ({ onSubmit }) => {
 		const form = useForm({
 			schema: contactFormSchema,
+			initialInput: defaultContactFormValues,
+		})
+
+		return (
+			<FormDataMolecule form={form}>
+				<ContactFormOrganism form={form} onSubmit={onSubmit} />
+			</FormDataMolecule>
+		)
+	},
+}
+
+export const ErrorState: Story = {
+	args: {
+		onSubmit: (values) =>
+			alert(
+				'Form submitted! with these values:\n' +
+					JSON.stringify(values, null, 2),
+			),
+	} satisfies Omit<PropsForContactFormOrganism, 'form'>,
+	render: ({ onSubmit }) => {
+		const form = useForm({
+			schema: contactFormSchema,
+			initialInput: defaultContactFormValues,
+			validate: 'initial',
 		})
 
 		return (
