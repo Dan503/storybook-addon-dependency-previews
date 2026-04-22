@@ -1,12 +1,12 @@
-import { type AnyFormApi } from '@tanstack/react-form'
+import { getInput } from '@formisch/react'
+import type { Schema } from '@formisch/react'
+import type { WithForm } from '../FormTypes'
 
-interface Props<FormApi extends AnyFormApi> {
-	formValues?: FormApi['state']['values']
-}
+export function FormDataPreviewAtom<TSchema extends Schema>({
+	form,
+}: WithForm<TSchema>) {
+	const formValues = getInput(form)
 
-export function FormDataPreviewAtom<FormApi extends AnyFormApi>({
-	formValues,
-}: Props<FormApi>) {
 	return (
 		<pre className="overflow-auto">
 			<code>{JSON.stringify(formValues, null, 3)}</code>

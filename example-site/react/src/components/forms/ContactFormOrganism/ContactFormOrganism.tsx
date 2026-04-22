@@ -1,73 +1,61 @@
-import { useForm, useStore } from '@tanstack/react-form'
-import {
-	defaultContactFormValues,
-	type ContactFormValues,
-} from 'example-site-shared/data'
+import { Field, Form } from '@formisch/react'
 import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
-import { useEffect } from 'react'
 import { ButtonAtom } from '../../01-atoms/ButtonAtom'
+import type { FormStore, SubmitHandler } from '@formisch/react'
+import type { ContactFormSchemaType } from '../../../../../shared/dist/data/default-form-values'
 
 export interface PropsForContactFormOrganism {
-	onSubmit?: () => void
-	onValuesChange?: (values: ContactFormValues) => void
+	form: FormStore<ContactFormSchemaType>
+	onSubmit: SubmitHandler<ContactFormSchemaType>
 }
 
 export function ContactFormOrganism({
+	form,
 	onSubmit,
-	onValuesChange,
 }: PropsForContactFormOrganism) {
-	const form = useForm({
-		defaultValues: defaultContactFormValues,
-		onSubmit: onSubmit,
-	})
-	const values = useStore(form.store, (state) => state.values)
-
-	useEffect(() => {
-		onValuesChange?.(values)
-	}, [values])
-
 	return (
-		<form
+		<Form
 			className="ContactFormOrganism grid gap-4"
-			onSubmit={(event) => {
-				event.preventDefault()
-				form.handleSubmit(event)
-			}}
+			of={form}
+			onSubmit={onSubmit}
 		>
-			<form.Field name="name">
+			<Field of={form} path={['name']}>
 				{(field) => (
 					<TextFieldMolecule
 						label="Name"
 						placeholder="Your name"
+						form={form}
 						field={field}
 					/>
 				)}
-			</form.Field>
+			</Field>
 
-			<form.Field name="email">
+			<Field of={form} path={['email']}>
 				{(field) => (
 					<TextFieldMolecule
 						label="Email"
 						placeholder="example@email.com"
+						form={form}
 						field={field}
 					/>
 				)}
-			</form.Field>
+			</Field>
 
-			<form.Field name="message">
+			<Field of={form} path={['message']}>
 				{(field) => (
 					<TextAreaMolecule
 						label="Message"
 						placeholder="Type your message here..."
+						form={form}
 						field={field}
 					/>
 				)}
-			</form.Field>
+			</Field>
 
 			<div className="flex justify-end">
 				<ButtonAtom type="submit">Send</ButtonAtom>
 			</div>
-		</form>
+		</Form>
 	)
 }

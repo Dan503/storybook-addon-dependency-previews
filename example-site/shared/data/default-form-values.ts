@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-export const defaultContactFormValues: ContactFormInput = {
+export const defaultContactFormValues: Partial<ContactFormInput> = {
 	name: '',
 	email: '',
 	message: '',
@@ -24,9 +24,11 @@ export const contactFormSchema = v.object({
 	),
 })
 
+export type ContactFormSchemaType = typeof contactFormSchema
+
 // This is the type before applying transformations and defaults
-export type ContactFormInput = v.InferInput<typeof contactFormSchema>
+export type ContactFormInput = v.InferInput<ContactFormSchemaType>
 
 // This is the type after applying transformations and defaults
 // In this case, there are no transformations or defaults, so it's the same as ContactFormInput
-export type ContactFormOutput = v.InferOutput<typeof contactFormSchema>
+export type ContactFormOutput = v.InferOutput<ContactFormSchemaType>

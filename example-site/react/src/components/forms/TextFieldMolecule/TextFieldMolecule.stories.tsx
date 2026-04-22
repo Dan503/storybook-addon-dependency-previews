@@ -1,20 +1,14 @@
-import { useEffect } from 'react'
-import type { Meta } from '@storybook/react-vite'
-import { useForm, type AnyFieldApi } from '@tanstack/react-form'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { Field, useForm } from '@formisch/react'
+import * as v from 'valibot'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
-import { useFormValues } from '../formUtils'
-import {
-	TextFieldMolecule,
-	type PropsForTextFieldMolecule,
-} from './TextFieldMolecule'
+import { TextFieldMolecule } from './TextFieldMolecule'
+import type { PropsForTextFieldMolecule } from './TextFieldMolecule'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import type { Meta } from '@storybook/react-vite'
 
-function useTriggerErrors(field: AnyFieldApi) {
-	useEffect(() => {
-		field.handleChange(field.state.value)
-		field.handleBlur()
-	}, [field])
-}
+const schema = v.object({
+	firstName: v.pipe(v.string(), v.nonEmpty('First name is required')),
+})
 
 // Button.stories.tsx
 const meta: Meta<typeof TextFieldMolecule> = {
@@ -36,17 +30,14 @@ export const Default = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = useForm({
-			defaultValues: {
-				firstName: '',
-			},
+			schema,
 		})
-		const formValues = useFormValues(form)
 
 		return (
-			<FormDataMolecule formValues={formValues}>
-				<form.Field name="firstName">
-					{(field) => <TextFieldMolecule {...args} field={field} />}
-				</form.Field>
+			<FormDataMolecule form={form}>
+				<Field of={form} path={['firstName']}>
+					{(field) => <TextFieldMolecule {...args} field={field} form={form} />}
+				</Field>
 			</FormDataMolecule>
 		)
 	},
@@ -59,30 +50,17 @@ export const ErrorState = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = useForm({
-			defaultValues: {
-				firstName: '',
-			},
+			schema,
+			validate: 'initial',
 		})
-		const formValues = useFormValues(form)
 
 		return (
-			<FormDataMolecule formValues={formValues}>
-				<form.Field
-					name="firstName"
-					validators={{
-						onChange: ({ value }) =>
-							!value
-								? 'First name is required'
-								: value.length < 3
-									? 'First name must be at least 3 characters'
-									: undefined,
-					}}
-				>
+			<FormDataMolecule form={form}>
+				<Field of={form} path={['firstName']}>
 					{(field) => {
-						useTriggerErrors(field)
-						return <TextFieldMolecule {...args} field={field} />
+						return <TextFieldMolecule {...args} form={form} field={field} />
 					}}
-				</form.Field>
+				</Field>
 			</FormDataMolecule>
 		)
 	},

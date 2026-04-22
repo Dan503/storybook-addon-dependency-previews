@@ -1,19 +1,22 @@
-import type { ReactNode } from 'react'
 import { FormDataPreviewAtom } from './FormDataPreviewAtom'
+import type { Schema } from '@formisch/react'
+import type { ReactNode } from 'react'
+import type { WithForm } from '../FormTypes'
 
-interface PropsForFormDataWrapper<FormValues extends Record<string, any>> {
-	formValues?: FormValues
+interface PropsForFormDataWrapper<
+	TSchema extends Schema,
+> extends WithForm<TSchema> {
 	children?: ReactNode
 }
 
-export function FormDataMolecule<FormValues extends Record<string, any>>({
-	formValues,
+export function FormDataMolecule<TSchema extends Schema>({
+	form,
 	children,
-}: PropsForFormDataWrapper<FormValues>) {
+}: PropsForFormDataWrapper<TSchema>) {
 	return (
 		<div className="grid gap-2">
 			{children}
-			<FormDataPreviewAtom formValues={formValues} />
+			<FormDataPreviewAtom form={form} />
 		</div>
 	)
 }
