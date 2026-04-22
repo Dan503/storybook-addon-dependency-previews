@@ -9,20 +9,20 @@ export interface PropsForTextAreaMolecule {
 
 export type FieldPropsForTextFieldMolecule<
 	TSchema extends Schema,
-	Path extends RequiredPath,
-> = PropsForTextAreaMolecule & WithForm<TSchema> & WithField<TSchema, Path>
+	TPath extends RequiredPath,
+> = PropsForTextAreaMolecule & WithForm<TSchema> & WithField<TSchema, TPath>
 
 export function TextAreaMolecule<
 	TSchema extends Schema,
-	Path extends RequiredPath,
+	TPath extends RequiredPath,
 >({
 	form,
 	field,
 	label,
 	placeholder,
-}: FieldPropsForTextFieldMolecule<TSchema, Path>) {
+}: FieldPropsForTextFieldMolecule<TSchema, TPath>) {
 	const id = [form['~internal'].name, ...field.path].join('-')
-	const showErrors = field.isTouched && (field.errors?.length ?? 0) > 0
+	const showErrors = (field.errors?.length ?? 0) > 0
 
 	return (
 		<div>

@@ -2502,7 +2502,9 @@
       "dependencies": [],
       "dependents": [
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx"
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
+        "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
+        "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2548,15 +2550,33 @@
       ],
       "dependents": [
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx",
-        "src/hooks/demo.form.ts"
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
       ],
       "orphan": false,
       "valid": true
     },
     {
       "source": "src/components/forms/FormDataPreview/FormDataPreviewAtom.tsx",
-      "dependencies": [],
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../FormTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
       "dependents": [
         "src/components/04-templates/ContactTemplate.tsx",
         "src/components/forms/FormDataPreview/FormDataMolecule.tsx"
@@ -3043,6 +3063,24 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./ContactFormOrganism",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [],
@@ -3052,6 +3090,24 @@
     {
       "source": "src/components/forms/FormDataPreview/FormDataMolecule.tsx",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../FormTypes",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/FormTypes.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "./FormDataPreviewAtom",
@@ -3202,23 +3258,6 @@
         },
         {
           "dynamic": false,
-          "module": "../formUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/formUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "./TextAreaMolecule",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3233,19 +3272,27 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./TextAreaMolecule",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/components/forms/TextAreaMolecule/TextAreaMolecule.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/formUtils.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -3271,14 +3318,14 @@
         },
         {
           "dynamic": false,
-          "module": "../formUtils",
+          "module": "./TextFieldMolecule",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/forms/formUtils.ts",
+          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3293,6 +3340,7 @@
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
+            "type-only",
             "import"
           ],
           "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
@@ -3421,57 +3469,6 @@
             "import"
           ],
           "resolved": "src/components/zz-meta-components/ChildContentAtom.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/hooks/demo.form-context.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/hooks/demo.form.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/hooks/demo.form.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../components/forms/TextFieldMolecule/TextFieldMolecule",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/TextFieldMolecule/TextFieldMolecule.tsx",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./demo.form-context",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/hooks/demo.form-context.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3925,8 +3922,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 81,
-    "totalDependenciesCruised": 114,
+    "totalCruised": 78,
+    "totalDependenciesCruised": 115,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\react",
       "combinedDependencies": true,

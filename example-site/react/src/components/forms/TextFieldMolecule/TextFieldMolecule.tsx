@@ -22,7 +22,7 @@ export function TextFieldMolecule<
 	form,
 }: FieldPropsForTextFieldMolecule<TSchema, TPath>) {
 	const id = [form['~internal'].name, ...field.path].join('-')
-	const showErrors = field.isTouched && (field.errors?.length ?? 0) > 0
+	const showErrors = (field.errors?.length ?? 0) > 0
 
 	return (
 		<div>
