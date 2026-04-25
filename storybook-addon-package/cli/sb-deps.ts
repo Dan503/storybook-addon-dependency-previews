@@ -15,11 +15,14 @@ import { createRequire } from 'node:module'
 import { basename, dirname, join, posix, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
+import { runSetup } from './setup/index.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
 // ───────────────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2)
+const SUBCOMMAND =
+	argv[0] && !argv[0].startsWith('--') ? argv[0] : null
 const WATCH = argv.includes('--watch')
 const RUN_SB_IDX = argv.indexOf('--run-storybook')
 const RUN_SB = RUN_SB_IDX !== -1
@@ -924,6 +927,11 @@ async function startStorybook() {
 // Boot
 // ───────────────────────────────────────────────────────────────────────────────
 ;(async () => {
+	if (SUBCOMMAND === 'setup') {
+		await runSetup(argv.slice(1))
+		return
+	}
+
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
