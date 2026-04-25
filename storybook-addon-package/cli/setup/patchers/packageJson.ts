@@ -54,6 +54,19 @@ export async function patchPackageJson(
 		}
 	}
 
+	if (
+		pkg.scripts !== undefined &&
+		(typeof pkg.scripts !== 'object' ||
+			pkg.scripts === null ||
+			Array.isArray(pkg.scripts))
+	) {
+		return {
+			kind: 'failed',
+			outcomes: [],
+			reason:
+				'package.json "scripts" field exists but is not a plain object — refusing to overwrite.',
+		}
+	}
 	const scripts = (pkg.scripts ??= {}) as Record<string, string>
 	const outcomes: Array<ScriptOutcome> = []
 	let changed = false

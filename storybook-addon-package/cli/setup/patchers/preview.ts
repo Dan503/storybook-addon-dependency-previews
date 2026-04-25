@@ -139,8 +139,16 @@ function patchExistingPreview(
 		}
 	}
 
-	if (content.includes("'storybook-addon-dependency-previews'")) {
+	if (/['"]storybook-addon-dependency-previews['"]/.test(content)) {
 		return { kind: 'skipped', reason: 'addon already configured in preview' }
+	}
+
+	if (/\bmodule\.exports\s*=/.test(content)) {
+		return {
+			kind: 'failed',
+			reason:
+				'Preview file uses CommonJS (module.exports). The wizard only patches ESM preview files — please convert to ESM or follow the manual setup docs.',
+		}
 	}
 
 	const isTs = previewFile.lang === 'ts' || previewFile.lang === 'tsx'
