@@ -74,14 +74,20 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
-		const choice = await choose<'react-vite' | 'sveltekit' | 'cancel'>(
-			'Which framework is this project using?',
-			[
-				{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
-				{ label: 'Svelte (@storybook/sveltekit)', value: 'sveltekit' },
-				{ label: 'Cancel', value: 'cancel' },
-			],
-		)
+		const choice = await choose<
+			'react-vite' | 'sveltekit' | 'svelte-vite' | 'cancel'
+		>('Which framework is this project using?', [
+			{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
+			{
+				label: 'Svelte with SvelteKit (@storybook/sveltekit)',
+				value: 'sveltekit',
+			},
+			{
+				label: 'Svelte without SvelteKit (@storybook/svelte-vite)',
+				value: 'svelte-vite',
+			},
+			{ label: 'Cancel', value: 'cancel' },
+		])
 		if (choice === 'cancel') {
 			log('Setup cancelled.')
 			return

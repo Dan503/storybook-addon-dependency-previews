@@ -222,14 +222,17 @@ function patchExistingPreview(
 		const objectOpener = newContent.match(
 			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
 		)
-		if (objectOpener && objectOpener.index !== undefined) {
-			const insertAt = objectOpener.index + objectOpener[0].length
-			const insertion = `${eol}${l1}decorators: [...dependencyPreviewDecorators],`
-			newContent =
-				newContent.slice(0, insertAt) +
-				insertion +
-				newContent.slice(insertAt)
+		if (!objectOpener || objectOpener.index === undefined) {
+			return {
+				kind: 'failed',
+				reason:
+					'Could not locate the preview config object — please add `...dependencyPreviewDecorators` to the decorators array manually.',
+			}
 		}
+		const insertAt = objectOpener.index + objectOpener[0].length
+		const insertion = `${eol}${l1}decorators: [...dependencyPreviewDecorators],`
+		newContent =
+			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
 
 	writeFileSync(previewFile.path, newContent, 'utf8')

@@ -100,8 +100,11 @@ export async function patchPackageJson(
 		return { kind: 'no-change', outcomes }
 	}
 
-	const trailingNewline = raw.endsWith('\n') ? '\n' : ''
-	const serialised = JSON.stringify(pkg, null, indent) + trailingNewline
+	const eol = raw.includes('\r\n') ? '\r\n' : '\n'
+	const hadTrailingNewline = raw.endsWith('\n')
+	let serialised = JSON.stringify(pkg, null, indent)
+	if (eol === '\r\n') serialised = serialised.replace(/\n/g, '\r\n')
+	if (hadTrailingNewline) serialised += eol
 	writeFileSync(path, serialised, 'utf8')
 	return { kind: 'updated', outcomes }
 }
