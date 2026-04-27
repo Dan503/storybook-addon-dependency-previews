@@ -21,6 +21,7 @@ function dependencyPreviewsBlock(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
 	indent: string = '\t',
+	eol: string = '\n',
 ): string {
 	const l2 = indent.repeat(2)
 	const l3 = indent.repeat(3)
@@ -38,12 +39,16 @@ function dependencyPreviewsBlock(
 		lines.push(`${l3}sourceRootUrl: ${JSON.stringify(sourceRootUrl)},`)
 	}
 	lines.push(`${l2}},`)
-	return lines.join('\n')
+	return lines.join(eol)
 }
 
 function detectFileIndent(content: string): string {
 	const m = content.match(/^([ \t]+)\S/m)
 	return m ? m[1]! : '\t'
+}
+
+function detectEol(content: string): string {
+	return content.includes('\r\n') ? '\r\n' : '\n'
 }
 
 function reactTemplate(sourceRootUrl: string): string {
@@ -105,14 +110,20 @@ function templateForFramework(
 	return { content: svelteTemplate(framework, sourceRootUrl), lang: 'ts' }
 }
 
-const IMPORT_BLOCK = (withType: boolean, indent: string = '\t') =>
-	`import {
-${indent}defaultPreviewParameters,
-${indent}dependencyPreviewDecorators,${withType ? `\n${indent}type StorybookPreviewConfig,` : ''}
-} from 'storybook-addon-dependency-previews'
-
-import dependenciesJson from './dependency-previews.json'
-`
+const IMPORT_BLOCK = (
+	withType: boolean,
+	indent: string = '\t',
+	eol: string = '\n',
+) =>
+	[
+		`import {`,
+		`${indent}defaultPreviewParameters,`,
+		`${indent}dependencyPreviewDecorators,${withType ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
+		`} from 'storybook-addon-dependency-previews'`,
+		``,
+		`import dependenciesJson from './dependency-previews.json'`,
+		``,
+	].join(eol)
 
 function findImportInsertionIndex(content: string): number {
 	const lines = content.split('\n')
@@ -165,22 +176,23 @@ function patchExistingPreview(
 
 	const isTs = previewFile.lang === 'ts' || previewFile.lang === 'tsx'
 	const indent = detectFileIndent(content)
+	const eol = detectEol(content)
 	const l1 = indent
 	const l2 = indent.repeat(2)
 
 	const importInsertAt = findImportInsertionIndex(content)
 	let newContent =
 		content.slice(0, importInsertAt) +
-		IMPORT_BLOCK(isTs, indent) +
-		'\n' +
+		IMPORT_BLOCK(isTs, indent, eol) +
+		eol +
 		content.slice(importInsertAt)
 
-	const block = dependencyPreviewsBlock(framework, sourceRootUrl, indent)
+	const block = dependencyPreviewsBlock(framework, sourceRootUrl, indent, eol)
 
 	const paramsMatch = newContent.match(/(parameters\s*:\s*\{)/)
 	if (paramsMatch && paramsMatch.index !== undefined) {
 		const insertAt = paramsMatch.index + paramsMatch[0].length
-		const insertion = `\n${l2}...defaultPreviewParameters,\n${block}`
+		const insertion = `${eol}${l2}...defaultPreviewParameters,${eol}${block}`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	} else {
@@ -195,7 +207,7 @@ function patchExistingPreview(
 			}
 		}
 		const insertAt = objectOpener.index + objectOpener[0].length
-		const insertion = `\n${l1}parameters: {\n${l2}...defaultPreviewParameters,\n${block}\n${l1}},`
+		const insertion = `${eol}${l1}parameters: {${eol}${l2}...defaultPreviewParameters,${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
@@ -203,7 +215,7 @@ function patchExistingPreview(
 	const decoratorsMatch = newContent.match(/(decorators\s*:\s*\[)/)
 	if (decoratorsMatch && decoratorsMatch.index !== undefined) {
 		const insertAt = decoratorsMatch.index + decoratorsMatch[0].length
-		const insertion = `\n${l2}...dependencyPreviewDecorators,`
+		const insertion = `${eol}${l2}...dependencyPreviewDecorators,`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	} else {
@@ -212,7 +224,7 @@ function patchExistingPreview(
 		)
 		if (objectOpener && objectOpener.index !== undefined) {
 			const insertAt = objectOpener.index + objectOpener[0].length
-			const insertion = `\n${l1}decorators: [...dependencyPreviewDecorators],`
+			const insertion = `${eol}${l1}decorators: [...dependencyPreviewDecorators],`
 			newContent =
 				newContent.slice(0, insertAt) +
 				insertion +

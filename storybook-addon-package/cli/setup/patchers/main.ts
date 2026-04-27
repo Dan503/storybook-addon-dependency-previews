@@ -46,6 +46,10 @@ function detectFileIndent(content: string): string {
 	return m ? m[1]! : '\t'
 }
 
+function detectEol(content: string): string {
+	return content.includes('\r\n') ? '\r\n' : '\n'
+}
+
 export function patchMainFile(mainFile: MainFile): PatchResult {
 	let content: string
 	try {
@@ -69,14 +73,16 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 				'Found an `addons:` key in main.ts but it is not a literal array (it may be a variable, spread, or function call). Add `\'storybook-addon-dependency-previews/addon\'` to your addons manually.',
 		}
 	}
+	const eol = detectEol(content)
+
 	if (arrayMatch && arrayMatch.index !== undefined) {
 		const [full, openBracket, body, closeBracket] = arrayMatch
 		const indent = detectIndentInsideArray(body, content, arrayMatch.index)
 		const trimmed = body.replace(/\s*$/, '')
 		const newBody =
 			trimmed.length === 0
-				? `\n${indent}${ADDON_ENTRY},\n`
-				: `${trimmed}${trimmed.endsWith(',') ? '' : ','}\n${indent}${ADDON_ENTRY},\n`
+				? `${eol}${indent}${ADDON_ENTRY},${eol}`
+				: `${trimmed}${trimmed.endsWith(',') ? '' : ','}${eol}${indent}${ADDON_ENTRY},${eol}`
 		const newContent = content.replace(
 			full,
 			`${openBracket}${newBody}${closeBracket}`,
@@ -89,7 +95,7 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 		const m = content.match(opener)
 		if (!m || m.index === undefined) continue
 		const indent = detectFileIndent(content)
-		const insertion = `\n${indent}addons: [${ADDON_ENTRY}],`
+		const insertion = `${eol}${indent}addons: [${ADDON_ENTRY}],`
 		const insertAt = m.index + m[0].length
 		const newContent =
 			content.slice(0, insertAt) + insertion + content.slice(insertAt)

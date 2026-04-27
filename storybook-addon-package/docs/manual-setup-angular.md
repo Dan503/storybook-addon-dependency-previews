@@ -27,8 +27,6 @@ import { createRequire } from 'module'
 import { fileURLToPath } from 'url'
 import path from 'path'
 
-const require = createRequire(import.meta.url)
-
 const config: StorybookConfig = {
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
 	addons: [

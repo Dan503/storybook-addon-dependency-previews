@@ -222,7 +222,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const runCmd =
 		detection.packageManager === 'npm'
 			? 'npm run sb'
-			: `${detection.packageManager} sb`
+			: detection.packageManager === 'bun'
+				? 'bun run sb'
+				: `${detection.packageManager} sb`
 	log(`Next: run \`${runCmd}\` to start Storybook with dependency watching.`)
 	rule()
 }
