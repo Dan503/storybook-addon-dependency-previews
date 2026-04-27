@@ -223,31 +223,72 @@ function patchExistingPreview(
 
 	if (existingAddonImport) {
 		const wasTypeOnly = !!existingAddonImport[1]
-		const rawExistingNames = existingAddonImport[2]!
+		// Strip comments from the captured named-import list before splitting on commas.
+		// Otherwise `import { foo, /* note */ bar }` ends up with `/* note */ bar` as one name
+		// and the rebuilt import is invalid TypeScript.
+		const importContents = existingAddonImport[2]!
+			.replace(/\/\*[\s\S]*?\*\//g, '')
+			.replace(/\/\/.*$/gm, '')
+		const rawExistingNames = importContents
 			.split(',')
 			.map((s) => s.trim())
 			.filter(Boolean)
-		// `import type { A, B }` makes every name a type — convert to per-name `type A`
-		// so the merged form (which mixes values and types) keeps the same effective semantics.
-		const existingNames = wasTypeOnly
-			? rawExistingNames.map((n) => (n.startsWith('type ') ? n : `type ${n}`))
-			: rawExistingNames
-		const baseNameOf = (entry: string): string =>
-			entry
-				.replace(/^type\s+/, '')
-				.split(/\s+as\s+/)[0]!
-				.trim()
-		const namedSet = new Set(existingNames.map(baseNameOf))
-		const missingValues = requiredValueNames.filter((n) => !namedSet.has(n))
-		const missingTypes = requiredTypeNames.filter((n) => !namedSet.has(n))
-		if (missingValues.length > 0 || missingTypes.length > 0) {
-			const newNames = [
-				...existingNames,
-				...missingValues,
-				...missingTypes.map((n) => `type ${n}`),
-			]
-			const replacement = `import {${eol}${newNames
-				.map((n) => `${indent}${n},`)
+
+		type Entry = { name: string; alias?: string; isType: boolean }
+		const parseEntry = (raw: string): Entry => {
+			// `import type { A, B }` makes every name a type, so respect that.
+			const isType = wasTypeOnly || /^type\s+/.test(raw)
+			const stripped = raw.replace(/^type\s+/, '')
+			const [name, alias] = stripped
+				.split(/\s+as\s+/)
+				.map((s) => s.trim())
+			return { name: name!, alias, isType }
+		}
+		const formatEntry = (e: Entry): string => {
+			const inner = e.alias ? `${e.name} as ${e.alias}` : e.name
+			return e.isType ? `type ${inner}` : inner
+		}
+
+		const existingEntries = rawExistingNames.map(parseEntry)
+		const requiredValueSet = new Set(requiredValueNames)
+
+		// Promote any existing entry whose name matches a required value to a value
+		// import. This handles e.g. `import type { defaultPreviewParameters } from ...` —
+		// without promotion we'd leave it as a type and the runtime spread would fail.
+		const mergedEntries: Array<Entry> = existingEntries.map((e) =>
+			requiredValueSet.has(e.name) && e.isType ? { ...e, isType: false } : e,
+		)
+		const handled = new Set(mergedEntries.map((e) => e.name))
+		for (const n of requiredValueNames) {
+			if (!handled.has(n)) {
+				mergedEntries.push({ name: n, isType: false })
+				handled.add(n)
+			}
+		}
+		for (const n of requiredTypeNames) {
+			if (!handled.has(n)) {
+				mergedEntries.push({ name: n, isType: true })
+				handled.add(n)
+			}
+		}
+
+		const originallyValid = existingEntries.every(
+			(e) => mergedEntries.find((m) => m.name === e.name)?.isType === e.isType,
+		)
+		const allRequiredAlreadyValueImported = requiredValueNames.every((n) =>
+			existingEntries.some((e) => e.name === n && !e.isType),
+		)
+		const allRequiredAlreadyTypeImported = requiredTypeNames.every((n) =>
+			existingEntries.some((e) => e.name === n && e.isType),
+		)
+		const nothingToDo =
+			originallyValid &&
+			allRequiredAlreadyValueImported &&
+			allRequiredAlreadyTypeImported
+
+		if (!nothingToDo) {
+			const replacement = `import {${eol}${mergedEntries
+				.map((e) => `${indent}${formatEntry(e)},`)
 				.join(eol)}${eol}} from ${quote}${PKG}${quote}`
 			newContent = newContent.replace(existingAddonImport[0], replacement)
 		}
