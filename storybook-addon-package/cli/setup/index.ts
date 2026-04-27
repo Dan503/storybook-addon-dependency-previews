@@ -57,10 +57,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			'Angular projects are not handled by the wizard — its setup is more involved.',
 		)
 		log(
-			'Follow the manual setup guide: storybook-addon-package/docs/manual-setup-angular.md',
-		)
-		log(
-			'(or read it on GitHub: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-angular.md)',
+			'Manual setup guide: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-angular.md',
 		)
 		return
 	}
@@ -169,7 +166,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			break
 		case 'failed':
 			log(`  ✗ ${previewResult.reason}`)
-			log('  See docs/manual-setup-react.md or docs/manual-setup-svelte.md.')
+			log('  Manual setup docs:')
+			log(
+				'    React:  https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-react.md',
+			)
+			log(
+				'    Svelte: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-svelte.md',
+			)
 			process.exit(1)
 	}
 

@@ -44,7 +44,7 @@ The below image demonstrates what you will see when you open up some of the depe
 
 ### Quick start (React and Svelte)
 
-After running `npx storybook init` in your project, run the setup wizard:
+After running `npx storybook@latest init` in your project, run the setup wizard:
 
 ```sh
 npx sb-deps setup

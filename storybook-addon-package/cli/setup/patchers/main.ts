@@ -62,6 +62,13 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 	}
 
 	const arrayMatch = content.match(ADDONS_ARRAY_REGEX)
+	if (!arrayMatch && /\baddons\s*:/.test(content)) {
+		return {
+			kind: 'failed',
+			reason:
+				'Found an `addons:` key in main.ts but it is not a literal array (it may be a variable, spread, or function call). Add `\'storybook-addon-dependency-previews/addon\'` to your addons manually.',
+		}
+	}
 	if (arrayMatch && arrayMatch.index !== undefined) {
 		const [full, openBracket, body, closeBracket] = arrayMatch
 		const indent = detectIndentInsideArray(body, content, arrayMatch.index)

@@ -20,21 +20,30 @@ const STORY_GLOBS: Record<SupportedFramework, string> = {
 function dependencyPreviewsBlock(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
+	indent: string = '\t',
 ): string {
+	const l2 = indent.repeat(2)
+	const l3 = indent.repeat(3)
+	const l4 = indent.repeat(4)
 	const lines = [
-		`\t\tdependencyPreviews: {`,
-		`\t\t\tdependenciesJson,`,
-		`\t\t\tprojectRootPath: new URL('..', import.meta.url).pathname,`,
-		`\t\t\tstoryModules: import.meta.glob(`,
-		`\t\t\t\t'${STORY_GLOBS[framework]}',`,
-		`\t\t\t\t{ eager: false },`,
-		`\t\t\t),`,
+		`${l2}dependencyPreviews: {`,
+		`${l3}dependenciesJson,`,
+		`${l3}projectRootPath: new URL('..', import.meta.url).pathname,`,
+		`${l3}storyModules: import.meta.glob(`,
+		`${l4}'${STORY_GLOBS[framework]}',`,
+		`${l4}{ eager: false },`,
+		`${l3}),`,
 	]
 	if (sourceRootUrl) {
-		lines.push(`\t\t\tsourceRootUrl: '${sourceRootUrl.replace(/'/g, "\\'")}',`)
+		lines.push(`${l3}sourceRootUrl: '${sourceRootUrl.replace(/'/g, "\\'")}',`)
 	}
-	lines.push(`\t\t},`)
+	lines.push(`${l2}},`)
 	return lines.join('\n')
+}
+
+function detectFileIndent(content: string): string {
+	const m = content.match(/^([ \t]+)\S/m)
+	return m ? m[1]! : '\t'
 }
 
 function reactTemplate(sourceRootUrl: string): string {
@@ -91,7 +100,7 @@ function templateForFramework(
 	sourceRootUrl: string,
 ): { content: string; lang: PreviewFile['lang'] } {
 	if (framework === 'react-vite') {
-		return { content: reactTemplate(sourceRootUrl), lang: 'tsx' }
+		return { content: reactTemplate(sourceRootUrl), lang: 'ts' }
 	}
 	return { content: svelteTemplate(framework, sourceRootUrl), lang: 'ts' }
 }
@@ -152,6 +161,9 @@ function patchExistingPreview(
 	}
 
 	const isTs = previewFile.lang === 'ts' || previewFile.lang === 'tsx'
+	const indent = detectFileIndent(content)
+	const l1 = indent
+	const l2 = indent.repeat(2)
 
 	const importInsertAt = findImportInsertionIndex(content)
 	let newContent =
@@ -160,12 +172,12 @@ function patchExistingPreview(
 		'\n' +
 		content.slice(importInsertAt)
 
-	const block = dependencyPreviewsBlock(framework, sourceRootUrl)
+	const block = dependencyPreviewsBlock(framework, sourceRootUrl, indent)
 
 	const paramsMatch = newContent.match(/(parameters\s*:\s*\{)/)
 	if (paramsMatch && paramsMatch.index !== undefined) {
 		const insertAt = paramsMatch.index + paramsMatch[0].length
-		const insertion = `\n\t\t...defaultPreviewParameters,\n${block}`
+		const insertion = `\n${l2}...defaultPreviewParameters,\n${block}`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	} else {
@@ -180,7 +192,7 @@ function patchExistingPreview(
 			}
 		}
 		const insertAt = objectOpener.index + objectOpener[0].length
-		const insertion = `\n\tparameters: {\n\t\t...defaultPreviewParameters,\n${block}\n\t},`
+		const insertion = `\n${l1}parameters: {\n${l2}...defaultPreviewParameters,\n${block}\n${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
@@ -188,7 +200,7 @@ function patchExistingPreview(
 	const decoratorsMatch = newContent.match(/(decorators\s*:\s*\[)/)
 	if (decoratorsMatch && decoratorsMatch.index !== undefined) {
 		const insertAt = decoratorsMatch.index + decoratorsMatch[0].length
-		const insertion = `\n\t\t...dependencyPreviewDecorators,`
+		const insertion = `\n${l2}...dependencyPreviewDecorators,`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	} else {
@@ -197,7 +209,7 @@ function patchExistingPreview(
 		)
 		if (objectOpener && objectOpener.index !== undefined) {
 			const insertAt = objectOpener.index + objectOpener[0].length
-			const insertion = `\n\tdecorators: [...dependencyPreviewDecorators],`
+			const insertion = `\n${l1}decorators: [...dependencyPreviewDecorators],`
 			newContent =
 				newContent.slice(0, insertAt) +
 				insertion +
