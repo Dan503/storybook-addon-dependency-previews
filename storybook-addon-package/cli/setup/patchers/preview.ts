@@ -69,6 +69,108 @@ function detectQuoteStyle(content: string): "'" | '"' {
 	return m ? (m[1] as "'" | '"') : "'"
 }
 
+// Strip line and block comments while keeping string and template literals intact.
+// Used for the idempotency / `module.exports` checks so that commented-out example
+// code can't false-positive (or false-negative when a `//` happens to appear inside
+// a string literal).
+function stripCommentsRespectingStrings(content: string): string {
+	let out = ''
+	let inSQ = false
+	let inDQ = false
+	let inTL = false
+	let inLC = false
+	let inBC = false
+
+	let i = 0
+	while (i < content.length) {
+		const c = content[i]!
+		const next = content[i + 1]
+
+		if (inLC) {
+			if (c === '\n') {
+				inLC = false
+				out += c
+			}
+			i++
+			continue
+		}
+		if (inBC) {
+			if (c === '*' && next === '/') {
+				inBC = false
+				i += 2
+				continue
+			}
+			i++
+			continue
+		}
+		if (inSQ) {
+			out += c
+			if (c === '\\' && i + 1 < content.length) {
+				out += content[i + 1]
+				i += 2
+				continue
+			}
+			if (c === "'") inSQ = false
+			i++
+			continue
+		}
+		if (inDQ) {
+			out += c
+			if (c === '\\' && i + 1 < content.length) {
+				out += content[i + 1]
+				i += 2
+				continue
+			}
+			if (c === '"') inDQ = false
+			i++
+			continue
+		}
+		if (inTL) {
+			out += c
+			if (c === '\\' && i + 1 < content.length) {
+				out += content[i + 1]
+				i += 2
+				continue
+			}
+			if (c === '`') inTL = false
+			i++
+			continue
+		}
+
+		if (c === '/' && next === '/') {
+			inLC = true
+			i += 2
+			continue
+		}
+		if (c === '/' && next === '*') {
+			inBC = true
+			i += 2
+			continue
+		}
+		if (c === "'") {
+			inSQ = true
+			out += c
+			i++
+			continue
+		}
+		if (c === '"') {
+			inDQ = true
+			out += c
+			i++
+			continue
+		}
+		if (c === '`') {
+			inTL = true
+			out += c
+			i++
+			continue
+		}
+		out += c
+		i++
+	}
+	return out
+}
+
 function reactTemplate(sourceRootUrl: string): string {
 	return `/// <reference types="vite/client" />
 
@@ -181,14 +283,19 @@ function patchExistingPreview(
 		}
 	}
 
+	// Strip comments before doing identifier checks so commented-out example code
+	// can't false-positive the idempotency / CJS guards. (Strings and template
+	// literals are left intact so a URL containing `//` doesn't get truncated.)
+	const codeOnly = stripCommentsRespectingStrings(content)
+
 	// Look for the addon's wired-in identifiers — not just any import of the package.
 	// `dependencyPreviewDecorators` is a unique exported name, and `dependencyPreviews:`
 	// is the unique parameters key. Either presence means the addon is already configured.
-	if (/\bdependencyPreviewDecorators\b|\bdependencyPreviews\s*:/.test(content)) {
+	if (/\bdependencyPreviewDecorators\b|\bdependencyPreviews\s*:/.test(codeOnly)) {
 		return { kind: 'skipped', reason: 'addon already configured in preview' }
 	}
 
-	if (/\bmodule\.exports\s*=/.test(content)) {
+	if (/\bmodule\.exports\s*=/.test(codeOnly)) {
 		return {
 			kind: 'failed',
 			reason:
