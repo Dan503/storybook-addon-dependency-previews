@@ -30,7 +30,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	if (!existsSync(detection.storybookDir)) {
 		log('No `.storybook/` directory found in the current working directory.')
 		log(
-			'Run `npx storybook@latest init` first to scaffold Storybook, then re-run `npx sb-deps setup`.',
+			'Run `npx storybook@latest init` first to scaffold Storybook, then re-run `npx --package storybook-addon-dependency-previews sb-deps setup`.',
 		)
 		process.exit(1)
 	}

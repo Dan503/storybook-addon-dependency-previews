@@ -47,8 +47,10 @@ The below image demonstrates what you will see when you open up some of the depe
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
 ```sh
-npx sb-deps setup
+npx --package storybook-addon-dependency-previews sb-deps setup
 ```
+
+(The package's bin is `sb-deps`, but the published package name is `storybook-addon-dependency-previews`. The explicit `--package` form makes `npx` install the right package on the first run; once the wizard has installed the addon, you can use the shorter `npx sb-deps …` form for subsequent calls.)
 
 The wizard:
 

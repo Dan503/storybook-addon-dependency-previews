@@ -2,7 +2,7 @@
 
 > **Tip:** for most Svelte projects you can use the automated wizard instead:
 > ```sh
-> npx sb-deps setup
+> npx --package storybook-addon-dependency-previews sb-deps setup
 > ```
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.

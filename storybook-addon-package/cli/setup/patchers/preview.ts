@@ -442,6 +442,15 @@ function patchExistingPreview(
 			: `${eol}${l2}...defaultPreviewParameters,${eol}${block}`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+	} else if (/\bparameters\s*:/.test(newContent)) {
+		// `parameters:` exists but isn't a literal `{ … }` object (probably a
+		// variable, spread, or function call). Inserting another `parameters:`
+		// would produce a duplicate key — bail with guidance instead.
+		return {
+			kind: 'failed',
+			reason:
+				'Preview config already defines `parameters` in a non-literal-object form — please manually add `...defaultPreviewParameters` and the `dependencyPreviews` block to the existing parameters definition.',
+		}
 	} else {
 		const objectOpener = newContent.match(
 			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
@@ -465,6 +474,12 @@ function patchExistingPreview(
 		const insertion = `${eol}${l2}...dependencyPreviewDecorators,`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+	} else if (/\bdecorators\s*:/.test(newContent)) {
+		return {
+			kind: 'failed',
+			reason:
+				'Preview config already defines `decorators` in a non-literal-array form — please manually add `...dependencyPreviewDecorators` to the existing decorators definition.',
+		}
 	} else {
 		const objectOpener = newContent.match(
 			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
