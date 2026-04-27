@@ -202,10 +202,11 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	rule()
 	log('Step 5/5: generating .storybook/dependency-previews.json')
-	const buildResult = spawnSync('npx', ['-y', 'sb-deps'], {
+	// Re-invoke the same sb-deps binary that's running this wizard, so we don't
+	// risk npx resolving a different version (or requiring npx to be installed).
+	const buildResult = spawnSync(process.execPath, [process.argv[1]!], {
 		cwd,
 		stdio: 'inherit',
-		shell: process.platform === 'win32',
 	})
 	if (buildResult.status !== 0) {
 		log('  ✗ initial dependency build failed.')

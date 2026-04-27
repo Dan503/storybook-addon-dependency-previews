@@ -75,13 +75,14 @@ export const Primary: Story = {
 
 ## 4. `package.json` scripts
 
+The wizard adds these three:
+
 ```json
 {
 	"scripts": {
 		"sb": "sb-deps --watch --run-storybook",
 		"sb:build": "sb-deps && storybook build",
-		"sb:deps": "sb-deps",
-		"sb:alt-port": "sb-deps --watch --run-storybook --sb-port 7020"
+		"sb:deps": "sb-deps"
 	}
 }
 ```
@@ -89,7 +90,12 @@ export const Primary: Story = {
 - `npm run sb` — Storybook in watch mode with automatic dependency tracking and story scaffolding.
 - `npm run sb:build` — one-off compile of the static Storybook site.
 - `npm run sb:deps` — generate a fresh `dependency-previews.json` on demand.
-- `npm run sb:alt-port` — same as `sb`, but on a custom port.
+
+**Optional** — add this manually if your default port (6006) is in use:
+
+```json
+"sb:alt-port": "sb-deps --watch --run-storybook --sb-port 7020"
+```
 
 ## 5. Generate the dependency graph file
 

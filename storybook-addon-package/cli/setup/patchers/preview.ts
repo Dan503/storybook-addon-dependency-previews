@@ -35,7 +35,7 @@ function dependencyPreviewsBlock(
 		`${l3}),`,
 	]
 	if (sourceRootUrl) {
-		lines.push(`${l3}sourceRootUrl: '${sourceRootUrl.replace(/'/g, "\\'")}',`)
+		lines.push(`${l3}sourceRootUrl: ${JSON.stringify(sourceRootUrl)},`)
 	}
 	lines.push(`${l2}},`)
 	return lines.join('\n')
@@ -105,10 +105,10 @@ function templateForFramework(
 	return { content: svelteTemplate(framework, sourceRootUrl), lang: 'ts' }
 }
 
-const IMPORT_BLOCK = (withType: boolean) =>
+const IMPORT_BLOCK = (withType: boolean, indent: string = '\t') =>
 	`import {
-\tdefaultPreviewParameters,
-\tdependencyPreviewDecorators,${withType ? `\n\ttype StorybookPreviewConfig,` : ''}
+${indent}defaultPreviewParameters,
+${indent}dependencyPreviewDecorators,${withType ? `\n${indent}type StorybookPreviewConfig,` : ''}
 } from 'storybook-addon-dependency-previews'
 
 import dependenciesJson from './dependency-previews.json'
@@ -148,7 +148,10 @@ function patchExistingPreview(
 		}
 	}
 
-	if (/['"]storybook-addon-dependency-previews['"]/.test(content)) {
+	// Look for the addon's wired-in identifiers — not just any import of the package.
+	// `dependencyPreviewDecorators` is a unique exported name, and `dependencyPreviews:`
+	// is the unique parameters key. Either presence means the addon is already configured.
+	if (/\bdependencyPreviewDecorators\b|\bdependencyPreviews\s*:/.test(content)) {
 		return { kind: 'skipped', reason: 'addon already configured in preview' }
 	}
 
@@ -168,7 +171,7 @@ function patchExistingPreview(
 	const importInsertAt = findImportInsertionIndex(content)
 	let newContent =
 		content.slice(0, importInsertAt) +
-		IMPORT_BLOCK(isTs) +
+		IMPORT_BLOCK(isTs, indent) +
 		'\n' +
 		content.slice(importInsertAt)
 
