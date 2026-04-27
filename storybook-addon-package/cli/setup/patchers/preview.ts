@@ -22,6 +22,7 @@ function dependencyPreviewsBlock(
 	sourceRootUrl: string,
 	indent: string = '\t',
 	eol: string = '\n',
+	quote: "'" | '"' = "'",
 ): string {
 	const l2 = indent.repeat(2)
 	const l3 = indent.repeat(3)
@@ -29,14 +30,26 @@ function dependencyPreviewsBlock(
 	const lines = [
 		`${l2}dependencyPreviews: {`,
 		`${l3}dependenciesJson,`,
-		`${l3}projectRootPath: new URL('..', import.meta.url).pathname,`,
+		`${l3}projectRootPath: new URL(${quote}..${quote}, import.meta.url).pathname,`,
 		`${l3}storyModules: import.meta.glob(`,
-		`${l4}'${STORY_GLOBS[framework]}',`,
+		`${l4}${quote}${STORY_GLOBS[framework]}${quote},`,
 		`${l4}{ eager: false },`,
 		`${l3}),`,
 	]
 	if (sourceRootUrl) {
-		lines.push(`${l3}sourceRootUrl: ${JSON.stringify(sourceRootUrl)},`)
+		// JSON.stringify always emits double quotes; convert when the file uses single
+		// quotes so the inserted line matches surrounding style. URLs in practice contain
+		// no characters that need re-escaping, but we still escape backslashes / single
+		// quotes / line terminators for safety.
+		const serialised =
+			quote === '"'
+				? JSON.stringify(sourceRootUrl)
+				: `'${sourceRootUrl
+						.replace(/\\/g, '\\\\')
+						.replace(/'/g, "\\'")
+						.replace(/\n/g, '\\n')
+						.replace(/\r/g, '\\r')}'`
+		lines.push(`${l3}sourceRootUrl: ${serialised},`)
 	}
 	lines.push(`${l2}},`)
 	return lines.join(eol)
@@ -49,6 +62,11 @@ function detectFileIndent(content: string): string {
 
 function detectEol(content: string): string {
 	return content.includes('\r\n') ? '\r\n' : '\n'
+}
+
+function detectQuoteStyle(content: string): "'" | '"' {
+	const m = content.match(/import[\s\S]+?from\s+(['"])/)
+	return m ? (m[1] as "'" | '"') : "'"
 }
 
 function reactTemplate(sourceRootUrl: string): string {
@@ -181,6 +199,7 @@ function patchExistingPreview(
 	const isTs = previewFile.lang === 'ts' || previewFile.lang === 'tsx'
 	const indent = detectFileIndent(content)
 	const eol = detectEol(content)
+	const quote = detectQuoteStyle(content)
 	const l1 = indent
 	const l2 = indent.repeat(2)
 
@@ -189,10 +208,10 @@ function patchExistingPreview(
 	// ─── Imports: extend an existing addon import if one is present, otherwise insert a new one ───
 	const PKG = 'storybook-addon-dependency-previews'
 	const existingAddonImport = newContent.match(
-		/import\s+(type\s+)?\{([\s\S]*?)\}\s+from\s+['"]storybook-addon-dependency-previews['"]/,
+		/import\s*(type\s+)?\{([\s\S]*?)\}\s*from\s*['"]storybook-addon-dependency-previews['"]/,
 	)
 	const hasDependenciesJsonImport =
-		/import\s+dependenciesJson\s+from\s+['"]\.\/dependency-previews\.json['"]/.test(
+		/import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/.test(
 			newContent,
 		)
 
@@ -229,7 +248,7 @@ function patchExistingPreview(
 			]
 			const replacement = `import {${eol}${newNames
 				.map((n) => `${indent}${n},`)
-				.join(eol)}${eol}} from '${PKG}'`
+				.join(eol)}${eol}} from ${quote}${PKG}${quote}`
 			newContent = newContent.replace(existingAddonImport[0], replacement)
 		}
 	}
@@ -240,13 +259,13 @@ function patchExistingPreview(
 			`import {`,
 			`${indent}defaultPreviewParameters,`,
 			`${indent}dependencyPreviewDecorators,${isTs ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
-			`} from '${PKG}'`,
+			`} from ${quote}${PKG}${quote}`,
 		].join(eol)
 		importsToInsert.push(addonImportBlock)
 	}
 	if (!hasDependenciesJsonImport) {
 		importsToInsert.push(
-			`import dependenciesJson from './dependency-previews.json'`,
+			`import dependenciesJson from ${quote}./dependency-previews.json${quote}`,
 		)
 	}
 	if (importsToInsert.length > 0) {
@@ -256,7 +275,13 @@ function patchExistingPreview(
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
 
-	const block = dependencyPreviewsBlock(framework, sourceRootUrl, indent, eol)
+	const block = dependencyPreviewsBlock(
+		framework,
+		sourceRootUrl,
+		indent,
+		eol,
+		quote,
+	)
 	const hasDefaultParamsSpread = /\.\.\.defaultPreviewParameters\b/.test(
 		newContent,
 	)
