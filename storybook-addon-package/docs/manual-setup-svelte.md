@@ -17,7 +17,7 @@ npm install -D storybook-addon-dependency-previews dependency-cruiser
 	<summary>Other package managers</summary>
 	<p><pre><code>pnpm add -D storybook-addon-dependency-previews dependency-cruiser</code></pre></p>
 	<p><pre><code>yarn add -D storybook-addon-dependency-previews dependency-cruiser</code></pre></p>
-	<p><pre><code>bun add -D storybook-addon-dependency-previews dependency-cruiser</code></pre></p>
+	<p><pre><code>bun add -d storybook-addon-dependency-previews dependency-cruiser</code></pre></p>
 </details>
 
 ## 2. Register the addon in `.storybook/main.ts`

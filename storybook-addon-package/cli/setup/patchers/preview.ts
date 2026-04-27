@@ -110,35 +110,39 @@ function templateForFramework(
 	return { content: svelteTemplate(framework, sourceRootUrl), lang: 'ts' }
 }
 
-const IMPORT_BLOCK = (
-	withType: boolean,
-	indent: string = '\t',
-	eol: string = '\n',
-) =>
-	[
-		`import {`,
-		`${indent}defaultPreviewParameters,`,
-		`${indent}dependencyPreviewDecorators,${withType ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
-		`} from 'storybook-addon-dependency-previews'`,
-		``,
-		`import dependenciesJson from './dependency-previews.json'`,
-		``,
-	].join(eol)
-
 function findImportInsertionIndex(content: string): number {
 	const lines = content.split('\n')
 	let idx = 0
+	let inBlockComment = false
+
 	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]!
-		if (
-			line.startsWith('///') ||
-			line.startsWith("'use client'") ||
-			line.startsWith('"use client"') ||
-			line.trim() === ''
-		) {
-			idx += line.length + 1
+		const rawLine = lines[i]!
+		const trimmed = rawLine.trim()
+		const advance = rawLine.length + 1 // +1 for the consumed '\n'
+
+		if (inBlockComment) {
+			idx += advance
+			if (rawLine.includes('*/')) inBlockComment = false
 			continue
 		}
+
+		if (
+			trimmed === '' ||
+			trimmed.startsWith('//') || // line comment & triple-slash directive
+			trimmed.startsWith("'use client'") ||
+			trimmed.startsWith('"use client"')
+		) {
+			idx += advance
+			continue
+		}
+
+		if (trimmed.startsWith('/*')) {
+			idx += advance
+			// Multi-line block comment if no `*/` later on the same line.
+			if (!trimmed.slice(2).includes('*/')) inBlockComment = true
+			continue
+		}
+
 		break
 	}
 	return idx
@@ -180,19 +184,89 @@ function patchExistingPreview(
 	const l1 = indent
 	const l2 = indent.repeat(2)
 
-	const importInsertAt = findImportInsertionIndex(content)
-	let newContent =
-		content.slice(0, importInsertAt) +
-		IMPORT_BLOCK(isTs, indent, eol) +
-		eol +
-		content.slice(importInsertAt)
+	let newContent = content
+
+	// ─── Imports: extend an existing addon import if one is present, otherwise insert a new one ───
+	const PKG = 'storybook-addon-dependency-previews'
+	const existingAddonImport = newContent.match(
+		/import\s+(type\s+)?\{([\s\S]*?)\}\s+from\s+['"]storybook-addon-dependency-previews['"]/,
+	)
+	const hasDependenciesJsonImport =
+		/import\s+dependenciesJson\s+from\s+['"]\.\/dependency-previews\.json['"]/.test(
+			newContent,
+		)
+
+	const requiredValueNames = [
+		'defaultPreviewParameters',
+		'dependencyPreviewDecorators',
+	]
+	const requiredTypeNames = isTs ? ['StorybookPreviewConfig'] : []
+
+	if (existingAddonImport) {
+		const wasTypeOnly = !!existingAddonImport[1]
+		const rawExistingNames = existingAddonImport[2]!
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean)
+		// `import type { A, B }` makes every name a type — convert to per-name `type A`
+		// so the merged form (which mixes values and types) keeps the same effective semantics.
+		const existingNames = wasTypeOnly
+			? rawExistingNames.map((n) => (n.startsWith('type ') ? n : `type ${n}`))
+			: rawExistingNames
+		const baseNameOf = (entry: string): string =>
+			entry
+				.replace(/^type\s+/, '')
+				.split(/\s+as\s+/)[0]!
+				.trim()
+		const namedSet = new Set(existingNames.map(baseNameOf))
+		const missingValues = requiredValueNames.filter((n) => !namedSet.has(n))
+		const missingTypes = requiredTypeNames.filter((n) => !namedSet.has(n))
+		if (missingValues.length > 0 || missingTypes.length > 0) {
+			const newNames = [
+				...existingNames,
+				...missingValues,
+				...missingTypes.map((n) => `type ${n}`),
+			]
+			const replacement = `import {${eol}${newNames
+				.map((n) => `${indent}${n},`)
+				.join(eol)}${eol}} from '${PKG}'`
+			newContent = newContent.replace(existingAddonImport[0], replacement)
+		}
+	}
+
+	const importsToInsert: string[] = []
+	if (!existingAddonImport) {
+		const addonImportBlock = [
+			`import {`,
+			`${indent}defaultPreviewParameters,`,
+			`${indent}dependencyPreviewDecorators,${isTs ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
+			`} from '${PKG}'`,
+		].join(eol)
+		importsToInsert.push(addonImportBlock)
+	}
+	if (!hasDependenciesJsonImport) {
+		importsToInsert.push(
+			`import dependenciesJson from './dependency-previews.json'`,
+		)
+	}
+	if (importsToInsert.length > 0) {
+		const insertAt = findImportInsertionIndex(newContent)
+		const insertion = importsToInsert.join(eol + eol) + eol + eol
+		newContent =
+			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+	}
 
 	const block = dependencyPreviewsBlock(framework, sourceRootUrl, indent, eol)
+	const hasDefaultParamsSpread = /\.\.\.defaultPreviewParameters\b/.test(
+		newContent,
+	)
 
 	const paramsMatch = newContent.match(/(parameters\s*:\s*\{)/)
 	if (paramsMatch && paramsMatch.index !== undefined) {
 		const insertAt = paramsMatch.index + paramsMatch[0].length
-		const insertion = `${eol}${l2}...defaultPreviewParameters,${eol}${block}`
+		const insertion = hasDefaultParamsSpread
+			? `${eol}${block}`
+			: `${eol}${l2}...defaultPreviewParameters,${eol}${block}`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	} else {
