@@ -105,6 +105,14 @@ export async function patchPackageJson(
 	let serialised = JSON.stringify(pkg, null, indent)
 	if (eol === '\r\n') serialised = serialised.replace(/\n/g, '\r\n')
 	if (hadTrailingNewline) serialised += eol
-	writeFileSync(path, serialised, 'utf8')
+	try {
+		writeFileSync(path, serialised, 'utf8')
+	} catch (e) {
+		return {
+			kind: 'failed',
+			outcomes,
+			reason: `Could not write package.json: ${(e as Error).message}`,
+		}
+	}
 	return { kind: 'updated', outcomes }
 }

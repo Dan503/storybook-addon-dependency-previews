@@ -334,7 +334,14 @@ function patchExistingPreview(
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
 
-	writeFileSync(previewFile.path, newContent, 'utf8')
+	try {
+		writeFileSync(previewFile.path, newContent, 'utf8')
+	} catch (e) {
+		return {
+			kind: 'failed',
+			reason: `Could not write ${previewFile.path}: ${(e as Error).message}`,
+		}
+	}
 	return { kind: 'patched', path: previewFile.path }
 }
 
@@ -366,6 +373,13 @@ export function patchPreviewFile(opts: {
 	if (existsSync(path)) {
 		return { kind: 'skipped', reason: `${path} already exists` }
 	}
-	writeFileSync(path, content, 'utf8')
+	try {
+		writeFileSync(path, content, 'utf8')
+	} catch (e) {
+		return {
+			kind: 'failed',
+			reason: `Could not create ${path}: ${(e as Error).message}`,
+		}
+	}
 	return { kind: 'created', path }
 }

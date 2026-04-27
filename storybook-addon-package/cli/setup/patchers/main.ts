@@ -214,7 +214,14 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 		const before = content.slice(0, arrayLoc.arrayOpenIndex + 1)
 		const after = content.slice(arrayLoc.arrayCloseIndex)
 		const newContent = before + newBody + after
-		writeFileSync(mainFile.path, newContent, 'utf8')
+		try {
+			writeFileSync(mainFile.path, newContent, 'utf8')
+		} catch (e) {
+			return {
+				kind: 'failed',
+				reason: `Could not write ${mainFile.path}: ${(e as Error).message}`,
+			}
+		}
 		return { kind: 'patched', appliedTo: 'existing-array' }
 	}
 
@@ -226,7 +233,14 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 		const insertAt = m.index + m[0].length
 		const newContent =
 			content.slice(0, insertAt) + insertion + content.slice(insertAt)
-		writeFileSync(mainFile.path, newContent, 'utf8')
+		try {
+			writeFileSync(mainFile.path, newContent, 'utf8')
+		} catch (e) {
+			return {
+				kind: 'failed',
+				reason: `Could not write ${mainFile.path}: ${(e as Error).message}`,
+			}
+		}
 		return { kind: 'patched', appliedTo: 'new-array' }
 	}
 

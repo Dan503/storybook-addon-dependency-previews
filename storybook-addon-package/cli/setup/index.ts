@@ -214,8 +214,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		cwd,
 		stdio: 'inherit',
 	})
-	if (buildResult.status !== 0) {
-		log('  ✗ initial dependency build failed.')
+	if (buildResult.error) {
+		log(`  ✗ could not spawn sb-deps: ${buildResult.error.message}`)
+		log(
+			`  You can run the dependency build manually with: ${detection.packageManager} run sb:deps`,
+		)
+	} else if (buildResult.status !== 0) {
+		log(`  ✗ initial dependency build failed (exit ${buildResult.status}).`)
 		log(
 			`  You can run it manually with: ${detection.packageManager} run sb:deps`,
 		)
