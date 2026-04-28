@@ -6,6 +6,7 @@ import {
 	detectEol,
 	detectFileIndent,
 	detectQuoteStyle,
+	findMatchingBrace,
 	findTopLevelKey,
 	stripCommentsRespectingStrings,
 } from '../util.js'
@@ -205,9 +206,12 @@ function patchExistingPreview(
 		/from\s*['"][^'"]*['"]\s*;/.test(newContent) ||
 		allAddonImports.some((m) => /;\s*(?:\r?\n|$)/.test(m[0]!))
 	const trailingSemi = usesSemicolons ? ';' : ''
+	// Use the comment-stripped content so a commented-out `// import dependenciesJson …`
+	// doesn't trick us into skipping the real import (which would leave the inserted
+	// `dependencyPreviews` block referencing an undefined identifier).
 	const hasDependenciesJsonImport =
 		/import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/.test(
-			newContent,
+			codeOnly,
 		)
 
 	const requiredValueNames = [
@@ -353,9 +357,32 @@ function patchExistingPreview(
 		newContent,
 	)
 
-	// State-aware lookup so a `parameters:` mention in a comment / string can't
-	// trick us into inserting the addon block in the wrong place.
-	const paramsKey = findTopLevelKey(newContent, 'parameters')
+	// Locate the preview config object's body so all the key lookups below are
+	// scoped to *that* object. Without this, a `parameters:` / `decorators:`
+	// belonging to some unrelated object earlier in the file would be matched
+	// instead of the one we want to patch.
+	const findPreviewBody = (text: string): { from: number; to: number } | null => {
+		const m = text.match(
+			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
+		)
+		if (!m || m.index === undefined) return null
+		const openBraceIdx = m.index + m[0].length - 1
+		if (text[openBraceIdx] !== '{') return null
+		const closeIdx = findMatchingBrace(text, openBraceIdx)
+		if (closeIdx === null) return null
+		return { from: openBraceIdx + 1, to: closeIdx }
+	}
+
+	const bodyRange = findPreviewBody(newContent)
+	if (!bodyRange) {
+		return {
+			kind: 'failed',
+			reason:
+				'Could not locate the preview config object — please add the dependencyPreviews parameters and decorators manually.',
+		}
+	}
+
+	const paramsKey = findTopLevelKey(newContent, 'parameters', bodyRange)
 	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
 		const insertAt = paramsKey.valueStart + 1
 		const insertion = hasDefaultParamsSpread
@@ -373,23 +400,20 @@ function patchExistingPreview(
 				'Preview config already defines `parameters` in a non-literal-object form — please manually add `...defaultPreviewParameters` and the `dependencyPreviews` block to the existing parameters definition.',
 		}
 	} else {
-		const objectOpener = newContent.match(
-			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
-		)
-		if (!objectOpener || objectOpener.index === undefined) {
-			return {
-				kind: 'failed',
-				reason:
-					'Could not locate the preview config object — please add the dependencyPreviews parameters manually.',
-			}
-		}
-		const insertAt = objectOpener.index + objectOpener[0].length
+		const insertAt = bodyRange.from
 		const insertion = `${eol}${l1}parameters: {${eol}${l2}...defaultPreviewParameters,${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
 
-	const decoratorsKey = findTopLevelKey(newContent, 'decorators')
+	// Re-find the body range after the params insertion — the body's closing
+	// brace position has shifted but the helper handles that transparently.
+	const bodyRangeAfterParams = findPreviewBody(newContent) ?? bodyRange
+	const decoratorsKey = findTopLevelKey(
+		newContent,
+		'decorators',
+		bodyRangeAfterParams,
+	)
 	if (decoratorsKey && newContent[decoratorsKey.valueStart] === '[') {
 		const insertAt = decoratorsKey.valueStart + 1
 		const insertion = `${eol}${l2}...dependencyPreviewDecorators,`
@@ -402,17 +426,7 @@ function patchExistingPreview(
 				'Preview config already defines `decorators` in a non-literal-array form — please manually add `...dependencyPreviewDecorators` to the existing decorators definition.',
 		}
 	} else {
-		const objectOpener = newContent.match(
-			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
-		)
-		if (!objectOpener || objectOpener.index === undefined) {
-			return {
-				kind: 'failed',
-				reason:
-					'Could not locate the preview config object — please add `...dependencyPreviewDecorators` to the decorators array manually.',
-			}
-		}
-		const insertAt = objectOpener.index + objectOpener[0].length
+		const insertAt = bodyRangeAfterParams.from
 		const insertion = `${eol}${l1}decorators: [...dependencyPreviewDecorators],`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)

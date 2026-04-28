@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
+import { stripCommentsRespectingStrings } from './util.js'
+
 export type Framework =
 	| 'react-vite'
 	| 'sveltekit'
@@ -118,7 +120,11 @@ export function detectProject(cwd: string): Detection {
 	if (mainFile) {
 		try {
 			const content = readFileSync(mainFile.path, 'utf8')
-			const match = content.match(FRAMEWORK_REGEX)
+			// Strip comments first so a commented-out `framework: ...` example
+			// (or a code snippet inside a block comment) can't be detected as the
+			// active framework.
+			const codeOnly = stripCommentsRespectingStrings(content)
+			const match = codeOnly.match(FRAMEWORK_REGEX)
 			frameworkRaw = match?.[1] || match?.[2] || null
 		} catch {
 			frameworkRaw = null

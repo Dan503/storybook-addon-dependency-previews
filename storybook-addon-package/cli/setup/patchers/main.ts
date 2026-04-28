@@ -5,6 +5,7 @@ import {
 	detectEol,
 	detectFileIndent,
 	detectQuoteStyle,
+	findMatchingBrace,
 	findTopLevelKey,
 	stripCommentsRespectingStrings,
 } from '../util.js'
@@ -27,112 +28,41 @@ const CONFIG_OBJECT_OPENERS: ReadonlyArray<RegExp> = [
 	/(\bconst\s+\w+\s*=\s*\{)/,
 ]
 
-function findAddonsArray(content: string): {
+// Locate the body of the Storybook config object: the range between its
+// opening `{` and matching `}`. Used to scope key lookups so they can't be
+// fooled by an unrelated object earlier in the file with the same key name.
+function findConfigBodyRange(
+	content: string,
+): { bodyStart: number; bodyEnd: number } | null {
+	for (const opener of CONFIG_OBJECT_OPENERS) {
+		const m = content.match(opener)
+		if (!m || m.index === undefined) continue
+		const openBraceIdx = m.index + m[0].length - 1
+		if (content[openBraceIdx] !== '{') continue
+		const closeBraceIdx = findMatchingBrace(content, openBraceIdx)
+		if (closeBraceIdx === null) continue
+		return { bodyStart: openBraceIdx + 1, bodyEnd: closeBraceIdx }
+	}
+	return null
+}
+
+function findAddonsArray(
+	content: string,
+	scope: { from: number; to: number },
+): {
 	openerStart: number
 	arrayOpenIndex: number
 	arrayCloseIndex: number
 } | null {
-	const key = findTopLevelKey(content, 'addons')
+	const key = findTopLevelKey(content, 'addons', scope)
 	if (!key || content[key.valueStart] !== '[') return null
-	const closeIndex = findMatchingBracket(content, key.valueStart)
+	const closeIndex = findMatchingBrace(content, key.valueStart)
 	if (closeIndex === null) return null
 	return {
 		openerStart: key.keyStart,
 		arrayOpenIndex: key.valueStart,
 		arrayCloseIndex: closeIndex,
 	}
-}
-
-function findMatchingBracket(content: string, openIdx: number): number | null {
-	let depth = 0
-	let inSQ = false
-	let inDQ = false
-	let inTL = false
-	let inLC = false
-	let inBC = false
-
-	let i = openIdx
-	while (i < content.length) {
-		const c = content[i]!
-		const next = content[i + 1]
-
-		if (inLC) {
-			if (c === '\n') inLC = false
-			i++
-			continue
-		}
-		if (inBC) {
-			if (c === '*' && next === '/') {
-				inBC = false
-				i += 2
-				continue
-			}
-			i++
-			continue
-		}
-		if (inSQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === "'") inSQ = false
-			i++
-			continue
-		}
-		if (inDQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '"') inDQ = false
-			i++
-			continue
-		}
-		if (inTL) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '`') inTL = false
-			i++
-			continue
-		}
-
-		if (c === '/' && next === '/') {
-			inLC = true
-			i += 2
-			continue
-		}
-		if (c === '/' && next === '*') {
-			inBC = true
-			i += 2
-			continue
-		}
-		if (c === "'") {
-			inSQ = true
-			i++
-			continue
-		}
-		if (c === '"') {
-			inDQ = true
-			i++
-			continue
-		}
-		if (c === '`') {
-			inTL = true
-			i++
-			continue
-		}
-
-		if (c === '[') {
-			depth++
-		} else if (c === ']') {
-			depth--
-			if (depth === 0) return i
-		}
-		i++
-	}
-	return null
 }
 
 function detectIndentInsideArray(
@@ -171,11 +101,19 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 		return { kind: 'skipped', reason: 'addon already registered' }
 	}
 
-	const arrayLoc = findAddonsArray(content)
+	const bodyRange = findConfigBodyRange(content)
+	if (!bodyRange) {
+		return {
+			kind: 'failed',
+			reason:
+				'Could not locate the Storybook config object in main file. The addon needs to be registered manually.',
+		}
+	}
+	const scope = { from: bodyRange.bodyStart, to: bodyRange.bodyEnd }
+
+	const arrayLoc = findAddonsArray(content, scope)
 	if (!arrayLoc) {
-		// Use the same state-aware scan as `findAddonsArray` so a `// addons: [...]`
-		// example sitting in a comment doesn't trigger this error.
-		const keyLoc = findTopLevelKey(content, 'addons')
+		const keyLoc = findTopLevelKey(content, 'addons', scope)
 		if (keyLoc && content[keyLoc.valueStart] !== '[') {
 			return {
 				kind: 'failed',
@@ -221,28 +159,20 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 		return { kind: 'patched', appliedTo: 'existing-array' }
 	}
 
-	for (const opener of CONFIG_OBJECT_OPENERS) {
-		const m = content.match(opener)
-		if (!m || m.index === undefined) continue
-		const indent = detectFileIndent(content)
-		const insertion = `${eol}${indent}addons: [${ADDON_ENTRY}],`
-		const insertAt = m.index + m[0].length
-		const newContent =
-			content.slice(0, insertAt) + insertion + content.slice(insertAt)
-		try {
-			writeFileSync(mainFile.path, newContent, 'utf8')
-		} catch (e) {
-			return {
-				kind: 'failed',
-				reason: `Could not write ${mainFile.path}: ${(e as Error).message}`,
-			}
+	// No `addons:` key in the config body — insert one right after the opening `{`.
+	const indent = detectFileIndent(content)
+	const insertion = `${eol}${indent}addons: [${ADDON_ENTRY}],`
+	const newContent =
+		content.slice(0, bodyRange.bodyStart) +
+		insertion +
+		content.slice(bodyRange.bodyStart)
+	try {
+		writeFileSync(mainFile.path, newContent, 'utf8')
+	} catch (e) {
+		return {
+			kind: 'failed',
+			reason: `Could not write ${mainFile.path}: ${(e as Error).message}`,
 		}
-		return { kind: 'patched', appliedTo: 'new-array' }
 	}
-
-	return {
-		kind: 'failed',
-		reason:
-			'Could not locate the Storybook config object in main file. The addon needs to be registered manually.',
-	}
+	return { kind: 'patched', appliedTo: 'new-array' }
 }

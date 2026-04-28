@@ -17,24 +17,33 @@ export function detectQuoteStyle(content: string): "'" | '"' {
 	return m ? (m[1] as "'" | '"') : "'"
 }
 
-// Find the first occurrence of `<keyword>:` at top level (i.e. outside any string,
-// template literal, line comment, or block comment), returning the position of
-// `<keyword>` and the position of the value (first non-whitespace char after the colon).
-// Used by both patchers to locate `addons:` / `parameters:` / `decorators:` keys
-// without being fooled by examples sitting inside comments or strings.
+// Find the first occurrence of `<keyword>:` at the immediate level of the scanned
+// range (i.e. depth 0 within the search window, outside any string / template
+// literal / comment, and not nested inside a `{}`/`[]`/`()` group). Returns the
+// position of `<keyword>` and the position of the value (first non-whitespace
+// char after the colon).
+//
+// To target a specific config object's keys, pass `{ from, to }` set to the
+// range *inside* that object's braces — e.g. for `const config = { addons: [] }`
+// pass `from = positionAfterOpeningBrace`, `to = positionOfClosingBrace`. Then
+// keys nested in inner objects are skipped (they're at depth > 0 within the
+// range), and unrelated objects elsewhere in the file are out of range entirely.
 export function findTopLevelKey(
 	content: string,
 	keyword: string,
+	options: { from?: number; to?: number } = {},
 ): { keyStart: number; valueStart: number } | null {
+	const { from = 0, to = content.length } = options
 	const kwLen = keyword.length
+	let depth = 0
 	let inSQ = false
 	let inDQ = false
 	let inTL = false
 	let inLC = false
 	let inBC = false
 
-	let i = 0
-	while (i < content.length) {
+	let i = from
+	while (i < to) {
 		const c = content[i]!
 		const next = content[i + 1]
 
@@ -106,17 +115,125 @@ export function findTopLevelKey(
 		}
 
 		if (
+			depth === 0 &&
 			content.startsWith(keyword, i) &&
 			(i === 0 || !/[A-Za-z0-9_$]/.test(content[i - 1]!)) &&
 			!/[A-Za-z0-9_$]/.test(content[i + kwLen] ?? '')
 		) {
 			let j = i + kwLen
-			while (j < content.length && /\s/.test(content[j]!)) j++
+			while (j < to && /\s/.test(content[j]!)) j++
 			if (content[j] === ':') {
 				j++
-				while (j < content.length && /\s/.test(content[j]!)) j++
+				while (j < to && /\s/.test(content[j]!)) j++
 				return { keyStart: i, valueStart: j }
 			}
+		}
+
+		if (c === '{' || c === '[' || c === '(') depth++
+		else if ((c === '}' || c === ']' || c === ')') && depth > 0) depth--
+		i++
+	}
+	return null
+}
+
+// Find the index of the brace/bracket/paren that closes the one at `openIdx`,
+// respecting strings, template literals, and comments. Returns null if no
+// matching closer is found before end-of-content. The opener character at
+// `openIdx` determines which closer to match (`{`→`}`, `[`→`]`, `(`→`)`).
+export function findMatchingBrace(
+	content: string,
+	openIdx: number,
+): number | null {
+	const open = content[openIdx]
+	let close: string
+	if (open === '{') close = '}'
+	else if (open === '[') close = ']'
+	else if (open === '(') close = ')'
+	else return null
+
+	let depth = 0
+	let inSQ = false
+	let inDQ = false
+	let inTL = false
+	let inLC = false
+	let inBC = false
+
+	let i = openIdx
+	while (i < content.length) {
+		const c = content[i]!
+		const next = content[i + 1]
+
+		if (inLC) {
+			if (c === '\n') inLC = false
+			i++
+			continue
+		}
+		if (inBC) {
+			if (c === '*' && next === '/') {
+				inBC = false
+				i += 2
+				continue
+			}
+			i++
+			continue
+		}
+		if (inSQ) {
+			if (c === '\\') {
+				i += 2
+				continue
+			}
+			if (c === "'") inSQ = false
+			i++
+			continue
+		}
+		if (inDQ) {
+			if (c === '\\') {
+				i += 2
+				continue
+			}
+			if (c === '"') inDQ = false
+			i++
+			continue
+		}
+		if (inTL) {
+			if (c === '\\') {
+				i += 2
+				continue
+			}
+			if (c === '`') inTL = false
+			i++
+			continue
+		}
+		if (c === '/' && next === '/') {
+			inLC = true
+			i += 2
+			continue
+		}
+		if (c === '/' && next === '*') {
+			inBC = true
+			i += 2
+			continue
+		}
+		if (c === "'") {
+			inSQ = true
+			i++
+			continue
+		}
+		if (c === '"') {
+			inDQ = true
+			i++
+			continue
+		}
+		if (c === '`') {
+			inTL = true
+			i++
+			continue
+		}
+
+		if (c === open) depth++
+		else if (c === close) {
+			depth--
+			if (depth === 0) return i
 		}
 		i++
 	}
