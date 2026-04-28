@@ -208,12 +208,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	rule()
 	log('Step 5/5: generating .storybook/dependency-previews.json')
-	// Re-invoke the same sb-deps binary that's running this wizard, so we don't
-	// risk npx resolving a different version (or requiring npx to be installed).
+	// Re-invoke the same sb-deps binary that's running this wizard so we don't
+	// risk npx resolving a different version of the package.
 	const buildResult = spawnSync(process.execPath, [process.argv[1]!], {
 		cwd,
 		stdio: 'inherit',
 	})
+	let buildSucceeded = false
 	if (buildResult.error) {
 		log(`  ✗ could not spawn sb-deps: ${buildResult.error.message}`)
 		log(
@@ -226,16 +227,26 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		)
 	} else {
 		log('  ✓ dependency-previews.json generated')
+		buildSucceeded = true
 	}
 
 	rule()
-	log('Setup complete.')
 	const runCmd =
 		detection.packageManager === 'npm'
 			? 'npm run sb'
 			: detection.packageManager === 'bun'
 				? 'bun run sb'
 				: `${detection.packageManager} sb`
-	log(`Next: run \`${runCmd}\` to start Storybook with dependency watching.`)
-	rule()
+	if (buildSucceeded) {
+		log('Setup complete.')
+		log(`Next: run \`${runCmd}\` to start Storybook with dependency watching.`)
+		rule()
+	} else {
+		log('Setup completed with warnings.')
+		log(
+			`Run \`${detection.packageManager} run sb:deps\` once the issue above is resolved, then \`${runCmd}\` to start Storybook.`,
+		)
+		rule()
+		process.exit(1)
+	}
 }
