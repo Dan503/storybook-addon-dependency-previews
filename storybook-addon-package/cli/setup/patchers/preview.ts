@@ -6,6 +6,7 @@ import {
 	detectEol,
 	detectFileIndent,
 	detectQuoteStyle,
+	findTopLevelKey,
 	stripCommentsRespectingStrings,
 } from '../util.js'
 
@@ -191,9 +192,19 @@ function patchExistingPreview(
 	// ─── Imports: collect all imports from the addon package, merge them into one,
 	// and either replace the first / delete the rest, or insert a new one if none exist.
 	const PKG = 'storybook-addon-dependency-previews'
-	const ADDON_IMPORT_REGEX =
-		/import\s*(type\s+)?\{([\s\S]*?)\}\s*from\s*['"]storybook-addon-dependency-previews['"]/g
+	// Match the whole import statement including any trailing semicolon and the
+	// terminating newline, so that deletions of additional imports don't leave
+	// stray `;` lines behind in semicolon-using projects.
+	const ADDON_IMPORT_REGEX = new RegExp(
+		String.raw`^[\t ]*import\s*(type\s+)?\{([\s\S]*?)\}\s*from\s*['"]storybook-addon-dependency-previews['"]\s*;?[ \t]*(?:\r?\n|$)`,
+		'gm',
+	)
 	const allAddonImports = [...newContent.matchAll(ADDON_IMPORT_REGEX)]
+	// Preserve the project's semicolon style on the merged import.
+	const usesSemicolons =
+		/from\s*['"][^'"]*['"]\s*;/.test(newContent) ||
+		allAddonImports.some((m) => /;\s*(?:\r?\n|$)/.test(m[0]!))
+	const trailingSemi = usesSemicolons ? ';' : ''
 	const hasDependenciesJsonImport =
 		/import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/.test(
 			newContent,
@@ -290,9 +301,11 @@ function patchExistingPreview(
 			allRequiredAlreadyTypeImported
 
 		if (!nothingToDo) {
+			// The regex consumes the trailing newline, so include one in the
+			// replacement; also tack on the project's semicolon style.
 			const replacement = `import {${eol}${mergedEntries
 				.map((e) => `${indent}${formatEntry(e)},`)
-				.join(eol)}${eol}} from ${quote}${PKG}${quote}`
+				.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}${eol}`
 			// Replace the first import with the merged version; delete the rest.
 			let firstReplaced = false
 			newContent = newContent.replace(ADDON_IMPORT_REGEX, () => {
@@ -340,15 +353,17 @@ function patchExistingPreview(
 		newContent,
 	)
 
-	const paramsMatch = newContent.match(/(parameters\s*:\s*\{)/)
-	if (paramsMatch && paramsMatch.index !== undefined) {
-		const insertAt = paramsMatch.index + paramsMatch[0].length
+	// State-aware lookup so a `parameters:` mention in a comment / string can't
+	// trick us into inserting the addon block in the wrong place.
+	const paramsKey = findTopLevelKey(newContent, 'parameters')
+	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
+		const insertAt = paramsKey.valueStart + 1
 		const insertion = hasDefaultParamsSpread
 			? `${eol}${block}`
 			: `${eol}${l2}...defaultPreviewParameters,${eol}${block}`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
-	} else if (/\bparameters\s*:/.test(newContent)) {
+	} else if (paramsKey) {
 		// `parameters:` exists but isn't a literal `{ … }` object (probably a
 		// variable, spread, or function call). Inserting another `parameters:`
 		// would produce a duplicate key — bail with guidance instead.
@@ -374,13 +389,13 @@ function patchExistingPreview(
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
 
-	const decoratorsMatch = newContent.match(/(decorators\s*:\s*\[)/)
-	if (decoratorsMatch && decoratorsMatch.index !== undefined) {
-		const insertAt = decoratorsMatch.index + decoratorsMatch[0].length
+	const decoratorsKey = findTopLevelKey(newContent, 'decorators')
+	if (decoratorsKey && newContent[decoratorsKey.valueStart] === '[') {
+		const insertAt = decoratorsKey.valueStart + 1
 		const insertion = `${eol}${l2}...dependencyPreviewDecorators,`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
-	} else if (/\bdecorators\s*:/.test(newContent)) {
+	} else if (decoratorsKey) {
 		return {
 			kind: 'failed',
 			reason:

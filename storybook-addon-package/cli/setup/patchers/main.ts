@@ -5,6 +5,7 @@ import {
 	detectEol,
 	detectFileIndent,
 	detectQuoteStyle,
+	findTopLevelKey,
 	stripCommentsRespectingStrings,
 } from '../util.js'
 
@@ -26,116 +27,12 @@ const CONFIG_OBJECT_OPENERS: ReadonlyArray<RegExp> = [
 	/(\bconst\s+\w+\s*=\s*\{)/,
 ]
 
-// Locate a top-level `addons:` key using a state-aware scan that ignores
-// `addons` occurrences inside strings, template literals, and comments
-// (e.g. a `// addons: ['foo']` example in a comment must not be matched).
-function findAddonsKey(
-	content: string,
-): { keyStart: number; valueStart: number } | null {
-	let inSQ = false
-	let inDQ = false
-	let inTL = false
-	let inLC = false
-	let inBC = false
-
-	let i = 0
-	while (i < content.length) {
-		const c = content[i]!
-		const next = content[i + 1]
-
-		if (inLC) {
-			if (c === '\n') inLC = false
-			i++
-			continue
-		}
-		if (inBC) {
-			if (c === '*' && next === '/') {
-				inBC = false
-				i += 2
-				continue
-			}
-			i++
-			continue
-		}
-		if (inSQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === "'") inSQ = false
-			i++
-			continue
-		}
-		if (inDQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '"') inDQ = false
-			i++
-			continue
-		}
-		if (inTL) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '`') inTL = false
-			i++
-			continue
-		}
-
-		if (c === '/' && next === '/') {
-			inLC = true
-			i += 2
-			continue
-		}
-		if (c === '/' && next === '*') {
-			inBC = true
-			i += 2
-			continue
-		}
-		if (c === "'") {
-			inSQ = true
-			i++
-			continue
-		}
-		if (c === '"') {
-			inDQ = true
-			i++
-			continue
-		}
-		if (c === '`') {
-			inTL = true
-			i++
-			continue
-		}
-
-		// Match `addons` as a whole identifier followed by `:`
-		if (
-			content.startsWith('addons', i) &&
-			(i === 0 || !/[A-Za-z0-9_$]/.test(content[i - 1]!)) &&
-			!/[A-Za-z0-9_$]/.test(content[i + 6] ?? '')
-		) {
-			let j = i + 6
-			while (j < content.length && /\s/.test(content[j]!)) j++
-			if (content[j] === ':') {
-				j++
-				while (j < content.length && /\s/.test(content[j]!)) j++
-				return { keyStart: i, valueStart: j }
-			}
-		}
-		i++
-	}
-	return null
-}
-
 function findAddonsArray(content: string): {
 	openerStart: number
 	arrayOpenIndex: number
 	arrayCloseIndex: number
 } | null {
-	const key = findAddonsKey(content)
+	const key = findTopLevelKey(content, 'addons')
 	if (!key || content[key.valueStart] !== '[') return null
 	const closeIndex = findMatchingBracket(content, key.valueStart)
 	if (closeIndex === null) return null
@@ -278,7 +175,7 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 	if (!arrayLoc) {
 		// Use the same state-aware scan as `findAddonsArray` so a `// addons: [...]`
 		// example sitting in a comment doesn't trigger this error.
-		const keyLoc = findAddonsKey(content)
+		const keyLoc = findTopLevelKey(content, 'addons')
 		if (keyLoc && content[keyLoc.valueStart] !== '[') {
 			return {
 				kind: 'failed',
