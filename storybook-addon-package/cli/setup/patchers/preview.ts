@@ -353,9 +353,6 @@ function patchExistingPreview(
 		eol,
 		quote,
 	)
-	const hasDefaultParamsSpread = /\.\.\.defaultPreviewParameters\b/.test(
-		newContent,
-	)
 
 	// Locate the preview config object's body so all the key lookups below are
 	// scoped to *that* object. Without this, a `parameters:` / `decorators:`
@@ -384,7 +381,20 @@ function patchExistingPreview(
 
 	const paramsKey = findTopLevelKey(newContent, 'parameters', bodyRange)
 	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
-		const insertAt = paramsKey.valueStart + 1
+		// Check for an existing `...defaultPreviewParameters` spread, but only
+		// inside the parameters object itself (and only in real code, not comments
+		// or strings). A match anywhere else in the file would falsely suppress
+		// the spread we need to insert.
+		const paramsBodyEnd = findMatchingBrace(newContent, paramsKey.valueStart)
+		const paramsBodyStart = paramsKey.valueStart + 1
+		const hasDefaultParamsSpread =
+			paramsBodyEnd !== null &&
+			/\.\.\.defaultPreviewParameters\b/.test(
+				stripCommentsRespectingStrings(
+					newContent.slice(paramsBodyStart, paramsBodyEnd),
+				),
+			)
+		const insertAt = paramsBodyStart
 		const insertion = hasDefaultParamsSpread
 			? `${eol}${block}`
 			: `${eol}${l2}...defaultPreviewParameters,${eol}${block}`
