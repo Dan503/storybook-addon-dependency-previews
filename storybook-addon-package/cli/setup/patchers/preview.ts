@@ -1,8 +1,13 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import type { Framework, PreviewFile } from '../detect.js'
-import { stripCommentsRespectingStrings } from '../util.js'
+import type { Framework, MainFile, PreviewFile } from '../detect.js'
+import {
+	detectEol,
+	detectFileIndent,
+	detectQuoteStyle,
+	stripCommentsRespectingStrings,
+} from '../util.js'
 
 export type PreviewPatchResult =
 	| { kind: 'created'; path: string }
@@ -56,77 +61,49 @@ function dependencyPreviewsBlock(
 	return lines.join(eol)
 }
 
-function detectFileIndent(content: string): string {
-	const m = content.match(/^([ \t]+)\S/m)
-	return m ? m[1]! : '\t'
-}
+type TemplateStyle = { indent: string; eol: string }
 
-function detectEol(content: string): string {
-	return content.includes('\r\n') ? '\r\n' : '\n'
-}
-
-function detectQuoteStyle(content: string): "'" | '"' {
-	const m = content.match(/import[\s\S]+?from\s+(['"])/)
-	return m ? (m[1] as "'" | '"') : "'"
-}
-
-function reactTemplate(sourceRootUrl: string): string {
-	return `/// <reference types="vite/client" />
-
-import {
-\tdefaultPreviewParameters,
-\tdependencyPreviewDecorators,
-\ttype StorybookPreviewConfig,
-} from 'storybook-addon-dependency-previews'
-
-import dependenciesJson from './dependency-previews.json'
-
-const previewConfig: StorybookPreviewConfig = {
-\tparameters: {
-\t\t...defaultPreviewParameters,
-${dependencyPreviewsBlock('react-vite', sourceRootUrl)}
-\t},
-\tdecorators: [...dependencyPreviewDecorators],
-}
-
-export default previewConfig
-`
-}
-
-function svelteTemplate(
-	framework: 'sveltekit' | 'svelte-vite',
+function buildTemplate(
+	framework: SupportedFramework,
 	sourceRootUrl: string,
+	style: TemplateStyle,
 ): string {
-	return `/// <reference types="vite/client" />
-
-import {
-\tdefaultPreviewParameters,
-\tdependencyPreviewDecorators,
-\ttype StorybookPreviewConfig,
-} from 'storybook-addon-dependency-previews'
-
-import dependenciesJson from './dependency-previews.json'
-
-const previewConfig: StorybookPreviewConfig = {
-\tparameters: {
-\t\t...defaultPreviewParameters,
-${dependencyPreviewsBlock(framework, sourceRootUrl)}
-\t},
-\tdecorators: [...dependencyPreviewDecorators],
-}
-
-export default previewConfig
-`
+	const { indent, eol } = style
+	const l1 = indent
+	const l2 = indent.repeat(2)
+	return [
+		`/// <reference types="vite/client" />`,
+		``,
+		`import {`,
+		`${l1}defaultPreviewParameters,`,
+		`${l1}dependencyPreviewDecorators,`,
+		`${l1}type StorybookPreviewConfig,`,
+		`} from 'storybook-addon-dependency-previews'`,
+		``,
+		`import dependenciesJson from './dependency-previews.json'`,
+		``,
+		`const previewConfig: StorybookPreviewConfig = {`,
+		`${l1}parameters: {`,
+		`${l2}...defaultPreviewParameters,`,
+		dependencyPreviewsBlock(framework, sourceRootUrl, indent, eol),
+		`${l1}},`,
+		`${l1}decorators: [...dependencyPreviewDecorators],`,
+		`}`,
+		``,
+		`export default previewConfig`,
+		``,
+	].join(eol)
 }
 
 function templateForFramework(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
+	style: TemplateStyle,
 ): { content: string; lang: PreviewFile['lang'] } {
-	if (framework === 'react-vite') {
-		return { content: reactTemplate(sourceRootUrl), lang: 'ts' }
+	return {
+		content: buildTemplate(framework, sourceRootUrl, style),
+		lang: 'ts',
 	}
-	return { content: svelteTemplate(framework, sourceRootUrl), lang: 'ts' }
 }
 
 function findImportInsertionIndex(content: string): number {
@@ -440,10 +417,11 @@ function patchExistingPreview(
 export function patchPreviewFile(opts: {
 	storybookDir: string
 	previewFile: PreviewFile | null
+	mainFile: MainFile
 	framework: Framework
 	sourceRootUrl: string
 }): PreviewPatchResult {
-	const { storybookDir, previewFile, framework, sourceRootUrl } = opts
+	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl } = opts
 
 	if (
 		framework !== 'react-vite' &&
@@ -460,7 +438,20 @@ export function patchPreviewFile(opts: {
 		return patchExistingPreview(previewFile, framework, sourceRootUrl)
 	}
 
-	const { content, lang } = templateForFramework(framework, sourceRootUrl)
+	// Derive indent and EOL from the existing main.{ts,js,...} so the brand-new
+	// preview file matches the project's style instead of always using tabs / LF.
+	let style: TemplateStyle = { indent: '\t', eol: '\n' }
+	try {
+		const mainContent = readFileSync(mainFile.path, 'utf8')
+		style = {
+			indent: detectFileIndent(mainContent),
+			eol: detectEol(mainContent),
+		}
+	} catch {
+		// If main.ts can't be read for some reason, fall back to the defaults.
+	}
+
+	const { content, lang } = templateForFramework(framework, sourceRootUrl, style)
 	const path = resolve(storybookDir, `preview.${lang}`)
 	if (existsSync(path)) {
 		return { kind: 'skipped', reason: `${path} already exists` }

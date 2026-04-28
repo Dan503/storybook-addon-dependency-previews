@@ -1,3 +1,22 @@
+// Detect the file's leading indent unit (one level deep) — first indented line wins.
+// Defaults to a tab so a file with no existing indent doesn't end up un-indented.
+export function detectFileIndent(content: string): string {
+	const m = content.match(/^([ \t]+)\S/m)
+	return m ? m[1]! : '\t'
+}
+
+// Detect the file's line-ending style. CRLF if any CRLF is present, else LF.
+export function detectEol(content: string): string {
+	return content.includes('\r\n') ? '\r\n' : '\n'
+}
+
+// Detect the project's preferred string-literal quote style by reading the first
+// import statement's `from <q>...<q>` quote. Defaults to single quotes.
+export function detectQuoteStyle(content: string): "'" | '"' {
+	const m = content.match(/import[\s\S]+?from\s+(['"])/)
+	return m ? (m[1] as "'" | '"') : "'"
+}
+
 // Strip line and block comments while keeping string and template literals intact.
 // Used for identifier presence / `module.exports` checks so commented-out example
 // code can't false-positive — and so a `//` or `*/` sitting inside a string literal

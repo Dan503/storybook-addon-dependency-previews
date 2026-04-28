@@ -1,7 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 import type { MainFile } from '../detect.js'
-import { stripCommentsRespectingStrings } from '../util.js'
+import {
+	detectEol,
+	detectFileIndent,
+	detectQuoteStyle,
+	stripCommentsRespectingStrings,
+} from '../util.js'
 
 const ADDON_PATH = 'storybook-addon-dependency-previews/addon'
 const ADDON_PRESENT = /['"]storybook-addon-dependency-previews\/addon['"]/
@@ -249,20 +254,6 @@ function detectIndentInsideArray(
 	if (lineIndent.includes('\t')) return lineIndent + '\t'
 	if (lineIndent.length > 0) return lineIndent + ' '.repeat(lineIndent.length)
 	return detectFileIndent(content)
-}
-
-function detectFileIndent(content: string): string {
-	const m = content.match(/^([ \t]+)\S/m)
-	return m ? m[1]! : '\t'
-}
-
-function detectEol(content: string): string {
-	return content.includes('\r\n') ? '\r\n' : '\n'
-}
-
-function detectQuoteStyle(content: string): "'" | '"' {
-	const m = content.match(/import[\s\S]+?from\s+(['"])/)
-	return m ? (m[1] as "'" | '"') : "'"
 }
 
 export function patchMainFile(mainFile: MainFile): PatchResult {

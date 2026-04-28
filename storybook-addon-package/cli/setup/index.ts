@@ -157,6 +157,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const previewResult = patchPreviewFile({
 		storybookDir: detection.storybookDir,
 		previewFile: detection.previewFile,
+		mainFile: detection.mainFile,
 		framework,
 		sourceRootUrl,
 	})
