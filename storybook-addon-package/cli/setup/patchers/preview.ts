@@ -33,6 +33,20 @@ function dependencyPreviewsBlock(
 	const l2 = indent.repeat(2)
 	const l3 = indent.repeat(3)
 	const l4 = indent.repeat(4)
+	// `sourceRootUrl` is required by `DependencyPreviewStorybookParameters`, so
+	// always emit it — even an empty string is better than a TS error.
+	// JSON.stringify always emits double quotes; convert when the file uses single
+	// quotes so the inserted line matches surrounding style. URLs in practice contain
+	// no characters that need re-escaping, but we still escape backslashes / single
+	// quotes / line terminators for safety.
+	const serialisedSourceRootUrl =
+		quote === '"'
+			? JSON.stringify(sourceRootUrl)
+			: `'${sourceRootUrl
+					.replace(/\\/g, '\\\\')
+					.replace(/'/g, "\\'")
+					.replace(/\n/g, '\\n')
+					.replace(/\r/g, '\\r')}'`
 	const lines = [
 		`${l2}dependencyPreviews: {`,
 		`${l3}dependenciesJson,`,
@@ -41,23 +55,9 @@ function dependencyPreviewsBlock(
 		`${l4}${quote}${STORY_GLOBS[framework]}${quote},`,
 		`${l4}{ eager: false },`,
 		`${l3}),`,
+		`${l3}sourceRootUrl: ${serialisedSourceRootUrl},`,
+		`${l2}},`,
 	]
-	if (sourceRootUrl) {
-		// JSON.stringify always emits double quotes; convert when the file uses single
-		// quotes so the inserted line matches surrounding style. URLs in practice contain
-		// no characters that need re-escaping, but we still escape backslashes / single
-		// quotes / line terminators for safety.
-		const serialised =
-			quote === '"'
-				? JSON.stringify(sourceRootUrl)
-				: `'${sourceRootUrl
-						.replace(/\\/g, '\\\\')
-						.replace(/'/g, "\\'")
-						.replace(/\n/g, '\\n')
-						.replace(/\r/g, '\\r')}'`
-		lines.push(`${l3}sourceRootUrl: ${serialised},`)
-	}
-	lines.push(`${l2}},`)
 	return lines.join(eol)
 }
 
