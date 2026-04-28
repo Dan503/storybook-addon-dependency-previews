@@ -383,15 +383,38 @@ function patchExistingPreview(
 	// the original.
 	const findPreviewBody = (text: string): { from: number; to: number } | null => {
 		const stripped = stripCommentsRespectingStrings(text)
-		const m = stripped.match(
-			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
+		const bodyAt = (
+			match: RegExpMatchArray | null,
+		): { from: number; to: number } | null => {
+			if (!match || match.index === undefined) return null
+			const openBraceIdx = match.index + match[0].length - 1
+			if (text[openBraceIdx] !== '{') return null
+			const closeIdx = findMatchingBrace(text, openBraceIdx)
+			if (closeIdx === null) return null
+			return { from: openBraceIdx + 1, to: closeIdx }
+		}
+
+		// Direct patterns: typed preview (`Preview = {`, `StorybookPreviewConfig = {`)
+		// or anonymous default export (`export default {`).
+		const direct = bodyAt(
+			stripped.match(
+				/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
+			),
 		)
-		if (!m || m.index === undefined) return null
-		const openBraceIdx = m.index + m[0].length - 1
-		if (text[openBraceIdx] !== '{') return null
-		const closeIdx = findMatchingBrace(text, openBraceIdx)
-		if (closeIdx === null) return null
-		return { from: openBraceIdx + 1, to: closeIdx }
+		if (direct) return direct
+
+		// Fallback: untyped `const preview = { … }; export default preview` (common
+		// in `.js` / `.jsx` preview files where there's no type annotation).
+		// Resolve `export default <ident>` to its `(const|let|var) <ident> = {…}`
+		// declaration and use that object's body.
+		const exportIdent = stripped.match(
+			/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
+		)?.[1]
+		if (!exportIdent) return null
+		const escaped = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+		return bodyAt(
+			stripped.match(new RegExp(`(?:const|let|var)\\s+${escaped}\\s*=\\s*\\{`)),
+		)
 	}
 
 	const bodyRange = findPreviewBody(newContent)

@@ -151,7 +151,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	rule()
 	log('Step 3/5: configuring preview file')
 	const sourceRootUrl = await input(
-		'Source root URL (e.g. https://github.com/your-org/your-repo/blob/main/src) — leave blank to skip:',
+		'Source root URL (e.g. https://github.com/your-org/your-repo/blob/main/src) — leave blank for no source links:',
 		'',
 	)
 	const previewResult = patchPreviewFile({
