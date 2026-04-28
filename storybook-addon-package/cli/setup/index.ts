@@ -52,13 +52,22 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	let framework: Framework = detection.framework
 
-	if (framework === 'angular') {
+	// Webpack-based Storybook frameworks aren't supported by the wizard — Vite is
+	// required for the addon's `import.meta.glob` story-discovery. Each gets a
+	// pointer to a framework-specific manual-setup doc that walks through the
+	// webpack additions (custom CSS-modules loader, `__PROJECT_ROOT__` define).
+	const WEBPACK_DOC_BASE =
+		'https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs'
+	const webpackDocs: Partial<Record<Framework, string>> = {
+		angular: `${WEBPACK_DOC_BASE}/manual-setup-angular.md`,
+		'nextjs-webpack': `${WEBPACK_DOC_BASE}/manual-setup-nextjs-webpack.md`,
+	}
+	const webpackDoc = webpackDocs[framework]
+	if (webpackDoc) {
 		log(
-			'Angular projects are not handled by the wizard — its setup is more involved.',
+			'Webpack-based Storybook projects are not supported by the wizard — Vite is required.',
 		)
-		log(
-			'Manual setup guide: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-angular.md',
-		)
+		log(`Manual setup guide: ${webpackDoc}`)
 		return
 	}
 

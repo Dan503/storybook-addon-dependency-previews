@@ -8,6 +8,7 @@ export type Framework =
 	| 'sveltekit'
 	| 'svelte-vite'
 	| 'angular'
+	| 'nextjs-webpack'
 	| 'unsupported'
 	| 'unknown'
 
@@ -87,6 +88,7 @@ function frameworkFromRaw(raw: string | null): Framework {
 	if (raw === '@storybook/sveltekit') return 'sveltekit'
 	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
 	if (raw === '@storybook/angular') return 'angular'
+	if (raw === '@storybook/nextjs') return 'nextjs-webpack'
 	return 'unsupported'
 }
 
@@ -97,6 +99,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'svelte-vite':
 			return 'vite'
 		case 'angular':
+		case 'nextjs-webpack':
 			return 'webpack5'
 		default:
 			return 'unknown'
