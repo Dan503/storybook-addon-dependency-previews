@@ -166,10 +166,12 @@ function patchExistingPreview(
 	// literals are left intact so a URL containing `//` doesn't get truncated.)
 	const codeOnly = stripCommentsRespectingStrings(content)
 
-	// Look for the addon's wired-in identifiers — not just any import of the package.
-	// `dependencyPreviewDecorators` is a unique exported name, and `dependencyPreviews:`
-	// is the unique parameters key. Either presence means the addon is already configured.
-	if (/\bdependencyPreviewDecorators\b|\bdependencyPreviews\s*:/.test(codeOnly)) {
+	// `dependencyPreviews:` is the unique parameters key the wizard injects, so its
+	// presence means the addon is already wired in. Other markers like the bare
+	// `dependencyPreviewDecorators` identifier are too lenient — they'd false-positive
+	// on `import { dependencyPreviewDecorators as dpd } …` where the name appears in
+	// the import declaration but isn't actually used in any decorators array yet.
+	if (/\bdependencyPreviews\s*:/.test(codeOnly)) {
 		return { kind: 'skipped', reason: 'addon already configured in preview' }
 	}
 
@@ -219,6 +221,13 @@ function patchExistingPreview(
 		'dependencyPreviewDecorators',
 	]
 	const requiredTypeNames = isTs ? ['StorybookPreviewConfig'] : []
+
+	// The local binding names for the addon's value imports — usually identical
+	// to the original names, but if the user has aliased an import (e.g.
+	// `import { defaultPreviewParameters as dp } from '…'`) then the local name
+	// is the alias and that's what later spreads need to reference.
+	let defaultsLocalName = 'defaultPreviewParameters'
+	let decoratorsLocalName = 'dependencyPreviewDecorators'
 
 	if (allAddonImports.length > 0) {
 		type Entry = { name: string; alias?: string; isType: boolean }
@@ -322,6 +331,15 @@ function patchExistingPreview(
 			// Tidy up any blank-line runs left behind by deleted imports.
 			newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
 		}
+
+		// Resolve the local binding names — if the user aliased an import we need
+		// to reference the alias in the inserted spreads, not the original name.
+		const findLocalName = (name: string): string => {
+			const entry = mergedEntries.find((m) => m.name === name && !m.isType)
+			return entry?.alias ?? name
+		}
+		defaultsLocalName = findLocalName('defaultPreviewParameters')
+		decoratorsLocalName = findLocalName('dependencyPreviewDecorators')
 	}
 
 	const importsToInsert: string[] = []
@@ -358,8 +376,14 @@ function patchExistingPreview(
 	// scoped to *that* object. Without this, a `parameters:` / `decorators:`
 	// belonging to some unrelated object earlier in the file would be matched
 	// instead of the one we want to patch.
+	//
+	// The opener regex runs against the position-preserving comment-stripped text
+	// so an example like `// const preview: Preview = { ... }` in a comment can't
+	// hijack the search — `match.index` from the stripped content lines up with
+	// the original.
 	const findPreviewBody = (text: string): { from: number; to: number } | null => {
-		const m = text.match(
+		const stripped = stripCommentsRespectingStrings(text)
+		const m = stripped.match(
 			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
 		)
 		if (!m || m.index === undefined) return null
@@ -381,15 +405,19 @@ function patchExistingPreview(
 
 	const paramsKey = findTopLevelKey(newContent, 'parameters', bodyRange)
 	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
-		// Check for an existing `...defaultPreviewParameters` spread, but only
-		// inside the parameters object itself (and only in real code, not comments
-		// or strings). A match anywhere else in the file would falsely suppress
-		// the spread we need to insert.
+		// Check for an existing `...<local>` spread, but only inside the parameters
+		// object itself (and only in real code, not comments or strings). A match
+		// anywhere else in the file would falsely suppress the spread we need to
+		// insert. `<local>` is the project's local binding for `defaultPreviewParameters`,
+		// which differs from the canonical name when the user has aliased the import.
 		const paramsBodyEnd = findMatchingBrace(newContent, paramsKey.valueStart)
 		const paramsBodyStart = paramsKey.valueStart + 1
+		const localSpreadRegex = new RegExp(
+			String.raw`\.\.\.${defaultsLocalName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`,
+		)
 		const hasDefaultParamsSpread =
 			paramsBodyEnd !== null &&
-			/\.\.\.defaultPreviewParameters\b/.test(
+			localSpreadRegex.test(
 				stripCommentsRespectingStrings(
 					newContent.slice(paramsBodyStart, paramsBodyEnd),
 				),
@@ -397,7 +425,7 @@ function patchExistingPreview(
 		const insertAt = paramsBodyStart
 		const insertion = hasDefaultParamsSpread
 			? `${eol}${block}`
-			: `${eol}${l2}...defaultPreviewParameters,${eol}${block}`
+			: `${eol}${l2}...${defaultsLocalName},${eol}${block}`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	} else if (paramsKey) {
@@ -411,7 +439,7 @@ function patchExistingPreview(
 		}
 	} else {
 		const insertAt = bodyRange.from
-		const insertion = `${eol}${l1}parameters: {${eol}${l2}...defaultPreviewParameters,${eol}${block}${eol}${l1}},`
+		const insertion = `${eol}${l1}parameters: {${eol}${l2}...${defaultsLocalName},${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
@@ -425,10 +453,29 @@ function patchExistingPreview(
 		bodyRangeAfterParams,
 	)
 	if (decoratorsKey && newContent[decoratorsKey.valueStart] === '[') {
-		const insertAt = decoratorsKey.valueStart + 1
-		const insertion = `${eol}${l2}...dependencyPreviewDecorators,`
-		newContent =
-			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		// Mirror the parameters-spread idempotency: only insert the spread if the
+		// decorators array doesn't already contain `...<localName>`. Catches the
+		// "user partially set up by hand" case (the wizard may have just added
+		// `dependencyPreviews:` parameters and the user might already have wired
+		// the decorators).
+		const decoratorsBodyEnd = findMatchingBrace(newContent, decoratorsKey.valueStart)
+		const decoratorsBodyStart = decoratorsKey.valueStart + 1
+		const localDecoratorsSpreadRegex = new RegExp(
+			String.raw`\.\.\.${decoratorsLocalName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`,
+		)
+		const hasDecoratorsSpread =
+			decoratorsBodyEnd !== null &&
+			localDecoratorsSpreadRegex.test(
+				stripCommentsRespectingStrings(
+					newContent.slice(decoratorsBodyStart, decoratorsBodyEnd),
+				),
+			)
+		if (!hasDecoratorsSpread) {
+			const insertAt = decoratorsBodyStart
+			const insertion = `${eol}${l2}...${decoratorsLocalName},`
+			newContent =
+				newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		}
 	} else if (decoratorsKey) {
 		return {
 			kind: 'failed',
@@ -437,7 +484,7 @@ function patchExistingPreview(
 		}
 	} else {
 		const insertAt = bodyRangeAfterParams.from
-		const insertion = `${eol}${l1}decorators: [...dependencyPreviewDecorators],`
+		const insertion = `${eol}${l1}decorators: [...${decoratorsLocalName}],`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}

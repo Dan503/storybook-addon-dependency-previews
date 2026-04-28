@@ -31,11 +31,17 @@ const CONFIG_OBJECT_OPENERS: ReadonlyArray<RegExp> = [
 // Locate the body of the Storybook config object: the range between its
 // opening `{` and matching `}`. Used to scope key lookups so they can't be
 // fooled by an unrelated object earlier in the file with the same key name.
+//
+// The opener regex runs against the comment-stripped content (which preserves
+// positions, so `match.index` lines up with the original) — that way an
+// `// export default {` example sitting in a comment can't be mistaken for the
+// real config's opener.
 function findConfigBodyRange(
 	content: string,
 ): { bodyStart: number; bodyEnd: number } | null {
+	const codeOnly = stripCommentsRespectingStrings(content)
 	for (const opener of CONFIG_OBJECT_OPENERS) {
-		const m = content.match(opener)
+		const m = codeOnly.match(opener)
 		if (!m || m.index === undefined) continue
 		const openBraceIdx = m.index + m[0].length - 1
 		if (content[openBraceIdx] !== '{') continue

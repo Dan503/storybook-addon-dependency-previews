@@ -241,9 +241,11 @@ export function findMatchingBrace(
 }
 
 // Strip line and block comments while keeping string and template literals intact.
-// Used for identifier presence / `module.exports` checks so commented-out example
-// code can't false-positive — and so a `//` or `*/` sitting inside a string literal
-// (e.g. a URL) doesn't get stripped along with the comment.
+// The output is the same length as the input — comment characters are replaced
+// with spaces (newlines inside comments are preserved as-is) so byte indices in
+// the stripped content correspond directly to positions in the original. That
+// lets callers run a regex against the stripped output and use `match.index`
+// to locate the corresponding position in the unstripped file.
 export function stripCommentsRespectingStrings(content: string): string {
 	let out = ''
 	let inSQ = false
@@ -261,6 +263,8 @@ export function stripCommentsRespectingStrings(content: string): string {
 			if (c === '\n') {
 				inLC = false
 				out += c
+			} else {
+				out += ' '
 			}
 			i++
 			continue
@@ -268,9 +272,11 @@ export function stripCommentsRespectingStrings(content: string): string {
 		if (inBC) {
 			if (c === '*' && next === '/') {
 				inBC = false
+				out += '  '
 				i += 2
 				continue
 			}
+			out += c === '\n' ? '\n' : ' '
 			i++
 			continue
 		}
@@ -310,11 +316,13 @@ export function stripCommentsRespectingStrings(content: string): string {
 
 		if (c === '/' && next === '/') {
 			inLC = true
+			out += '  '
 			i += 2
 			continue
 		}
 		if (c === '/' && next === '*') {
 			inBC = true
+			out += '  '
 			i += 2
 			continue
 		}
