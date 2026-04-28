@@ -80,13 +80,16 @@ function detectIndentInsideArray(
 		const m = line.match(/^([ \t]+)\S/)
 		if (m) return m[1]!
 	}
-	// Empty array — derive from the indent of the line containing `addons:`,
-	// then add one more level (using the project's existing indent style).
+	// Empty array — items belong one indent unit deeper than the `addons:` line.
+	// Using `detectFileIndent` for the unit instead of doubling the current
+	// indent so that a deeply-nested `addons:` (e.g. inside a function) doesn't
+	// over-indent the inserted entries.
 	const lineStart = content.lastIndexOf('\n', arrayStart - 1) + 1
 	const lineIndent = content.slice(lineStart, arrayStart).match(/^[ \t]*/)![0]
+	const indentUnit = detectFileIndent(content)
 	if (lineIndent.includes('\t')) return lineIndent + '\t'
-	if (lineIndent.length > 0) return lineIndent + ' '.repeat(lineIndent.length)
-	return detectFileIndent(content)
+	if (indentUnit.length > 0) return lineIndent + indentUnit
+	return indentUnit
 }
 
 export function patchMainFile(mainFile: MainFile): PatchResult {

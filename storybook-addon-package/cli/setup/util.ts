@@ -12,8 +12,15 @@ export function detectEol(content: string): string {
 
 // Detect the project's preferred string-literal quote style by reading the first
 // import statement's `from <q>...<q>` quote. Defaults to single quotes.
+//
+// The regex runs against `stripCommentsRespectingStrings(content)` so a leading
+// commented-out example like `// import x from "y"` (or a multi-line block-comment
+// example) can't pick up the wrong quote style. The strip is position-preserving,
+// so the captured quote character is identical to the one in the original.
 export function detectQuoteStyle(content: string): "'" | '"' {
-	const m = content.match(/import[\s\S]+?from\s+(['"])/)
+	const m = stripCommentsRespectingStrings(content).match(
+		/import[\s\S]+?from\s+(['"])/,
+	)
 	return m ? (m[1] as "'" | '"') : "'"
 }
 

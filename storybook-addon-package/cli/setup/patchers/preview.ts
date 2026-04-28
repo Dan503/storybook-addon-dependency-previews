@@ -403,6 +403,11 @@ function patchExistingPreview(
 		}
 	}
 
+	// If we end up creating a brand-new `parameters:` key, remember the position
+	// right after it so a brand-new `decorators:` insertion can land *after* it
+	// rather than at the same body-start position.
+	let paramsCreatedEndOffset: number | null = null
+
 	const paramsKey = findTopLevelKey(newContent, 'parameters', bodyRange)
 	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
 		// Check for an existing `...<local>` spread, but only inside the parameters
@@ -442,6 +447,11 @@ function patchExistingPreview(
 		const insertion = `${eol}${l1}parameters: {${eol}${l2}...${defaultsLocalName},${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		// Track where the just-inserted parameters block ends, so a subsequent
+		// "create new decorators" can be placed *after* it (the bodyRange.from
+		// position is shared with parameters; without this offset, decorators
+		// would be inserted at body-start and end up *before* parameters).
+		paramsCreatedEndOffset = insertAt + insertion.length
 	}
 
 	// Re-find the body range after the params insertion — the body's closing
@@ -483,7 +493,10 @@ function patchExistingPreview(
 				'Preview config already defines `decorators` in a non-literal-array form — please manually add `...dependencyPreviewDecorators` to the existing decorators definition.',
 		}
 	} else {
-		const insertAt = bodyRangeAfterParams.from
+		// If we just inserted a brand-new `parameters:` key in this same run,
+		// position the new `decorators:` *after* it. Otherwise place it at the
+		// start of the preview config body.
+		const insertAt = paramsCreatedEndOffset ?? bodyRangeAfterParams.from
 		const insertion = `${eol}${l1}decorators: [...${decoratorsLocalName}],`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
