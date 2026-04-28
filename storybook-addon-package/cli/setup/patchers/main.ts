@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 import type { MainFile } from '../detect.js'
+import { stripCommentsRespectingStrings } from '../util.js'
 
 const ADDON_PATH = 'storybook-addon-dependency-previews/addon'
 const ADDON_PRESENT = /['"]storybook-addon-dependency-previews\/addon['"]/
@@ -275,7 +276,10 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 		}
 	}
 
-	if (ADDON_PRESENT.test(content)) {
+	// Strip comments (preserving string literals) before the "already registered"
+	// check, otherwise a commented-out example like `// 'storybook-addon-dependency-previews/addon'`
+	// would skip patching even when the addon isn't actually configured.
+	if (ADDON_PRESENT.test(stripCommentsRespectingStrings(content))) {
 		return { kind: 'skipped', reason: 'addon already registered' }
 	}
 

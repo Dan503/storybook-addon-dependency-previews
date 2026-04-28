@@ -35,6 +35,7 @@ export default defineConfig([
 			'cli/setup/detect': './cli/setup/detect.ts',
 			'cli/setup/install': './cli/setup/install.ts',
 			'cli/setup/prompt': './cli/setup/prompt.ts',
+			'cli/setup/util': './cli/setup/util.ts',
 			'cli/setup/patchers/main': './cli/setup/patchers/main.ts',
 			'cli/setup/patchers/preview': './cli/setup/patchers/preview.ts',
 			'cli/setup/patchers/packageJson':

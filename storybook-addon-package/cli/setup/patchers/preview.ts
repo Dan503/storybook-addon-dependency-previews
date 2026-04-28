@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import type { Framework, PreviewFile } from '../detect.js'
+import { stripCommentsRespectingStrings } from '../util.js'
 
 export type PreviewPatchResult =
 	| { kind: 'created'; path: string }
@@ -67,108 +68,6 @@ function detectEol(content: string): string {
 function detectQuoteStyle(content: string): "'" | '"' {
 	const m = content.match(/import[\s\S]+?from\s+(['"])/)
 	return m ? (m[1] as "'" | '"') : "'"
-}
-
-// Strip line and block comments while keeping string and template literals intact.
-// Used for the idempotency / `module.exports` checks so that commented-out example
-// code can't false-positive (or false-negative when a `//` happens to appear inside
-// a string literal).
-function stripCommentsRespectingStrings(content: string): string {
-	let out = ''
-	let inSQ = false
-	let inDQ = false
-	let inTL = false
-	let inLC = false
-	let inBC = false
-
-	let i = 0
-	while (i < content.length) {
-		const c = content[i]!
-		const next = content[i + 1]
-
-		if (inLC) {
-			if (c === '\n') {
-				inLC = false
-				out += c
-			}
-			i++
-			continue
-		}
-		if (inBC) {
-			if (c === '*' && next === '/') {
-				inBC = false
-				i += 2
-				continue
-			}
-			i++
-			continue
-		}
-		if (inSQ) {
-			out += c
-			if (c === '\\' && i + 1 < content.length) {
-				out += content[i + 1]
-				i += 2
-				continue
-			}
-			if (c === "'") inSQ = false
-			i++
-			continue
-		}
-		if (inDQ) {
-			out += c
-			if (c === '\\' && i + 1 < content.length) {
-				out += content[i + 1]
-				i += 2
-				continue
-			}
-			if (c === '"') inDQ = false
-			i++
-			continue
-		}
-		if (inTL) {
-			out += c
-			if (c === '\\' && i + 1 < content.length) {
-				out += content[i + 1]
-				i += 2
-				continue
-			}
-			if (c === '`') inTL = false
-			i++
-			continue
-		}
-
-		if (c === '/' && next === '/') {
-			inLC = true
-			i += 2
-			continue
-		}
-		if (c === '/' && next === '*') {
-			inBC = true
-			i += 2
-			continue
-		}
-		if (c === "'") {
-			inSQ = true
-			out += c
-			i++
-			continue
-		}
-		if (c === '"') {
-			inDQ = true
-			out += c
-			i++
-			continue
-		}
-		if (c === '`') {
-			inTL = true
-			out += c
-			i++
-			continue
-		}
-		out += c
-		i++
-	}
-	return out
 }
 
 function reactTemplate(sourceRootUrl: string): string {
@@ -312,11 +211,12 @@ function patchExistingPreview(
 
 	let newContent = content
 
-	// ─── Imports: extend an existing addon import if one is present, otherwise insert a new one ───
+	// ─── Imports: collect all imports from the addon package, merge them into one,
+	// and either replace the first / delete the rest, or insert a new one if none exist.
 	const PKG = 'storybook-addon-dependency-previews'
-	const existingAddonImport = newContent.match(
-		/import\s*(type\s+)?\{([\s\S]*?)\}\s*from\s*['"]storybook-addon-dependency-previews['"]/,
-	)
+	const ADDON_IMPORT_REGEX =
+		/import\s*(type\s+)?\{([\s\S]*?)\}\s*from\s*['"]storybook-addon-dependency-previews['"]/g
+	const allAddonImports = [...newContent.matchAll(ADDON_IMPORT_REGEX)]
 	const hasDependenciesJsonImport =
 		/import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/.test(
 			newContent,
@@ -328,21 +228,9 @@ function patchExistingPreview(
 	]
 	const requiredTypeNames = isTs ? ['StorybookPreviewConfig'] : []
 
-	if (existingAddonImport) {
-		const wasTypeOnly = !!existingAddonImport[1]
-		// Strip comments from the captured named-import list before splitting on commas.
-		// Otherwise `import { foo, /* note */ bar }` ends up with `/* note */ bar` as one name
-		// and the rebuilt import is invalid TypeScript.
-		const importContents = existingAddonImport[2]!
-			.replace(/\/\*[\s\S]*?\*\//g, '')
-			.replace(/\/\/.*$/gm, '')
-		const rawExistingNames = importContents
-			.split(',')
-			.map((s) => s.trim())
-			.filter(Boolean)
-
+	if (allAddonImports.length > 0) {
 		type Entry = { name: string; alias?: string; isType: boolean }
-		const parseEntry = (raw: string): Entry => {
+		const parseEntry = (raw: string, wasTypeOnly: boolean): Entry => {
 			// `import type { A, B }` makes every name a type, so respect that.
 			const isType = wasTypeOnly || /^type\s+/.test(raw)
 			const stripped = raw.replace(/^type\s+/, '')
@@ -356,13 +244,39 @@ function patchExistingPreview(
 			return e.isType ? `type ${inner}` : inner
 		}
 
-		const existingEntries = rawExistingNames.map(parseEntry)
+		// Collect every named import from every `from 'storybook-addon-dependency-previews'`
+		// statement in the file. Stripping comments inside `{ … }` first so that
+		// `import { foo, /* note */ bar }` doesn't produce `/* note */ bar` as a name.
+		const existingEntries: Array<Entry> = []
+		for (const m of allAddonImports) {
+			const wasTypeOnly = !!m[1]
+			const importContents = m[2]!
+				.replace(/\/\*[\s\S]*?\*\//g, '')
+				.replace(/\/\/.*$/gm, '')
+			for (const raw of importContents
+				.split(',')
+				.map((s) => s.trim())
+				.filter(Boolean)) {
+				existingEntries.push(parseEntry(raw, wasTypeOnly))
+			}
+		}
+
+		// Deduplicate by name. Value-imports beat type-imports if both exist for the
+		// same name (you can use a value at runtime AND in type positions, but not
+		// vice-versa).
+		const byName = new Map<string, Entry>()
+		for (const e of existingEntries) {
+			const prev = byName.get(e.name)
+			if (!prev || (prev.isType && !e.isType)) byName.set(e.name, e)
+		}
+		const dedupedExisting = Array.from(byName.values())
+
 		const requiredValueSet = new Set(requiredValueNames)
 
 		// Promote any existing entry whose name matches a required value to a value
 		// import. This handles e.g. `import type { defaultPreviewParameters } from ...` —
 		// without promotion we'd leave it as a type and the runtime spread would fail.
-		const mergedEntries: Array<Entry> = existingEntries.map((e) =>
+		const mergedEntries: Array<Entry> = dedupedExisting.map((e) =>
 			requiredValueSet.has(e.name) && e.isType ? { ...e, isType: false } : e,
 		)
 		const handled = new Set(mergedEntries.map((e) => e.name))
@@ -379,17 +293,22 @@ function patchExistingPreview(
 			}
 		}
 
-		const originallyValid = existingEntries.every(
+		const isMultipleImports = allAddonImports.length > 1
+		const noPromotionNeeded = dedupedExisting.every(
 			(e) => mergedEntries.find((m) => m.name === e.name)?.isType === e.isType,
 		)
 		const allRequiredAlreadyValueImported = requiredValueNames.every((n) =>
-			existingEntries.some((e) => e.name === n && !e.isType),
+			dedupedExisting.some((e) => e.name === n && !e.isType),
 		)
 		const allRequiredAlreadyTypeImported = requiredTypeNames.every((n) =>
-			existingEntries.some((e) => e.name === n && e.isType),
+			dedupedExisting.some((e) => e.name === n && e.isType),
 		)
+		// Skip the rewrite only when there's a single import AND nothing about it
+		// needs to change. With multiple imports we always merge to avoid duplicate
+		// identifier bindings between them.
 		const nothingToDo =
-			originallyValid &&
+			!isMultipleImports &&
+			noPromotionNeeded &&
 			allRequiredAlreadyValueImported &&
 			allRequiredAlreadyTypeImported
 
@@ -397,12 +316,22 @@ function patchExistingPreview(
 			const replacement = `import {${eol}${mergedEntries
 				.map((e) => `${indent}${formatEntry(e)},`)
 				.join(eol)}${eol}} from ${quote}${PKG}${quote}`
-			newContent = newContent.replace(existingAddonImport[0], replacement)
+			// Replace the first import with the merged version; delete the rest.
+			let firstReplaced = false
+			newContent = newContent.replace(ADDON_IMPORT_REGEX, () => {
+				if (!firstReplaced) {
+					firstReplaced = true
+					return replacement
+				}
+				return ''
+			})
+			// Tidy up any blank-line runs left behind by deleted imports.
+			newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
 		}
 	}
 
 	const importsToInsert: string[] = []
-	if (!existingAddonImport) {
+	if (allAddonImports.length === 0) {
 		const addonImportBlock = [
 			`import {`,
 			`${indent}defaultPreviewParameters,`,
