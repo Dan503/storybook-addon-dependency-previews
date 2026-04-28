@@ -29,9 +29,9 @@ const RUN_SB = RUN_SB_IDX !== -1
 const _RUN_SB_NEXT = RUN_SB ? argv[RUN_SB_IDX + 1] : undefined
 const SB_CUSTOM_CMD =
 	_RUN_SB_NEXT && !_RUN_SB_NEXT.startsWith('--') ? _RUN_SB_NEXT : undefined
-const PORT_ARGI = Math.max(argv.indexOf('--sb-port'), 0)
+const PORT_ARGI = argv.indexOf('--sb-port')
 const SB_PORT =
-	PORT_ARGI && argv[PORT_ARGI + 1]
+	PORT_ARGI !== -1 && argv[PORT_ARGI + 1]
 		? Number(argv[PORT_ARGI + 1]) || 6006
 		: 6006
 
