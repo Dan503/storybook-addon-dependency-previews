@@ -1,6 +1,6 @@
 # Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)
 
-> The automated `sb-deps setup` wizard only supports Vite-based Storybook frameworks. If your Storybook is webpack-based, follow the steps below. The same instructions cover both `@storybook/angular` and `@storybook/nextjs` — anywhere they differ, the framework-specific bits are called out below the shared step.
+> The automated `sb-deps setup` wizard only supports Vite-based Storybook frameworks. If your Storybook is webpack-based, follow the steps below. The same instructions cover both `@storybook/angular` and `@storybook/nextjs` — anywhere the two diverge, both options are inlined into the same code block with `// if using Angular` / `// if using Next.js` comments. **Pick one of each pair when you copy/paste.**
 >
 > **Verification status.** This addon's Angular path is exercised against the [`example-site/angular/`](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/angular) project, so the Angular instructions are verified end-to-end. The `@storybook/nextjs` path follows the same shape but **has not been formally tested** — please open an issue if anything in your Next.js project doesn't line up.
 
@@ -36,13 +36,10 @@ Both webpack-based Storybook frameworks need two additions in `webpackFinal`:
 
 You'll also need a `css-modules-loader.cjs` file alongside your `.storybook/main.ts`. **Copy it from the [Angular example source](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site/angular/.storybook/css-modules-loader.cjs)** — the file is framework-agnostic, so the same copy works for both Angular and Next.js.
 
-The full `main.ts` shape is the same for both frameworks; only the `framework: { name }` value and the way you reach the `webpack` module differ.
-
-### Angular (`@storybook/angular`)
-
 ```ts
-import type { StorybookConfig } from '@storybook/angular'
-import { createRequire } from 'module'
+import type { StorybookConfig } from '@storybook/angular' // if using Angular
+import type { StorybookConfig } from '@storybook/nextjs'  // if using Next.js
+import { createRequire } from 'module' // if using Angular (delete for Next.js)
 import { fileURLToPath } from 'url'
 import path from 'path'
 
@@ -55,94 +52,16 @@ const config: StorybookConfig = {
 		'storybook-addon-dependency-previews/addon',
 	],
 	framework: {
-		name: '@storybook/angular',
+		name: '@storybook/angular', // if using Angular
+		name: '@storybook/nextjs',  // if using Next.js
 		options: {},
 	},
 	webpackFinal: async (config) => {
-		// `@storybook/angular` doesn't expose `webpack` directly; reach in through
-		// the framework package so we use the exact version Storybook is using.
-		const sbAngularRequire = createRequire(
-			import.meta.resolve('@storybook/angular'),
-		)
+		// Reach the `webpack` module — pick the line matching your framework:
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const webpack = sbAngularRequire('webpack') as any
-
-		const cssModulesLoader = fileURLToPath(
-			new URL('./css-modules-loader.cjs', import.meta.url),
-		)
-
-		config.plugins = config.plugins ?? []
-
-		// Inject __PROJECT_ROOT__ so preview.ts can pass it to projectRootPath.
-		config.plugins.push(
-			new webpack.DefinePlugin({
-				__PROJECT_ROOT__: JSON.stringify(
-					path.resolve(fileURLToPath(new URL('..', import.meta.url))),
-				),
-			}),
-		)
-
-		// Handle CSS modules for the addon's dist files.
-		config.plugins.push({
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			apply(compiler: any) {
-				compiler.hooks.normalModuleFactory.tap(
-					'AddonCssModules',
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					(factory: any) => {
-						factory.hooks.afterResolve.tap(
-							'AddonCssModules',
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							(resolveData: any) => {
-								const resource: string =
-									resolveData.createData?.resource ?? ''
-								if (
-									resource.endsWith('.module.css') &&
-									resource.includes(
-										'storybook-addon-dependency-previews',
-									)
-								) {
-									resolveData.createData.loaders = [
-										{ loader: cssModulesLoader, options: {} },
-									]
-								}
-							},
-						)
-					},
-				)
-			},
-		})
-
-		return config
-	},
-}
-export default config
-```
-
-### Next.js (`@storybook/nextjs`)
-
-```ts
-import type { StorybookConfig } from '@storybook/nextjs'
-import { fileURLToPath } from 'url'
-import path from 'path'
-
-const config: StorybookConfig = {
-	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-	addons: [
-		// autodocs is required for this addon to work
-		'@storybook/addon-docs',
-		// the storybook dependency previews addon registration
-		'storybook-addon-dependency-previews/addon',
-	],
-	framework: {
-		name: '@storybook/nextjs',
-		options: {},
-	},
-	webpackFinal: async (config) => {
-		// Next.js exposes webpack via the standard `require` since `@storybook/nextjs`
-		// pulls it as a peer; no `createRequire` dance needed.
+		const webpack = createRequire(import.meta.resolve('@storybook/angular'))('webpack') as any // if using Angular
 		// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-		const webpack = require('webpack') as any
+		const webpack = require('webpack') as any // if using Next.js
 
 		const cssModulesLoader = fileURLToPath(
 			new URL('./css-modules-loader.cjs', import.meta.url),
@@ -198,47 +117,23 @@ export default config
 
 ## 3. Bare-minimum story example
 
-### Angular `.stories.ts`
-
-```ts
-import type { Meta, StoryObj } from '@storybook/angular'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ComponentName } from './ComponentName.component'
-
-const meta: Meta<ComponentName> = {
-	title: 'Component Name',
-	component: ComponentName,
-	// autodocs tag is required
-	tags: ['autodocs'],
-	// `__filePath` must be set on every story for the addon to track dependencies.
-	// `import.meta.url` is a webpack feature available in Angular Storybook.
-	// `satisfies StoryParameters` gives you type safety and autocomplete.
-	parameters: {
-		__filePath: import.meta.url,
-	} satisfies StoryParameters,
-}
-
-export default meta
-
-type Story = StoryObj<ComponentName>
-
-export const Primary: Story = {}
-```
-
-### Next.js `.stories.tsx`
+Save the file as `.stories.ts` for Angular or `.stories.tsx` for Next.js.
 
 ```tsx
-import type { Meta, StoryObj } from '@storybook/nextjs'
+import type { Meta, StoryObj } from '@storybook/angular' // if using Angular
+import type { Meta, StoryObj } from '@storybook/nextjs'  // if using Next.js
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ComponentName } from './ComponentName'
+import { ComponentName } from './ComponentName.component' // if using Angular
+import { ComponentName } from './ComponentName'           // if using Next.js
 
-const meta: Meta<typeof ComponentName> = {
+const meta: Meta<ComponentName> = {        // if using Angular
+const meta: Meta<typeof ComponentName> = { // if using Next.js
 	title: 'Component Name',
 	component: ComponentName,
 	// autodocs tag is required
 	tags: ['autodocs'],
 	// `__filePath` must be set on every story for the addon to track dependencies.
-	// `import.meta.url` is a webpack feature available in modern Next.js Storybook.
+	// `import.meta.url` is a webpack feature available in modern Storybook frameworks.
 	// `satisfies StoryParameters` gives you type safety and autocomplete.
 	parameters: {
 		__filePath: import.meta.url,
@@ -247,42 +142,29 @@ const meta: Meta<typeof ComponentName> = {
 
 export default meta
 
-type Story = StoryObj<typeof meta>
+type Story = StoryObj<ComponentName> // if using Angular
+type Story = StoryObj<typeof meta>   // if using Next.js
 
 export const Primary: Story = {}
 ```
 
 ## 4. `package.json` scripts
 
-The `sb:build` and `sb:deps` scripts are the same for both frameworks. The `sb` (watch + serve) script differs because `@storybook/angular` requires Storybook to be launched through the Angular CLI builder rather than the default `storybook dev` command.
+`@storybook/angular` requires Storybook to be launched through the Angular CLI builder rather than the default `storybook dev` / `storybook build` commands. For Angular projects, replace `<project-name>` with the name of your Angular project as defined in `angular.json`.
 
-### Angular
+> JSON doesn't allow comments — pick one line of each pair and delete the comment when you copy/paste.
 
-```json
+```jsonc
 {
 	"scripts": {
-		"sb": "sb-deps --watch --run-storybook \"ng run <project-name>:storybook\"",
-		"sb:build": "sb-deps && ng run <project-name>:build-storybook",
+		"sb": "sb-deps --watch --run-storybook \"ng run <project-name>:storybook\"", // if using Angular
+		"sb": "sb-deps --watch --run-storybook",                                     // if using Next.js
+		"sb:build": "sb-deps && ng run <project-name>:build-storybook", // if using Angular
+		"sb:build": "sb-deps && storybook build",                       // if using Next.js
 		"sb:deps": "sb-deps"
 	}
 }
 ```
-
-Replace `<project-name>` with the name of your Angular project as defined in `angular.json`.
-
-### Next.js
-
-```json
-{
-	"scripts": {
-		"sb": "sb-deps --watch --run-storybook",
-		"sb:build": "sb-deps && storybook build",
-		"sb:deps": "sb-deps"
-	}
-}
-```
-
-### Both frameworks
 
 - `npm run sb` — Storybook in watch mode with automatic dependency tracking.
 - `npm run sb:build` — one-off compile of the static Storybook site.
@@ -304,12 +186,11 @@ This creates `.storybook/dependency-previews.json`. Make sure `"resolveJsonModul
 
 ## 6. Create `.storybook/preview.ts`
 
-Webpack doesn't expose `import.meta.glob`, so use the `__PROJECT_ROOT__` value injected by `DefinePlugin` in `main.ts`. The shape of `preview.ts` is identical for Angular and Next.js — only the `Preview` type's import source changes.
-
-### Angular
+Webpack doesn't expose `import.meta.glob`, so use the `__PROJECT_ROOT__` value injected by `DefinePlugin` in `main.ts`:
 
 ```ts
-import type { Preview } from '@storybook/angular'
+import type { Preview } from '@storybook/angular' // if using Angular
+import type { Preview } from '@storybook/nextjs'  // if using Next.js
 import {
 	defaultPreviewParameters,
 	dependencyPreviewDecorators,
@@ -334,15 +215,6 @@ const preview: Preview = {
 }
 
 export default preview
-```
-
-### Next.js
-
-Identical to the Angular `preview.ts`, just import `Preview` from `@storybook/nextjs` instead:
-
-```ts
-import type { Preview } from '@storybook/nextjs'
-// ... rest identical to the Angular version above
 ```
 
 > Webpack-based projects don't use `storyModules` (no `import.meta.glob`). The CLI still generates the full dependency tree — `projectRootPath` is only used for the addon's "open in VS Code" feature.
