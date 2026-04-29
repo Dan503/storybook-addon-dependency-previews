@@ -189,8 +189,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	rule()
 	log('Step 3/5: configuring preview file')
+	const sourceRootInputMessage = [
+		'\n= Source root URL =',
+		'Please provide the URL to the root of your source code.',
+		'NOT the PROJECT root, the SOURCE root.',
+		'The folder that holds your precompiled source files, typically the "src" folder.',
+		'This is used to link nodes in the dependency tree back to their source files.',
+		'Example: https://github.com/your-org/your-repo/blob/main/src',
+		'\nEnter your source root URL (blank = disable source links):',
+	].join('\n')
 	const sourceRootUrl = await input(
-		'\n= Source root URL =\n(e.g. https://github.com/your-org/your-repo/blob/main/src)\nLeave blank for no source links:',
+		sourceRootInputMessage,
 		'',
 	)
 	const previewResult = patchPreviewFile({
