@@ -123,15 +123,6 @@ function getStoryId(componentPath: string) {
 }
 
 /**
- * Story extensions to search when looking up the story file for a given
- * component. Searched in order — first hit wins. Putting the component's own
- * extension first means a `.tsx` component with both `Button.stories.tsx`
- * and `Button.stories.ts` siblings prefers the matching extension, which
- * matches what Storybook itself would resolve.
- */
-const STORY_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.svelte', '.mts', '.cts'] as const
-
-/**
  * Locate the story file for `componentPath` by trying every reasonable
  * story extension, not just one that matches the component's own extension.
  *
@@ -139,8 +130,29 @@ const STORY_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.svelte', '.mts', '.cts
  * files often have no JSX), so restricting the search to the component's
  * extension misses valid pairings and produces graph entries with no
  * `storyId` — which breaks the autodocs lookup in `useDependencyGraph`.
+ *
+ * The extension list is declared inside this function (rather than as a
+ * top-level `const`) because the bundler reorders the module so the
+ * top-level graph-build loop runs before any top-level `const` is
+ * initialised. A `const` referenced from inside the loop's call chain
+ * would hit the temporal-dead-zone; `function` declarations are hoisted
+ * so the function itself is fine.
  */
 function getRawStoryFileData(componentPath: string) {
+	// Searched in order — first hit wins. Putting the component's own
+	// extension first means a `.tsx` component with both `Button.stories.tsx`
+	// and `Button.stories.ts` siblings prefers the matching extension, which
+	// matches what Storybook itself would resolve.
+	const STORY_EXTENSIONS = [
+		'.ts',
+		'.tsx',
+		'.js',
+		'.jsx',
+		'.svelte',
+		'.mts',
+		'.cts',
+	] as const
+
 	const base = componentPath.replace(/\.\w+$/, '')
 
 	// Angular: strip the `.component` suffix so e.g. `Button.component.ts`
