@@ -213,12 +213,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			break
 		case 'failed':
 			log(`  ✗ ${previewResult.reason}`)
-			log('  Manual setup docs:')
 			log(
-				'    React:  https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-react.md',
-			)
-			log(
-				'    Svelte: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-svelte.md',
+				'  Manual setup: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md',
 			)
 			process.exit(1)
 	}

@@ -67,8 +67,7 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 The wizard supports React (`@storybook/react-vite`) and Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`). For Angular projects, projects on unsupported frameworks, or any case where the wizard can't recognise an existing config, follow one of the framework-specific guides:
 
-- [Manual setup — React](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-react.md)
-- [Manual setup — Svelte](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-svelte.md)
+- [Manual setup — Vite (React, Svelte)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
 ## Configuration file (optional)

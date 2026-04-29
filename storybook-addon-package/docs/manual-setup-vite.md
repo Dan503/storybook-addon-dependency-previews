@@ -1,11 +1,13 @@
-# Manual setup — React
+# Manual setup — Vite (React, Svelte)
 
-> **Tip:** for most React projects you can use the automated wizard instead:
+> **Tip:** for most Vite-based projects you can use the automated wizard instead:
 > ```sh
 > npx --package storybook-addon-dependency-previews sb-deps setup
 > ```
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.
+>
+> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Svelte with SvelteKit, vanilla Svelte). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Svelte` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks.
 
 ## 1. Install the addon
 
@@ -33,28 +35,36 @@ bun add -d storybook-addon-dependency-previews dependency-cruiser
 ## 2. Register the addon in `.storybook/main.ts`
 
 ```ts
-import type { StorybookConfig } from '@storybook/react-vite'
+import type { StorybookConfig } from '@storybook/react-vite'   // if using React
+import type { StorybookConfig } from '@storybook/sveltekit'    // if using Svelte (SvelteKit)
+import type { StorybookConfig } from '@storybook/svelte-vite'  // if using Svelte (without SvelteKit)
 
 const config: StorybookConfig = {
-	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'],
+	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'],                       // if using React
+	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'],  // if using Svelte
 	addons: [
 		// autodocs is required for this addon to work
 		'@storybook/addon-docs',
+		// required for .stories.svelte CSF format (Svelte projects only — delete if using React)
+		'@storybook/addon-svelte-csf',
 		// the storybook dependency previews addon registration
 		'storybook-addon-dependency-previews/addon',
 	],
-	framework: {
-		name: '@storybook/react-vite',
-		options: {},
-	},
+	framework: { name: '@storybook/react-vite', options: {} }, // if using React
+	framework: '@storybook/sveltekit',                          // if using Svelte (SvelteKit)
+	framework: '@storybook/svelte-vite',                        // if using Svelte (without SvelteKit)
 }
 
 export default config
 ```
 
-## 3. Bare-minimum `.stories.tsx` example
+## 3. Bare-minimum story example
 
-```ts
+The React and Svelte story formats are different enough that inlining them isn't useful — pick the section matching your framework.
+
+### React `.stories.tsx`
+
+```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ComponentName } from './ComponentName'
@@ -66,9 +76,9 @@ const meta: Meta<typeof ComponentName> = {
 	// autodocs tag is required
 	tags: ['autodocs'],
 	// The `__filePath` property must be applied to every story file
-	// for the addon to track dependencies effectively
-	// `import.meta.url` is a Vite specific value that automatically generates the path for you
-	// `satisfies StoryParameters` gives you type safety and autocomplete on the parameters object
+	// for the addon to track dependencies effectively.
+	// `import.meta.url` is a Vite-specific value that automatically generates the path for you.
+	// `satisfies StoryParameters` gives you type safety and autocomplete on the parameters object.
 	parameters: {
 		__filePath: import.meta.url,
 	} satisfies StoryParameters,
@@ -81,6 +91,30 @@ type Story = StoryObj<typeof meta>
 export const Primary: Story = {
 	args: {},
 }
+```
+
+### Svelte `.stories.svelte` (using [Svelte CSF](https://github.com/storybookjs/addon-svelte-csf))
+
+```svelte
+<script lang="ts" module>
+	import type { StoryParameters } from 'storybook-addon-dependency-previews'
+	import { defineMeta } from '@storybook/addon-svelte-csf'
+	import ComponentName from './ComponentName.svelte'
+
+	const { Story } = defineMeta({
+		title: 'Component Name',
+		component: ComponentName,
+		// autodocs tag is required
+		tags: ['autodocs'],
+		// The `__filePath` property must be applied to every story file.
+		// `satisfies StoryParameters` gives you type safety and autocomplete on the parameters object.
+		parameters: {
+			__filePath: import.meta.url,
+		} satisfies StoryParameters,
+	})
+</script>
+
+<Story name="Primary" />
 ```
 
 ## 4. `package.json` scripts
@@ -129,8 +163,8 @@ import {
 // Import the generated dependency-previews.json file
 import dependenciesJson from './dependency-previews.json'
 
-// Global styles are imported here (optional)
-import '../src/styles.css'
+// Optional — import your global styles here if you have any
+// import '../src/styles.css'
 
 const previewConfig: StorybookPreviewConfig = {
 	decorators: [...dependencyPreviewDecorators],
@@ -139,7 +173,8 @@ const previewConfig: StorybookPreviewConfig = {
 		dependencyPreviews: {
 			dependenciesJson,
 			storyModules: import.meta.glob(
-				'/src/**/*.stories.@(tsx|ts|jsx|js)',
+				'/src/**/*.stories.@(tsx|ts|jsx|js)', // if using React
+				'/src/**/*.stories.@(ts|js|svelte)',  // if using Svelte
 				{ eager: false },
 			),
 			// Replace this with the URL to your src folder in your git repository.
