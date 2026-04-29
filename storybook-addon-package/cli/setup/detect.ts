@@ -7,7 +7,7 @@ export type Framework =
 	| 'react-vite'
 	| 'sveltekit'
 	| 'svelte-vite'
-	| 'angular'
+	| 'angular-webpack'
 	| 'nextjs-webpack'
 	| 'unsupported'
 	| 'unknown'
@@ -87,7 +87,10 @@ function frameworkFromRaw(raw: string | null): Framework {
 	if (raw === '@storybook/react-vite') return 'react-vite'
 	if (raw === '@storybook/sveltekit') return 'sveltekit'
 	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
-	if (raw === '@storybook/angular') return 'angular'
+	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
+	// framework value for the future Vite-based Angular Storybook framework if it
+	// ships — current Angular goes in as `'angular-webpack'`.
+	if (raw === '@storybook/angular') return 'angular-webpack'
 	if (raw === '@storybook/nextjs') return 'nextjs-webpack'
 	return 'unsupported'
 }
@@ -98,7 +101,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'sveltekit':
 		case 'svelte-vite':
 			return 'vite'
-		case 'angular':
+		case 'angular-webpack':
 		case 'nextjs-webpack':
 			return 'webpack5'
 		default:

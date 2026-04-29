@@ -2,7 +2,7 @@
 
 > **Note:** the automated `sb-deps setup` wizard only supports Vite-based Storybook frameworks. `@storybook/nextjs` is webpack-based, so you'll need to wire the addon up by hand using the steps below.
 >
-> **Untested.** This addon has not been verified against `@storybook/nextjs`'s webpack setup. The instructions below are adapted from the [Angular manual-setup guide](./manual-setup-angular.md) (the only webpack-based example the addon is currently exercised against). Treat this as a starting point and please open an issue if anything in your Next.js project doesn't line up.
+> **Untested.** This addon has not been verified against `@storybook/nextjs`'s webpack setup. The instructions below are adapted from the [Angular manual-setup guide](./manual-setup-angular-webpack.md) (the only webpack-based example the addon is currently exercised against). Treat this as a starting point and please open an issue if anything in your Next.js project doesn't line up.
 >
 > If you want first-class wizard support without the webpack workaround, switch your Storybook framework to `@storybook/nextjs-vite` — that's a Vite-based Next.js framework and is on the roadmap for wizard support once it's been tested.
 

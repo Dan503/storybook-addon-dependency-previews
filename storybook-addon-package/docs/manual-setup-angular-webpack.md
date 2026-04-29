@@ -1,6 +1,8 @@
-# Manual setup — Angular
+# Manual setup — Angular (`@storybook/angular`, webpack)
 
-> **Note:** the automated `sb-deps setup` wizard does not handle Angular projects — its setup is more involved and requires custom webpack loaders. Follow the steps below.
+> **Note:** the automated `sb-deps setup` wizard only supports Vite-based Storybook frameworks. `@storybook/angular` is webpack-based, so you'll need to wire the addon up by hand using the steps below.
+>
+> If a Vite-based Angular Storybook framework ships in the future, the wizard will route it to a separate "Angular" guide and this doc will stay as the webpack reference.
 
 ## 1. Install the addon
 

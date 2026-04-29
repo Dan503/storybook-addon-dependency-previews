@@ -94,7 +94,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const WEBPACK_DOC_BASE =
 		'https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs'
 	const webpackDocs: Partial<Record<Framework, string>> = {
-		angular: `${WEBPACK_DOC_BASE}/manual-setup-angular.md`,
+		'angular-webpack': `${WEBPACK_DOC_BASE}/manual-setup-angular-webpack.md`,
 		'nextjs-webpack': `${WEBPACK_DOC_BASE}/manual-setup-nextjs-webpack.md`,
 	}
 	const webpackDoc = webpackDocs[framework]

@@ -69,7 +69,7 @@ The wizard supports React (`@storybook/react-vite`) and Svelte (`@storybook/svel
 
 - [Manual setup — React](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-react.md)
 - [Manual setup — Svelte](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-svelte.md)
-- [Manual setup — Angular](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-angular.md)
+- [Manual setup — Angular (`@storybook/angular`, webpack)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-angular-webpack.md)
 - [Manual setup — Next.js (`@storybook/nextjs`, webpack)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-nextjs-webpack.md)
 
 ## Configuration file (optional)
