@@ -50,7 +50,24 @@ After running `npx storybook@latest init` in your project, run the setup wizard:
 npx --package storybook-addon-dependency-previews sb-deps setup
 ```
 
-(The package's bin is `sb-deps`, but the published package name is `storybook-addon-dependency-previews`. The explicit `--package` form makes `npx` install the right package on the first run; once the wizard has installed the addon, you can use the shorter `npx sb-deps …` form for subsequent calls.)
+<details>
+<summary>Other package managers</summary>
+
+```sh
+pnpm dlx --package=storybook-addon-dependency-previews sb-deps setup
+```
+
+```sh
+yarn dlx --package storybook-addon-dependency-previews sb-deps setup
+```
+
+```sh
+bunx --package storybook-addon-dependency-previews sb-deps setup
+```
+
+</details>
+
+(The package's bin is `sb-deps`, but the published package name is `storybook-addon-dependency-previews`. The explicit `--package` form makes the runner install the right package on the first run; once the wizard has installed the addon, you can use the shorter `<runner> sb-deps …` form for subsequent calls — e.g. `pnpm sb-deps`, `yarn sb-deps`, `bun sb-deps`.)
 
 The wizard:
 
