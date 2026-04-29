@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Svelte**, and **Angular**.
+Currently works with **React**, **Svelte**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Svelte) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -65,7 +65,7 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`) and Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`). For Angular projects, projects on unsupported frameworks, or any case where the wizard can't recognise an existing config, follow one of the framework-specific guides:
+The wizard supports React (`@storybook/react-vite`) and Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
 
 - [Manual setup — Vite (React, Svelte)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
