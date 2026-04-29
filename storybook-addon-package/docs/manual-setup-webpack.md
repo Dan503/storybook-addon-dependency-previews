@@ -122,6 +122,7 @@ Save the file as `.stories.ts` for Angular or `.stories.tsx` for Next.js.
 ```tsx
 import type { Meta, StoryObj } from '@storybook/angular' // if using Angular
 import type { Meta, StoryObj } from '@storybook/nextjs'  // if using Next.js
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ComponentName } from './ComponentName.component' // if using Angular
 import { ComponentName } from './ComponentName'           // if using Next.js
 
@@ -131,6 +132,10 @@ const meta: Meta<typeof ComponentName> = { // if using Next.js
 	component: ComponentName,
 	// autodocs tag is required
 	tags: ['autodocs'],
+	// `satisfies StoryParameters` gives proper autocomplete on `layout` (and discoverability of the optional `__filePath` fallback) instead of Storybook's loose `string` type.
+	parameters: {
+		layout: 'padded',
+	} satisfies StoryParameters,
 }
 
 export default meta
@@ -148,16 +153,10 @@ The addon matches each docs page to its graph entry by **storyId** — derived a
 If your storyId-based lookup ever fails — for example because the title is computed dynamically and the build-time scanner can't read it, or your file layout doesn't match the conventions above — you can add a `__filePath` parameter as a fallback. The addon will then match the story to its graph entry by source path:
 
 ```tsx
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-
-const meta: Meta<typeof ComponentName> = {
-	title: 'Component Name',
-	component: ComponentName,
-	tags: ['autodocs'],
-	parameters: {
-		__filePath: import.meta.url, // webpack exposes import.meta.url in modern Storybook frameworks
-	} satisfies StoryParameters,
-}
+parameters: {
+	layout: 'padded',
+	__filePath: import.meta.url, // webpack exposes import.meta.url in modern Storybook frameworks
+} satisfies StoryParameters,
 ```
 
 ## 4. `package.json` scripts

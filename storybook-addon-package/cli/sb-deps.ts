@@ -327,7 +327,6 @@ const meta: Meta<typeof ${componentName}> = {
   tags: ${JSON.stringify(tags)},
   parameters: {
     layout: 'padded',
-    __filePath: import.meta.url,
   } satisfies StoryParameters,
 }
 
@@ -430,7 +429,6 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 		tags: [${tags.map((t) => `'${t}'`).join(', ')}],
 		parameters: {
 			layout: 'padded',
-			__filePath: import.meta.url,
 		} satisfies StoryParameters,
 	})
 	type Args = Omit<PropsFor${componentName}, 'children'>;
@@ -700,7 +698,6 @@ const meta: Meta<${className}> = {
 	tags: ${JSON.stringify(tags)},
 	parameters: {
 		layout: 'padded',
-		__filePath: import.meta.url,
 	} satisfies StoryParameters,
 }
 
