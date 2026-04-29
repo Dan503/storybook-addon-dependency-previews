@@ -131,7 +131,7 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 			return {
 				kind: 'failed',
 				reason:
-					'Found an `addons:` key in main.ts but it is not a literal array (it may be a variable, spread, or function call). Add `\'storybook-addon-dependency-previews/addon\'` to your addons manually.',
+					"Found an `addons:` key in main.ts but it is not a literal array (it may be a variable, spread, or function call). Add `'storybook-addon-dependency-previews/addon'` to your addons manually.",
 			}
 		}
 	}

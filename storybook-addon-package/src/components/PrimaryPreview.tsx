@@ -1,4 +1,4 @@
-import React, {  useState  } from 'react'
+import React, { useState } from 'react'
 import { useDynamicStory } from '../hooks/useDynamicStory'
 import type { StoryInfo } from '../types'
 import { FullParityStory } from './FullParityStory'

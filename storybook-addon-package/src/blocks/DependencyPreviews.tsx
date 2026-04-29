@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react'
 import { PrimaryPreview } from '../components/PrimaryPreview'
 import { StoryLink } from '../components/StoryLink'
 import {
@@ -84,10 +84,7 @@ function DepsPreviewContent({
 							<span
 								dangerouslySetInnerHTML={{
 									// allow line breaks on slashes
-									__html: storyInfo.storyTitlePath!.replaceAll(
-										'/',
-										'/<wbr/>',
-									),
+									__html: storyInfo.storyTitlePath!.replaceAll('/', '/<wbr/>'),
 								}}
 							/>
 						</StoryLink>
@@ -97,9 +94,7 @@ function DepsPreviewContent({
 						label="Story Page ID"
 						copyContent={storyInfo.storyId!}
 					>
-						<StoryLink info={storyInfo}>
-							{storyInfo.storyId}
-						</StoryLink>
+						<StoryLink info={storyInfo}>{storyInfo.storyId}</StoryLink>
 					</PathCopyMolecule>
 				</div>
 			</Expandable>
@@ -112,14 +107,9 @@ function DepsPreviewContent({
 					Icon={BuildIcon}
 				>
 					<ul>
-						{filterOutStoryAndNonComponentFiles(builtWith).map(
-							(info) => (
-								<DepsPreviewItem
-									storyInfo={info}
-									key={info.componentPath}
-								/>
-							),
-						)}
+						{filterOutStoryAndNonComponentFiles(builtWith).map((info) => (
+							<DepsPreviewItem storyInfo={info} key={info.componentPath} />
+						))}
 					</ul>
 				</Expandable>
 			)}
@@ -131,14 +121,9 @@ function DepsPreviewContent({
 					Icon={SquaresPlus}
 				>
 					<ul>
-						{filterOutStoryAndNonComponentFiles(usedIn).map(
-							(info) => (
-								<DepsPreviewItem
-									storyInfo={info}
-									key={info.componentPath}
-								/>
-							),
-						)}
+						{filterOutStoryAndNonComponentFiles(usedIn).map((info) => (
+							<DepsPreviewItem storyInfo={info} key={info.componentPath} />
+						))}
 					</ul>
 				</Expandable>
 			)}
@@ -156,9 +141,7 @@ function DepsPreviewItem({ storyInfo }: PropsForDepsPreviewItem) {
 			{storyInfo.storyId ? (
 				<Expandable
 					Icon={CubeIcon}
-					Header={
-						<StoryLink info={storyInfo} tooltipPosition="right" />
-					}
+					Header={<StoryLink info={storyInfo} tooltipPosition="right" />}
 				>
 					<DepsPreviewContent storyInfo={storyInfo} />
 				</Expandable>

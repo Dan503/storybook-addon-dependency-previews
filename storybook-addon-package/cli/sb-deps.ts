@@ -21,8 +21,7 @@ import { runSetup } from './setup/index.js'
 // Args
 // ───────────────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2)
-const SUBCOMMAND =
-	argv[0] && !argv[0].startsWith('--') ? argv[0] : null
+const SUBCOMMAND = argv[0] && !argv[0].startsWith('--') ? argv[0] : null
 const WATCH = argv.includes('--watch')
 const RUN_SB_IDX = argv.indexOf('--run-storybook')
 const RUN_SB = RUN_SB_IDX !== -1
@@ -229,8 +228,7 @@ function detectAtomicTag(absPath: string) {
 	let best: null | { val: string; idx: number } = null
 	for (const t of tokens) {
 		const idx = adaptedPath.lastIndexOf(t)
-		if (idx !== -1 && (best === null || idx > best.idx))
-			best = { val: t, idx }
+		if (idx !== -1 && (best === null || idx > best.idx)) best = { val: t, idx }
 	}
 	return best ? best.val : null
 }
@@ -629,11 +627,7 @@ export class ${className} {
 		templateLocation === 'external' &&
 		(!existsSync(htmlPath) || isEmptyOrWhitespace(htmlPath))
 	) {
-		writeFileSync(
-			htmlPath,
-			defaultAngularHtmlTemplate(componentName),
-			'utf8',
-		)
+		writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
 		info(`scaffolded angular template → ${rel(htmlPath)}`)
 	}
 }
@@ -656,9 +650,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				`templateUrl: './${base}.component.html'`,
 			)
 			writeFileSync(absTsPath, updated, 'utf8')
-			info(
-				`updated angular component to use templateUrl → ${rel(absTsPath)}`,
-			)
+			info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
 		}
 	}
 
@@ -793,31 +785,20 @@ function startWatcher() {
 
 					// ANGULAR .component.ts CREATE — scaffold with inline template
 					if (isComponentsAngularTs(abs) && ev.type === 'create') {
-						await handleAngularComponentCreation(
-							abs,
-							relPath,
-							'internal',
-						)
+						await handleAngularComponentCreation(abs, relPath, 'internal')
 						continue
 					}
 
 					// ANGULAR .component.html CREATE
 					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
 						const tsPath = angularComponentTsPath(abs)
-						if (
-							existsSync(tsPath) &&
-							!isEmptyOrWhitespace(tsPath)
-						) {
+						if (existsSync(tsPath) && !isEmptyOrWhitespace(tsPath)) {
 							// .ts already exists — scaffold HTML from it (migrate inline template if present)
 							if (isEmptyOrWhitespace(abs)) {
 								scaffoldAngularHtmlFromTs(abs, tsPath)
 							}
-							console.log(
-								'Angular component creation detected:',
-								rel(abs),
-							)
-							const createdStory =
-								ensureStoryForAngularComponent(tsPath)
+							console.log('Angular component creation detected:', rel(abs))
+							const createdStory = ensureStoryForAngularComponent(tsPath)
 							if (createdStory) {
 								kick('create:story', createdStory)
 							}

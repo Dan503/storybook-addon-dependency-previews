@@ -1,4 +1,4 @@
-import React, {  useState, type ReactNode  } from 'react'
+import React, { useState, type ReactNode } from 'react'
 import s from './Expandable.module.css'
 import { DoubleChevronDown } from './icons/DoubleChevronDown'
 import { X } from './icons/X'

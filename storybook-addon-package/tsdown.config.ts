@@ -47,8 +47,7 @@ export default defineConfig([
 			'cli/setup/util': './cli/setup/util.ts',
 			'cli/setup/patchers/main': './cli/setup/patchers/main.ts',
 			'cli/setup/patchers/preview': './cli/setup/patchers/preview.ts',
-			'cli/setup/patchers/packageJson':
-				'./cli/setup/patchers/packageJson.ts',
+			'cli/setup/patchers/packageJson': './cli/setup/patchers/packageJson.ts',
 		},
 		platform: 'node',
 	},

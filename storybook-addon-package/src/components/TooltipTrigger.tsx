@@ -1,10 +1,10 @@
-import React, { 
+import React, {
 	useEffect,
 	useId,
 	useState,
 	type AnchorHTMLAttributes,
 	type ReactNode,
- } from 'react'
+} from 'react'
 
 import s from './TooltipTrigger.module.css'
 import { ExternalLinkIcon } from './icons/ExternalLinkIcon'
@@ -111,21 +111,15 @@ export function TooltipTrigger({
 						{dangerouslySetInnerHTML ? (
 							<span
 								style={{ whiteSpace: 'initial' }}
-								dangerouslySetInnerHTML={
-									dangerouslySetInnerHTML
-								}
+								dangerouslySetInnerHTML={dangerouslySetInnerHTML}
 							/>
 						) : (
-							<span style={{ whiteSpace: 'initial' }}>
-								{children}
-							</span>
+							<span style={{ whiteSpace: 'initial' }}>{children}</span>
 						)}
 						{newWindow && (
 							<>
 								&nbsp;
-								<ExternalLinkIcon
-									className={s.externalLinkIcon}
-								/>
+								<ExternalLinkIcon className={s.externalLinkIcon} />
 							</>
 						)}
 					</span>

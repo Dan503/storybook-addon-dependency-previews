@@ -15,9 +15,7 @@ export function sbDepsVitePlugin() {
 				process.cwd(),
 				'.storybook/dependency-previews.json',
 			)
-			const json = existsSync(jsonPath)
-				? readFileSync(jsonPath, 'utf8')
-				: '{}'
+			const json = existsSync(jsonPath) ? readFileSync(jsonPath, 'utf8') : '{}'
 			return `export default ${json};`
 		},
 	}

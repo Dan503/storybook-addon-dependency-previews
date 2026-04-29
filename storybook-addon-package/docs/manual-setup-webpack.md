@@ -38,7 +38,7 @@ You'll also need a `css-modules-loader.cjs` file alongside your `.storybook/main
 
 ```ts
 import type { StorybookConfig } from '@storybook/angular' // if using Angular
-import type { StorybookConfig } from '@storybook/nextjs'  // if using Next.js
+import type { StorybookConfig } from '@storybook/nextjs' // if using Next.js
 import { createRequire } from 'module' // if using Angular (delete for Next.js)
 import { fileURLToPath } from 'url'
 import path from 'path'
@@ -53,13 +53,15 @@ const config: StorybookConfig = {
 	],
 	framework: {
 		name: '@storybook/angular', // if using Angular
-		name: '@storybook/nextjs',  // if using Next.js
+		name: '@storybook/nextjs', // if using Next.js
 		options: {},
 	},
 	webpackFinal: async (config) => {
 		// Reach the `webpack` module — pick the line matching your framework:
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const webpack = createRequire(import.meta.resolve('@storybook/angular'))('webpack') as any // if using Angular
+		const webpack = createRequire(import.meta.resolve('@storybook/angular'))(
+			'webpack',
+		) as any // if using Angular
 		// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
 		const webpack = require('webpack') as any // if using Next.js
 
@@ -90,13 +92,10 @@ const config: StorybookConfig = {
 							'AddonCssModules',
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							(resolveData: any) => {
-								const resource: string =
-									resolveData.createData?.resource ?? ''
+								const resource: string = resolveData.createData?.resource ?? ''
 								if (
 									resource.endsWith('.module.css') &&
-									resource.includes(
-										'storybook-addon-dependency-previews',
-									)
+									resource.includes('storybook-addon-dependency-previews')
 								) {
 									resolveData.createData.loaders = [
 										{ loader: cssModulesLoader, options: {} },
@@ -169,11 +168,11 @@ parameters: {
 {
 	"scripts": {
 		"sb": "sb-deps --watch --run-storybook \"ng run <project-name>:storybook\"", // if using Angular
-		"sb": "sb-deps --watch --run-storybook",                                     // if using Next.js
+		"sb": "sb-deps --watch --run-storybook", // if using Next.js
 		"sb:build": "sb-deps && ng run <project-name>:build-storybook", // if using Angular
-		"sb:build": "sb-deps && storybook build",                       // if using Next.js
-		"sb:deps": "sb-deps"
-	}
+		"sb:build": "sb-deps && storybook build", // if using Next.js
+		"sb:deps": "sb-deps",
+	},
 }
 ```
 
@@ -201,7 +200,7 @@ Webpack doesn't expose `import.meta.glob`, so use the `__PROJECT_ROOT__` value i
 
 ```ts
 import type { Preview } from '@storybook/angular' // if using Angular
-import type { Preview } from '@storybook/nextjs'  // if using Next.js
+import type { Preview } from '@storybook/nextjs' // if using Next.js
 import {
 	defaultPreviewParameters,
 	dependencyPreviewDecorators,
@@ -216,8 +215,7 @@ const preview: Preview = {
 		dependencyPreviews: {
 			dependenciesJson,
 			// Replace this with the URL to your src folder in your git repository.
-			sourceRootUrl:
-				'https://github.com/your-org/your-repo/blob/main/src',
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main/src',
 			// __PROJECT_ROOT__ is injected by DefinePlugin in main.ts.
 			projectRootPath: __PROJECT_ROOT__,
 		},

@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react'
 import type { IconProps } from './iconTypes'
 import { Svg } from './Svg'
 

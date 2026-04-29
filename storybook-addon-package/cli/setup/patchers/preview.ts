@@ -235,9 +235,7 @@ function patchExistingPreview(
 			// `import type { A, B }` makes every name a type, so respect that.
 			const isType = wasTypeOnly || /^type\s+/.test(raw)
 			const stripped = raw.replace(/^type\s+/, '')
-			const [name, alias] = stripped
-				.split(/\s+as\s+/)
-				.map((s) => s.trim())
+			const [name, alias] = stripped.split(/\s+as\s+/).map((s) => s.trim())
 			return { name: name!, alias, isType }
 		}
 		const formatEntry = (e: Entry): string => {
@@ -383,7 +381,9 @@ function patchExistingPreview(
 	 * comment can't hijack the search — `match.index` from the stripped
 	 * content lines up with the original.
 	 */
-	const findPreviewBody = (text: string): { from: number; to: number } | null => {
+	const findPreviewBody = (
+		text: string,
+	): { from: number; to: number } | null => {
 		const stripped = stripCommentsRespectingStrings(text)
 		const bodyAt = (
 			match: RegExpMatchArray | null,
@@ -493,7 +493,10 @@ function patchExistingPreview(
 		// "user partially set up by hand" case (the wizard may have just added
 		// `dependencyPreviews:` parameters and the user might already have wired
 		// the decorators).
-		const decoratorsBodyEnd = findMatchingBrace(newContent, decoratorsKey.valueStart)
+		const decoratorsBodyEnd = findMatchingBrace(
+			newContent,
+			decoratorsKey.valueStart,
+		)
 		const decoratorsBodyStart = decoratorsKey.valueStart + 1
 		const localDecoratorsSpreadRegex = new RegExp(
 			String.raw`\.\.\.${decoratorsLocalName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`,
@@ -574,7 +577,9 @@ export interface PatchPreviewFileOptions {
  * the addon's parameters and decorators are wired in. Idempotent —
  * re-runs against an already-configured preview return `{ kind: 'skipped' }`.
  */
-export function patchPreviewFile(opts: PatchPreviewFileOptions): PreviewPatchResult {
+export function patchPreviewFile(
+	opts: PatchPreviewFileOptions,
+): PreviewPatchResult {
 	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl } = opts
 
 	if (
@@ -605,7 +610,11 @@ export function patchPreviewFile(opts: PatchPreviewFileOptions): PreviewPatchRes
 		// If main.ts can't be read for some reason, fall back to the defaults.
 	}
 
-	const { content, lang } = templateForFramework(framework, sourceRootUrl, style)
+	const { content, lang } = templateForFramework(
+		framework,
+		sourceRootUrl,
+		style,
+	)
 	const path = resolve(storybookDir, `preview.${lang}`)
 	if (existsSync(path)) {
 		return { kind: 'skipped', reason: `${path} already exists` }

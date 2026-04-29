@@ -76,7 +76,10 @@ export function installMissingPackages(
 	)
 
 	if (missing.length === 0) {
-		return { kind: 'skipped', reason: 'all required packages already installed' }
+		return {
+			kind: 'skipped',
+			reason: 'all required packages already installed',
+		}
 	}
 
 	const args = buildArgs(opts.packageManager, missing)

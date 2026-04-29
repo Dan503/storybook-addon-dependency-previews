@@ -107,9 +107,7 @@ function getStoryId(componentPath: string) {
 	const rawFileData = getRawStoryFileData(componentPath)
 	if (!rawFileData.storyFileData) return null
 
-	const match = rawFileData.storyFileData.match(
-		/title:\s*['"`]([^'"`]+)['"`]/,
-	)
+	const match = rawFileData.storyFileData.match(/title:\s*['"`]([^'"`]+)['"`]/)
 	if (!match) return null
 
 	const titlePath = match[1]

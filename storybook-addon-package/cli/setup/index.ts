@@ -2,7 +2,11 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 
-import { detectProject, isFrameworkSupported, type Framework } from './detect.js'
+import {
+	detectProject,
+	isFrameworkSupported,
+	type Framework,
+} from './detect.js'
 import { installMissingPackages } from './install.js'
 import { patchMainFile } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
@@ -182,7 +186,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		case 'failed':
 			log(`  ✗ ${mainResult.reason}`)
 			log(
-				'  Add `\'storybook-addon-dependency-previews/addon\'` to your `addons:` array manually, then re-run.',
+				"  Add `'storybook-addon-dependency-previews/addon'` to your `addons:` array manually, then re-run.",
 			)
 			process.exit(1)
 	}
@@ -198,10 +202,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		'Example: https://github.com/your-org/your-repo/blob/main/src',
 		'\nEnter your source root URL (blank = disable source links):',
 	].join('\n')
-	const sourceRootUrl = await input(
-		sourceRootInputMessage,
-		'',
-	)
+	const sourceRootUrl = await input(sourceRootInputMessage, '')
 	const previewResult = patchPreviewFile({
 		storybookDir: detection.storybookDir,
 		previewFile: detection.previewFile,

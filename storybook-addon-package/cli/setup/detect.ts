@@ -42,7 +42,12 @@ export type Detection = {
 	installedPackages: ReadonlySet<string>
 }
 
-const MAIN_CANDIDATES: ReadonlyArray<MainFile['lang']> = ['ts', 'mjs', 'js', 'cjs']
+const MAIN_CANDIDATES: ReadonlyArray<MainFile['lang']> = [
+	'ts',
+	'mjs',
+	'js',
+	'cjs',
+]
 const PREVIEW_CANDIDATES: ReadonlyArray<PreviewFile['lang']> = [
 	'tsx',
 	'ts',

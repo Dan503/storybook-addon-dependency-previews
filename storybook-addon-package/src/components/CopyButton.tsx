@@ -1,4 +1,4 @@
-import React, {  useEffect, useId, useRef, useState  } from 'react'
+import React, { useEffect, useId, useRef, useState } from 'react'
 import { CopyIcon } from './icons/CopyIcon'
 import s from './CopyButton.module.css'
 

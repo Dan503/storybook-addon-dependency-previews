@@ -1,6 +1,7 @@
 # Manual setup — Vite (React, Svelte)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
+>
 > ```sh
 > npx --package storybook-addon-dependency-previews sb-deps setup
 > ```
@@ -35,13 +36,13 @@ bun add -d storybook-addon-dependency-previews dependency-cruiser
 ## 2. Register the addon in `.storybook/main.ts`
 
 ```ts
-import type { StorybookConfig } from '@storybook/react-vite'   // if using React
-import type { StorybookConfig } from '@storybook/sveltekit'    // if using Svelte (SvelteKit)
-import type { StorybookConfig } from '@storybook/svelte-vite'  // if using Svelte (without SvelteKit)
+import type { StorybookConfig } from '@storybook/react-vite' // if using React
+import type { StorybookConfig } from '@storybook/sveltekit' // if using Svelte (SvelteKit)
+import type { StorybookConfig } from '@storybook/svelte-vite' // if using Svelte (without SvelteKit)
 
 const config: StorybookConfig = {
-	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'],                       // if using React
-	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'],  // if using Svelte
+	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React
+	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'], // if using Svelte
 	addons: [
 		// autodocs is required for this addon to work
 		'@storybook/addon-docs',
@@ -51,8 +52,8 @@ const config: StorybookConfig = {
 		'storybook-addon-dependency-previews/addon',
 	],
 	framework: { name: '@storybook/react-vite', options: {} }, // if using React
-	framework: '@storybook/sveltekit',                          // if using Svelte (SvelteKit)
-	framework: '@storybook/svelte-vite',                        // if using Svelte (without SvelteKit)
+	framework: '@storybook/sveltekit', // if using Svelte (SvelteKit)
+	framework: '@storybook/svelte-vite', // if using Svelte (without SvelteKit)
 }
 
 export default config
@@ -184,13 +185,12 @@ const previewConfig: StorybookPreviewConfig = {
 			dependenciesJson,
 			storyModules: import.meta.glob(
 				'/src/**/*.stories.@(tsx|ts|jsx|js)', // if using React
-				'/src/**/*.stories.@(ts|js|svelte)',  // if using Svelte
+				'/src/**/*.stories.@(ts|js|svelte)', // if using Svelte
 				{ eager: false },
 			),
 			// Replace this with the URL to your src folder in your git repository.
 			// This enables the addon to link to the source code of the component.
-			sourceRootUrl:
-				'https://github.com/your-org/your-repo/blob/main/src',
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main/src',
 			// `import.meta.url` is a Vite-specific feature.
 			// Allows opening the component file directly in VS Code when running locally.
 			projectRootPath: new URL('..', import.meta.url).pathname,

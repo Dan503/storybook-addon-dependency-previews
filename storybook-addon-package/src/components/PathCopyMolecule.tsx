@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react'
 import type { ReactNode } from 'react'
 import { CopyButton } from './CopyButton'
 import s from './PathCopyMolecule.module.css'
