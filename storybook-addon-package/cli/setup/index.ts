@@ -25,14 +25,49 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	log('sb-deps setup — automated configuration wizard')
 	rule()
 
-	const detection = detectProject(cwd)
+	let detection = detectProject(cwd)
 
 	if (!existsSync(detection.storybookDir)) {
 		log('No `.storybook/` directory found in the current working directory.')
-		log(
-			'Run `npx storybook@latest init` first to scaffold Storybook, then re-run `npx --package storybook-addon-dependency-previews sb-deps setup`.',
+		const runInit = await confirm(
+			'Run `npx storybook@latest init` now to scaffold Storybook?',
+			true,
 		)
-		process.exit(1)
+		if (!runInit) {
+			log(
+				'Cancelled. Run `npx storybook@latest init` yourself, then re-run `npx sb-deps setup`.',
+			)
+			process.exit(1)
+		}
+
+		rule()
+		log('Running `npx storybook@latest init`…')
+		const initResult = spawnSync('npx', ['storybook@latest', 'init'], {
+			cwd,
+			stdio: 'inherit',
+			shell: process.platform === 'win32',
+		})
+		if (initResult.error) {
+			log(`  ✗ Could not spawn storybook init: ${initResult.error.message}`)
+			process.exit(1)
+		}
+		if (initResult.status !== 0) {
+			log(
+				`  ✗ \`npx storybook@latest init\` exited with code ${initResult.status}.`,
+			)
+			process.exit(1)
+		}
+
+		// Re-detect — storybook init created `.storybook/`, modified `package.json`,
+		// and (depending on user choice) installed framework-specific deps.
+		detection = detectProject(cwd)
+		if (!existsSync(detection.storybookDir)) {
+			log(
+				'  ✗ `npx storybook@latest init` finished but `.storybook/` is still missing — aborting.',
+			)
+			process.exit(1)
+		}
+		rule()
 	}
 
 	if (!detection.mainFile) {
