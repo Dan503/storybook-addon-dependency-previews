@@ -7,9 +7,28 @@ export type InstallResult =
 	| { kind: 'installed'; packages: ReadonlyArray<string> }
 	| { kind: 'failed'; reason: string }
 
+/**
+ * Packages the addon needs in the consumer project to function correctly.
+ *
+ * - `storybook-addon-dependency-previews` — the addon itself.
+ * - `dependency-cruiser` — peer-dep used by the `sb-deps` CLI to walk the
+ *   project's import graph.
+ * - `@storybook/addon-docs` — peer-dep used by the addon's autodocs panel
+ *   (`useOf`, `Source`, `Title` etc. from `@storybook/addon-docs/blocks`). Without
+ *   it installed, the addon's docs panel silently fails to load and the user
+ *   sees plain stories with no autodocs.
+ * - `@storybook/addon-links` — peer-dep used by `linkTo` in the addon's
+ *   `StoryLink` component (the "navigate to another story" links inside the
+ *   dependency tree).
+ *
+ * No version specifiers — the package manager picks `@latest` for each, which
+ * naturally aligns with whatever Storybook major version the user has.
+ */
 const REQUIRED_PACKAGES = [
 	'storybook-addon-dependency-previews',
 	'dependency-cruiser',
+	'@storybook/addon-docs',
+	'@storybook/addon-links',
 ] as const
 
 function buildArgs(
@@ -34,10 +53,13 @@ export interface InstallMissingPackagesOptions {
 	cwd: string
 	/** Package manager detected from the project's lockfile. */
 	packageManager: PackageManager
-	/** True if `storybook-addon-dependency-previews` is already in the project's deps. */
-	hasAddonInstalled: boolean
-	/** True if `dependency-cruiser` is already in the project's deps. */
-	hasDependencyCruiserInstalled: boolean
+	/**
+	 * Names of every package already declared in the project's `dependencies`
+	 * or `devDependencies`. Used to skip installing required packages that
+	 * are already there. Members are bare package names (e.g.
+	 * `'@storybook/addon-docs'`), without version specifiers.
+	 */
+	installedPackages: ReadonlySet<string>
 }
 
 /**
@@ -49,12 +71,9 @@ export interface InstallMissingPackagesOptions {
 export function installMissingPackages(
 	opts: InstallMissingPackagesOptions,
 ): InstallResult {
-	const missing = REQUIRED_PACKAGES.filter((p) => {
-		if (p === 'storybook-addon-dependency-previews')
-			return !opts.hasAddonInstalled
-		if (p === 'dependency-cruiser') return !opts.hasDependencyCruiserInstalled
-		return false
-	})
+	const missing = REQUIRED_PACKAGES.filter(
+		(p) => !opts.installedPackages.has(p),
+	)
 
 	if (missing.length === 0) {
 		return { kind: 'skipped', reason: 'all required packages already installed' }

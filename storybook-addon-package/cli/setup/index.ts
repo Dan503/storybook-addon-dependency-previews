@@ -154,8 +154,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const installResult = installMissingPackages({
 		cwd,
 		packageManager: detection.packageManager,
-		hasAddonInstalled: detection.hasAddonInstalled,
-		hasDependencyCruiserInstalled: detection.hasDependencyCruiserInstalled,
+		installedPackages: detection.installedPackages,
 	})
 	if (installResult.kind === 'failed') {
 		log(`  ✗ ${installResult.reason}`)

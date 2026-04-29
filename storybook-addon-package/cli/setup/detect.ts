@@ -33,8 +33,13 @@ export type Detection = {
 	bundler: 'vite' | 'webpack5' | 'unknown'
 	packageManager: PackageManager
 	isEsm: boolean
-	hasAddonInstalled: boolean
-	hasDependencyCruiserInstalled: boolean
+	/**
+	 * Names of every package present in `dependencies` or `devDependencies`
+	 * of the project's package.json. Used by the wizard's install step to
+	 * skip packages the user already has, and could be used by future steps
+	 * that need to gate behaviour on a particular dep being present.
+	 */
+	installedPackages: ReadonlySet<string>
 }
 
 const MAIN_CANDIDATES: ReadonlyArray<MainFile['lang']> = ['ts', 'mjs', 'js', 'cjs']
@@ -141,8 +146,7 @@ export function detectProject(cwd: string): Detection {
 	const bundler = bundlerFromFramework(framework)
 
 	let isEsm = false
-	let hasAddonInstalled = false
-	let hasDependencyCruiserInstalled = false
+	let installedPackages: ReadonlySet<string> = new Set<string>()
 	try {
 		const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf8'))
 		isEsm = pkg.type === 'module'
@@ -150,10 +154,9 @@ export function detectProject(cwd: string): Detection {
 			...(pkg.dependencies ?? {}),
 			...(pkg.devDependencies ?? {}),
 		}
-		hasAddonInstalled = 'storybook-addon-dependency-previews' in merged
-		hasDependencyCruiserInstalled = 'dependency-cruiser' in merged
+		installedPackages = new Set(Object.keys(merged))
 	} catch {
-		// no package.json or unreadable — leave defaults
+		// no package.json or unreadable — leave defaults (empty set)
 	}
 
 	return {
@@ -165,7 +168,6 @@ export function detectProject(cwd: string): Detection {
 		bundler,
 		packageManager: detectPackageManager(cwd),
 		isEsm,
-		hasAddonInstalled,
-		hasDependencyCruiserInstalled,
+		installedPackages,
 	}
 }
