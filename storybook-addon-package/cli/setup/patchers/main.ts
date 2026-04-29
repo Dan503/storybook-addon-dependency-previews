@@ -18,9 +18,11 @@ export type PatchResult =
 	| { kind: 'patched'; appliedTo: 'existing-array' | 'new-array' }
 	| { kind: 'failed'; reason: string }
 
-// Match the opening brace of the Storybook config object. `satisfies` style
-// (`const config = { ... } satisfies StorybookConfig`) places the type AFTER
-// the object so we match the `const <name> = {` form generically as a fallback.
+/**
+ * Match the opening brace of the Storybook config object. `satisfies` style
+ * (`const config = { ... } satisfies StorybookConfig`) places the type AFTER
+ * the object so we match the `const <name> = {` form generically as a fallback.
+ */
 const CONFIG_OBJECT_OPENERS: ReadonlyArray<RegExp> = [
 	/(:\s*StorybookConfig\s*=\s*\{)/,
 	/(export\s+default\s*\{)/,
@@ -28,14 +30,16 @@ const CONFIG_OBJECT_OPENERS: ReadonlyArray<RegExp> = [
 	/(\bconst\s+\w+\s*=\s*\{)/,
 ]
 
-// Locate the body of the Storybook config object: the range between its
-// opening `{` and matching `}`. Used to scope key lookups so they can't be
-// fooled by an unrelated object earlier in the file with the same key name.
-//
-// The opener regex runs against the comment-stripped content (which preserves
-// positions, so `match.index` lines up with the original) — that way an
-// `// export default {` example sitting in a comment can't be mistaken for the
-// real config's opener.
+/**
+ * Locate the body of the Storybook config object: the range between its
+ * opening `{` and matching `}`. Used to scope key lookups so they can't be
+ * fooled by an unrelated object earlier in the file with the same key name.
+ *
+ * The opener regex runs against the comment-stripped content (which preserves
+ * positions, so `match.index` lines up with the original) — that way an
+ * `// export default {` example sitting in a comment can't be mistaken for
+ * the real config's opener.
+ */
 function findConfigBodyRange(
 	content: string,
 ): { bodyStart: number; bodyEnd: number } | null {

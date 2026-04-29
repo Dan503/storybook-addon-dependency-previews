@@ -372,15 +372,17 @@ function patchExistingPreview(
 		quote,
 	)
 
-	// Locate the preview config object's body so all the key lookups below are
-	// scoped to *that* object. Without this, a `parameters:` / `decorators:`
-	// belonging to some unrelated object earlier in the file would be matched
-	// instead of the one we want to patch.
-	//
-	// The opener regex runs against the position-preserving comment-stripped text
-	// so an example like `// const preview: Preview = { ... }` in a comment can't
-	// hijack the search — `match.index` from the stripped content lines up with
-	// the original.
+	/**
+	 * Locate the preview config object's body so all the key lookups below
+	 * are scoped to *that* object. Without this, a `parameters:` /
+	 * `decorators:` belonging to some unrelated object earlier in the file
+	 * would be matched instead of the one we want to patch.
+	 *
+	 * The opener regex runs against the position-preserving comment-stripped
+	 * text so an example like `// const preview: Preview = { ... }` in a
+	 * comment can't hijack the search — `match.index` from the stripped
+	 * content lines up with the original.
+	 */
 	const findPreviewBody = (text: string): { from: number; to: number } | null => {
 		const stripped = stripCommentsRespectingStrings(text)
 		const bodyAt = (
