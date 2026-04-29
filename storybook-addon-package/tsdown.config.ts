@@ -7,8 +7,17 @@ const commonConfig: UserConfig = {
 	fixedExtension: true,
 	sourcemap: true,
 	treeshake: false,
-	// Don’t inline SB deps or CSS files:
-	external: [/^@storybook\//, /^storybook\//, /\.css$/],
+	// Don't inline SB deps, React (peer-dep — Storybook provides one copy in
+	// the manager iframe and the user's app provides one in the preview
+	// iframe; bundling our own causes dual-React `ReactSharedInternals`
+	// errors at runtime), or CSS files.
+	external: [
+		/^@storybook\//,
+		/^storybook\//,
+		/^react($|\/)/,
+		/^react-dom($|\/)/,
+		/\.css$/,
+	],
 	unbundle: true,
 }
 
