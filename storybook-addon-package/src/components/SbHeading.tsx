@@ -1,3 +1,4 @@
+import React from "react"
 import s from './SbHeading.module.css'
 import type { ReactNode } from 'react'
 

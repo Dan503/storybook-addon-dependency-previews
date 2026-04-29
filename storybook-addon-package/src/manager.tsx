@@ -1,3 +1,4 @@
+import React from "react"
 import { addons, types } from 'storybook/manager-api'
 import { AddonPanel } from 'storybook/internal/components'
 import { ADDON_ID, PANEL_ID } from './constants'

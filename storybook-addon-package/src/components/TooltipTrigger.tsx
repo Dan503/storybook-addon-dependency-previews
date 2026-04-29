@@ -1,10 +1,10 @@
-import {
+import React, { 
 	useEffect,
 	useId,
 	useState,
 	type AnchorHTMLAttributes,
 	type ReactNode,
-} from 'react'
+ } from 'react'
 
 import s from './TooltipTrigger.module.css'
 import { ExternalLinkIcon } from './icons/ExternalLinkIcon'

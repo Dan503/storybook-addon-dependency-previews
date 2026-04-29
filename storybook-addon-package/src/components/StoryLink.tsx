@@ -1,3 +1,4 @@
+import React from "react"
 import type { StoryInfo } from '../types'
 import { linkTo } from '@storybook/addon-links'
 

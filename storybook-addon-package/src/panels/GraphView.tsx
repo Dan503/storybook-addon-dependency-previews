@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, {  useEffect, useState  } from 'react'
 import type { Graph } from '../types'
 
 const DEFAULT_URL = '/dependency-previews.json'
