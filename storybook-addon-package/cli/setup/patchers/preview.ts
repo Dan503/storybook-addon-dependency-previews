@@ -346,13 +346,13 @@ function patchExistingPreview(
 			`import {`,
 			`${indent}defaultPreviewParameters,`,
 			`${indent}dependencyPreviewDecorators,${isTs ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
-			`} from ${quote}${PKG}${quote}`,
+			`} from ${quote}${PKG}${quote}${trailingSemi}`,
 		].join(eol)
 		importsToInsert.push(addonImportBlock)
 	}
 	if (!hasDependenciesJsonImport) {
 		importsToInsert.push(
-			`import dependenciesJson from ${quote}./dependency-previews.json${quote}`,
+			`import dependenciesJson from ${quote}./dependency-previews.json${quote}${trailingSemi}`,
 		)
 	}
 	if (importsToInsert.length > 0) {
