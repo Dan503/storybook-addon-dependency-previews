@@ -69,22 +69,27 @@ function buildTemplate(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
 	style: TemplateStyle,
+	isTs: boolean,
 ): string {
 	const { indent, eol } = style
 	const l1 = indent
 	const l2 = indent.repeat(2)
-	return [
-		`/// <reference types="vite/client" />`,
-		``,
+	const lines = [
+		// `/// <reference types="vite/client" />` is a TypeScript-only directive;
+		// Vite-flavoured JS preview files don't need it.
+		...(isTs ? [`/// <reference types="vite/client" />`, ``] : []),
 		`import {`,
 		`${l1}defaultPreviewParameters,`,
-		`${l1}dependencyPreviewDecorators,`,
-		`${l1}type StorybookPreviewConfig,`,
+		// The `type StorybookPreviewConfig` import is meaningless in JS — drop it.
+		`${l1}dependencyPreviewDecorators,${isTs ? `${eol}${l1}type StorybookPreviewConfig,` : ''}`,
 		`} from 'storybook-addon-dependency-previews'`,
 		``,
 		`import dependenciesJson from './dependency-previews.json'`,
 		``,
-		`const previewConfig: StorybookPreviewConfig = {`,
+		// Same: skip the type annotation in JS.
+		isTs
+			? `const previewConfig: StorybookPreviewConfig = {`
+			: `const previewConfig = {`,
 		`${l1}parameters: {`,
 		`${l2}...defaultPreviewParameters,`,
 		dependencyPreviewsBlock(framework, sourceRootUrl, indent, eol),
@@ -94,17 +99,32 @@ function buildTemplate(
 		``,
 		`export default previewConfig`,
 		``,
-	].join(eol)
+	]
+	return lines.join(eol)
+}
+
+/**
+ * Map the detected `.storybook/main.{ts,js,mjs,cjs}` extension to the matching
+ * preview-file extension. The `PreviewFile['lang']` type only models the four
+ * extensions Storybook actually loads as a preview module — `mjs`/`cjs` mains
+ * still imply a `js` preview, so they collapse to `'js'` here.
+ */
+function previewLangForMainLang(
+	mainLang: MainFile['lang'],
+): PreviewFile['lang'] {
+	return mainLang === 'ts' ? 'ts' : 'js'
 }
 
 function templateForFramework(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
 	style: TemplateStyle,
+	mainLang: MainFile['lang'],
 ): { content: string; lang: PreviewFile['lang'] } {
+	const lang = previewLangForMainLang(mainLang)
 	return {
-		content: buildTemplate(framework, sourceRootUrl, style),
-		lang: 'ts',
+		content: buildTemplate(framework, sourceRootUrl, style, lang === 'ts'),
+		lang,
 	}
 }
 
@@ -614,6 +634,7 @@ export function patchPreviewFile(
 		framework,
 		sourceRootUrl,
 		style,
+		mainFile.lang,
 	)
 	const path = resolve(storybookDir, `preview.${lang}`)
 	if (existsSync(path)) {
