@@ -62,8 +62,10 @@ const config: StorybookConfig = {
 		const webpack = createRequire(import.meta.resolve('@storybook/angular'))(
 			'webpack',
 		) as any // if using Angular
-		// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-		const webpack = require('webpack') as any // if using Next.js
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const webpack = createRequire(import.meta.resolve('@storybook/nextjs'))(
+			'webpack',
+		) as any // if using Next.js
 
 		const cssModulesLoader = fileURLToPath(
 			new URL('./css-modules-loader.cjs', import.meta.url),
