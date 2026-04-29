@@ -66,7 +66,6 @@ The React and Svelte story formats are different enough that inlining them isn't
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ComponentName } from './ComponentName'
 
 const meta: Meta<typeof ComponentName> = {
@@ -75,13 +74,6 @@ const meta: Meta<typeof ComponentName> = {
 	component: ComponentName,
 	// autodocs tag is required
 	tags: ['autodocs'],
-	// The `__filePath` property must be applied to every story file
-	// for the addon to track dependencies effectively.
-	// `import.meta.url` is a Vite-specific value that automatically generates the path for you.
-	// `satisfies StoryParameters` gives you type safety and autocomplete on the parameters object.
-	parameters: {
-		__filePath: import.meta.url,
-	} satisfies StoryParameters,
 }
 
 export default meta
@@ -97,7 +89,6 @@ export const Primary: Story = {
 
 ```svelte
 <script lang="ts" module>
-	import type { StoryParameters } from 'storybook-addon-dependency-previews'
 	import { defineMeta } from '@storybook/addon-svelte-csf'
 	import ComponentName from './ComponentName.svelte'
 
@@ -106,16 +97,32 @@ export const Primary: Story = {
 		component: ComponentName,
 		// autodocs tag is required
 		tags: ['autodocs'],
-		// The `__filePath` property must be applied to every story file.
-		// `satisfies StoryParameters` gives you type safety and autocomplete on the parameters object.
-		parameters: {
-			__filePath: import.meta.url,
-		} satisfies StoryParameters,
 	})
 </script>
 
 <Story name="Primary" />
 ```
+
+### Optional: `__filePath` fallback
+
+The addon matches each docs page to its graph entry by **storyId** — derived at build time from your story file's `title:` literal. For typical projects (literal `title:` string, component file under `src/components|ui|lib/`) this works without any extra parameter on the story.
+
+If your storyId-based lookup ever fails — for example because the title is computed dynamically and the build-time scanner can't read it, or your file layout doesn't match the conventions above — you can add a `__filePath` parameter as a fallback. The addon will then match the story to its graph entry by source path:
+
+```tsx
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+
+const meta: Meta<typeof ComponentName> = {
+	title: 'Component Name',
+	component: ComponentName,
+	tags: ['autodocs'],
+	parameters: {
+		__filePath: import.meta.url, // Vite gives us the absolute path to this story file
+	} satisfies StoryParameters,
+}
+```
+
+Same shape inside `defineMeta({ ..., parameters: { __filePath: import.meta.url } })` for Svelte CSF.
 
 ## 4. `package.json` scripts
 
