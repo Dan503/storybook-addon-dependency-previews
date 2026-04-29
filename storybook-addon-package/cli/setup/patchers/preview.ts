@@ -538,13 +538,43 @@ function patchExistingPreview(
 	return { kind: 'patched', path: previewFile.path }
 }
 
-export function patchPreviewFile(opts: {
+export interface PatchPreviewFileOptions {
+	/** Absolute path to the project's `.storybook/` directory. */
 	storybookDir: string
+	/**
+	 * Existing preview file detected in `.storybook/` (any of preview.ts /
+	 * .tsx / .js / .jsx), or `null` if no preview file exists yet — in which
+	 * case the patcher creates a fresh one from the framework template.
+	 */
 	previewFile: PreviewFile | null
+	/**
+	 * Detected `.storybook/main.{ts,js,…}`. Used to derive the indent and EOL
+	 * style for any newly-created preview file so it matches the project's
+	 * existing code style.
+	 */
 	mainFile: MainFile
+	/**
+	 * Detected (or user-confirmed) Storybook framework. Determines the story
+	 * glob pattern injected into `dependencyPreviews.storyModules` and which
+	 * framework template is used when creating a new preview file.
+	 */
 	framework: Framework
+	/**
+	 * URL pointing at the project's source-code root (e.g. a GitHub blob
+	 * URL). Powers the addon's "view source" links in the Storybook UI. May
+	 * be empty — the addon's runtime treats `''` as "no source links" and
+	 * the field is required by the addon's parameter type so we always emit
+	 * it.
+	 */
 	sourceRootUrl: string
-}): PreviewPatchResult {
+}
+
+/**
+ * Patch (or create) the project's `.storybook/preview.{ts,tsx,js,jsx}` so
+ * the addon's parameters and decorators are wired in. Idempotent —
+ * re-runs against an already-configured preview return `{ kind: 'skipped' }`.
+ */
+export function patchPreviewFile(opts: PatchPreviewFileOptions): PreviewPatchResult {
 	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl } = opts
 
 	if (

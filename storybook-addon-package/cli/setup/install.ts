@@ -29,12 +29,26 @@ function buildArgs(
 	}
 }
 
-export function installMissingPackages(opts: {
+export interface InstallMissingPackagesOptions {
+	/** Current working directory the package manager command runs in. */
 	cwd: string
+	/** Package manager detected from the project's lockfile. */
 	packageManager: PackageManager
+	/** True if `storybook-addon-dependency-previews` is already in the project's deps. */
 	hasAddonInstalled: boolean
+	/** True if `dependency-cruiser` is already in the project's deps. */
 	hasDependencyCruiserInstalled: boolean
-}): InstallResult {
+}
+
+/**
+ * Run the detected package manager to install whichever of the addon's
+ * required packages aren't already in the project. Returns a structured
+ * result describing what happened (skipped / installed / failed) so the
+ * caller can surface a clean message instead of catching a thrown error.
+ */
+export function installMissingPackages(
+	opts: InstallMissingPackagesOptions,
+): InstallResult {
 	const missing = REQUIRED_PACKAGES.filter((p) => {
 		if (p === 'storybook-addon-dependency-previews')
 			return !opts.hasAddonInstalled
