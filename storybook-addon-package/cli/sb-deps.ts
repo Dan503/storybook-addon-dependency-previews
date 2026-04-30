@@ -15,20 +15,22 @@ import { createRequire } from 'node:module'
 import { basename, dirname, join, posix, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
+import { runSetup } from './setup/index.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
 // ───────────────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2)
+const SUBCOMMAND = argv[0] && !argv[0].startsWith('--') ? argv[0] : null
 const WATCH = argv.includes('--watch')
 const RUN_SB_IDX = argv.indexOf('--run-storybook')
 const RUN_SB = RUN_SB_IDX !== -1
 const _RUN_SB_NEXT = RUN_SB ? argv[RUN_SB_IDX + 1] : undefined
 const SB_CUSTOM_CMD =
 	_RUN_SB_NEXT && !_RUN_SB_NEXT.startsWith('--') ? _RUN_SB_NEXT : undefined
-const PORT_ARGI = Math.max(argv.indexOf('--sb-port'), 0)
+const PORT_ARGI = argv.indexOf('--sb-port')
 const SB_PORT =
-	PORT_ARGI && argv[PORT_ARGI + 1]
+	PORT_ARGI !== -1 && argv[PORT_ARGI + 1]
 		? Number(argv[PORT_ARGI + 1]) || 6006
 		: 6006
 
@@ -40,7 +42,11 @@ const outDir = resolve(projectRoot, '.storybook')
 const rawPath = join(outDir, 'dependency-previews.raw.json')
 const cookedPath = join(outDir, 'dependency-previews.json')
 
-if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true })
+// Don't auto-create `.storybook/` for the setup subcommand — the wizard needs to
+// detect whether Storybook has been initialised so it can guide the user. The
+// regular build/watch path still needs the directory to exist for its JSON output.
+if (SUBCOMMAND !== 'setup' && !existsSync(outDir))
+	mkdirSync(outDir, { recursive: true })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -222,8 +228,7 @@ function detectAtomicTag(absPath: string) {
 	let best: null | { val: string; idx: number } = null
 	for (const t of tokens) {
 		const idx = adaptedPath.lastIndexOf(t)
-		if (idx !== -1 && (best === null || idx > best.idx))
-			best = { val: t, idx }
+		if (idx !== -1 && (best === null || idx > best.idx)) best = { val: t, idx }
 	}
 	return best ? best.val : null
 }
@@ -320,7 +325,6 @@ const meta: Meta<typeof ${componentName}> = {
   tags: ${JSON.stringify(tags)},
   parameters: {
     layout: 'padded',
-    __filePath: import.meta.url,
   } satisfies StoryParameters,
 }
 
@@ -423,7 +427,6 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 		tags: [${tags.map((t) => `'${t}'`).join(', ')}],
 		parameters: {
 			layout: 'padded',
-			__filePath: import.meta.url,
 		} satisfies StoryParameters,
 	})
 	type Args = Omit<PropsFor${componentName}, 'children'>;
@@ -624,11 +627,7 @@ export class ${className} {
 		templateLocation === 'external' &&
 		(!existsSync(htmlPath) || isEmptyOrWhitespace(htmlPath))
 	) {
-		writeFileSync(
-			htmlPath,
-			defaultAngularHtmlTemplate(componentName),
-			'utf8',
-		)
+		writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
 		info(`scaffolded angular template → ${rel(htmlPath)}`)
 	}
 }
@@ -651,9 +650,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				`templateUrl: './${base}.component.html'`,
 			)
 			writeFileSync(absTsPath, updated, 'utf8')
-			info(
-				`updated angular component to use templateUrl → ${rel(absTsPath)}`,
-			)
+			info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
 		}
 	}
 
@@ -693,7 +690,6 @@ const meta: Meta<${className}> = {
 	tags: ${JSON.stringify(tags)},
 	parameters: {
 		layout: 'padded',
-		__filePath: import.meta.url,
 	} satisfies StoryParameters,
 }
 
@@ -789,31 +785,20 @@ function startWatcher() {
 
 					// ANGULAR .component.ts CREATE — scaffold with inline template
 					if (isComponentsAngularTs(abs) && ev.type === 'create') {
-						await handleAngularComponentCreation(
-							abs,
-							relPath,
-							'internal',
-						)
+						await handleAngularComponentCreation(abs, relPath, 'internal')
 						continue
 					}
 
 					// ANGULAR .component.html CREATE
 					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
 						const tsPath = angularComponentTsPath(abs)
-						if (
-							existsSync(tsPath) &&
-							!isEmptyOrWhitespace(tsPath)
-						) {
+						if (existsSync(tsPath) && !isEmptyOrWhitespace(tsPath)) {
 							// .ts already exists — scaffold HTML from it (migrate inline template if present)
 							if (isEmptyOrWhitespace(abs)) {
 								scaffoldAngularHtmlFromTs(abs, tsPath)
 							}
-							console.log(
-								'Angular component creation detected:',
-								rel(abs),
-							)
-							const createdStory =
-								ensureStoryForAngularComponent(tsPath)
+							console.log('Angular component creation detected:', rel(abs))
+							const createdStory = ensureStoryForAngularComponent(tsPath)
 							if (createdStory) {
 								kick('create:story', createdStory)
 							}
@@ -924,6 +909,11 @@ async function startStorybook() {
 // Boot
 // ───────────────────────────────────────────────────────────────────────────────
 ;(async () => {
+	if (SUBCOMMAND === 'setup') {
+		await runSetup(argv.slice(1))
+		return
+	}
+
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}

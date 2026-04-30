@@ -107,9 +107,7 @@ function getStoryId(componentPath: string) {
 	const rawFileData = getRawStoryFileData(componentPath)
 	if (!rawFileData.storyFileData) return null
 
-	const match = rawFileData.storyFileData.match(
-		/title:\s*['"`]([^'"`]+)['"`]/,
-	)
+	const match = rawFileData.storyFileData.match(/title:\s*['"`]([^'"`]+)['"`]/)
 	if (!match) return null
 
 	const titlePath = match[1]
@@ -122,41 +120,68 @@ function getStoryId(componentPath: string) {
 	}
 }
 
+/**
+ * Locate the story file for `componentPath` by trying every reasonable
+ * story extension, not just one that matches the component's own extension.
+ *
+ * A `.tsx` component with a `.ts` story file is a real-world pattern (story
+ * files often have no JSX), so restricting the search to the component's
+ * extension misses valid pairings and produces graph entries with no
+ * `storyId` — which breaks the autodocs lookup in `useDependencyGraph`.
+ *
+ * The extension list is declared inside this function (rather than as a
+ * top-level `const`) because the bundler reorders the module so the
+ * top-level graph-build loop runs before any top-level `const` is
+ * initialised. A `const` referenced from inside the loop's call chain
+ * would hit the temporal-dead-zone; `function` declarations are hoisted
+ * so the function itself is fine.
+ */
 function getRawStoryFileData(componentPath: string) {
+	// Searched in order — first hit wins. Putting the component's own
+	// extension first means a `.tsx` component with both `Button.stories.tsx`
+	// and `Button.stories.ts` siblings prefers the matching extension, which
+	// matches what Storybook itself would resolve.
+	const STORY_EXTENSIONS = [
+		'.ts',
+		'.tsx',
+		'.js',
+		'.jsx',
+		'.svelte',
+		'.mts',
+		'.cts',
+	] as const
+
 	const base = componentPath.replace(/\.\w+$/, '')
-	const storiesPath = `${base}.stories${extname(componentPath)}`
-	const storyPath = `${base}.story${extname(componentPath)}`
 
-	const storiesData = getRawFileData(storiesPath)
-	const storyData = getRawFileData(storyPath)
-	const ext = extname(componentPath)
-
-	// Angular: strip .component suffix and look for e.g. Button.stories.ts
+	// Angular: strip the `.component` suffix so e.g. `Button.component.ts`
+	// looks for `Button.stories.ts` rather than `Button.component.stories.ts`.
 	const angularBase = base.replace(/\.component$/, '')
 	const isAngular = angularBase !== base
-	const angularStoriesPath = isAngular ? `${angularBase}.stories${ext}` : null
-	const angularStoryPath = isAngular ? `${angularBase}.story${ext}` : null
-	const angularStoriesData = angularStoriesPath
-		? getRawFileData(angularStoriesPath)
-		: null
-	const angularStoryData = angularStoryPath
-		? getRawFileData(angularStoryPath)
-		: null
 
-	return {
-		storyFileData:
-			storiesData ||
-			storyData ||
-			angularStoriesData ||
-			angularStoryData ||
-			null,
-		storyFilePath:
-			(storiesData && storiesPath) ||
-			(storyData && storyPath) ||
-			(angularStoriesData && angularStoriesPath) ||
-			(angularStoryData && angularStoryPath) ||
-			null,
+	const componentExt = extname(componentPath)
+	// Search the component's own extension first so matching pairs win when
+	// both ambiguous siblings exist.
+	const orderedExts = [
+		componentExt,
+		...STORY_EXTENSIONS.filter((e) => e !== componentExt),
+	]
+
+	const candidates: Array<string> = []
+	for (const ext of orderedExts) {
+		candidates.push(`${base}.stories${ext}`)
+		candidates.push(`${base}.story${ext}`)
+		if (isAngular) {
+			candidates.push(`${angularBase}.stories${ext}`)
+			candidates.push(`${angularBase}.story${ext}`)
+		}
 	}
+
+	for (const path of candidates) {
+		const data = getRawFileData(path)
+		if (data) return { storyFileData: data, storyFilePath: path }
+	}
+
+	return { storyFileData: null, storyFilePath: null }
 }
 
 function getRawFileData(path: string) {

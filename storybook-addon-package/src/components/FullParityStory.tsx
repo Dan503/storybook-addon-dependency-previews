@@ -15,9 +15,7 @@ const toCanvasId = (id: string) =>
 	id.endsWith('--docs') ? id.replace(/--docs$/, '--primary') : id
 
 const enc = (obj?: Record<string, unknown>) =>
-	obj && Object.keys(obj).length
-		? encodeURIComponent(JSON.stringify(obj))
-		: ''
+	obj && Object.keys(obj).length ? encodeURIComponent(JSON.stringify(obj)) : ''
 
 export function FullParityStory({
 	storyId,

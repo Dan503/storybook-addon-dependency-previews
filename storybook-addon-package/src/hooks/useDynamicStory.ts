@@ -12,8 +12,7 @@ function findStoryImporter(
 		return null
 	}
 	// normalize to Vite’s absolute-style keys
-	const norm = (p: string) =>
-		'/' + p.replace(/^[./]+/, '').replace(/\\/g, '/')
+	const norm = (p: string) => '/' + p.replace(/^[./]+/, '').replace(/\\/g, '/')
 	const wanted = norm(storyFilePath)
 	// exact match first, else suffix match as a fallback
 	return (
@@ -77,8 +76,7 @@ function getPrimaryId(csfModule: CsfModule | undefined | null) {
 	if ('Default' in csfModule) return '--default'
 	if ('Primary' in csfModule) return '--primary'
 	return (
-		'--' +
-		slugifyExportName(csfModule?.__namedExportsOrder?.[0] || 'default')
+		'--' + slugifyExportName(csfModule?.__namedExportsOrder?.[0] || 'default')
 	)
 }
 

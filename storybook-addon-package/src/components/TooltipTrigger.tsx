@@ -1,4 +1,4 @@
-import {
+import React, {
 	useEffect,
 	useId,
 	useState,
@@ -111,21 +111,15 @@ export function TooltipTrigger({
 						{dangerouslySetInnerHTML ? (
 							<span
 								style={{ whiteSpace: 'initial' }}
-								dangerouslySetInnerHTML={
-									dangerouslySetInnerHTML
-								}
+								dangerouslySetInnerHTML={dangerouslySetInnerHTML}
 							/>
 						) : (
-							<span style={{ whiteSpace: 'initial' }}>
-								{children}
-							</span>
+							<span style={{ whiteSpace: 'initial' }}>{children}</span>
 						)}
 						{newWindow && (
 							<>
 								&nbsp;
-								<ExternalLinkIcon
-									className={s.externalLinkIcon}
-								/>
+								<ExternalLinkIcon className={s.externalLinkIcon} />
 							</>
 						)}
 					</span>
