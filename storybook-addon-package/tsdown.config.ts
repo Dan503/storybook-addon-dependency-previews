@@ -7,8 +7,17 @@ const commonConfig: UserConfig = {
 	fixedExtension: true,
 	sourcemap: true,
 	treeshake: false,
-	// Don’t inline SB deps or CSS files:
-	external: [/^@storybook\//, /^storybook\//, /\.css$/],
+	// Don't inline SB deps, React (peer-dep — Storybook provides one copy in
+	// the manager iframe and the user's app provides one in the preview
+	// iframe; bundling our own causes dual-React `ReactSharedInternals`
+	// errors at runtime), or CSS files.
+	external: [
+		/^@storybook\//,
+		/^storybook\//,
+		/^react($|\/)/,
+		/^react-dom($|\/)/,
+		/\.css$/,
+	],
 	unbundle: true,
 }
 
@@ -31,6 +40,14 @@ export default defineConfig([
 			'cli/sb-deps': './cli/sb-deps.ts',
 			'cli/scripts/depcruise.config': './cli/scripts/depcruise.config.ts',
 			'cli/scripts/postprocess': './cli/scripts/postprocess.ts',
+			'cli/setup/index': './cli/setup/index.ts',
+			'cli/setup/detect': './cli/setup/detect.ts',
+			'cli/setup/install': './cli/setup/install.ts',
+			'cli/setup/prompt': './cli/setup/prompt.ts',
+			'cli/setup/util': './cli/setup/util.ts',
+			'cli/setup/patchers/main': './cli/setup/patchers/main.ts',
+			'cli/setup/patchers/preview': './cli/setup/patchers/preview.ts',
+			'cli/setup/patchers/packageJson': './cli/setup/patchers/packageJson.ts',
 		},
 		platform: 'node',
 	},

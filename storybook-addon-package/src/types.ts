@@ -24,15 +24,28 @@ export type StoryParameters = StorybookParameters & {
 	 */
 	layout?: LayoutOptions
 	/**
-	 * A required property in all component story files. This is used to determine the path to the story.
+	 * Optional fallback used to match this story to its dependency-graph entry
+	 * by source path.
 	 *
-	 * Use the following as the value for this property:
+	 * The addon's primary lookup is by `storyId`, derived at build time from
+	 * the story file's `title:` literal. For typical projects (literal title
+	 * string, component file under `src/components|ui|lib/`) the storyId
+	 * lookup is sufficient and `__filePath` can be omitted.
+	 *
+	 * Set this only when the storyId lookup can't reach your story — for
+	 * example if the title is computed dynamically and the build-time
+	 * scanner can't read it, or your file layout sits outside the
+	 * conventions the scanner recognises.
+	 *
+	 * Use `import.meta.url` as the value:
 	 *
 	 * ```ts
-	 * import.meta.url
+	 * parameters: {
+	 *   __filePath: import.meta.url,
+	 * } satisfies StoryParameters
 	 * ```
 	 */
-	__filePath: string
+	__filePath?: string
 }
 
 export type DependencyPreviewStorybookParameters = Omit<

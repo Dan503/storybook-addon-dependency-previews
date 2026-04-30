@@ -1,3 +1,4 @@
+import React from 'react'
 import type { StoryInfo } from '../types'
 import { linkTo } from '@storybook/addon-links'
 
@@ -27,9 +28,7 @@ export function StoryLink({
 		return (
 			<span className={s.currentStory}>
 				{children ?? storyTitle}{' '}
-				<strong className={s.currentStoryMark}>
-					(Current Story Page)
-				</strong>
+				<strong className={s.currentStoryMark}>(Current Story Page)</strong>
 			</span>
 		)
 	}
