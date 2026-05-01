@@ -179,9 +179,24 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			log(
 				`  ✓ added 'storybook-addon-dependency-previews/addon' (${mainResult.appliedTo})`,
 			)
+			if (mainResult.removedAddons && mainResult.removedAddons.length > 0) {
+				log(
+					`  ✓ removed redundant entries (auto-registered by /addon preset): ${mainResult.removedAddons.join(', ')}`,
+				)
+			}
+			if (mainResult.warnings) {
+				for (const warning of mainResult.warnings) {
+					log(`  ⚠ ${warning}`)
+				}
+			}
 			break
 		case 'skipped':
 			log(`  ✓ ${mainResult.reason}`)
+			if (mainResult.warnings) {
+				for (const warning of mainResult.warnings) {
+					log(`  ⚠ ${warning}`)
+				}
+			}
 			break
 		case 'failed':
 			log(`  ✗ ${mainResult.reason}`)
