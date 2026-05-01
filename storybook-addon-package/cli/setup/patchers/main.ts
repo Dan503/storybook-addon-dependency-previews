@@ -387,17 +387,22 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 			}
 		}
 
-		// If there are no duplicate string entries to remove and our addon is already
-		// registered (either as a top-level string entry, or somewhere outside the
-		// array via a spread/variable that the tokenizer can't see into), we have
-		// nothing to write. Object-form warnings are still surfaced.
+		// Our addon counts as already registered if it's either a top-level string
+		// entry inside the array (`ourAddonPresent`) or referenced elsewhere via a
+		// spread / imported variable that the tokenizer can't see into
+		// (`addonReferencedElsewhere`). Both cases must skip the append step —
+		// otherwise we'd register our own addon twice and recreate the very class
+		// of bug this patcher exists to prevent.
 		const addonReferencedElsewhere =
 			!ourAddonPresent &&
 			ADDON_PRESENT.test(stripCommentsRespectingStrings(content))
-		if (
-			removalRanges.length === 0 &&
-			(ourAddonPresent || addonReferencedElsewhere)
-		) {
+		const addonAlreadyRegistered =
+			ourAddonPresent || addonReferencedElsewhere
+
+		// If there are no duplicate string entries to remove and our addon is
+		// already registered, we have nothing to write. Object-form warnings are
+		// still surfaced.
+		if (removalRanges.length === 0 && addonAlreadyRegistered) {
 			return {
 				kind: 'skipped',
 				reason: 'addon already registered',
@@ -434,7 +439,7 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 			}
 		}
 
-		if (ourAddonPresent) {
+		if (addonAlreadyRegistered) {
 			// Removals only — write what we have.
 			try {
 				writeFileSync(mainFile.path, workingContent, 'utf8')
