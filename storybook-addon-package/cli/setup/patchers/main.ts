@@ -35,6 +35,13 @@ export type PatchResult =
 	| {
 			kind: 'patched'
 			appliedTo: 'existing-array' | 'new-array'
+			/**
+			 * Whether `'storybook-addon-dependency-previews/addon'` was actually
+			 * inserted this run. False when the only thing the patcher did was
+			 * remove redundant `@storybook/addon-docs` / `@storybook/addon-links`
+			 * entries (our addon was already registered).
+			 */
+			addedAddon: boolean
 			/** Plain-string entries removed because the `/addon` preset auto-registers them. */
 			removedAddons?: ReadonlyArray<string>
 			/** Notes the wizard caller should surface to the user (e.g. object-form duplicates). */
@@ -452,6 +459,7 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 			return {
 				kind: 'patched',
 				appliedTo: 'existing-array',
+				addedAddon: false,
 				removedAddons,
 				...(warnings.length > 0 ? { warnings } : {}),
 			}
@@ -492,6 +500,7 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 		return {
 			kind: 'patched',
 			appliedTo: 'existing-array',
+			addedAddon: true,
 			...(removedAddons.length > 0 ? { removedAddons } : {}),
 			...(warnings.length > 0 ? { warnings } : {}),
 		}
@@ -512,5 +521,5 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 			reason: `Could not write ${mainFile.path}: ${(e as Error).message}`,
 		}
 	}
-	return { kind: 'patched', appliedTo: 'new-array' }
+	return { kind: 'patched', appliedTo: 'new-array', addedAddon: true }
 }

@@ -176,9 +176,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const mainResult = patchMainFile(detection.mainFile)
 	switch (mainResult.kind) {
 		case 'patched':
-			log(
-				`  ✓ added 'storybook-addon-dependency-previews/addon' (${mainResult.appliedTo})`,
-			)
+			if (mainResult.addedAddon) {
+				log(
+					`  ✓ added 'storybook-addon-dependency-previews/addon' (${mainResult.appliedTo})`,
+				)
+			} else {
+				log('  ✓ updated main.ts (no addon insertion needed)')
+			}
 			if (mainResult.removedAddons && mainResult.removedAddons.length > 0) {
 				log(
 					`  ✓ removed redundant entries (auto-registered by /addon preset): ${mainResult.removedAddons.join(', ')}`,
