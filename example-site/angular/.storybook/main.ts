@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url)
 
 const config: StorybookConfig = {
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-	addons: ['@storybook/addon-docs', 'storybook-addon-dependency-previews/addon'],
+	addons: ['storybook-addon-dependency-previews/addon'],
 	staticDirs: ['../public'],
 	framework: {
 		name: '@storybook/angular',
