@@ -148,128 +148,132 @@ function tokenizeAddonEntries(
 	arrayCloseIndex: number,
 ): Array<AddonEntry> {
 	const entries: Array<AddonEntry> = []
-	let depth = 0
-	let inSQ = false
-	let inDQ = false
-	let inTL = false
-	let inLC = false
-	let inBC = false
+	let nestingDepth = 0
+	let inSingleQuoteString = false
+	let inDoubleQuoteString = false
+	let inTemplateLiteral = false
+	let inLineComment = false
+	let inBlockComment = false
 	let entryStart: number | null = null
 
-	const flush = (endExclusive: number) => {
+	const flushEntry = (endExclusive: number) => {
 		if (entryStart === null) return
 		// Trim leading and trailing whitespace from the entry range.
-		let s = entryStart
-		let e = endExclusive
-		while (s < e && /\s/.test(content[s]!)) s++
-		while (e > s && /\s/.test(content[e - 1]!)) e--
-		if (s >= e) {
+		let trimmedStart = entryStart
+		let trimmedEnd = endExclusive
+		while (trimmedStart < trimmedEnd && /\s/.test(content[trimmedStart]!)) {
+			trimmedStart++
+		}
+		while (trimmedEnd > trimmedStart && /\s/.test(content[trimmedEnd - 1]!)) {
+			trimmedEnd--
+		}
+		if (trimmedStart >= trimmedEnd) {
 			entryStart = null
 			return
 		}
-		entries.push(classifyEntry(content, s, e))
+		entries.push(classifyEntry(content, trimmedStart, trimmedEnd))
 		entryStart = null
 	}
 
-	let i = arrayOpenIndex + 1
-	while (i < arrayCloseIndex) {
-		const c = content[i]!
-		const next = content[i + 1]
+	let cursor = arrayOpenIndex + 1
+	while (cursor < arrayCloseIndex) {
+		const char = content[cursor]!
+		const nextChar = content[cursor + 1]
 
-		if (inLC) {
-			if (c === '\n') inLC = false
-			i++
+		if (inLineComment) {
+			if (char === '\n') inLineComment = false
+			cursor++
 			continue
 		}
-		if (inBC) {
-			if (c === '*' && next === '/') {
-				inBC = false
-				i += 2
+		if (inBlockComment) {
+			if (char === '*' && nextChar === '/') {
+				inBlockComment = false
+				cursor += 2
 				continue
 			}
-			i++
+			cursor++
 			continue
 		}
-		if (inSQ) {
-			if (c === '\\') {
-				i += 2
+		if (inSingleQuoteString) {
+			if (char === '\\') {
+				cursor += 2
 				continue
 			}
-			if (c === "'") inSQ = false
-			i++
+			if (char === "'") inSingleQuoteString = false
+			cursor++
 			continue
 		}
-		if (inDQ) {
-			if (c === '\\') {
-				i += 2
+		if (inDoubleQuoteString) {
+			if (char === '\\') {
+				cursor += 2
 				continue
 			}
-			if (c === '"') inDQ = false
-			i++
+			if (char === '"') inDoubleQuoteString = false
+			cursor++
 			continue
 		}
-		if (inTL) {
-			if (c === '\\') {
-				i += 2
+		if (inTemplateLiteral) {
+			if (char === '\\') {
+				cursor += 2
 				continue
 			}
-			if (c === '`') inTL = false
-			i++
+			if (char === '`') inTemplateLiteral = false
+			cursor++
 			continue
 		}
-		if (c === '/' && next === '/') {
-			inLC = true
-			i += 2
+		if (char === '/' && nextChar === '/') {
+			inLineComment = true
+			cursor += 2
 			continue
 		}
-		if (c === '/' && next === '*') {
-			inBC = true
-			i += 2
+		if (char === '/' && nextChar === '*') {
+			inBlockComment = true
+			cursor += 2
 			continue
 		}
-		if (c === "'") {
-			if (depth === 0 && entryStart === null) entryStart = i
-			inSQ = true
-			i++
+		if (char === "'") {
+			if (nestingDepth === 0 && entryStart === null) entryStart = cursor
+			inSingleQuoteString = true
+			cursor++
 			continue
 		}
-		if (c === '"') {
-			if (depth === 0 && entryStart === null) entryStart = i
-			inDQ = true
-			i++
+		if (char === '"') {
+			if (nestingDepth === 0 && entryStart === null) entryStart = cursor
+			inDoubleQuoteString = true
+			cursor++
 			continue
 		}
-		if (c === '`') {
-			if (depth === 0 && entryStart === null) entryStart = i
-			inTL = true
-			i++
-			continue
-		}
-
-		if (depth === 0 && c === ',') {
-			flush(i)
-			i++
+		if (char === '`') {
+			if (nestingDepth === 0 && entryStart === null) entryStart = cursor
+			inTemplateLiteral = true
+			cursor++
 			continue
 		}
 
-		if (c === '{' || c === '[' || c === '(') {
-			if (depth === 0 && entryStart === null) entryStart = i
-			depth++
-			i++
-			continue
-		}
-		if (c === '}' || c === ']' || c === ')') {
-			if (depth > 0) depth--
-			i++
+		if (nestingDepth === 0 && char === ',') {
+			flushEntry(cursor)
+			cursor++
 			continue
 		}
 
-		if (depth === 0 && entryStart === null && /\S/.test(c)) {
-			entryStart = i
+		if (char === '{' || char === '[' || char === '(') {
+			if (nestingDepth === 0 && entryStart === null) entryStart = cursor
+			nestingDepth++
+			cursor++
+			continue
 		}
-		i++
+		if (char === '}' || char === ']' || char === ')') {
+			if (nestingDepth > 0) nestingDepth--
+			cursor++
+			continue
+		}
+
+		if (nestingDepth === 0 && entryStart === null && /\S/.test(char)) {
+			entryStart = cursor
+		}
+		cursor++
 	}
-	flush(arrayCloseIndex)
+	flushEntry(arrayCloseIndex)
 	return entries
 }
 
@@ -301,25 +305,35 @@ function computeRemovalRange(
 	content: string,
 	entry: AddonEntry,
 ): { start: number; end: number } {
-	let end = entry.end
-	let j = end
-	while (j < content.length && /[ \t]/.test(content[j]!)) j++
-	if (content[j] === ',') {
-		end = j + 1
+	let removalEnd = entry.end
+	let lookAheadCursor = removalEnd
+	while (
+		lookAheadCursor < content.length &&
+		/[ \t]/.test(content[lookAheadCursor]!)
+	) {
+		lookAheadCursor++
+	}
+	if (content[lookAheadCursor] === ',') {
+		removalEnd = lookAheadCursor + 1
 	}
 
 	const lineStart = content.lastIndexOf('\n', entry.start - 1) + 1
-	const newlineAfter = content.indexOf('\n', end)
+	const newlineAfter = content.indexOf('\n', removalEnd)
 	const lineEnd = newlineAfter === -1 ? content.length : newlineAfter
-	const beforeOnLine = content.slice(lineStart, entry.start)
-	const afterOnLine = content.slice(end, lineEnd)
-	if (/^\s*$/.test(beforeOnLine) && /^\s*$/.test(afterOnLine)) {
+	const charsBeforeEntryOnLine = content.slice(lineStart, entry.start)
+	const charsAfterEntryOnLine = content.slice(removalEnd, lineEnd)
+	if (
+		/^\s*$/.test(charsBeforeEntryOnLine) &&
+		/^\s*$/.test(charsAfterEntryOnLine)
+	) {
 		const removeUpTo = newlineAfter === -1 ? content.length : newlineAfter + 1
 		return { start: lineStart, end: removeUpTo }
 	}
 
-	while (end < content.length && content[end] === ' ') end++
-	return { start: entry.start, end }
+	while (removalEnd < content.length && content[removalEnd] === ' ') {
+		removalEnd++
+	}
+	return { start: entry.start, end: removalEnd }
 }
 
 export function patchMainFile(mainFile: MainFile): PatchResult {
@@ -419,10 +433,11 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 
 		// Apply removals from highest start to lowest so earlier indices remain valid.
 		let workingContent = content
-		removalRanges.sort((a, b) => b.start - a.start)
-		for (const r of removalRanges) {
+		removalRanges.sort((rangeA, rangeB) => rangeB.start - rangeA.start)
+		for (const range of removalRanges) {
 			workingContent =
-				workingContent.slice(0, r.start) + workingContent.slice(r.end)
+				workingContent.slice(0, range.start) +
+				workingContent.slice(range.end)
 		}
 
 		// Re-locate the array on the post-removal content (its close index has shifted).
