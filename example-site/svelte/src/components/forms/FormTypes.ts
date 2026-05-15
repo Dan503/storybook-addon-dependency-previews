@@ -1,27 +1,11 @@
-import type { AnyFieldApi, AnyFormApi, SvelteFormApi } from '@tanstack/svelte-form';
+import type { FieldStore, FormStore, RequiredPath, Schema } from '@formisch/svelte';
 
-export type AnyExtendedFormApi = SvelteFormApi<
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any,
-	any
->;
-
-export interface WithField<FieldApi extends AnyFieldApi> {
-	field: FieldApi;
+export interface WithField<TSchema extends Schema, TPath extends RequiredPath> {
+	field: FieldStore<TSchema, TPath>;
 }
 
-export interface WithForm<FormApi extends AnyFormApi> {
-	form: FormApi;
+export interface WithForm<TSchema extends Schema> {
+	form: FormStore<TSchema>;
 }
-export interface WithExtendedForm<FormApi extends AnyExtendedFormApi> {
-	form: FormApi;
-}
+
+export type FormErrors = FieldStore['errors'] | Array<Error>;
