@@ -16,11 +16,21 @@ export {
 export {
 	defaultContactFormValues,
 	contactFormSchema,
+	defaultFirstNameOnlyValues,
+	firstNameOnlySchema,
+	defaultMessageOnlyValues,
+	messageOnlySchema,
 } from './default-form-values'
 export type {
-	ContactFormInput,
-	ContactFormOutput,
+	ContactFormInputData,
+	ContactFormOutputData,
 	ContactFormSchemaType,
+	FirstNameOnlyInputData,
+	FirstNameOnlyOutputData,
+	FirstNameOnlySchemaType,
+	MessageOnlyInputData,
+	MessageOnlyOutputData,
+	MessageOnlySchemaType,
 } from './default-form-values'
 
 // Re-export types from utils for convenience
