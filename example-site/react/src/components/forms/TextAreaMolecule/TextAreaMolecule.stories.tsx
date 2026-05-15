@@ -1,18 +1,13 @@
-import * as v from 'valibot'
 import { Field, useForm } from '@formisch/react'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
 import { TextAreaMolecule } from './TextAreaMolecule'
 import type { PropsForTextAreaMolecule } from './TextAreaMolecule'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-
-const schema = v.object({
-	message: v.pipe(
-		v.string(),
-		v.nonEmpty('Message is required'),
-		v.minLength(10, 'Message must be at least 10 characters'),
-	),
-})
+import {
+	defaultMessageOnlyValues,
+	messageOnlySchema,
+} from 'example-site-shared/data'
 
 const meta: Meta<typeof TextAreaMolecule> = {
 	title: 'Forms / Text Area Molecule',
@@ -28,12 +23,6 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-type InputStructure = v.InferInput<typeof schema>
-
-const initialInput: InputStructure = {
-	message: '',
-}
-
 export const Primary: Story = {
 	args: {
 		label: 'Your message',
@@ -41,8 +30,8 @@ export const Primary: Story = {
 	} satisfies PropsForTextAreaMolecule,
 	render: (args) => {
 		const form = useForm({
-			schema,
-			initialInput,
+			schema: messageOnlySchema,
+			initialInput: defaultMessageOnlyValues,
 		})
 
 		return (
@@ -62,8 +51,8 @@ export const ErrorState: Story = {
 	} satisfies PropsForTextAreaMolecule,
 	render: (args) => {
 		const form = useForm({
-			schema,
-			initialInput,
+			schema: messageOnlySchema,
+			initialInput: defaultMessageOnlyValues,
 			validate: 'initial',
 		})
 

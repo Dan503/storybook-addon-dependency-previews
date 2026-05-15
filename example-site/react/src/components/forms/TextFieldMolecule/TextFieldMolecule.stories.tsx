@@ -1,14 +1,13 @@
 import { Field, useForm } from '@formisch/react'
-import * as v from 'valibot'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
 import { TextFieldMolecule } from './TextFieldMolecule'
 import type { PropsForTextFieldMolecule } from './TextFieldMolecule'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import type { Meta } from '@storybook/react-vite'
-
-const schema = v.object({
-	firstName: v.pipe(v.string(), v.nonEmpty('First name is required')),
-})
+import {
+	defaultFirstNameOnlyValues,
+	firstNameOnlySchema,
+} from 'example-site-shared/data'
 
 // Button.stories.tsx
 const meta: Meta<typeof TextFieldMolecule> = {
@@ -23,12 +22,6 @@ const meta: Meta<typeof TextFieldMolecule> = {
 
 export default meta
 
-type InputStructure = v.InferInput<typeof schema>
-
-const initialInput: InputStructure = {
-	firstName: '',
-}
-
 export const Default = {
 	args: {
 		label: 'First name',
@@ -36,8 +29,8 @@ export const Default = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = useForm({
-			schema,
-			initialInput,
+			schema: firstNameOnlySchema,
+			initialInput: defaultFirstNameOnlyValues,
 		})
 
 		return (
@@ -57,9 +50,9 @@ export const ErrorState = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = useForm({
-			schema,
+			schema: firstNameOnlySchema,
+			initialInput: defaultFirstNameOnlyValues,
 			validate: 'initial',
-			initialInput,
 		})
 
 		return (
