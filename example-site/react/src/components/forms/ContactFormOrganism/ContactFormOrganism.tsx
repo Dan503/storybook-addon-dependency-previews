@@ -3,7 +3,7 @@ import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
 import { ButtonAtom } from '../../01-atoms/ButtonAtom'
 import type { FormStore, SubmitHandler } from '@formisch/react'
-import type { ContactFormSchemaType } from '../../../../../shared/dist/data/default-form-values'
+import type { ContactFormSchemaType } from 'example-site-shared/data'
 
 export interface PropsForContactFormOrganism {
 	form: FormStore<ContactFormSchemaType>

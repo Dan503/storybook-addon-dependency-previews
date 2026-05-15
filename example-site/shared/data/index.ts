@@ -17,7 +17,11 @@ export {
 	defaultContactFormValues,
 	contactFormSchema,
 } from './default-form-values'
-export type { ContactFormInput, ContactFormOutput } from './default-form-values'
+export type {
+	ContactFormInput,
+	ContactFormOutput,
+	ContactFormSchemaType,
+} from './default-form-values'
 
 // Re-export types from utils for convenience
 export type {
