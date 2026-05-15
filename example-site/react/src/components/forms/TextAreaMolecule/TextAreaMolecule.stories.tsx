@@ -28,6 +28,12 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
+type InputStructure = v.InferInput<typeof schema>
+
+const initialInput: InputStructure = {
+	message: '',
+}
+
 export const Primary: Story = {
 	args: {
 		label: 'Your message',
@@ -36,6 +42,7 @@ export const Primary: Story = {
 	render: (args) => {
 		const form = useForm({
 			schema,
+			initialInput,
 		})
 
 		return (
@@ -56,6 +63,7 @@ export const ErrorState: Story = {
 	render: (args) => {
 		const form = useForm({
 			schema,
+			initialInput,
 			validate: 'initial',
 		})
 

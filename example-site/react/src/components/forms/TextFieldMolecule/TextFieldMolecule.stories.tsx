@@ -23,6 +23,12 @@ const meta: Meta<typeof TextFieldMolecule> = {
 
 export default meta
 
+type InputStructure = v.InferInput<typeof schema>
+
+const initialInput: InputStructure = {
+	firstName: '',
+}
+
 export const Default = {
 	args: {
 		label: 'First name',
@@ -31,6 +37,7 @@ export const Default = {
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = useForm({
 			schema,
+			initialInput,
 		})
 
 		return (
@@ -52,6 +59,7 @@ export const ErrorState = {
 		const form = useForm({
 			schema,
 			validate: 'initial',
+			initialInput,
 		})
 
 		return (
