@@ -14,6 +14,7 @@ export {
 } from './example-meal-data'
 
 export {
+	exampleContactFormValues,
 	defaultContactFormValues,
 	contactFormSchema,
 	defaultFirstNameOnlyValues,

@@ -6,6 +6,12 @@ export const defaultContactFormValues: Partial<ContactFormInputData> = {
 	message: '',
 }
 
+export const exampleContactFormValues: ContactFormInputData = {
+	name: 'John Doe',
+	email: 'john.doe@example.com',
+	message: 'Hello, this is a sample message.',
+}
+
 export const contactFormSchema = v.object({
 	name: v.pipe(
 		v.string(),
