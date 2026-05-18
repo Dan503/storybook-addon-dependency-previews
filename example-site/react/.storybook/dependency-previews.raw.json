@@ -3066,15 +3066,14 @@
         },
         {
           "dynamic": false,
-          "module": "./ContactFormOrganism",
+          "module": "./useContactForm",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
-            "type-only",
             "import"
           ],
-          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.tsx",
+          "resolved": "src/components/forms/ContactFormOrganism/useContactForm.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3130,6 +3129,15 @@
         "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx",
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.tsx",
         "src/components/forms/TextFieldMolecule/TextFieldMolecule.stories.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ContactFormOrganism/useContactForm.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -3922,7 +3930,7 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 78,
+    "totalCruised": 79,
     "totalDependenciesCruised": 115,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\react",
