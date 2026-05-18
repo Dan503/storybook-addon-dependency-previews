@@ -1,24 +1,16 @@
 <script lang="ts">
-	import { createForm, Form, Field } from '@formisch/svelte';
-	import {
-		defaultContactFormValues,
-		contactFormSchema,
-		type ContactFormOutputData
-	} from 'example-site-shared/data';
+	import { Form, Field, type FormStore } from '@formisch/svelte';
+	import type { ContactFormOutputData, ContactFormSchemaType } from 'example-site-shared/data';
 	import TextAreaMolecule from '../TextAreaMolecule/TextAreaMolecule.svelte';
 	import ButtonAtom from '../../01-atoms/ButtonAtom.svelte';
 	import TextFieldMolecule from '../TextFieldMolecule/TextFieldMolecule.svelte';
 
 	export interface PropsForContactFormOrganism {
+		form: FormStore<ContactFormSchemaType>;
 		onSubmit?: (output: ContactFormOutputData) => void;
 	}
 
-	let { onSubmit }: PropsForContactFormOrganism = $props();
-
-	const form = createForm({
-		schema: contactFormSchema,
-		initialInput: defaultContactFormValues
-	});
+	let { form, onSubmit }: PropsForContactFormOrganism = $props();
 </script>
 
 <Form

@@ -1,8 +1,8 @@
 <script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
 	import ContactFormOrganism from './ContactFormOrganism.svelte';
+	import ContactFormOrganismStoryHarness from './ContactFormOrganismStoryHarness.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import type { ContactFormOutputData } from 'example-site-shared/data';
 
 	const { Story } = defineMeta({
 		title: 'Forms / Contact Form Organism',
@@ -13,14 +13,16 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-
-	function onSubmit(formOutput: ContactFormOutputData) {
-		alert('Form submitted with these values:\n' + JSON.stringify(formOutput, null, 2));
-	}
 </script>
 
 <Story name="Primary">
 	{#snippet template()}
-		<ContactFormOrganism {onSubmit} />
+		<ContactFormOrganismStoryHarness />
+	{/snippet}
+</Story>
+
+<Story name="Error State">
+	{#snippet template()}
+		<ContactFormOrganismStoryHarness validate="initial" />
 	{/snippet}
 </Story>
