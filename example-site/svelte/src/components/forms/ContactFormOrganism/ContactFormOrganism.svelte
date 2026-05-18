@@ -1,65 +1,54 @@
 <script lang="ts">
-	import { createForm, revalidateLogic, useStore } from '@tanstack/svelte-form';
+	import { createForm, Form, Field } from '@formisch/svelte';
 	import {
 		defaultContactFormValues,
-		contactFormValuesSchema,
-		type ContactFormValues
+		contactFormSchema,
+		type ContactFormOutputData
 	} from 'example-site-shared/data';
 	import TextAreaMolecule from '../TextAreaMolecule/TextAreaMolecule.svelte';
 	import ButtonAtom from '../../01-atoms/ButtonAtom.svelte';
 	import TextFieldMolecule from '../TextFieldMolecule/TextFieldMolecule.svelte';
 
 	export interface PropsForContactFormOrganism {
-		onSubmit?: () => void;
-		formValues?: ContactFormValues;
+		onSubmit?: (output: ContactFormOutputData) => void;
 	}
 
-	let { onSubmit, formValues = $bindable(defaultContactFormValues) }: PropsForContactFormOrganism =
-		$props();
+	let { onSubmit }: PropsForContactFormOrganism = $props();
 
-	const form = createForm(() => ({
-		defaultValues: defaultContactFormValues,
-		onSubmit: onSubmit,
-		validationLogic: revalidateLogic(),
-		validators: {
-			onDynamic: contactFormValuesSchema
-		}
-	}));
-
-	const values = useStore(form.store, (s) => s.values);
-
-	$effect(() => {
-		formValues = values.current;
+	const form = createForm({
+		schema: contactFormSchema,
+		initialInput: defaultContactFormValues
 	});
 </script>
 
-<form
+<Form
+	of={form}
 	id="form"
 	class="grid gap-4"
-	onsubmit={(e) => {
+	onsubmit={(output, e) => {
 		e.preventDefault();
-		form.handleSubmit();
+		onSubmit?.(output);
 	}}
 >
-	<form.Field name="name">
+	<Field of={form} path={['name']}>
 		{#snippet children(field)}
 			<TextFieldMolecule label="Name" placeholder="Your name" {field} />
 		{/snippet}
-	</form.Field>
+	</Field>
 
-	<form.Field name="email">
+	<Field of={form} path={['email']}>
 		{#snippet children(field)}
 			<TextFieldMolecule label="Email" placeholder="example@email.com" {field} />
 		{/snippet}
-	</form.Field>
+	</Field>
 
-	<form.Field name="message">
+	<Field of={form} path={['message']}>
 		{#snippet children(field)}
 			<TextAreaMolecule label="Message" placeholder="Type your message here..." {field} />
 		{/snippet}
-	</form.Field>
+	</Field>
 
 	<div class="flex justify-end">
 		<ButtonAtom type="submit">Send</ButtonAtom>
 	</div>
-</form>
+</Form>

@@ -2,7 +2,7 @@
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
 	import ContactFormOrganism from './ContactFormOrganism.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
+	import type { ContactFormOutputData } from 'example-site-shared/data';
 
 	const { Story } = defineMeta({
 		title: 'Forms / Contact Form Organism',
@@ -14,15 +14,13 @@
 		} satisfies StoryParameters
 	});
 
-	let formValues: ContactFormValues = $state(defaultContactFormValues);
-
-	function onSubmit() {
-		alert('Form submitted with these values:\n' + JSON.stringify(formValues, null, 2));
+	function onSubmit(formOutput: ContactFormOutputData) {
+		alert('Form submitted with these values:\n' + JSON.stringify(formOutput, null, 2));
 	}
 </script>
 
 <Story name="Primary">
 	{#snippet template()}
-		<ContactFormOrganism {onSubmit} bind:formValues />
+		<ContactFormOrganism {onSubmit} />
 	{/snippet}
 </Story>
