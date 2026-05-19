@@ -170,9 +170,6 @@ importers:
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.9.3)(vite@7.3.1(@types/node@22.18.6)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))
-      zod:
-        specifier: ^3.24.2
-        version: 3.25.76
     devDependencies:
       '@netlify/vite-plugin-tanstack-start':
         specifier: ^1.2.8
@@ -256,9 +253,6 @@ importers:
       '@formisch/svelte':
         specifier: ^0.7.5
         version: 0.7.5(svelte@5.49.1)(typescript@5.9.3)(valibot@1.3.1(typescript@5.9.3))
-      '@tanstack/svelte-form':
-        specifier: ^1.28.0
-        version: 1.28.0(svelte@5.49.1)
       example-site-shared:
         specifier: workspace:*
         version: link:../shared
@@ -4110,10 +4104,6 @@ packages:
     resolution: {integrity: sha512-JMq3AmrQR2LH9P8Rcj1MTq8Iq/mPk/PyuqSw1L0hO2Wl8G1oz5ue31fS8u8lIgOCVR/mGdJah18p+Pj5OosRJA==}
     engines: {node: '>=18'}
 
-  '@tanstack/devtools-event-client@0.4.0':
-    resolution: {integrity: sha512-RPfGuk2bDZgcu9bAJodvO2lnZeHuz4/71HjZ0bGb/SPg8+lyTA+RLSKQvo7fSmPSi8/vcH3aKQ8EM9ywf1olaw==}
-    engines: {node: '>=18'}
-
   '@tanstack/devtools-event-client@0.4.3':
     resolution: {integrity: sha512-OZI6QyULw0FI0wjgmeYzCIfbgPsOEzwJtCpa69XrfLMtNXLGnz3d/dIabk7frg0TmHo+Ah49w5I4KC7Tufwsvw==}
     engines: {node: '>=18'}
@@ -4140,9 +4130,6 @@ packages:
   '@tanstack/eslint-config@0.3.2':
     resolution: {integrity: sha512-2g+PuGR3GuvvCiR3xZs+IMqAvnYU9bvH+jRml0BFBSxHBj22xFCTNvJWhvgj7uICFF9IchDkFUto91xDPMu5cg==}
     engines: {node: '>=18'}
-
-  '@tanstack/form-core@1.28.0':
-    resolution: {integrity: sha512-MX3YveB6SKHAJ2yUwp+Ca/PCguub8bVEnLcLUbFLwdkSRMkP0lMGdaZl+F0JuEgZw56c6iFoRyfILhS7OQpydA==}
 
   '@tanstack/form-core@1.28.6':
     resolution: {integrity: sha512-4zroxL6VDj5O+w7l3dYZnUeL/h30KtNSV7UWzKAL7cl+8clMFdISPDlDlluS37As7oqvPVKo8B83VlIBvgmRog==}
@@ -4313,16 +4300,6 @@ packages:
 
   '@tanstack/store@0.9.3':
     resolution: {integrity: sha512-8reSzl/qGWGGVKhBoxXPMWzATSbZLZFWhwBAFO9NAyp0TxzfBP0mIrGb8CP8KrQTmvzXlR/vFPPUrHTLBGyFyw==}
-
-  '@tanstack/svelte-form@1.28.0':
-    resolution: {integrity: sha512-1jYXBUi8YVhLwmUkxwkhN0bRxHxg5bm6MhL5vD2U7214fbf1iDGzgWmabcWgFHU7WA6JvHpv86KB8Y/l8d7ahg==}
-    peerDependencies:
-      svelte: ^5.0.0
-
-  '@tanstack/svelte-store@0.7.7':
-    resolution: {integrity: sha512-JeDyY7SxBi6EKzkf2wWoghdaC2bvmwNL9X/dgkx7LKEvJVle+te7tlELI3cqRNGbjXt9sx+97jx9M5dCCHcuog==}
-    peerDependencies:
-      svelte: ^5.0.0
 
   '@tanstack/virtual-file-routes@1.132.0':
     resolution: {integrity: sha512-d3do4ih9IdLPBVY4Gb8x7Ho7z0oFDLpxoao7uNVkfWtYU7nc3B+rnnVejXIgprmI5gt1hNzyNDJFr8G/W926GA==}
@@ -15019,8 +14996,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@tanstack/devtools-event-client@0.4.0': {}
-
   '@tanstack/devtools-event-client@0.4.3': {}
 
   '@tanstack/devtools-ui@0.2.2(csstype@3.1.3)(solid-js@1.9.9)':
@@ -15071,12 +15046,6 @@ snapshots:
       - eslint-import-resolver-node
       - supports-color
       - typescript
-
-  '@tanstack/form-core@1.28.0':
-    dependencies:
-      '@tanstack/devtools-event-client': 0.4.0
-      '@tanstack/pacer-lite': 0.1.1
-      '@tanstack/store': 0.7.7
 
   '@tanstack/form-core@1.28.6':
     dependencies:
@@ -15370,17 +15339,6 @@ snapshots:
   '@tanstack/store@0.7.7': {}
 
   '@tanstack/store@0.9.3': {}
-
-  '@tanstack/svelte-form@1.28.0(svelte@5.49.1)':
-    dependencies:
-      '@tanstack/form-core': 1.28.0
-      '@tanstack/svelte-store': 0.7.7(svelte@5.49.1)
-      svelte: 5.49.1
-
-  '@tanstack/svelte-store@0.7.7(svelte@5.49.1)':
-    dependencies:
-      '@tanstack/store': 0.7.7
-      svelte: 5.49.1
 
   '@tanstack/virtual-file-routes@1.132.0': {}
 

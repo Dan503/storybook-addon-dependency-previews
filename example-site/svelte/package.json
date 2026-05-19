@@ -18,7 +18,6 @@
 	},
 	"dependencies": {
 		"@formisch/svelte": "^0.7.5",
-		"@tanstack/svelte-form": "^1.28.0",
 		"example-site-shared": "workspace:*",
 		"svelte-headings": "^0.1.3",
 		"valibot": "^1.3.1"
