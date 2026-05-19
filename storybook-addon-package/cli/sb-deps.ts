@@ -388,6 +388,30 @@ function scaffoldSvelteComponent(absCompPath: string) {
 	info(`scaffolded svelte component → ${rel(absCompPath)}`)
 }
 
+function scaffoldSvelteDecorator(absDecoratorPath: string) {
+	const fullBase = componentBaseFromSvelteComponent(absDecoratorPath)
+	const wrappedBase = fullBase.split('.')[0] ?? fullBase
+	const componentName = toPascalCase(wrappedBase)
+
+	const tpl =
+		SCAFFOLD_CONFIG?.svelte?.decorator?.({ componentName }) ??
+		`<script lang="ts">
+	import ${componentName} from "./${componentName}.svelte";
+
+	interface DecoratorProps {
+	}
+
+	const {  }: DecoratorProps = $props();
+</script>
+
+<div class="decorator">
+	<${componentName} />
+</div>
+`
+	writeFileSync(absDecoratorPath, tpl, 'utf8')
+	info(`scaffolded svelte decorator → ${rel(absDecoratorPath)}`)
+}
+
 function makeTitleFromSvelteComponent(absCompPath: string) {
 	const srcRoot = join(projectRoot, 'src') + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
