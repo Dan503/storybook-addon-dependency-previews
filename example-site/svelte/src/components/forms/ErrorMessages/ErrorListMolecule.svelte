@@ -9,7 +9,7 @@
 	const { errors }: PropsForErrorListMolecule = $props();
 </script>
 
-{#if errors}
+{#if errors && errors.length > 0}
 	<ul class="ErrorListMolecule grid gap-1 pl-6">
 		{#each errors as err}
 			<li class="list-outside list-disc">
