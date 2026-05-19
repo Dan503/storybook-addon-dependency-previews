@@ -26,6 +26,19 @@ export interface SvelteStoryScaffoldContext extends SvelteComponentScaffoldConte
 	tags: string[]
 }
 
+export interface SvelteDecoratorScaffoldContext {
+	/**
+	 * PascalCase name of the **wrapped** component (the segment of the
+	 * decorator filename before the first `.`, then PascalCased).
+	 *
+	 * Examples:
+	 * - `Button.decorator.svelte` → `"Button"`
+	 * - `Button.Primary.decorator.svelte` → `"Button"`
+	 * - `card-listing.Error.decorator.svelte` → `"CardListing"`
+	 */
+	componentName: string
+}
+
 export interface AngularBaseScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
 	componentName: string
@@ -96,6 +109,8 @@ export interface SbDepsConfig {
 		svelte?: {
 			/** Template for the `.svelte` component file */
 			component?: (ctx: SvelteComponentScaffoldContext) => string
+			/** Template for the `.decorator.svelte` decorator file */
+			decorator?: (ctx: SvelteDecoratorScaffoldContext) => string
 			/** Template for the `.stories.svelte` story file */
 			story?: (ctx: SvelteStoryScaffoldContext) => string
 		}
