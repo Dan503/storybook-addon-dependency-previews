@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { ErrorListMolecule } from '../ErrorMessages/ErrorListMolecule'
 import type { RequiredPath, Schema } from '@formisch/react'
-import type { WithField, WithForm } from '../FormTypes'
+import type { WithField } from '../FormTypes'
 
 export interface PropsForTextAreaMolecule {
 	label: string
@@ -11,7 +11,7 @@ export interface PropsForTextAreaMolecule {
 export type FieldPropsForTextAreaMolecule<
 	TSchema extends Schema,
 	TPath extends RequiredPath,
-> = PropsForTextAreaMolecule & WithForm<TSchema> & WithField<TSchema, TPath>
+> = PropsForTextAreaMolecule & WithField<TSchema, TPath>
 
 export function TextAreaMolecule<
 	TSchema extends Schema,

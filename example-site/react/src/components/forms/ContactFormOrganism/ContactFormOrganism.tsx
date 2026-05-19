@@ -1,4 +1,4 @@
-import { Field, Form, getAllErrors } from '@formisch/react'
+import { Field, Form, getAllErrors, useSignals } from '@formisch/react'
 import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
 import { ButtonAtom } from '../../01-atoms/ButtonAtom'
@@ -15,6 +15,7 @@ export function ContactFormOrganism({
 	form,
 	onSubmit,
 }: PropsForContactFormOrganism) {
+	useSignals()
 	const errors = getAllErrors(form)
 	return (
 		<div className="grid gap-4">
@@ -29,7 +30,6 @@ export function ContactFormOrganism({
 						<TextFieldMolecule
 							label="Name"
 							placeholder="Your name"
-							form={form}
 							field={field}
 						/>
 					)}
@@ -40,7 +40,6 @@ export function ContactFormOrganism({
 						<TextFieldMolecule
 							label="Email"
 							placeholder="example@email.com"
-							form={form}
 							field={field}
 						/>
 					)}
@@ -51,7 +50,6 @@ export function ContactFormOrganism({
 						<TextAreaMolecule
 							label="Message"
 							placeholder="Type your message here..."
-							form={form}
 							field={field}
 						/>
 					)}
