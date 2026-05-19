@@ -1,20 +1,17 @@
 import { useState } from 'react'
 import { H, Section } from 'react-headings'
-import { useForm } from '@formisch/react'
-import { contactFormSchema } from 'example-site-shared/data'
 import { ContentRestraintAtom } from '../01-atoms/ContentRestraintAtom'
 import { MapPinIcon } from '../01-atoms/icons/MapPinIcon'
 import { PhoneIcon } from '../01-atoms/icons/PhoneIcon'
 import { IconTextMolecule } from '../02-molecules/IconTextMolecule'
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
 import { ContactFormOrganism } from '../forms/ContactFormOrganism/ContactFormOrganism'
+import { useContactForm } from '../forms/ContactFormOrganism/useContactForm'
 import { FormDataPreviewAtom } from '../forms/FormDataPreview/FormDataPreviewAtom'
 import { ButtonAtom } from '../01-atoms/ButtonAtom'
 
 export function ContactTemplate() {
-	const contactForm = useForm({
-		schema: contactFormSchema,
-	})
+	const contactForm = useContactForm()
 	const [isSubmitted, setIsSubmitted] = useState(false)
 	return (
 		<SiteFrameOrganism>
