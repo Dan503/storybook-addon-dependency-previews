@@ -116,6 +116,7 @@ export const contactFormValuesSchema: unknown = {}
 
 // Type-only re-exports for stories that import types from example-site-shared/data
 export type { Meal, Category, IngredientMeasurement, MealRawData }
-export type ContactFormValues = { name: string; email: string; message: string }
+export type ContactFormInputData = { name: string; email: string; message: string }
+export type ContactFormOutputData = { name: string; email: string; message: string }
 export type MealDBTransformedResponse = { meals: Meal[] }
 export type CategoriesApiResponse = { categories: Category[] }

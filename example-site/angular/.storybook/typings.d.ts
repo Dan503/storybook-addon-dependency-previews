@@ -50,7 +50,8 @@ declare module 'example-site-shared/data' {
   export type MealRawData = Record<string, string | null>;
   export type MealDBTransformedResponse = { meals: Meal[] };
   export type CategoriesApiResponse = { categories: Category[] };
-  export type ContactFormValues = { name: string; email: string; message: string };
+  export type ContactFormInputData = { name: string; email: string; message: string };
+  export type ContactFormOutputData = { name: string; email: string; message: string };
 
   export declare const categoryList: Category[];
   export declare const mealRawExample: MealRawData;
@@ -74,6 +75,6 @@ declare module 'example-site-shared/data' {
     title: string; imageSrc: string; description: string;
   }>;
   export declare const featuredMealsData: Meal[];
-  export declare const defaultContactFormValues: ContactFormValues;
+  export declare const defaultContactFormValues: Partial<ContactFormInputData>;
   export declare const contactFormValuesSchema: unknown;
 }
