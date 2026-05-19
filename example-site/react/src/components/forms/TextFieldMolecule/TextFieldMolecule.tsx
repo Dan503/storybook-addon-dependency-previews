@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { ErrorListMolecule } from '../ErrorMessages/ErrorListMolecule'
 import type { RequiredPath, Schema } from '@formisch/react'
 import type { WithField, WithForm } from '../FormTypes'
@@ -19,9 +20,8 @@ export function TextFieldMolecule<
 	label,
 	placeholder,
 	field,
-	form,
 }: FieldPropsForTextFieldMolecule<TSchema, TPath>) {
-	const id = [form['~internal'].name, ...field.path].join('-')
+	const id = useId()
 	const showErrors = (field.errors?.length ?? 0) > 0
 
 	return (
