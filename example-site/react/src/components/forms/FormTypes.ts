@@ -12,3 +12,5 @@ export interface WithField<TSchema extends Schema, TPath extends RequiredPath> {
 export interface WithForm<TSchema extends Schema> {
 	form: FormStore<TSchema>
 }
+
+export type FormErrors = FieldStore['errors'] | Array<Error>

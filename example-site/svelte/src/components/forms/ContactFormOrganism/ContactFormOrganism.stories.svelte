@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
 	import ContactFormOrganism from './ContactFormOrganism.svelte';
-	import ContactFormOrganismStoryHarness from './ContactFormOrganismStoryHarness.svelte';
+	import ContactFormOrganismDecorator from './ContactFormOrganism.decorator.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
@@ -17,12 +17,12 @@
 
 <Story name="Primary">
 	{#snippet template()}
-		<ContactFormOrganismStoryHarness />
+		<ContactFormOrganismDecorator />
 	{/snippet}
 </Story>
 
 <Story name="Error State">
 	{#snippet template()}
-		<ContactFormOrganismStoryHarness validate="initial" />
+		<ContactFormOrganismDecorator validate="initial" />
 	{/snippet}
 </Story>

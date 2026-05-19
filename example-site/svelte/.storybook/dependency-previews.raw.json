@@ -1281,6 +1281,23 @@
           "valid": true
         },
         {
+          "module": "../ErrorMessages/ErrorBlockOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
           "module": "../TextAreaMolecule/TextAreaMolecule.svelte",
           "moduleSystem": "es6",
           "dynamic": false,
@@ -1317,8 +1334,76 @@
       ],
       "dependents": [
         "src/components/04-templates/ContactTemplate.svelte",
-        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
-        "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.svelte"
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.decorator.svelte",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorListMolecule.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+      "dependencies": [
+        {
+          "module": "./ErrorMessageAtom.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
+        "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
+        "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
+        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
+      "dependencies": [],
+      "dependents": [
+        "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
+        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1349,46 +1434,6 @@
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.stories.svelte",
         "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
-      "dependencies": [
-        {
-          "module": "./ErrorMessageAtom.svelte",
-          "moduleSystem": "es6",
-          "dynamic": false,
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/TextAreaMolecule/TextAreaMolecule.svelte",
-        "src/components/forms/TextFieldMolecule/TextFieldMolecule.svelte",
-        "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
-        "src/components/forms/ErrorMessages/ErrorListMolecule.stories.svelte"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorMessageAtom.svelte",
-      "dependencies": [],
-      "dependents": [
-        "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
-        "src/components/forms/ErrorMessages/ErrorMessageAtom.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1715,49 +1760,7 @@
       "valid": true
     },
     {
-      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
-      "dependencies": [
-        {
-          "module": "./ContactFormOrganism.svelte",
-          "moduleSystem": "es6",
-          "dynamic": false,
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "module": "./ContactFormOrganismStoryHarness.svelte",
-          "moduleSystem": "es6",
-          "dynamic": false,
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.svelte",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.svelte",
+      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.decorator.svelte",
       "dependencies": [
         {
           "module": "../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte",
@@ -1812,8 +1815,7 @@
         }
       ],
       "dependents": [
-        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
-        "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.stories.svelte"
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte"
       ],
       "orphan": false,
       "valid": true
@@ -1840,7 +1842,7 @@
         }
       ],
       "dependents": [
-        "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.svelte",
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.decorator.svelte",
         "src/components/forms/TextAreaMolecule/TextAreaMolecule.decorator.svelte",
         "src/components/forms/TextAreaMolecule/TextAreaMoleculeError.decorator.svelte",
         "src/components/forms/TextFieldMolecule/TextFieldMolecule.decorator.svelte",
@@ -1854,16 +1856,16 @@
       "source": "src/components/forms/ContactFormOrganism/createContactForm.ts",
       "dependencies": [],
       "dependents": [
-        "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.svelte"
+        "src/components/forms/ContactFormOrganism/ContactFormOrganism.decorator.svelte"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.stories.svelte",
+      "source": "src/components/forms/ContactFormOrganism/ContactFormOrganism.stories.svelte",
       "dependencies": [
         {
-          "module": "./ContactFormOrganismStoryHarness.svelte",
+          "module": "./ContactFormOrganism.decorator.svelte",
           "moduleSystem": "es6",
           "dynamic": false,
           "exoticallyRequired": false,
@@ -1871,7 +1873,24 @@
             "local",
             "import"
           ],
-          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganismStoryHarness.svelte",
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.decorator.svelte",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "module": "./ContactFormOrganism.svelte",
+          "moduleSystem": "es6",
+          "dynamic": false,
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/forms/ContactFormOrganism/ContactFormOrganism.svelte",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -1906,33 +1925,6 @@
         }
       ],
       "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/forms/ErrorMessages/ErrorBlockOrganism.svelte",
-      "dependencies": [
-        {
-          "module": "./ErrorListMolecule.svelte",
-          "moduleSystem": "es6",
-          "dynamic": false,
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/forms/ErrorMessages/ErrorListMolecule.svelte",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/forms/ErrorMessages/ErrorBlockOrganism.stories.svelte"
-      ],
       "orphan": false,
       "valid": true
     },
@@ -2735,7 +2727,7 @@
     "warn": 3,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 89,
+    "totalCruised": 88,
     "totalDependenciesCruised": 108,
     "optionsUsed": {
       "baseDir": "C:\\Users\\danie\\projects\\npm\\storybook-addon-dependency-previews\\example-site\\svelte",
