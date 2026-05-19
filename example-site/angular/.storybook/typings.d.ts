@@ -75,6 +75,6 @@ declare module 'example-site-shared/data' {
     title: string; imageSrc: string; description: string;
   }>;
   export declare const featuredMealsData: Meal[];
-  export declare const defaultContactFormValues: Partial<ContactFormInputData>;
+  export declare const defaultContactFormValues: ContactFormInputData;
   export declare const contactFormValuesSchema: unknown;
 }

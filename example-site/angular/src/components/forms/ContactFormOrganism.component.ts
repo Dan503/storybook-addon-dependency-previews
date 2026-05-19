@@ -51,7 +51,7 @@ import { ErrorBlockOrganismComponent } from './ErrorMessages/ErrorBlockOrganism.
 export class ContactFormOrganismComponent {
 	class = input<string>('');
 	onSubmit = output<void>();
-	valuesChange = output<Partial<ContactFormInputData>>();
+	valuesChange = output<ContactFormInputData>();
 
 	form = injectForm({
 		defaultValues: defaultContactFormValues,
@@ -93,7 +93,7 @@ export class ContactFormOrganismComponent {
 
 	constructor() {
 		effect(() => {
-			this.valuesChange.emit(this.formValues() as Partial<ContactFormInputData>);
+			this.valuesChange.emit(this.formValues() as ContactFormInputData);
 		});
 	}
 

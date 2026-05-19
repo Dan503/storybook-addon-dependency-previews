@@ -65,6 +65,6 @@ export class ContactTemplateComponent {
 	protected isSubmitted = false;
 	protected onBackClick = () => (this.isSubmitted = false);
 	protected onSubmit = () => (this.isSubmitted = true);
-	contactFormValues: Partial<ContactFormInputData> = defaultContactFormValues;
-	valuesChange = (values: Partial<ContactFormInputData>) => (this.contactFormValues = values);
+	contactFormValues: ContactFormInputData = defaultContactFormValues;
+	valuesChange = (values: ContactFormInputData) => (this.contactFormValues = values);
 }

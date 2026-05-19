@@ -16,7 +16,7 @@ import { ContactFormOrganismComponent } from './ContactFormOrganism.component';
 	`,
 })
 class ContactFormStoryWrapperComponent {
-	formValues: Partial<ContactFormInputData> = defaultContactFormValues;
+	formValues: ContactFormInputData = defaultContactFormValues;
 
 	onSubmit() {
 		alert('Form submitted! with these values:\n' + JSON.stringify(this.formValues, null, 2));
