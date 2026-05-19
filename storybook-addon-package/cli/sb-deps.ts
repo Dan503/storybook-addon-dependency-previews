@@ -193,6 +193,12 @@ function isComponentsSvelte(absPath: string) {
 	)
 }
 
+// src/components/**/Thing.decorator.svelte ?
+function isDecoratorSvelte(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return /(?:^|\/)src\/components\/.+\.decorator\.svelte$/i.test(norm)
+}
+
 // src/components/**/Thing.component.ts ? (and not a story file)
 function isComponentsAngularTs(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
