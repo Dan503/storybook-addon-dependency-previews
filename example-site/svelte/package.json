@@ -17,9 +17,10 @@
 		"sb:deps": "sb-deps"
 	},
 	"dependencies": {
-		"@tanstack/svelte-form": "^1.28.0",
+		"@formisch/svelte": "^0.7.5",
 		"example-site-shared": "workspace:*",
-		"svelte-headings": "^0.1.3"
+		"svelte-headings": "^0.1.3",
+		"valibot": "^1.3.1"
 	},
 	"devDependencies": {
 		"@chromatic-com/storybook": "^5.0.0",

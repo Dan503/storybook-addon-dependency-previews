@@ -1,12 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { defaultContactFormValues } from 'example-site-shared/data'
-import { useState } from 'react'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
-import {
-	ContactFormOrganism,
-	type PropsForContactFormOrganism,
-} from './ContactFormOrganism'
+import { ContactFormOrganism } from './ContactFormOrganism'
+import { onContactFormSubmit, useContactForm } from './useContactForm'
 
 const meta: Meta<typeof ContactFormOrganism> = {
 	title: 'Forms / Contact Form Organism',
@@ -22,21 +18,24 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Primary: Story = {
-	args: {} satisfies PropsForContactFormOrganism,
 	render: () => {
-		const [formValues, setFormValues] = useState(defaultContactFormValues)
+		const form = useContactForm()
 
 		return (
-			<FormDataMolecule formValues={formValues}>
-				<ContactFormOrganism
-					onValuesChange={setFormValues}
-					onSubmit={() =>
-						alert(
-							'Form submitted! with these values:\n' +
-								JSON.stringify(formValues, null, 2),
-						)
-					}
-				/>
+			<FormDataMolecule form={form}>
+				<ContactFormOrganism form={form} onSubmit={onContactFormSubmit} />
+			</FormDataMolecule>
+		)
+	},
+}
+
+export const ErrorState: Story = {
+	render: () => {
+		const form = useContactForm('initial')
+
+		return (
+			<FormDataMolecule form={form}>
+				<ContactFormOrganism form={form} onSubmit={onContactFormSubmit} />
 			</FormDataMolecule>
 		)
 	},

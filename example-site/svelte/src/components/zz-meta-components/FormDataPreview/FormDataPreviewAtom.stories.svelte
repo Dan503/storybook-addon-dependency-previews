@@ -4,6 +4,12 @@
 		type PropsForFormDataPreviewAtom
 	} from './FormDataPreviewAtom.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
+	import {
+		contactFormSchema,
+		exampleContactFormValues,
+		type ContactFormSchemaType
+	} from 'example-site-shared/data';
+	import { createForm } from '@formisch/svelte';
 
 	const { Story } = defineMeta({
 		title: 'ZZ Meta Components / Form Data Preview / Form Data Preview Atom',
@@ -14,13 +20,13 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	const sampleFormValues = {
-		firstName: 'John',
-		lastName: 'Doe',
-		email: 'john.doe@example.com'
-	};
 
-	type Args = Omit<PropsForFormDataPreviewAtom, 'children'>;
+	type Args = Omit<PropsForFormDataPreviewAtom<ContactFormSchemaType>, 'children'>;
+
+	const form = createForm({
+		schema: contactFormSchema,
+		initialInput: exampleContactFormValues
+	});
 </script>
 
-<Story name="Primary" args={{ formValues: sampleFormValues } satisfies Args} />
+<Story name="Primary" args={{ form } satisfies Args} />

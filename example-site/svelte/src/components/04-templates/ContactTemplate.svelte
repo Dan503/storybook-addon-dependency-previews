@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { defaultContactFormValues } from 'example-site-shared/data';
 	import { H, Level } from 'svelte-headings';
 	import ContactFormOrganism from '../forms/ContactFormOrganism/ContactFormOrganism.svelte';
+	import { createContactForm } from '../forms/ContactFormOrganism/createContactForm';
 	import SiteFrameOrganism from '../03-organisms/SiteFrameOrganism.svelte';
 	import ContentRestraintAtom from '../01-atoms/ContentRestraintAtom.svelte';
 	import IconTextMolecule from '../02-molecules/IconTextMolecule.svelte';
@@ -11,7 +11,7 @@
 	import ButtonAtom from '../01-atoms/ButtonAtom.svelte';
 	import { activeNavItem } from '../../lib/store';
 
-	let contactFormValues = $state(defaultContactFormValues);
+	const form = createContactForm();
 	let isSubmitted = $state(false);
 
 	activeNavItem.set('contact');
@@ -29,7 +29,7 @@
 						<p>Thank you for your message!</p>
 						<p>This website is just a demo so your message was not sent anywhere.</p>
 						<p>Here is what you submitted:</p>
-						<FormDataPreviewAtom formValues={contactFormValues} />
+						<FormDataPreviewAtom {form} />
 						<div class="flex justify-start">
 							<ButtonAtom onClick={() => (isSubmitted = false)}>
 								Back to the contact form
@@ -37,10 +37,7 @@
 						</div>
 					</div>
 				{:else}
-					<ContactFormOrganism
-						bind:formValues={contactFormValues}
-						onSubmit={() => (isSubmitted = true)}
-					/>
+					<ContactFormOrganism {form} onSubmit={() => (isSubmitted = true)} />
 				{/if}
 			</Level>
 		</ContentRestraintAtom>

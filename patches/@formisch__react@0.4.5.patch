@@ -1,0 +1,32 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 4aef67c5517c2f71d7823166083ad91683db46f6..a62d3a64fb9b615c30974669e9319acc9282b8b4 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1095,5 +1095,13 @@ declare function useFieldArray<TSchema extends Schema, TFieldArrayPath extends R
+ * @returns The form store with reactive properties.
+ */
+ declare function useForm<TSchema extends Schema>(config: FormConfig<TSchema>): FormStore<TSchema>;
++/**
++* Hook to enable reactive signals within a React component. Call once at the
++* top of a component that reads form/field state outside of <Field> /
++* <FieldArray> / useField / useFieldArray (e.g. a component that calls
++* getInput(form) directly) to subscribe it to the form's signal graph so it
++* re-renders on every change.
++*/
++declare function useSignals(): void;
+ //#endregion
+-export { type DeepPartial, Field, FieldArray, FieldArrayProps, FieldArrayStore, type FieldElement, FieldElementProps, FieldProps, FieldStore, FocusFieldConfig, Form, type FormConfig, FormProps, FormStore, GetFieldErrorsConfig, GetFieldInputConfig, GetFormErrorsConfig, GetFormInputConfig, InsertConfig, MoveConfig, type PartialValues, type PathValue, RemoveConfig, ReplaceConfig, type RequiredPath, ResetFieldConfig, ResetFormConfig, type Schema, SetFieldErrorsConfig, type SetFieldInputConfig, SetFormErrorsConfig, type SetFormInputConfig, type SubmitEventHandler, type SubmitHandler, SwapConfig, UseFieldArrayConfig, UseFieldConfig, type ValidArrayPath, type ValidPath, ValidateFormConfig, type ValidationMode, focus, getAllErrors, getErrors, getInput, handleSubmit, insert, move, remove, replace, reset, setErrors, setInput, submit, swap, useField, useFieldArray, useForm, validate };
+\ No newline at end of file
++export { type DeepPartial, Field, FieldArray, FieldArrayProps, FieldArrayStore, type FieldElement, FieldElementProps, FieldProps, FieldStore, FocusFieldConfig, Form, type FormConfig, FormProps, FormStore, GetFieldErrorsConfig, GetFieldInputConfig, GetFormErrorsConfig, GetFormInputConfig, InsertConfig, MoveConfig, type PartialValues, type PathValue, RemoveConfig, ReplaceConfig, type RequiredPath, ResetFieldConfig, ResetFormConfig, type Schema, SetFieldErrorsConfig, type SetFieldInputConfig, SetFormErrorsConfig, type SetFormInputConfig, type SubmitEventHandler, type SubmitHandler, SwapConfig, UseFieldArrayConfig, UseFieldConfig, type ValidArrayPath, type ValidPath, ValidateFormConfig, type ValidationMode, focus, getAllErrors, getErrors, getInput, handleSubmit, insert, move, remove, replace, reset, setErrors, setInput, submit, swap, useField, useFieldArray, useForm, useSignals, validate };
+\ No newline at end of file
+diff --git a/dist/index.js b/dist/index.js
+index d6c4f038a0292da38526b222003e79848385ca5c..87c702d70b72eb5022776a0a6308e23c089f2cf5 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1069,4 +1069,4 @@ function Form({ of, onSubmit, ...other }) {
+ }
+ 
+ //#endregion
+-export { Field, FieldArray, Form, focus, getAllErrors, getErrors, getInput, handleSubmit, insert, move, remove, replace, reset, setErrors, setInput, submit, swap, useField, useFieldArray, useForm, validate };
+\ No newline at end of file
++export { Field, FieldArray, Form, focus, getAllErrors, getErrors, getInput, handleSubmit, insert, move, remove, replace, reset, setErrors, setInput, submit, swap, useField, useFieldArray, useForm, useSignals, validate };

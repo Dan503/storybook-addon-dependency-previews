@@ -16,12 +16,12 @@
 </script>
 
 <Story name="Error string" args={{ error: 'This is an error message as a string' } satisfies Args}>
-	<p>Forms / Error Messages / Error Message Atom</p>
+	<p>Forms / Error Messages / Error Message Atom / Error string</p>
 </Story>
 
 <Story
 	name="Error object"
 	args={{ error: new Error('This is an error message as an Error() object') } satisfies Args}
 >
-	<p>Forms / Error Messages / Error Message Atom</p>
+	<p>Forms / Error Messages / Error Message Atom / Error object</p>
 </Story>

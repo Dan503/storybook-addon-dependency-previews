@@ -1,65 +1,53 @@
 <script lang="ts">
-	import { createForm, revalidateLogic, useStore } from '@tanstack/svelte-form';
-	import {
-		defaultContactFormValues,
-		contactFormValuesSchema,
-		type ContactFormValues
-	} from 'example-site-shared/data';
+	import { Form, Field, type FormStore, getAllErrors } from '@formisch/svelte';
+	import type { ContactFormOutputData, ContactFormSchemaType } from 'example-site-shared/data';
 	import TextAreaMolecule from '../TextAreaMolecule/TextAreaMolecule.svelte';
 	import ButtonAtom from '../../01-atoms/ButtonAtom.svelte';
 	import TextFieldMolecule from '../TextFieldMolecule/TextFieldMolecule.svelte';
+	import ErrorBlockOrganism from '../ErrorMessages/ErrorBlockOrganism.svelte';
 
 	export interface PropsForContactFormOrganism {
-		onSubmit?: () => void;
-		formValues?: ContactFormValues;
+		form: FormStore<ContactFormSchemaType>;
+		onSubmit?: (output: ContactFormOutputData) => void;
 	}
 
-	let { onSubmit, formValues = $bindable(defaultContactFormValues) }: PropsForContactFormOrganism =
-		$props();
+	let { form, onSubmit }: PropsForContactFormOrganism = $props();
 
-	const form = createForm(() => ({
-		defaultValues: defaultContactFormValues,
-		onSubmit: onSubmit,
-		validationLogic: revalidateLogic(),
-		validators: {
-			onDynamic: contactFormValuesSchema
-		}
-	}));
-
-	const values = useStore(form.store, (s) => s.values);
-
-	$effect(() => {
-		formValues = values.current;
-	});
+	const errors = $derived(getAllErrors(form));
 </script>
 
-<form
-	id="form"
-	class="grid gap-4"
-	onsubmit={(e) => {
-		e.preventDefault();
-		form.handleSubmit();
-	}}
->
-	<form.Field name="name">
-		{#snippet children(field)}
-			<TextFieldMolecule label="Name" placeholder="Your name" {field} />
-		{/snippet}
-	</form.Field>
+<div class="grid gap-4">
+	<ErrorBlockOrganism {errors} />
 
-	<form.Field name="email">
-		{#snippet children(field)}
-			<TextFieldMolecule label="Email" placeholder="example@email.com" {field} />
-		{/snippet}
-	</form.Field>
+	<Form
+		of={form}
+		id="form"
+		class="grid gap-4"
+		onsubmit={(output, e) => {
+			e.preventDefault();
+			onSubmit?.(output);
+		}}
+	>
+		<Field of={form} path={['name']}>
+			{#snippet children(field)}
+				<TextFieldMolecule label="Name" placeholder="Your name" {field} />
+			{/snippet}
+		</Field>
 
-	<form.Field name="message">
-		{#snippet children(field)}
-			<TextAreaMolecule label="Message" placeholder="Type your message here..." {field} />
-		{/snippet}
-	</form.Field>
+		<Field of={form} path={['email']}>
+			{#snippet children(field)}
+				<TextFieldMolecule label="Email" placeholder="example@email.com" {field} />
+			{/snippet}
+		</Field>
 
-	<div class="flex justify-end">
-		<ButtonAtom type="submit">Send</ButtonAtom>
-	</div>
-</form>
+		<Field of={form} path={['message']}>
+			{#snippet children(field)}
+				<TextAreaMolecule label="Message" placeholder="Type your message here..." {field} />
+			{/snippet}
+		</Field>
+
+		<div class="flex justify-end">
+			<ButtonAtom type="submit">Send</ButtonAtom>
+		</div>
+	</Form>
+</div>

@@ -1,53 +1,31 @@
 <script lang="ts">
-	import { createForm, useStore } from '@tanstack/svelte-form';
-	import { untrack } from 'svelte';
 	import TextFieldMolecule, { type PropsForTextFieldMolecule } from './TextFieldMolecule.svelte';
 	import FormDataMolecule from '../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
+	import { createForm, Form, Field } from '@formisch/svelte';
+	import { defaultFirstNameOnlyValues, firstNameOnlySchema } from 'example-site-shared/data';
 
 	const { label, placeholder }: PropsForTextFieldMolecule = $props();
 
-	const form = createForm(() => ({
-		defaultValues: {
-			firstName: ''
-		},
-		onSubmit: async ({ value }) => {
-			alert(JSON.stringify(value, null, 2));
-		}
-	}));
-
-	const formValues = $derived(useStore(form.store, (s) => s.values));
-
-	$effect(() => {
-		untrack(() => {
-			form.setFieldMeta('firstName', (prev) => ({ ...prev, isTouched: true }));
-			form.validateField('firstName', 'change');
-		});
+	const form = createForm({
+		schema: firstNameOnlySchema,
+		initialInput: defaultFirstNameOnlyValues,
+		validate: 'initial'
 	});
 </script>
 
-<form
+<Form
+	of={form}
 	id="form"
-	onsubmit={(e) => {
+	onsubmit={(outputData, e) => {
 		e.preventDefault();
-		form.handleSubmit();
+		alert(JSON.stringify(outputData, null, 2));
 	}}
 >
-	<form.Field
-		name="firstName"
-		validators={{
-			onChange: ({ value }) => {
-				if (!value) {
-					return 'First name is required';
-				} else if (value.length < 3) {
-					return 'First name must be at least 3 characters';
-				}
-			}
-		}}
-	>
+	<Field of={form} path={['firstName']}>
 		{#snippet children(field)}
-			<FormDataMolecule formValues={formValues.current}>
+			<FormDataMolecule {form}>
 				<TextFieldMolecule {label} {placeholder} {field} />
 			</FormDataMolecule>
 		{/snippet}
-	</form.Field>
-</form>
+	</Field>
+</Form>

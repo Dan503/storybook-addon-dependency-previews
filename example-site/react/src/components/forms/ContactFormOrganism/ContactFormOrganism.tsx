@@ -1,73 +1,64 @@
-import { useForm, useStore } from '@tanstack/react-form'
-import {
-	defaultContactFormValues,
-	type ContactFormValues,
-} from 'example-site-shared/data'
+import { Field, Form, getAllErrors, useSignals } from '@formisch/react'
 import { TextFieldMolecule } from '../TextFieldMolecule/TextFieldMolecule'
 import { TextAreaMolecule } from '../TextAreaMolecule/TextAreaMolecule'
-import { useEffect } from 'react'
 import { ButtonAtom } from '../../01-atoms/ButtonAtom'
+import type { FormStore, SubmitHandler } from '@formisch/react'
+import type { ContactFormSchemaType } from 'example-site-shared/data'
+import { ErrorBlockOrganism } from '../ErrorMessages/ErrorBlockOrganism'
 
 export interface PropsForContactFormOrganism {
-	onSubmit?: () => void
-	onValuesChange?: (values: ContactFormValues) => void
+	form: FormStore<ContactFormSchemaType>
+	onSubmit: SubmitHandler<ContactFormSchemaType>
 }
 
 export function ContactFormOrganism({
+	form,
 	onSubmit,
-	onValuesChange,
 }: PropsForContactFormOrganism) {
-	const form = useForm({
-		defaultValues: defaultContactFormValues,
-		onSubmit: onSubmit,
-	})
-	const values = useStore(form.store, (state) => state.values)
-
-	useEffect(() => {
-		onValuesChange?.(values)
-	}, [values])
-
+	useSignals()
+	const errors = getAllErrors(form)
 	return (
-		<form
-			className="ContactFormOrganism grid gap-4"
-			onSubmit={(event) => {
-				event.preventDefault()
-				form.handleSubmit(event)
-			}}
-		>
-			<form.Field name="name">
-				{(field) => (
-					<TextFieldMolecule
-						label="Name"
-						placeholder="Your name"
-						field={field}
-					/>
-				)}
-			</form.Field>
+		<div className="grid gap-4">
+			<ErrorBlockOrganism errors={errors} />
+			<Form
+				className="ContactFormOrganism grid gap-4"
+				of={form}
+				onSubmit={onSubmit}
+			>
+				<Field of={form} path={['name']}>
+					{(field) => (
+						<TextFieldMolecule
+							label="Name"
+							placeholder="Your name"
+							field={field}
+						/>
+					)}
+				</Field>
 
-			<form.Field name="email">
-				{(field) => (
-					<TextFieldMolecule
-						label="Email"
-						placeholder="example@email.com"
-						field={field}
-					/>
-				)}
-			</form.Field>
+				<Field of={form} path={['email']}>
+					{(field) => (
+						<TextFieldMolecule
+							label="Email"
+							placeholder="example@email.com"
+							field={field}
+						/>
+					)}
+				</Field>
 
-			<form.Field name="message">
-				{(field) => (
-					<TextAreaMolecule
-						label="Message"
-						placeholder="Type your message here..."
-						field={field}
-					/>
-				)}
-			</form.Field>
+				<Field of={form} path={['message']}>
+					{(field) => (
+						<TextAreaMolecule
+							label="Message"
+							placeholder="Type your message here..."
+							field={field}
+						/>
+					)}
+				</Field>
 
-			<div className="flex justify-end">
-				<ButtonAtom type="submit">Send</ButtonAtom>
-			</div>
-		</form>
+				<div className="flex justify-end">
+					<ButtonAtom type="submit">Send</ButtonAtom>
+				</div>
+			</Form>
+		</div>
 	)
 }

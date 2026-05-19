@@ -1,31 +1,16 @@
 import type {
-  AnyFieldApi,
-  AnyFormApi,
-  ReactFormExtendedApi,
-} from '@tanstack/react-form'
+	FieldStore,
+	FormStore,
+	RequiredPath,
+	Schema,
+} from '@formisch/react'
 
-export type AnyExtendedFormApi = ReactFormExtendedApi<
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any
->
-
-export interface WithField<FieldApi extends AnyFieldApi> {
-  field: FieldApi
+export interface WithField<TSchema extends Schema, TPath extends RequiredPath> {
+	field: FieldStore<TSchema, TPath>
 }
 
-export interface WithForm<FormApi extends AnyFormApi> {
-  form: FormApi
+export interface WithForm<TSchema extends Schema> {
+	form: FormStore<TSchema>
 }
-export interface WithExtendedForm<FormApi extends AnyExtendedFormApi> {
-  form: FormApi
-}
+
+export type FormErrors = FieldStore['errors'] | Array<Error>

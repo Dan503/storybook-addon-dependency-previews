@@ -1,21 +1,17 @@
 import { useState } from 'react'
 import { H, Section } from 'react-headings'
-import { defaultContactFormValues } from 'example-site-shared/data'
 import { ContentRestraintAtom } from '../01-atoms/ContentRestraintAtom'
 import { MapPinIcon } from '../01-atoms/icons/MapPinIcon'
 import { PhoneIcon } from '../01-atoms/icons/PhoneIcon'
 import { IconTextMolecule } from '../02-molecules/IconTextMolecule'
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
 import { ContactFormOrganism } from '../forms/ContactFormOrganism/ContactFormOrganism'
+import { useContactForm } from '../forms/ContactFormOrganism/useContactForm'
 import { FormDataPreviewAtom } from '../forms/FormDataPreview/FormDataPreviewAtom'
 import { ButtonAtom } from '../01-atoms/ButtonAtom'
 
-export interface PropsForContactTemplate {}
-
-export function ContactTemplate({}: PropsForContactTemplate) {
-	const [contactFormValues, setContactFormValues] = useState(
-		defaultContactFormValues,
-	)
+export function ContactTemplate() {
+	const contactForm = useContactForm()
 	const [isSubmitted, setIsSubmitted] = useState(false)
 	return (
 		<SiteFrameOrganism>
@@ -37,7 +33,7 @@ export function ContactTemplate({}: PropsForContactTemplate) {
 										anywhere.
 									</p>
 									<p>Here is what you submitted:</p>
-									<FormDataPreviewAtom formValues={contactFormValues} />
+									<FormDataPreviewAtom form={contactForm} />
 									<div className="flex justify-start">
 										<ButtonAtom onClick={() => setIsSubmitted(false)}>
 											Back to the contact form
@@ -46,10 +42,10 @@ export function ContactTemplate({}: PropsForContactTemplate) {
 								</div>
 							) : (
 								<ContactFormOrganism
+									form={contactForm}
 									onSubmit={() => {
 										setIsSubmitted(true)
 									}}
-									onValuesChange={setContactFormValues}
 								/>
 							)}
 						</Section>

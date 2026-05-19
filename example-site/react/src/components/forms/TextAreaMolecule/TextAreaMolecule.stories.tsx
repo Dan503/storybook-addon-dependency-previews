@@ -1,20 +1,13 @@
-import { useEffect } from 'react'
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useForm, type AnyFieldApi } from '@tanstack/react-form'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { Field, useForm } from '@formisch/react'
 import { FormDataMolecule } from '../FormDataPreview/FormDataMolecule'
-import { useFormValues } from '../formUtils'
+import { TextAreaMolecule } from './TextAreaMolecule'
+import type { PropsForTextAreaMolecule } from './TextAreaMolecule'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import {
-	TextAreaMolecule,
-	type PropsForTextAreaMolecule,
-} from './TextAreaMolecule'
-
-function useTriggerErrors(field: AnyFieldApi) {
-	useEffect(() => {
-		field.handleChange(field.state.value)
-		field.handleBlur()
-	}, [field])
-}
+	defaultMessageOnlyValues,
+	messageOnlySchema,
+} from 'example-site-shared/data'
 
 const meta: Meta<typeof TextAreaMolecule> = {
 	title: 'Forms / Text Area Molecule',
@@ -37,17 +30,15 @@ export const Primary: Story = {
 	} satisfies PropsForTextAreaMolecule,
 	render: (args) => {
 		const form = useForm({
-			defaultValues: {
-				message: '',
-			},
+			schema: messageOnlySchema,
+			initialInput: defaultMessageOnlyValues,
 		})
-		const formValues = useFormValues(form)
 
 		return (
-			<FormDataMolecule formValues={formValues}>
-				<form.Field name="message">
+			<FormDataMolecule form={form}>
+				<Field of={form} path={['message']}>
 					{(field) => <TextAreaMolecule {...args} field={field} />}
-				</form.Field>
+				</Field>
 			</FormDataMolecule>
 		)
 	},
@@ -60,30 +51,18 @@ export const ErrorState: Story = {
 	} satisfies PropsForTextAreaMolecule,
 	render: (args) => {
 		const form = useForm({
-			defaultValues: {
-				message: '',
-			},
+			schema: messageOnlySchema,
+			initialInput: defaultMessageOnlyValues,
+			validate: 'initial',
 		})
-		const formValues = useFormValues(form)
 
 		return (
-			<FormDataMolecule formValues={formValues}>
-				<form.Field
-					name="message"
-					validators={{
-						onChange: ({ value }) =>
-							!value
-								? 'Message is required'
-								: value.length < 10
-									? 'Message must be at least 10 characters'
-									: undefined,
-					}}
-				>
+			<FormDataMolecule form={form}>
+				<Field of={form} path={['message']}>
 					{(field) => {
-						useTriggerErrors(field)
 						return <TextAreaMolecule {...args} field={field} />
 					}}
-				</form.Field>
+				</Field>
 			</FormDataMolecule>
 		)
 	},
