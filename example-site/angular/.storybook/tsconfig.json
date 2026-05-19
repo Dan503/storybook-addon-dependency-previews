@@ -4,7 +4,6 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "paths": {
-      "example-site-shared/data": ["./shared-data"],
       "example-site-shared/*": ["../../shared/*"]
     }
   },

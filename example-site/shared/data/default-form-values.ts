@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-export const defaultContactFormValues: Partial<ContactFormInputData> = {
+export const defaultContactFormValues: ContactFormInputData = {
 	name: '',
 	email: '',
 	message: '',

@@ -175,14 +175,10 @@ const ingredientItems = exampleIngredientList.map((ingredient) => ({
 const featuredMealsData = exampleMealList.slice(0, 7)
 
 // ---------------------------------------------------------------------------
-// Form values (no zod — Angular stories don't use contactFormValuesSchema)
+// Form values (Angular stories don't use the schema, so only defaults are stubbed)
 // ---------------------------------------------------------------------------
 
 const defaultContactFormValues = { name: '', email: '', message: '' }
-const contactFormValuesSchema = {
-	parse: (v) => v,
-	safeParse: (v) => ({ success: true, data: v }),
-}
 
 // ---------------------------------------------------------------------------
 // Exports
@@ -201,5 +197,4 @@ module.exports = {
 	ingredientItems,
 	featuredMealsData,
 	defaultContactFormValues,
-	contactFormValuesSchema,
 }

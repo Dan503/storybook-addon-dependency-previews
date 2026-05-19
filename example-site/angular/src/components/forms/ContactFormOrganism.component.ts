@@ -1,6 +1,6 @@
 import { Component, computed, effect, input, output } from '@angular/core';
 import { injectForm, injectStore } from '@tanstack/angular-form';
-import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
+import { defaultContactFormValues, type ContactFormInputData } from 'example-site-shared/data';
 import { TextFieldMoleculeComponent } from './TextFieldMolecule/TextFieldMolecule.component';
 import { TextAreaMoleculeComponent } from './TextAreaMolecule/TextAreaMolecule.component';
 import { ButtonAtomComponent } from '../01-atoms/ButtonAtom.component';
@@ -51,7 +51,7 @@ import { ErrorBlockOrganismComponent } from './ErrorMessages/ErrorBlockOrganism.
 export class ContactFormOrganismComponent {
 	class = input<string>('');
 	onSubmit = output<void>();
-	valuesChange = output<ContactFormValues>();
+	valuesChange = output<ContactFormInputData>();
 
 	form = injectForm({
 		defaultValues: defaultContactFormValues,
@@ -93,7 +93,7 @@ export class ContactFormOrganismComponent {
 
 	constructor() {
 		effect(() => {
-			this.valuesChange.emit(this.formValues() as ContactFormValues);
+			this.valuesChange.emit(this.formValues() as ContactFormInputData);
 		});
 	}
 

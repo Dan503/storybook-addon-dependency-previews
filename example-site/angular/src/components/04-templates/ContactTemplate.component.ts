@@ -7,7 +7,7 @@ import { ButtonAtomComponent } from '../01-atoms/ButtonAtom.component';
 import { ContactFormOrganismComponent } from '../forms/ContactFormOrganism.component';
 import { PhoneIconComponent } from '../01-atoms/icons/PhoneIcon.component';
 import { MapPinIconComponent } from '../01-atoms/icons/MapPinIcon.component';
-import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
+import { defaultContactFormValues, type ContactFormInputData } from 'example-site-shared/data';
 
 @Component({
 	selector: 'contact-template',
@@ -65,6 +65,6 @@ export class ContactTemplateComponent {
 	protected isSubmitted = false;
 	protected onBackClick = () => (this.isSubmitted = false);
 	protected onSubmit = () => (this.isSubmitted = true);
-	contactFormValues: ContactFormValues = defaultContactFormValues;
-	valuesChange = (values: ContactFormValues) => (this.contactFormValues = values);
+	contactFormValues: ContactFormInputData = defaultContactFormValues;
+	valuesChange = (values: ContactFormInputData) => (this.contactFormValues = values);
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import type { StoryParameters } from 'storybook-addon-dependency-previews';
-import { defaultContactFormValues, type ContactFormValues } from 'example-site-shared/data';
+import { defaultContactFormValues, type ContactFormInputData } from 'example-site-shared/data';
 import { FormDataMoleculeComponent } from '../zz-meta-components/formDataPreview/FormDataMolecule.component';
 import { ContactFormOrganismComponent } from './ContactFormOrganism.component';
 
@@ -16,7 +16,7 @@ import { ContactFormOrganismComponent } from './ContactFormOrganism.component';
 	`,
 })
 class ContactFormStoryWrapperComponent {
-	formValues: ContactFormValues = defaultContactFormValues;
+	formValues: ContactFormInputData = defaultContactFormValues;
 
 	onSubmit() {
 		alert('Form submitted! with these values:\n' + JSON.stringify(this.formValues, null, 2));
