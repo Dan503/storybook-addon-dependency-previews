@@ -36,7 +36,7 @@ export const Default = {
 		return (
 			<FormDataMolecule form={form}>
 				<Field of={form} path={['firstName']}>
-					{(field) => <TextFieldMolecule {...args} field={field} form={form} />}
+					{(field) => <TextFieldMolecule {...args} field={field} />}
 				</Field>
 			</FormDataMolecule>
 		)

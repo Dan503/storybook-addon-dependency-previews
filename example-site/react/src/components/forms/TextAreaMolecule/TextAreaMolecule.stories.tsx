@@ -37,7 +37,7 @@ export const Primary: Story = {
 		return (
 			<FormDataMolecule form={form}>
 				<Field of={form} path={['message']}>
-					{(field) => <TextAreaMolecule {...args} form={form} field={field} />}
+					{(field) => <TextAreaMolecule {...args} field={field} />}
 				</Field>
 			</FormDataMolecule>
 		)
@@ -60,7 +60,7 @@ export const ErrorState: Story = {
 			<FormDataMolecule form={form}>
 				<Field of={form} path={['message']}>
 					{(field) => {
-						return <TextAreaMolecule {...args} form={form} field={field} />
+						return <TextAreaMolecule {...args} field={field} />
 					}}
 				</Field>
 			</FormDataMolecule>
