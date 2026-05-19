@@ -868,6 +868,13 @@ function startWatcher() {
 	}
 
 	async function handleSvelteComponentCreation(abs: string, relPath: string) {
+		if (isDecoratorSvelte(abs)) {
+			if (isEmptyOrWhitespace(abs)) {
+				scaffoldSvelteDecorator(abs)
+			}
+			return
+		}
+
 		if (isEmptyOrWhitespace(abs)) {
 			scaffoldSvelteComponent(abs)
 		}
