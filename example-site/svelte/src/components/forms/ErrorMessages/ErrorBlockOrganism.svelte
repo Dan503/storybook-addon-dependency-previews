@@ -10,8 +10,8 @@
 	const { errors }: PropsForErrorBlockOrganism = $props();
 </script>
 
-<div role="alert" class="ErrorBlockOrganism">
-	{#if errors && errors.length > 0}
+{#if errors && errors.length > 0}
+	<div role="alert" class="ErrorBlockOrganism">
 		<Level class="rounded-xl bg-red-100 px-4 pt-2">
 			<H class="border-b-2 border-red-800 pb-1 text-2xl font-bold">
 				Please resolve the following errors
@@ -20,5 +20,5 @@
 				<ErrorListMolecule {errors} />
 			</div>
 		</Level>
-	{/if}
-</div>
+	</div>
+{/if}
