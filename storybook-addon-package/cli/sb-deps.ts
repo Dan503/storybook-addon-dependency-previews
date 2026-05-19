@@ -193,6 +193,12 @@ function isComponentsSvelte(absPath: string) {
 	)
 }
 
+// src/components/**/Thing.decorator.svelte ?
+function isDecoratorSvelte(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return /(?:^|\/)src\/components\/.+\.decorator\.svelte$/i.test(norm)
+}
+
 // src/components/**/Thing.component.ts ? (and not a story file)
 function isComponentsAngularTs(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
@@ -380,6 +386,30 @@ function scaffoldSvelteComponent(absCompPath: string) {
 `
 	writeFileSync(absCompPath, tpl, 'utf8')
 	info(`scaffolded svelte component → ${rel(absCompPath)}`)
+}
+
+function scaffoldSvelteDecorator(absDecoratorPath: string) {
+	const fullBase = componentBaseFromSvelteComponent(absDecoratorPath)
+	const wrappedBase = fullBase.split('.')[0] ?? fullBase
+	const componentName = toPascalCase(wrappedBase)
+
+	const tpl =
+		SCAFFOLD_CONFIG?.svelte?.decorator?.({ componentName }) ??
+		`<script lang="ts">
+	import ${componentName} from "./${componentName}.svelte";
+
+	interface DecoratorProps {
+	}
+
+	const {  }: DecoratorProps = $props();
+</script>
+
+<div class="decorator">
+	<${componentName} />
+</div>
+`
+	writeFileSync(absDecoratorPath, tpl, 'utf8')
+	info(`scaffolded svelte decorator → ${rel(absDecoratorPath)}`)
 }
 
 function makeTitleFromSvelteComponent(absCompPath: string) {
@@ -838,6 +868,13 @@ function startWatcher() {
 	}
 
 	async function handleSvelteComponentCreation(abs: string, relPath: string) {
+		if (isDecoratorSvelte(abs)) {
+			if (isEmptyOrWhitespace(abs)) {
+				scaffoldSvelteDecorator(abs)
+			}
+			return
+		}
+
 		if (isEmptyOrWhitespace(abs)) {
 			scaffoldSvelteComponent(abs)
 		}

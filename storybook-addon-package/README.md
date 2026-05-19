@@ -148,6 +148,8 @@ export function ${componentName}({}: ${propsName}) {
 		svelte: {
 			/** Customize the generated .svelte component file */
 			component: ({ componentName }) => '...',
+			/** Customize the generated .decorator.svelte file */
+			decorator: ({ componentName }) => '...',
 			/** Customize the generated .stories.svelte file */
 			story: ({ componentName, title, tags }) => '...',
 		},
@@ -170,3 +172,83 @@ export function ${componentName}({}: ${propsName}) {
 ```
 
 All scaffold options are optional — omit any key to keep the default template for that file type.
+
+### Svelte decorators
+
+Storybook decorators in Svelte are cleanest when written as their own `.svelte` file rather than inline in a story. `sb-deps` recognises decorator files by the `.decorator.svelte` suffix and treats them specially: it scaffolds them with a decorator-shaped template (importing and rendering the wrapped sibling component) and **does not** generate a `.stories.svelte` for them.
+
+#### Recommended pattern: one shared decorator per component
+
+Name the file `ComponentName.decorator.svelte` and use **props** to vary behaviour between stories. This is the preferred approach because it avoids near-duplicate decorator files for each story.
+
+```svelte
+<!-- ContactFormOrganism.decorator.svelte -->
+<script lang="ts">
+	import type { ValidationMode } from '@formisch/svelte';
+	import FormDataMolecule from '../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
+	import ContactFormOrganism from './ContactFormOrganism.svelte';
+	import { createContactForm, onContactFormSubmit } from './createContactForm';
+
+	interface DecoratorProps {
+		validate?: ValidationMode;
+	}
+
+	const { validate }: DecoratorProps = $props();
+
+	const form = $derived(createContactForm(validate));
+</script>
+
+<!--
+ Decorator files are useful for adding extra wrapper
+ components as additional context to stories
+-->
+<FormDataMolecule {form}>
+	<ContactFormOrganism {form} onSubmit={onContactFormSubmit} />
+</FormDataMolecule>
+```
+
+```svelte
+<!-- ContactFormOrganism.stories.svelte (excerpt) -->
+<Story name="Primary">
+	{#snippet template()}
+		<ContactFormOrganismDecorator validate="submit" />
+	{/snippet}
+</Story>
+
+<Story name="Error State">
+	{#snippet template()}
+		<ContactFormOrganismDecorator validate="initial" />
+	{/snippet}
+</Story>
+```
+
+#### Fallback pattern: per-story decorator files
+
+If a particular story needs a decorator with a structurally different shape that can't reasonably be expressed via props, name the file `ComponentName.StoryName.decorator.svelte`. The wrapped component name is always the segment before the first `.` in the filename.
+
+| Filename                          | Wrapped component | When to use                                                                       |
+| --------------------------------- | ----------------- | --------------------------------------------------------------------------------- |
+| `Button.decorator.svelte`         | `Button`          | Default — single decorator for all stories, drive variants via props              |
+| `Button.Primary.decorator.svelte` | `Button`          | Fallback — only when the `Primary` story needs a structurally different decorator |
+| `Button.Error.decorator.svelte`   | `Button`          | Fallback — only when the `Error` story needs a structurally different decorator   |
+
+#### Default scaffold
+
+When `sb-deps` detects a new empty `*.decorator.svelte` file, it fills it with:
+
+```svelte
+<script lang="ts">
+	import Button from "./Button.svelte";
+
+	interface DecoratorProps {
+	}
+
+	const {  }: DecoratorProps = $props();
+</script>
+
+<div class="decorator">
+	<Button />
+</div>
+```
+
+The wrapper `<div class="decorator">` is a hint, not a requirement — replace it with whatever the decorator actually needs to wrap around the component (a form provider, a router, a theme context, …). Customise the whole template via [`scaffold.svelte.decorator`](#scaffold) in your `sb-deps.config.{js,mjs,ts}`.

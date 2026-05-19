@@ -1,16 +1,14 @@
-<script lang="ts" module>
+<script lang="ts">
 	import { type ValidationMode } from '@formisch/svelte';
 	import FormDataMolecule from '../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
 	import ContactFormOrganism from './ContactFormOrganism.svelte';
 	import { createContactForm, onContactFormSubmit } from './createContactForm';
 
-	export interface PropsForContactFormOrganismStoryHarness {
+	interface DecoratorProps {
 		validate?: ValidationMode;
 	}
-</script>
 
-<script lang="ts">
-	const { validate }: PropsForContactFormOrganismStoryHarness = $props();
+	const { validate }: DecoratorProps = $props();
 
 	const form = $derived(createContactForm(validate));
 </script>

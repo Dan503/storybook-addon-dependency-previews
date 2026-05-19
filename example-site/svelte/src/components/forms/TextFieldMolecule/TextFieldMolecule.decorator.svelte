@@ -1,15 +1,22 @@
 <script lang="ts">
 	import TextFieldMolecule, { type PropsForTextFieldMolecule } from './TextFieldMolecule.svelte';
 	import FormDataMolecule from '../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
-	import { createForm, Form, Field } from '@formisch/svelte';
+	import { createForm, Form, Field, type ValidationMode } from '@formisch/svelte';
 	import { defaultFirstNameOnlyValues, firstNameOnlySchema } from 'example-site-shared/data';
 
-	const { label, placeholder }: PropsForTextFieldMolecule = $props();
+	interface DecoratorProps extends Omit<PropsForTextFieldMolecule, 'field'> {
+		validate?: ValidationMode;
+	}
 
-	const form = createForm({
-		schema: firstNameOnlySchema,
-		initialInput: defaultFirstNameOnlyValues
-	});
+	const { label, placeholder, validate }: DecoratorProps = $props();
+
+	const form = $derived(
+		createForm({
+			schema: firstNameOnlySchema,
+			initialInput: defaultFirstNameOnlyValues,
+			validate
+		})
+	);
 </script>
 
 <Form
