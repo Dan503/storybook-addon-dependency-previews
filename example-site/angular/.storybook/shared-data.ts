@@ -112,11 +112,10 @@ export const mealCardList: MealCardItem[] = []
 export const ingredientItems: IngredientItem[] = []
 export const featuredMealsData: Meal[] = []
 export const defaultContactFormValues = { name: '', email: '', message: '' }
-export const contactFormValuesSchema: unknown = {}
 
 // Type-only re-exports for stories that import types from example-site-shared/data
 export type { Meal, Category, IngredientMeasurement, MealRawData }
 export type ContactFormInputData = { name: string; email: string; message: string }
-export type ContactFormOutputData = { name: string; email: string; message: string }
+export type ContactFormOutputData = ContactFormInputData
 export type MealDBTransformedResponse = { meals: Meal[] }
 export type CategoriesApiResponse = { categories: Category[] }
