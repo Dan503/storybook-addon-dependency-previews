@@ -59,7 +59,7 @@ export const ErrorState = {
 			<FormDataMolecule form={form}>
 				<Field of={form} path={['firstName']}>
 					{(field) => {
-						return <TextFieldMolecule {...args} form={form} field={field} />
+						return <TextFieldMolecule {...args} field={field} />
 					}}
 				</Field>
 			</FormDataMolecule>
