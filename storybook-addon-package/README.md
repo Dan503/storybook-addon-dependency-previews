@@ -185,6 +185,7 @@ Name the file `ComponentName.decorator.svelte` and use **props** to vary behavio
 <!-- ContactFormOrganism.decorator.svelte -->
 <script lang="ts">
 	import type { ValidationMode } from '@formisch/svelte';
+	import FormDataMolecule from '../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
 	import ContactFormOrganism from './ContactFormOrganism.svelte';
 	import { createContactForm, onContactFormSubmit } from './createContactForm';
 
@@ -197,14 +198,20 @@ Name the file `ComponentName.decorator.svelte` and use **props** to vary behavio
 	const form = $derived(createContactForm(validate));
 </script>
 
-<ContactFormOrganism {form} onSubmit={onContactFormSubmit} />
+<!--
+ Decorator files are useful for adding extra wrapper
+ components as additional context to stories
+-->
+<FormDataMolecule {form}>
+	<ContactFormOrganism {form} onSubmit={onContactFormSubmit} />
+</FormDataMolecule>
 ```
 
 ```svelte
 <!-- ContactFormOrganism.stories.svelte (excerpt) -->
 <Story name="Primary">
 	{#snippet template()}
-		<ContactFormOrganismDecorator />
+		<ContactFormOrganismDecorator validate="submit" />
 	{/snippet}
 </Story>
 
