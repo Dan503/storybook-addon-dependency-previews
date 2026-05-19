@@ -2,7 +2,6 @@
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
 	import TextFieldMolecule, { type PropsForTextFieldMolecule } from './TextFieldMolecule.svelte';
 	import TextFieldMoleculeDecorator from './TextFieldMolecule.decorator.svelte';
-	import TextFieldMoleculeErrorDecorator from './TextFieldMoleculeError.decorator.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
@@ -31,6 +30,6 @@
 	args={{ label: 'First Name', placeholder: 'Enter your first name' } satisfies Args}
 >
 	{#snippet template(args)}
-		<TextFieldMoleculeErrorDecorator {...args} />
+		<TextFieldMoleculeDecorator {...args} validate="initial" />
 	{/snippet}
 </Story>

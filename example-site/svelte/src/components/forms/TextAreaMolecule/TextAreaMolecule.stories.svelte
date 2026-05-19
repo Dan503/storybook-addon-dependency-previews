@@ -3,7 +3,6 @@
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import TextAreaMolecule, { type PropsForTextAreaMolecule } from './TextAreaMolecule.svelte';
 	import TextAreaMoleculeDecorator from './TextAreaMolecule.decorator.svelte';
-	import TextAreaMoleculeErrorDecorator from './TextAreaMoleculeError.decorator.svelte';
 
 	const { Story } = defineMeta({
 		title: 'Forms / Text Area Molecule',
@@ -25,6 +24,6 @@
 
 <Story name="Error State" args={{ label: 'Message', placeholder: 'Enter your message' } satisfies Args}>
 	{#snippet template(args)}
-		<TextAreaMoleculeErrorDecorator {...args} />
+		<TextAreaMoleculeDecorator {...args} validate="initial" />
 	{/snippet}
 </Story>
