@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 import watcherParcel from '@parcel/watcher'
 import micromatch from 'micromatch'
-import { execSync, spawn, type ChildProcess } from 'node:child_process'
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import {
 	existsSync,
 	mkdirSync,
@@ -113,8 +113,34 @@ let SRC_DIR = 'src'
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
 // ───────────────────────────────────────────────────────────────────────────────
+const IS_WIN = process.platform === 'win32'
+
+/**
+ * Locate the `dependency-cruiser` CLI binary in the user's `node_modules/.bin`.
+ * Returns the absolute path with the right extension for the platform (`.cmd`
+ * shim on Windows, bare name elsewhere). Falls back to `null` if it can't be
+ * found — caller decides what to do.
+ *
+ * Going through the resolved binary lets us call `execFileSync` directly
+ * (with `shell: false`) and pass each flag as its own array element — no
+ * shell quoting, no `cmd.exe` metacharacter mangling (`^` is a `cmd.exe`
+ * escape character, which would silently strip the `^` anchor from our
+ * `--include-only` regex if we went through a shell). It also avoids spawning
+ * `npx`, which on Windows is a `.cmd` shim that requires `shell: true` to
+ * launch — which would reintroduce the very quoting problem we're trying to
+ * avoid.
+ */
+function resolveDepCruiseBin(): string | null {
+	const bin = join(
+		projectRoot,
+		'node_modules',
+		'.bin',
+		IS_WIN ? 'depcruise.cmd' : 'depcruise',
+	)
+	return existsSync(bin) ? bin : null
+}
+
 function runDepCruiseOnce() {
-	const cfgFlag = configPath ? `--config "${configPath}"` : '--no-config'
 	// Pass --include-only at the CLI level so it overrides whatever the loaded
 	// depcruise config has (depcruise CLI flags take precedence over config-file
 	// options). That way SRC_DIR controls dep-cruiser's scan scope without
@@ -125,23 +151,64 @@ function runDepCruiseOnce() {
 	// to a `/` so the directory boundary is respected — without the trailing
 	// slash `^src` would also match `src2/`, `srcabc/`, etc.
 	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	const includeOnlyFlag = `--include-only "^${escapedSrcDir}/"`
-	const cmd = `npx depcruise . ${cfgFlag} ${includeOnlyFlag} --output-type json`
+	const args: Array<string> = ['.']
+	if (configPath) {
+		args.push('--config', configPath)
+	} else {
+		args.push('--no-config')
+	}
+	args.push('--include-only', `^${escapedSrcDir}/`, '--output-type', 'json')
+
+	const depcruiseBin = resolveDepCruiseBin()
+	if (!depcruiseBin) {
+		throw new Error(
+			'Could not locate `dependency-cruiser` in node_modules/.bin. Run the setup wizard (`sb-deps setup`) or install `dependency-cruiser` as a dev dependency.',
+		)
+	}
+
 	const start = Date.now()
-	const stdout = execSync(cmd, {
-		cwd: projectRoot,
-		stdio: ['ignore', 'pipe', 'inherit'],
-		encoding: 'utf8',
-	})
+	// `.cmd` shims on Windows need `shell: true` to launch, BUT once shell is
+	// on, cmd.exe re-interprets `^` as an escape character — which would strip
+	// the anchor from our regex. Workaround: spawn the `.cmd` itself with
+	// shell:true (cmd.exe wraps the call) and pre-escape `^` for cmd.exe by
+	// doubling it. On Unix the binary is a real ELF/script (no shim), shell:false
+	// is the default, args pass through unmolested.
+	const stdout = execFileSync(
+		depcruiseBin,
+		IS_WIN ? args.map(escapeForCmdExe) : args,
+		{
+			cwd: projectRoot,
+			stdio: ['ignore', 'pipe', 'inherit'],
+			encoding: 'utf8',
+			shell: IS_WIN,
+		},
+	)
 	writeFileSync(rawPath, stdout, 'utf8')
 	info(`graph ✓ (${ms(Date.now() - start)})`)
 }
 
 function postprocessOnce() {
 	const start = Date.now()
-	const postCmd = `node "${post}" "${rawPath}" "${cookedPath}" "${SRC_DIR}"`
-	execSync(postCmd, { cwd: projectRoot, stdio: 'inherit' })
+	// `node` is a real executable on every platform (no `.cmd` shim), so we
+	// don't need shell:true here — args pass through directly with no quoting
+	// or escape concerns.
+	execFileSync('node', [post, rawPath, cookedPath, SRC_DIR], {
+		cwd: projectRoot,
+		stdio: 'inherit',
+	})
 	info(`compiled ✓ → ${rel(cookedPath)} (${ms(Date.now() - start)})`)
+}
+
+/**
+ * Escape an argument so that it survives `cmd.exe` parsing when `execFileSync`
+ * is invoked with `shell: true` on Windows. `^` is the cmd.exe escape character,
+ * even inside double quotes — doubling it makes cmd.exe pass through a literal
+ * `^`. Other shell metacharacters (`&`, `|`, `<`, `>`, `(`, `)`, `%`, `!`) are
+ * already wrapped in double quotes by Node's internal arg-quoter when
+ * `shell: true`, so we only need to handle `^` ourselves.
+ */
+function escapeForCmdExe(arg: string): string {
+	return arg.replace(/\^/g, '^^')
 }
 
 function buildOnce() {
