@@ -6,7 +6,11 @@ import type { Deps, Graph, StoryInfo } from '../../src/types.js'
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
-const srcDir = (srcDirArg || 'src').replace(/[\\/]+$/, '')
+// Defensive trim + empty check — sb-deps.ts already validates srcDir before
+// invoking this script, but a direct invocation (or future caller) could pass
+// `''` or whitespace and shouldn't end up matching every path under the sun.
+const normalizedSrcDir = (srcDirArg || 'src').replace(/[\\/]+$/, '').trim()
+const srcDir = normalizedSrcDir || 'src'
 const escapedSrcDir = srcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const srcDirRegex = new RegExp(`^${escapedSrcDir}\\/`)
 

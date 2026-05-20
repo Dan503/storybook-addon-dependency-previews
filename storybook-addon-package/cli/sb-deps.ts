@@ -119,7 +119,13 @@ function runDepCruiseOnce() {
 	// depcruise config has (depcruise CLI flags take precedence over config-file
 	// options). That way SRC_DIR controls dep-cruiser's scan scope without
 	// requiring users with non-`src` layouts to also override the bundled config.
-	const includeOnlyFlag = `--include-only "^${SRC_DIR}"`
+	//
+	// The regex must escape any regex metacharacters in SRC_DIR (a value like
+	// `src.app` would otherwise broaden the scope unintentionally) and anchor
+	// to a `/` so the directory boundary is respected — without the trailing
+	// slash `^src` would also match `src2/`, `srcabc/`, etc.
+	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const includeOnlyFlag = `--include-only "^${escapedSrcDir}/"`
 	const cmd = `npx depcruise . ${cfgFlag} ${includeOnlyFlag} --output-type json`
 	const start = Date.now()
 	const stdout = execSync(cmd, {
@@ -980,12 +986,19 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
-	SRC_DIR = (cfg.srcDir ?? 'src').replace(/[\\/]+$/, '')
-	if (SRC_DIR.includes('/') || SRC_DIR.includes('\\')) {
+	// `?? 'src'` only falls back on null/undefined, so an explicit `srcDir: ''`
+	// in the user's config would slip through and produce overly-broad watcher
+	// globs (`/**/*`) and an `--include-only "^/"` depcruise scan. Trim, then
+	// reject empty / contains-path-separator and fall back to 'src' with a
+	// warning so the failure mode is obvious in the CLI output.
+	const rawSrcDir = (cfg.srcDir ?? 'src').replace(/[\\/]+$/, '').trim()
+	if (!rawSrcDir || rawSrcDir.includes('/') || rawSrcDir.includes('\\')) {
 		error(
-			`srcDir "${SRC_DIR}" contains a path separator. srcDir must be a single top-level directory name (e.g. "src", "app"). Falling back to "src".`,
+			`srcDir "${cfg.srcDir ?? ''}" is invalid — must be a single non-empty directory name with no path separators (e.g. "src", "app"). Falling back to "src".`,
 		)
 		SRC_DIR = 'src'
+	} else {
+		SRC_DIR = rawSrcDir
 	}
 
 	banner('sb-deps')
