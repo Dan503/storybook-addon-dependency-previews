@@ -108,13 +108,19 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
+let SRC_DIR = 'src'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
 // ───────────────────────────────────────────────────────────────────────────────
 function runDepCruiseOnce() {
 	const cfgFlag = configPath ? `--config "${configPath}"` : '--no-config'
-	const cmd = `npx depcruise . ${cfgFlag} --output-type json`
+	// Pass --include-only at the CLI level so it overrides whatever the loaded
+	// depcruise config has (depcruise CLI flags take precedence over config-file
+	// options). That way SRC_DIR controls dep-cruiser's scan scope without
+	// requiring users with non-`src` layouts to also override the bundled config.
+	const includeOnlyFlag = `--include-only "^${SRC_DIR}"`
+	const cmd = `npx depcruise . ${cfgFlag} ${includeOnlyFlag} --output-type json`
 	const start = Date.now()
 	const stdout = execSync(cmd, {
 		cwd: projectRoot,
@@ -127,7 +133,7 @@ function runDepCruiseOnce() {
 
 function postprocessOnce() {
 	const start = Date.now()
-	const postCmd = `node "${post}" "${rawPath}" "${cookedPath}"`
+	const postCmd = `node "${post}" "${rawPath}" "${cookedPath}" "${SRC_DIR}"`
 	execSync(postCmd, { cwd: projectRoot, stdio: 'inherit' })
 	info(`compiled ✓ → ${rel(cookedPath)} (${ms(Date.now() - start)})`)
 }
@@ -175,40 +181,60 @@ function isEmptyOrWhitespace(absPath: string) {
 	}
 }
 
-// src/components/**/Thing.tsx ? (and not a story file)
-function isComponentsTsx(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
-	return (
-		/(?:^|\/)src\/components\/.+\.tsx$/i.test(norm) &&
-		!/\.stories?\.tsx$/i.test(norm)
-	)
+/**
+ * Build a regex that matches `<SRC_DIR>/...<suffix>` for the scaffolding-trigger
+ * helpers below. `SRC_DIR` is interpolated at call time (these helpers run
+ * inside the watcher event loop, after the boot block has loaded the config
+ * and finalised `SRC_DIR`).
+ *
+ * Files don't have to live under a `components/` subfolder — same philosophy
+ * as the postprocess filter: any source file under `srcDir` with the right
+ * extension is a candidate. The framework-agnostic story-file exclusion
+ * (`STORY_FILE_REGEX`) is applied separately in the individual helpers.
+ */
+function srcSubpathRegex(suffixPattern: string): RegExp {
+	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	return new RegExp(`(?:^|\\/)${escapedSrcDir}\\/.+${suffixPattern}`, 'i')
 }
 
-// src/components/**/Thing.svelte ? (and not a story file)
+/**
+ * Matches story files in any framework: `.story.<ext>` or `.stories.<ext>`
+ * where `<ext>` is any single-segment file extension (`.svelte`, `.ts`, `.tsx`,
+ * `.js`, `.jsx`, `.mdx`, …). Used by the scaffolding-trigger helpers to make
+ * sure they don't try to auto-scaffold a story file for an existing story.
+ */
+const STORY_FILE_REGEX = /\.stories?\.\w+$/i
+
+// <srcDir>/**/Thing.tsx ? (and not a story file)
+function isComponentsTsx(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return srcSubpathRegex('\\.tsx$').test(norm) && !STORY_FILE_REGEX.test(norm)
+}
+
+// <srcDir>/**/Thing.svelte ? (and not a story file)
 function isComponentsSvelte(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
 	return (
-		/(?:^|\/)src\/components\/.+\.svelte$/i.test(norm) &&
-		!/\.stories?\.svelte$/i.test(norm)
+		srcSubpathRegex('\\.svelte$').test(norm) && !STORY_FILE_REGEX.test(norm)
 	)
 }
 
-// src/components/**/Thing.decorator.svelte ?
+// <srcDir>/**/Thing.decorator.svelte ?
 function isDecoratorSvelte(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /(?:^|\/)src\/components\/.+\.decorator\.svelte$/i.test(norm)
+	return srcSubpathRegex('\\.decorator\\.svelte$').test(norm)
 }
 
-// src/components/**/Thing.component.ts ? (and not a story file)
+// <srcDir>/**/Thing.component.ts ?
 function isComponentsAngularTs(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /(?:^|\/)src\/components\/.+\.component\.ts$/i.test(norm)
+	return srcSubpathRegex('\\.component\\.ts$').test(norm)
 }
 
-// src/components/**/Thing.component.html ?
+// <srcDir>/**/Thing.component.html ?
 function isComponentsAngularHtml(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /(?:^|\/)src\/components\/.+\.component\.html$/i.test(norm)
+	return srcSubpathRegex('\\.component\\.html$').test(norm)
 }
 
 function componentBaseFromComponent(absCompPath: string) {
@@ -252,7 +278,7 @@ function storyPathForSvelteComponent(absCompPath: string) {
 }
 
 function makeTitleFromComponent(absCompPath: string) {
-	const srcRoot = join(projectRoot, 'src') + sep
+	const srcRoot = join(projectRoot, SRC_DIR) + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
 	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
 		? normAbs.slice(srcRoot.length)
@@ -413,7 +439,7 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 }
 
 function makeTitleFromSvelteComponent(absCompPath: string) {
-	const srcRoot = join(projectRoot, 'src') + sep
+	const srcRoot = join(projectRoot, SRC_DIR) + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
 	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
 		? normAbs.slice(srcRoot.length)
@@ -488,7 +514,7 @@ function storyPathForAngularComponent(absCompPath: string) {
 }
 
 function makeTitleFromAngularComponent(absCompPath: string) {
-	const srcRoot = join(projectRoot, 'src') + sep
+	const srcRoot = join(projectRoot, SRC_DIR) + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
 	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
 		? normAbs.slice(srcRoot.length)
@@ -751,8 +777,8 @@ function startWatcher() {
 	const includeGlobs = [
 		'**/*.stories.{ts,tsx,js,jsx,mdx,svelte}',
 		'**/*.story.{ts,tsx,js,jsx,mdx,svelte}',
-		'src/**/*.{ts,tsx,js,jsx,svelte}',
-		'src/**/*.component.html',
+		`${SRC_DIR}/**/*.{ts,tsx,js,jsx,svelte}`,
+		`${SRC_DIR}/**/*.component.html`,
 		'depcruise.config.cjs',
 		'.dependency-cruiser.{js,cjs}',
 	]
@@ -954,6 +980,13 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
+	SRC_DIR = (cfg.srcDir ?? 'src').replace(/[\\/]+$/, '')
+	if (SRC_DIR.includes('/') || SRC_DIR.includes('\\')) {
+		error(
+			`srcDir "${SRC_DIR}" contains a path separator. srcDir must be a single top-level directory name (e.g. "src", "app"). Falling back to "src".`,
+		)
+		SRC_DIR = 'src'
+	}
 
 	banner('sb-deps')
 	info(`outDir: ${rel(outDir)}`)
