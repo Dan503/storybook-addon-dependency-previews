@@ -37,6 +37,13 @@ export function detectQuoteStyle(content: string): "'" | '"' {
  * Returns the position of `<keyword>` and the position of the value (first
  * non-whitespace char after the colon).
  *
+ * Both bare-identifier (`addons:`) and quoted (`"addons":`, `'addons':`) property
+ * keys are recognized. For the quoted form `keyStart` points at the opening
+ * quote and `valueStart` at the first non-whitespace char after the colon.
+ * Quoted-key matching requires the closing quote to land immediately after
+ * `<keyword>`, so string literals whose contents merely contain the keyword
+ * are still safely skipped via the existing string-mode entry below.
+ *
  * To target a specific config object's keys, pass `{ from, to }` set to the
  * range *inside* that object's braces — e.g. for `const config = { addons: [] }`
  * pass `from = positionAfterOpeningBrace`, `to = positionOfClosingBrace`.
@@ -113,6 +120,27 @@ export function findTopLevelKey(
 			inBC = true
 			i += 2
 			continue
+		}
+		// Quoted property key — `"keyword":` or `'keyword':`. Checked before the
+		// string-entry branches below so a quoted key isn't swallowed as a string
+		// literal. The closing quote must land immediately after `<keyword>`, so
+		// string values that happen to contain the keyword fall through to the
+		// real string-entry logic and are skipped as before.
+		if (depth === 0 && (c === "'" || c === '"')) {
+			const afterKey = i + 1 + kwLen
+			if (
+				afterKey < to &&
+				content.startsWith(keyword, i + 1) &&
+				content[afterKey] === c
+			) {
+				let j = afterKey + 1
+				while (j < to && /\s/.test(content[j]!)) j++
+				if (content[j] === ':') {
+					j++
+					while (j < to && /\s/.test(content[j]!)) j++
+					return { keyStart: i, valueStart: j }
+				}
+			}
 		}
 		if (c === "'") {
 			inSQ = true
