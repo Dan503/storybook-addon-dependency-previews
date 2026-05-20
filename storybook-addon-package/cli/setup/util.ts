@@ -34,15 +34,16 @@ export function detectQuoteStyle(content: string): "'" | '"' {
  * Find the first occurrence of `<keyword>:` at the immediate level of the
  * scanned range (i.e. depth 0 within the search window, outside any string /
  * template literal / comment, and not nested inside a `{}`/`[]`/`()` group).
- * Returns the position of `<keyword>` and the position of the value (first
- * non-whitespace char after the colon).
+ * Returns the position of the **start of the property-key token** (which is
+ * the keyword character itself for bare identifiers, or the opening quote for
+ * the quoted form) and the position of the value (first non-whitespace char
+ * after the colon).
  *
  * Both bare-identifier (`addons:`) and quoted (`"addons":`, `'addons':`) property
- * keys are recognized. For the quoted form `keyStart` points at the opening
- * quote and `valueStart` at the first non-whitespace char after the colon.
- * Quoted-key matching requires the closing quote to land immediately after
- * `<keyword>`, so string literals whose contents merely contain the keyword
- * are still safely skipped via the existing string-mode entry below.
+ * keys are recognized. Quoted-key matching requires the closing quote to land
+ * immediately after `<keyword>`, so string literals whose contents merely
+ * contain the keyword are still safely skipped via the existing string-mode
+ * entry below.
  *
  * To target a specific config object's keys, pass `{ from, to }` set to the
  * range *inside* that object's braces — e.g. for `const config = { addons: [] }`
