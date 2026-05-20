@@ -86,8 +86,12 @@ export interface SbDepsConfig {
 	 * root to take full control — the CLI picks up project-root overrides
 	 * automatically.
 	 *
-	 * Must be a single path segment (no slashes). The leading segment of every
-	 * key in `dependency-previews.json` will match this value.
+	 * Must be a single path segment containing only alphanumerics, `.`, `_`,
+	 * or `-` — `src`, `app`, `my-source`, `app.v2` are fine; anything with
+	 * path separators, glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or
+	 * shell metacharacters (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is
+	 * rejected at load time with a warning + fallback to `'src'`. The leading
+	 * segment of every key in `dependency-previews.json` will match this value.
 	 *
 	 * @example 'src'   (default)
 	 * @example 'app'

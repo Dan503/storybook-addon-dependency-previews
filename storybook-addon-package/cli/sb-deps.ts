@@ -1055,13 +1055,27 @@ async function startStorybook() {
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
 	// `?? 'src'` only falls back on null/undefined, so an explicit `srcDir: ''`
 	// in the user's config would slip through and produce overly-broad watcher
-	// globs (`/**/*`) and an `--include-only "^/"` depcruise scan. Trim, then
-	// reject empty / contains-path-separator and fall back to 'src' with a
-	// warning so the failure mode is obvious in the CLI output.
+	// globs (`/**/*`) and an `--include-only "^/"` depcruise scan. Trim and
+	// validate against a strict safe-character allow-list:
+	//
+	//   - alphanumerics + `.`, `_`, `-` — covers every directory name people
+	//     conventionally use (`src`, `app`, `my-source`, `app.v2`, etc.)
+	//   - rejects glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`) that
+	//     would otherwise change watcher-glob matching when interpolated into
+	//     `${SRC_DIR}/**/*.{ts,...}`
+	//   - rejects path separators (`/`, `\`) — srcDir must be a single segment
+	//   - rejects cmd.exe metacharacters including `%` (which triggers `%VAR%`
+	//     env expansion when the args go through a `cmd.exe`-invoked `.cmd`
+	//     shim on Windows) and `^` / `&` / `|` / `<` / `>` / `(` / `)` / `!`
+	//
+	// Bounding the input here means downstream interpolation sites (watcher
+	// globs, dep-cruiser `--include-only` regex, scaffold-helper regexes) can
+	// trust their `SRC_DIR` source and don't each need their own escape pass.
 	const rawSrcDir = (cfg.srcDir ?? 'src').replace(/[\\/]+$/, '').trim()
-	if (!rawSrcDir || rawSrcDir.includes('/') || rawSrcDir.includes('\\')) {
+	const SAFE_SRCDIR_PATTERN = /^[A-Za-z0-9._-]+$/
+	if (!rawSrcDir || !SAFE_SRCDIR_PATTERN.test(rawSrcDir)) {
 		error(
-			`srcDir "${cfg.srcDir ?? ''}" is invalid — must be a single non-empty directory name with no path separators (e.g. "src", "app"). Falling back to "src".`,
+			`srcDir "${cfg.srcDir ?? ''}" is invalid — must be a single non-empty directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). Falling back to "src".`,
 		)
 		SRC_DIR = 'src'
 	} else {
