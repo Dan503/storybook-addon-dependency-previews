@@ -80,6 +80,13 @@ function computeSubpath(gitRoot: string, cwd: string): string {
 type ParsedOrigin = {
 	scheme: 'http' | 'https'
 	host: string
+	/**
+	 * Optional non-default port from a protocol-style origin (e.g. `7990` from
+	 * `http://git.mycorp.local:7990/...`). Preserved so self-hosted instances
+	 * served on a non-default port still produce working view-source URLs.
+	 * Empty string when the origin didn't specify a port.
+	 */
+	port: string
 	ownerRepo: string
 }
 
@@ -110,29 +117,32 @@ export function parseOriginUrl(raw: string): ParsedOrigin | null {
 	// regex would not match this, but anchoring on `://` lets us distinguish.
 	if (!trimmed.includes('://')) {
 		// `git@host:owner/repo.git` — single colon between host and path.
+		// No port semantics in SCP-style URLs.
 		const scp = trimmed.match(/^(?:([^@]+)@)?([^:]+):(.+)$/)
 		if (scp) {
 			const host = scp[2]!
 			const ownerRepo = stripDotGit(scp[3]!.replace(/^\/+/, ''))
-			if (host && ownerRepo) return { scheme: 'https', host, ownerRepo }
+			if (host && ownerRepo)
+				return { scheme: 'https', host, port: '', ownerRepo }
 		}
 		return null
 	}
 
 	// Protocol-style: <proto>://[user@]host[:port]/owner/repo.git
 	const m = trimmed.match(
-		/^([a-z][a-z0-9+.-]*):\/\/(?:[^@/]+@)?([^/:?#]+)(?::\d+)?\/+(.+?)\/*$/i,
+		/^([a-z][a-z0-9+.-]*):\/\/(?:[^@/]+@)?([^/:?#]+)(?::(\d+))?\/+(.+?)\/*$/i,
 	)
 	if (!m) return null
 	const rawScheme = m[1]!.toLowerCase()
 	const host = m[2]!
-	const ownerRepo = stripDotGit(m[3]!)
+	const port = m[3] ?? ''
+	const ownerRepo = stripDotGit(m[4]!)
 	if (!host || !ownerRepo) return null
 	// Preserve the scheme only when it's a web scheme; non-web protocols
 	// (ssh, git) get rewritten to https.
 	const scheme: 'http' | 'https' =
 		rawScheme === 'http' ? 'http' : 'https'
-	return { scheme, host, ownerRepo }
+	return { scheme, host, port, ownerRepo }
 }
 
 function stripDotGit(s: string): string {
@@ -177,12 +187,14 @@ export function buildUrl(
 	provider: GitProvider,
 	scheme: 'http' | 'https',
 	host: string,
+	port: string,
 	ownerRepo: string,
 	branch: string,
 	subpath: string,
 ): string {
 	const tail = subpath ? `/${subpath}` : ''
-	const base = `${scheme}://${host}/${ownerRepo}`
+	const hostPort = port ? `${host}:${port}` : host
+	const base = `${scheme}://${hostPort}/${ownerRepo}`
 
 	switch (provider) {
 		case 'github':
@@ -232,6 +244,7 @@ export function detectProjectRepoUrl(cwd: string): DetectedProjectUrl | null {
 		provider,
 		parsed.scheme,
 		parsed.host,
+		parsed.port,
 		parsed.ownerRepo,
 		branch,
 		subpath,

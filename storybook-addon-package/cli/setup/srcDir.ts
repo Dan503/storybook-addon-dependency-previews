@@ -19,7 +19,10 @@ export type ResolvedSrcDir = {
 /**
  * Mirror of the validator at `sb-deps.ts` srcDir loader — single path segment,
  * alphanumerics + `.`, `_`, `-` only. Excludes the empty string deliberately;
- * empty is its own input contract here (handled via the `.` shortcut).
+ * empty means "project root is the source folder" and is signalled by either
+ * the `.` typed shortcut or, in not-detected mode, a blank Enter (the prompt
+ * defaults to `''` in that case so the user's blank input maps directly to
+ * the project-root sentinel).
  */
 const SAFE_SRCDIR_PATTERN = /^[A-Za-z0-9._-]+$/
 

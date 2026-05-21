@@ -16,8 +16,12 @@ const SRC_DIR = process.env.SB_DEPS_SRC_DIR ?? 'src'
 // before interpolating so `.` doesn't act as a wildcard and broaden the rule
 // matchers to unrelated paths.
 const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// Anchor the non-empty case to a directory boundary (`^<srcDir>/`) so a
+// SRC_DIR of `src` doesn't accidentally also match sibling folders like
+// `src2/` or `srcabc/`. Matches the trailing-slash anchor used by the
+// CLI-level `--include-only` regex in `sb-deps.ts`.
 const fromAnchor =
-	SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${escapedSrcDir}`
+	SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${escapedSrcDir}/`
 const componentsPath =
 	SRC_DIR === ''
 		? '^(components|ui|lib)/'
@@ -57,9 +61,11 @@ const config: IConfiguration = {
 		combinedDependencies: true,
 		doNotFollow: { path: 'node_modules' },
 		// `includeOnly` is set at the CLI level by `runDepCruiseOnce` so it can
-		// tighten to `^(?!node_modules/)` when `SRC_DIR === ''`. CLI flags
-		// override config-file options, so duplicating the value here would just
-		// be confusing — keep this as the single source of truth (the CLI flag).
+		// tighten to the any-segment node_modules denylist
+		// `^(?!(?:[^/]*/)*node_modules/)` when `SRC_DIR === ''`. CLI flags
+		// override config-file options, so duplicating the value here would
+		// just be confusing — keep this as the single source of truth (the
+		// CLI flag).
 		// IMPORTANT: keep baseDir disabled to avoid the previous src\src issue
 		// baseDir: 'src'
 	},
