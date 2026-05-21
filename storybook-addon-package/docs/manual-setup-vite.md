@@ -184,8 +184,7 @@ const previewConfig: StorybookPreviewConfig = {
 		dependencyPreviews: {
 			dependenciesJson,
 			storyModules: import.meta.glob(
-				'/src/**/*.stories.@(tsx|ts|jsx|js)', // if using React
-				'/src/**/*.stories.@(ts|js|svelte)', // if using Svelte
+				'/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
 				{ eager: false },
 			),
 			// Replace this with the URL to your src folder in your git repository.

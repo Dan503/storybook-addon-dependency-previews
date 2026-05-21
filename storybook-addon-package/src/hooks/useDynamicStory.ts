@@ -4,6 +4,12 @@ import { useStoryParams } from './useStoryParams'
 
 // grab all stories; Vite will code-split them
 
+// Normalise a graph-JSON `storyFilePath` to Vite’s absolute-style glob key shape
+// (leading slash, forward slashes only, no leading `./` segments).
+function normalizeStoryPath(p: string) {
+	return '/' + p.replace(/^[./]+/, '').replace(/\\/g, '/')
+}
+
 function findStoryImporter(
 	storiesGlob: StoryModules,
 	storyFilePath: string | undefined | null,
@@ -11,14 +17,52 @@ function findStoryImporter(
 	if (!storyFilePath) {
 		return null
 	}
-	// normalize to Vite’s absolute-style keys
-	const norm = (p: string) => '/' + p.replace(/^[./]+/, '').replace(/\\/g, '/')
-	const wanted = norm(storyFilePath)
+	const wanted = normalizeStoryPath(storyFilePath)
 	// exact match first, else suffix match as a fallback
 	return (
 		storiesGlob[wanted] ||
 		Object.entries(storiesGlob).find(([k]) => k.endsWith(wanted))?.[1]
 	)
+}
+
+// Compose an actionable error for the "no story module matched" failure mode. The
+// common cause — and the reason this helper exists — is the wizard-generated preview
+// shipping the extglob syntax `@(a|b|c)` which silently returns zero matches under
+// Vite 8 (tinyglobby). When the glob is empty, point the user at that fix; when the
+// glob has keys but none match, show a sample so the path-format mismatch is visible.
+function buildMissingStoryModuleError(
+	storiesGlob: StoryModules,
+	storyInfo: StoryInfo,
+): string {
+	const keys = Object.keys(storiesGlob)
+	const rawPath = storyInfo.storyFilePath ?? '(no storyFilePath in graph entry)'
+	const normalised = storyInfo.storyFilePath
+		? normalizeStoryPath(storyInfo.storyFilePath)
+		: '(n/a)'
+	const lines = [
+		`No story module found at this path: ${rawPath}`,
+		`  Normalised lookup key: ${normalised}`,
+		`  storyModules key count: ${keys.length}`,
+	]
+	if (keys.length === 0) {
+		lines.push(
+			'  Hint: your `import.meta.glob(...)` pattern matched zero files. If it uses',
+			'        the extglob syntax `@(a|b|c)` you are likely on Vite 8 (tinyglobby),',
+			'        which does not support extglob — switch to brace expansion',
+			'        `{a,b,c}` instead. Example:',
+			"        import.meta.glob('/src/**/*.stories.{tsx,ts,jsx,js,svelte}', { eager: false })",
+		)
+	} else {
+		const sample = keys.slice(0, 10)
+		lines.push(
+			'  Sample storyModules keys (first 10):',
+			...sample.map((k) => `    - ${k}`),
+		)
+		if (keys.length > sample.length) {
+			lines.push(`    …and ${keys.length - sample.length} more`)
+		}
+	}
+	return lines.join('\n')
 }
 
 export function useDynamicStory(storyInfo: StoryInfo) {
@@ -34,25 +78,29 @@ export function useDynamicStory(storyInfo: StoryInfo) {
 
 	useEffect(() => {
 		let alive = true
+		// Reset before kicking off the new load: PrimaryPreview checks `error` first,
+		// so a stale error from a previous story would keep rendering even after a
+		// successful import for the new one. Same logic for `csfModule` — clearing it
+		// makes the loading state visible while the new module resolves.
 		setIsLoading(true)
+		setErr(null)
+		setCsfModule(null)
 		;(async () => {
 			try {
 				if (!importer)
-					throw new Error(
-						`No story module found at this path: ${storyInfo.storyFilePath}`,
-					)
+					throw new Error(buildMissingStoryModuleError(modules, storyInfo))
 				const mod = await importer()
 				if (alive) setCsfModule(mod as CsfModule)
 			} catch (e: any) {
 				if (alive) setErr(e?.message || String(e))
 			} finally {
-				setIsLoading(false)
+				if (alive) setIsLoading(false)
 			}
 		})()
 		return () => {
 			alive = false
 		}
-	}, [importer, storyInfo.componentPath])
+	}, [importer, modules, storyInfo])
 
 	const primaryExport = getPrimaryStoryExport(csfModule, storyInfo)
 	const Component = csfModule?.default?.component
