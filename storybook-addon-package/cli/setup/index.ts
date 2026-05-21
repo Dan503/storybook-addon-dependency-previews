@@ -81,7 +81,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		process.exit(1)
 	}
 
-	log(`Detected framework : ${detection.frameworkRaw ?? '(unknown)'}`)
+	const detectionSourceLabel =
+		detection.frameworkDetectionSource === 'none'
+			? ''
+			: ` (from ${detection.frameworkDetectionSource})`
+	log(
+		`Detected framework : ${detection.frameworkRaw ?? '(unknown)'}${detectionSourceLabel}`,
+	)
 	log(`Detected pkg manager: ${detection.packageManager}`)
 	log(`Storybook main file: ${detection.mainFile.path}`)
 	log(
