@@ -24,7 +24,7 @@ export type PreviewFile = {
 	lang: 'ts' | 'tsx' | 'js' | 'jsx'
 }
 
-export type FrameworkDetectionSource = 'package.json' | 'main.ts' | 'none'
+export type FrameworkDetectionSource = 'package.json' | '.storybook/main' | 'none'
 
 export type Detection = {
 	storybookDir: string
@@ -99,10 +99,16 @@ const FRAMEWORK_REGEX =
 	/framework\s*:\s*(?:\{\s*name\s*:\s*['"]([^'"]+)['"]|['"]([^'"]+)['"])/
 
 /**
- * Storybook framework packages we know how to handle. A consumer project always
- * declares one of these in its dependency tree (deps / devDeps / peerDeps) —
- * Storybook can't run without one. This list is the single source of truth for
- * both the package.json scan and the regex match against `main.ts`.
+ * Storybook framework packages the wizard knows how to handle. Most projects
+ * declare one of these directly in their own `dependencies` / `devDependencies`
+ * / `peerDependencies` and the `package.json` scan picks it up. Edge case:
+ * monorepos / pnpm workspaces with hoisted root deps may not list the framework
+ * in the storybook-owning package's own `package.json` — those projects fall
+ * through to the `.storybook/main` regex.
+ *
+ * This list is the input to the `package.json` scan only. It is NOT a gate on
+ * the regex path: the regex captures any `framework:` string literal it finds,
+ * and `frameworkFromRaw` is what decides whether that string is recognised.
  */
 const KNOWN_FRAMEWORK_PACKAGES: ReadonlyArray<string> = [
 	'@storybook/react-vite',
@@ -129,7 +135,8 @@ function frameworkFromRaw(raw: string | null): Framework {
  * Scan a project's full dependency surface (deps + devDeps + peerDeps) for
  * exactly one known Storybook framework package. Returns the matched package
  * name when there's an unambiguous winner, otherwise `null` (zero matches OR
- * multiple matches — caller falls back to the `main.ts` regex to disambiguate).
+ * multiple matches — caller falls back to the `.storybook/main` regex to
+ * disambiguate).
  */
 function findFrameworkInDeps(
 	allDependencyKeys: ReadonlySet<string>,
@@ -190,17 +197,18 @@ export function detectProject(cwd: string): Detection {
 	}
 
 	// Primary signal: scan the project's dependency surface for exactly one
-	// recognised Storybook framework package. This works even when
-	// `.storybook/main.ts` is missing (minimal setups) or formatted in a way
-	// the regex below can't parse.
+	// recognised Storybook framework package. This works even when the
+	// `.storybook/main.*` config file is missing (minimal setups) or formatted
+	// in a way the regex below can't parse.
 	let frameworkRaw: string | null = findFrameworkInDeps(allDependencyKeys)
 	let frameworkDetectionSource: FrameworkDetectionSource =
 		frameworkRaw ? 'package.json' : 'none'
 
-	// Fallback: regex-match `main.ts`. Runs when the package.json scan turned
-	// up zero matches OR multiple matches (the latter happens in monorepos /
-	// in-progress migrations where multiple framework packages legitimately
-	// coexist — the regex disambiguates by what `main.ts` actually imports).
+	// Fallback: regex-match the `.storybook/main.*` config file. Runs when the
+	// package.json scan turned up zero matches OR multiple matches (the latter
+	// happens in monorepos / in-progress migrations where multiple framework
+	// packages legitimately coexist — the regex disambiguates by what the
+	// main config file actually imports).
 	if (frameworkRaw === null && mainFile) {
 		try {
 			const content = readFileSync(mainFile.path, 'utf8')
@@ -212,7 +220,7 @@ export function detectProject(cwd: string): Detection {
 			const matched = match?.[1] || match?.[2] || null
 			if (matched) {
 				frameworkRaw = matched
-				frameworkDetectionSource = 'main.ts'
+				frameworkDetectionSource = '.storybook/main'
 			}
 		} catch {
 			// leave frameworkRaw as null
