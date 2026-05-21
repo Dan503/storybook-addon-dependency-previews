@@ -18,7 +18,14 @@ export function PrimaryPreview({ storyInfo }: PropsForPrimaryPreview) {
 		(!csfModule && 'Module could not be loaded.') ||
 		(!primaryExport && 'No story export found.')
 
-	if (message) return <p style={{ opacity: 0.7 }}>{message}</p>
+	// `pre-wrap` preserves the line breaks in multi-line diagnostics like the
+	// `buildMissingStoryModuleError` output (lookup key, key count, sample keys).
+	// Single-line statuses ("Loading preview…", "Module could not be loaded.")
+	// render identically either way.
+	if (message)
+		return (
+			<p style={{ opacity: 0.7, whiteSpace: 'pre-wrap' }}>{message}</p>
+		)
 
 	return (
 		<div className="grid grid-cols-1 grid-rows-1">
