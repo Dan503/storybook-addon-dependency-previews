@@ -27,14 +27,35 @@ export function PrimaryPreview({ storyInfo }: PropsForPrimaryPreview) {
 			<p style={{ opacity: 0.7, whiteSpace: 'pre-wrap' }}>{message}</p>
 		)
 
+	// While the iframe is still loading, collapse its wrapper to zero height so
+	// FullParityStory's default-sized empty bordered box doesn't render as a big
+	// blank panel. The iframe itself is still in the DOM and loads normally —
+	// height:0/overflow:hidden just clips its visual footprint until iframe-resizer
+	// measures the real content and `onLoad` flips `hasLoaded` to true.
+	//
+	// Inline styles intentionally — earlier Tailwind grid classes (grid-cols-1,
+	// place-items-center) only resolve when the consumer's Tailwind config scans
+	// the addon's dist, which most installs don't. Inline styles ship in the bundle
+	// and work in every consumer regardless of CSS toolchain.
 	return (
-		<div className="grid grid-cols-1 grid-rows-1">
+		<div>
 			{!hasLoaded && (
-				<div className="col-start-1 row-start-1 grid place-items-center">
+				<div
+					style={{
+						display: 'grid',
+						placeItems: 'center',
+						padding: '2rem 0',
+					}}
+				>
 					<LoadingRipples />
 				</div>
 			)}
-			<div className="col-start-1 row-start-1">
+			<div
+				style={{
+					height: hasLoaded ? 'auto' : 0,
+					overflow: 'hidden',
+				}}
+			>
 				<FullParityStory
 					storyId={primaryId!}
 					args={primaryExport.args}
