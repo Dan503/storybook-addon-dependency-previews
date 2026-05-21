@@ -217,15 +217,6 @@ export function providerFromHost(host: string): GitProvider {
 }
 
 /**
- * Build the project-root URL for the given provider. Pure string assembly —
- * the runtime concatenates this with the dep-graph componentPath (e.g.
- * `src/components/Foo.tsx`) via `URL + '/' + path`, so every shape we emit
- * must produce a working link under that concat.
- *
- * Returns `''` for providers whose URL shape is incompatible with the concat
- * (currently `azure-devops`) or where we have no known shape (`unknown`).
- */
-/**
  * URL-encode a slash-delimited path. Encodes each segment individually with
  * `encodeURIComponent` (which handles spaces, `#`, `%`, `?`, etc.) and rejoins
  * with literal `/`, so the path-segment structure is preserved while every
@@ -235,6 +226,15 @@ function encodePath(path: string): string {
 	return path.split('/').map(encodeURIComponent).join('/')
 }
 
+/**
+ * Build the project-root URL for the given provider. Pure string assembly —
+ * the runtime concatenates this with the dep-graph componentPath (e.g.
+ * `src/components/Foo.tsx`) via `URL + '/' + path`, so every shape we emit
+ * must produce a working link under that concat.
+ *
+ * Returns `''` for providers whose URL shape is incompatible with the concat
+ * (currently `azure-devops`) or where we have no known shape (`unknown`).
+ */
 export function buildUrl(
 	provider: GitProvider,
 	scheme: 'http' | 'https',
