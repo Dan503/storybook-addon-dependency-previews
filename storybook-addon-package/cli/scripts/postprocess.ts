@@ -6,17 +6,26 @@ import type { Deps, Graph, StoryInfo } from '../../src/types.js'
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
-// `srcDirArg` is the literal `srcDir` value from `SbDepsConfig` (or `'src'`
-// when omitted upstream). The empty string is a deliberate "project root is
-// the source folder" sentinel; everything else trims to a single non-empty
-// directory name. `undefined` from a direct invocation that omits the arg
-// entirely still falls back to `'src'`.
+// `srcDirArg` can take three meaningfully-different shapes:
 //
-// Project-root mode swaps the `^<srcDir>/` anchor for a node_modules denylist
-// that rejects `node_modules` as any path segment — covers nested
-// `packages/foo/node_modules/...` paths in monorepos, not just the top-level
-// folder. Anything outside node_modules counts as project source.
-const rawSrcDir = (srcDirArg ?? 'src').replace(/[\\/]+$/, '').trim()
+// - `undefined` — direct invocation omitted the third arg entirely; fall
+//   back to the bundled default `'src'`.
+// - `''` — explicit project-root sentinel passed deliberately from
+//   `sb-deps.ts` (after the validator has accepted `srcDir: ''` from the
+//   user config). Switches the filter to a node_modules denylist that
+//   rejects `node_modules` as any path segment (top-level *or* nested under
+//   workspace packages).
+// - anything else — trim any trailing slashes and whitespace and use as the
+//   `<srcDir>/` anchor. If trimming leaves the empty string (the user
+//   passed `"  "` or similar by mistake), don't promote that to project-root
+//   mode — fall back to `'src'` instead, since whitespace-only input is
+//   almost certainly unintentional.
+const rawSrcDir: string =
+	srcDirArg === undefined
+		? 'src'
+		: srcDirArg === ''
+			? ''
+			: srcDirArg.replace(/[\\/]+$/, '').trim() || 'src'
 const srcDirRegex =
 	rawSrcDir === ''
 		? /^(?!(?:[^/]*\/)*node_modules\/)/

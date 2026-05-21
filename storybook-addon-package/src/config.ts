@@ -93,9 +93,11 @@ export interface SbDepsConfig {
 	 * `app.v2`, `''` are fine; anything with path separators, glob
 	 * metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or shell metacharacters
 	 * (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is rejected at load time
-	 * with a warning + fallback to `'src'`. The leading segment of every key
-	 * in `dependency-previews.json` will match this value (or have no leading
-	 * folder prefix when `''`).
+	 * with a warning + fallback to `'src'`. With a non-empty value, every key
+	 * in `dependency-previews.json` starts with `<srcDir>/`. With `''`, keys
+	 * are still project-relative paths (e.g. `components/Foo.tsx`,
+	 * `packages/foo/Bar.tsx`) — there's just no fixed `srcDir` prefix
+	 * constraining which top-level folders appear.
 	 *
 	 * @example 'src'   (default)
 	 * @example 'app'

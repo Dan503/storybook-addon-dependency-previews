@@ -19,6 +19,8 @@ export type DetectedProjectUrl = {
 	host: string
 	/** The owner/repo segment, with any trailing `.git` stripped. May contain slashes (nested GitLab groups). */
 	ownerRepo: string
+	/** URL scheme used to build the project URL. Preserved from the parsed origin when it's `http` or `https`; defaults to `https` for SSH/SCP-style origins. */
+	scheme: 'http' | 'https'
 	branch: string
 	branchSource: 'origin-head' | 'fallback-main'
 	/** POSIX-slash path from git root to cwd. Empty string when cwd is the git root. */
@@ -75,19 +77,29 @@ function computeSubpath(gitRoot: string, cwd: string): string {
 	return rel.replace(/\\/g, '/')
 }
 
-type ParsedOrigin = { host: string; ownerRepo: string }
+type ParsedOrigin = {
+	scheme: 'http' | 'https'
+	host: string
+	ownerRepo: string
+}
 
 /**
- * Normalise the variety of forms a git origin can take into a `{ host, ownerRepo }`
- * pair. Trailing `.git` is stripped from the path. Returns `null` if the input
- * doesn't look like any of the supported shapes.
+ * Normalise the variety of forms a git origin can take into a `{ scheme, host, ownerRepo }`
+ * triple. Trailing `.git` is stripped from the path. Returns `null` if the
+ * input doesn't look like any of the supported shapes.
+ *
+ * `scheme` is preserved from the original origin only for `http://` and
+ * `https://` URLs (the two schemes that can legitimately appear in a web
+ * "view source" URL). Non-web protocols (`ssh://`, `git://`) and SCP-style
+ * origins (`git@host:path`) default to `https` since the web equivalent of
+ * those clone URLs is HTTPS in practice.
  *
  * Handled forms:
- * - `https://host/owner/repo.git`         (HTTPS)
- * - `http://host/owner/repo.git`          (HTTPS over plain)
- * - `git@host:owner/repo.git`             (SCP-style SSH)
- * - `ssh://git@host[:port]/owner/repo.git` (SSH URL form)
- * - `git://host/owner/repo.git`           (git protocol — rare, but cheap to handle)
+ * - `https://host/owner/repo.git`         → `scheme: 'https'`
+ * - `http://host/owner/repo.git`          → `scheme: 'http'`
+ * - `git@host:owner/repo.git`             (SCP-style SSH) → `scheme: 'https'`
+ * - `ssh://git@host[:port]/owner/repo.git` (SSH URL form)  → `scheme: 'https'`
+ * - `git://host/owner/repo.git`           (git protocol)   → `scheme: 'https'`
  */
 export function parseOriginUrl(raw: string): ParsedOrigin | null {
 	const trimmed = raw.trim()
@@ -102,18 +114,25 @@ export function parseOriginUrl(raw: string): ParsedOrigin | null {
 		if (scp) {
 			const host = scp[2]!
 			const ownerRepo = stripDotGit(scp[3]!.replace(/^\/+/, ''))
-			if (host && ownerRepo) return { host, ownerRepo }
+			if (host && ownerRepo) return { scheme: 'https', host, ownerRepo }
 		}
 		return null
 	}
 
 	// Protocol-style: <proto>://[user@]host[:port]/owner/repo.git
-	const m = trimmed.match(/^[a-z][a-z0-9+.-]*:\/\/(?:[^@/]+@)?([^/:?#]+)(?::\d+)?\/+(.+?)\/*$/i)
+	const m = trimmed.match(
+		/^([a-z][a-z0-9+.-]*):\/\/(?:[^@/]+@)?([^/:?#]+)(?::\d+)?\/+(.+?)\/*$/i,
+	)
 	if (!m) return null
-	const host = m[1]!
-	const ownerRepo = stripDotGit(m[2]!)
+	const rawScheme = m[1]!.toLowerCase()
+	const host = m[2]!
+	const ownerRepo = stripDotGit(m[3]!)
 	if (!host || !ownerRepo) return null
-	return { host, ownerRepo }
+	// Preserve the scheme only when it's a web scheme; non-web protocols
+	// (ssh, git) get rewritten to https.
+	const scheme: 'http' | 'https' =
+		rawScheme === 'http' ? 'http' : 'https'
+	return { scheme, host, ownerRepo }
 }
 
 function stripDotGit(s: string): string {
@@ -156,13 +175,14 @@ export function providerFromHost(host: string): GitProvider {
  */
 export function buildUrl(
 	provider: GitProvider,
+	scheme: 'http' | 'https',
 	host: string,
 	ownerRepo: string,
 	branch: string,
 	subpath: string,
 ): string {
 	const tail = subpath ? `/${subpath}` : ''
-	const base = `https://${host}/${ownerRepo}`
+	const base = `${scheme}://${host}/${ownerRepo}`
 
 	switch (provider) {
 		case 'github':
@@ -197,6 +217,7 @@ export function detectProjectRepoUrl(cwd: string): DetectedProjectUrl | null {
 			provider: 'unknown',
 			host: '',
 			ownerRepo: '',
+			scheme: 'https',
 			branch: 'main',
 			branchSource: 'fallback-main',
 			subpath: '',
@@ -207,7 +228,14 @@ export function detectProjectRepoUrl(cwd: string): DetectedProjectUrl | null {
 	const provider = providerFromHost(parsed.host)
 	const { branch, source: branchSource } = getDefaultBranch(cwd)
 	const subpath = computeSubpath(gitRoot, cwd)
-	const url = buildUrl(provider, parsed.host, parsed.ownerRepo, branch, subpath)
+	const url = buildUrl(
+		provider,
+		parsed.scheme,
+		parsed.host,
+		parsed.ownerRepo,
+		branch,
+		subpath,
+	)
 
 	let warning: string | undefined
 	if (provider === 'azure-devops') {
@@ -222,6 +250,7 @@ export function detectProjectRepoUrl(cwd: string): DetectedProjectUrl | null {
 		provider,
 		host: parsed.host,
 		ownerRepo: parsed.ownerRepo,
+		scheme: parsed.scheme,
 		branch,
 		branchSource,
 		subpath,
