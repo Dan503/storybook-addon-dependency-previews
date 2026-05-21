@@ -1118,11 +1118,21 @@ async function startStorybook() {
 		SRC_DIR = ''
 	} else {
 		const trimmed = userSrcDir.replace(/[\\/]+$/, '').trim()
-		if (trimmed !== '' && SAFE_SRCDIR_PATTERN.test(trimmed)) {
+		// Reject the special path segments `.` and `..` explicitly — they
+		// match the character allow-list but they're path-traversal segments,
+		// not real folder names, and would produce broken include-only regexes
+		// (e.g. `^./` matches "any-char then slash") plus potentially escape
+		// the project root when joined with other paths.
+		const isSpecialSegment = trimmed === '.' || trimmed === '..'
+		if (
+			trimmed !== '' &&
+			!isSpecialSegment &&
+			SAFE_SRCDIR_PATTERN.test(trimmed)
+		) {
 			SRC_DIR = trimmed
 		} else {
 			error(
-				`srcDir "${userSrcDir}" is invalid — must be either exactly the empty string (project root) or a single directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). Falling back to "src".`,
+				`srcDir "${userSrcDir}" is invalid — must be either exactly the empty string (project root) or a single directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). "." and ".." are not allowed. Falling back to "src".`,
 			)
 			SRC_DIR = 'src'
 		}

@@ -2,7 +2,7 @@ import { statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import type { Framework } from './detect.js'
-import { input } from './prompt.js'
+import { ask } from './prompt.js'
 
 export type ResolvedSrcDir = {
 	/**
@@ -92,34 +92,60 @@ function detectNextjsSourceFolder(cwd: string): string | null {
  * project-root mode.
  */
 async function promptForSrcDir(detected: string | null): Promise<string> {
-	const message =
+	const headerLines =
 		detected !== null
 			? [
 					'\n= Source folder =',
 					`Detected '${detected}/' at the project root.`,
 					`Press Enter to use '${detected}', "." to use the project root, or type a different folder name.`,
-					'Source folder name:',
-				].join('\n')
+				]
 			: [
 					'\n= Source folder =',
 					'No `src/`, `app/`, or `pages/` folder found.',
 					'Press Enter to use the project root as the source folder, or type a folder name (e.g. "app").',
-					'Source folder name:',
-				].join('\n')
+				]
+	const suffix = detected !== null ? ` (${detected}) ` : ' '
+	const question = headerLines.join('\n') + '\nSource folder name:' + suffix
 
-	const defaultValue = detected ?? ''
 	while (true) {
-		const raw = (await input(message, defaultValue)).trim()
-		// "." (or "./") → explicit project-root mode.
-		if (raw === '.' || raw === './') return ''
-		// Empty input falls through to the default; in not-detected mode the
-		// default is '', which is what we want for the "blank = project root"
-		// rule. Return it directly.
-		if (raw === '') return ''
-		if (SAFE_SRCDIR_PATTERN.test(raw)) return raw
+		const rawInput = await ask(question)
+		// Truly-blank Enter (empty raw input) accepts the contract:
+		//   detected   → use the detected folder
+		//   not-detected → use the project root ('')
+		if (rawInput === '') return detected ?? ''
+
+		const trimmed = rawInput.trim()
+		// Whitespace-only input is almost certainly a typo (a stray space
+		// followed by Enter). Don't silently collapse it into project-root
+		// mode in not-detected projects — re-prompt so the user can pick
+		// deliberately.
+		if (trimmed === '') {
+			// eslint-disable-next-line no-console
+			console.log(
+				'  Empty/whitespace input. Press Enter to accept the default, type "." for project root, or type a folder name.',
+			)
+			continue
+		}
+
+		// "." (or "./") → explicit project-root mode in both detected and
+		// not-detected projects.
+		if (trimmed === '.' || trimmed === './') return ''
+
+		// ".." (or "../") is a path-traversal segment, not a folder name —
+		// the validator's character allow-list lets it through, so reject
+		// it explicitly here.
+		if (trimmed === '..' || trimmed === '../') {
+			// eslint-disable-next-line no-console
+			console.log(
+				'  ".." is not a valid source folder. Type a folder name, or "." for the project root.',
+			)
+			continue
+		}
+
+		if (SAFE_SRCDIR_PATTERN.test(trimmed)) return trimmed
 		// eslint-disable-next-line no-console
 		console.log(
-			`  Invalid folder name "${raw}" — must be alphanumerics, ".", "_", or "-" (or "." for project root). Try again.`,
+			`  Invalid folder name "${trimmed}" — must be alphanumerics, ".", "_", or "-" (or "." for project root). Try again.`,
 		)
 	}
 }
