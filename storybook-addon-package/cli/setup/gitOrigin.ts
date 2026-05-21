@@ -168,6 +168,30 @@ function stripDotGit(s: string): string {
 }
 
 /**
+ * Replace any userinfo segment in an origin URL with `[REDACTED]` so that
+ * embedded credentials (`https://user:token@host/...` for protocol-style or
+ * `user@host:path` for SCP-style) don't end up in warning messages that
+ * could land in terminal/CI logs. Inputs without credentials are returned
+ * unchanged.
+ */
+export function redactOriginCredentials(originUrl: string): string {
+	return originUrl
+		.replace(
+			// Protocol-style: <scheme>://<userinfo>@<host>...
+			/^([a-z][a-z0-9+.-]*:\/\/)[^@/]+@/i,
+			'$1[REDACTED]@',
+		)
+		.replace(
+			// SCP-style: <user>@<host>:<path>. Only matches if there's no
+			// `://` (the protocol-style replace already covered that case),
+			// so guard with a leading anchor that requires the next char to
+			// not be a scheme separator.
+			/^([^:/@]+)@(?!\/)/,
+			'[REDACTED]@',
+		)
+}
+
+/**
  * Map a hostname to a known provider. Uses `endsWith` / `includes` semantics
  * (not exact match) so enterprise instances (`github.mycorp.com`,
  * `gitlab.acme.io`, `gitea.internal`) are still recognised. The cost of a
@@ -267,7 +291,7 @@ export function detectProjectRepoUrl(cwd: string): DetectedProjectUrl | null {
 			branch: 'main',
 			branchSource: 'fallback-main',
 			subpath: '',
-			warning: `Could not parse the git origin URL (${originRaw}).`,
+			warning: `Could not parse the git origin URL (${redactOriginCredentials(originRaw)}).`,
 		}
 	}
 
