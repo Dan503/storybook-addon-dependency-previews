@@ -1081,12 +1081,21 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
-	// `?? 'src'` only falls back on null/undefined; an explicit `srcDir: ''`
-	// is treated as a deliberate sentinel meaning "project root *is* the
-	// source folder" (downstream sites — watcher globs, depcruise include-only,
-	// scaffold-helper regexes — all special-case this). Other invalid shapes
-	// are rejected against a strict safe-character allow-list:
+	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//
+	//   - `undefined` / missing key  → fall back to the bundled default `'src'`.
+	//   - exactly `''`               → deliberate project-root sentinel
+	//                                  (downstream sites special-case this).
+	//   - anything else              → validate against the safe-character
+	//                                  allow-list and use, or fall back to
+	//                                  `'src'` with a warning.
+	//
+	// Whitespace-only values (e.g. `srcDir: '   '`) are treated as invalid —
+	// trimming produces an empty string, but that's almost certainly a typo,
+	// not a deliberate request for project-root mode. Match against the
+	// allow-list before stripping whitespace so we can distinguish the two.
+	//
+	// Allow-list:
 	//   - alphanumerics + `.`, `_`, `-` — covers every directory name people
 	//     conventionally use (`src`, `app`, `my-source`, `app.v2`, etc.)
 	//   - rejects glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`) that
@@ -1101,17 +1110,22 @@ async function startStorybook() {
 	//
 	// Bounding the input here means downstream interpolation sites can trust
 	// their `SRC_DIR` source and don't each need their own escape pass.
-	const rawSrcDir = (cfg.srcDir ?? 'src').replace(/[\\/]+$/, '').trim()
 	const SAFE_SRCDIR_PATTERN = /^[A-Za-z0-9._-]+$/
-	if (rawSrcDir === '') {
-		SRC_DIR = ''
-	} else if (SAFE_SRCDIR_PATTERN.test(rawSrcDir)) {
-		SRC_DIR = rawSrcDir
-	} else {
-		error(
-			`srcDir "${cfg.srcDir ?? ''}" is invalid — must be either empty (project root) or a single directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). Falling back to "src".`,
-		)
+	const userSrcDir = cfg.srcDir
+	if (userSrcDir === undefined) {
 		SRC_DIR = 'src'
+	} else if (userSrcDir === '') {
+		SRC_DIR = ''
+	} else {
+		const trimmed = userSrcDir.replace(/[\\/]+$/, '').trim()
+		if (trimmed !== '' && SAFE_SRCDIR_PATTERN.test(trimmed)) {
+			SRC_DIR = trimmed
+		} else {
+			error(
+				`srcDir "${userSrcDir}" is invalid — must be either exactly the empty string (project root) or a single directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). Falling back to "src".`,
+			)
+			SRC_DIR = 'src'
+		}
 	}
 
 	banner('sb-deps')
