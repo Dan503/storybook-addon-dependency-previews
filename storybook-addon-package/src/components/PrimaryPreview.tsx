@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDynamicStory } from '../hooks/useDynamicStory'
 import type { StoryInfo } from '../types'
 import { FullParityStory } from './FullParityStory'
@@ -12,6 +12,15 @@ export function PrimaryPreview({ storyInfo }: PropsForPrimaryPreview) {
 	const [hasLoaded, setHasLoaded] = useState(false)
 	const { csfModule, primaryExport, primaryId, error, isLoading } =
 		useDynamicStory(storyInfo)
+	// Reset `hasLoaded` whenever the rendered story changes — FullParityStory
+	// will swap its iframe `src` and re-fire `onLoad`. Without this, the second
+	// (and subsequent) story load would re-render the empty bordered iframe at
+	// full height because `hasLoaded` would still be true from the previous
+	// story. Keyed on `primaryId` because that's what feeds the iframe `src`;
+	// if it changes the iframe will reload.
+	useEffect(() => {
+		setHasLoaded(false)
+	}, [primaryId])
 	const message =
 		error ||
 		(isLoading && 'Loading preview…') ||
