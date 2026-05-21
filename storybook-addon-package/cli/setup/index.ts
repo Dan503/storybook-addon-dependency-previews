@@ -261,8 +261,15 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const detectedRepoUrl = detectProjectRepoUrl(cwd)
 	let sourceRootUrl: string
 	if (detectedRepoUrl && detectedRepoUrl.url) {
+		// Derive the preview filename from `mainFile.lang` when no preview file
+		// exists yet — the patcher uses the same `ts ? 'ts' : 'js'` mapping
+		// (see `previewLangForMainLang`), so the log line points at the file
+		// the wizard actually generates rather than always saying `preview.ts`.
+		const previewExt =
+			detection.previewFile?.lang ??
+			(detection.mainFile.lang === 'ts' ? 'ts' : 'js')
 		log(`  ✓ source root URL: ${detectedRepoUrl.url}`)
-		log(`    (detected from git origin — edit preview.${detection.previewFile?.lang ?? 'ts'} to change it)`)
+		log(`    (detected from git origin — edit preview.${previewExt} to change it)`)
 		if (detectedRepoUrl.branchSource === 'fallback-main') {
 			log(`    note: couldn't read the default branch from the remote, used 'main'`)
 		}

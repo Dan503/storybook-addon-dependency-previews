@@ -11,12 +11,17 @@ import type { IConfiguration } from 'dependency-cruiser'
 // packages), and the CLI-level `--include-only` flag set by
 // `runDepCruiseOnce` uses the same pattern so the two layers agree.
 const SRC_DIR = process.env.SB_DEPS_SRC_DIR ?? 'src'
+// SRC_DIR may legitimately contain `.` (e.g. `app.v2`) — the validator in
+// sb-deps.ts accepts alphanumerics + `.`, `_`, `-`. Escape regex metacharacters
+// before interpolating so `.` doesn't act as a wildcard and broaden the rule
+// matchers to unrelated paths.
+const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const fromAnchor =
-	SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${SRC_DIR}`
+	SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${escapedSrcDir}`
 const componentsPath =
 	SRC_DIR === ''
 		? '^(components|ui|lib)/'
-		: `^${SRC_DIR}/(components|ui|lib)/`
+		: `^${escapedSrcDir}/(components|ui|lib)/`
 
 const config: IConfiguration = {
 	forbidden: [
