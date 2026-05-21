@@ -13,11 +13,13 @@ const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
 // entirely still falls back to `'src'`.
 //
 // Project-root mode swaps the `^<srcDir>/` anchor for a node_modules denylist
-// — anything outside node_modules counts as project source.
+// that rejects `node_modules` as any path segment — covers nested
+// `packages/foo/node_modules/...` paths in monorepos, not just the top-level
+// folder. Anything outside node_modules counts as project source.
 const rawSrcDir = (srcDirArg ?? 'src').replace(/[\\/]+$/, '').trim()
 const srcDirRegex =
 	rawSrcDir === ''
-		? /^(?!node_modules\/)/
+		? /^(?!(?:[^/]*\/)*node_modules\/)/
 		: new RegExp(`^${rawSrcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\/`)
 
 if (!existsSync(dirname(outPath)))

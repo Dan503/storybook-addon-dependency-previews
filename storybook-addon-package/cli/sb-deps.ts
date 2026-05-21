@@ -153,10 +153,13 @@ function runDepCruiseOnce() {
 	//
 	// The empty-srcDir case (project root *is* the source folder) needs a
 	// different shape: anchoring on `^/` would still walk node_modules, so
-	// switch to a node_modules denylist via negative lookahead.
+	// switch to a node_modules denylist via negative lookahead that rejects
+	// `node_modules` as any path segment — covers nested
+	// `packages/foo/node_modules/...` paths in monorepos, not just the
+	// top-level folder.
 	const includeOnly =
 		SRC_DIR === ''
-			? '^(?!node_modules/)'
+			? '^(?!(?:[^/]*/)*node_modules/)'
 			: `^${SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`
 	const args: Array<string> = ['.']
 	if (configPath) {

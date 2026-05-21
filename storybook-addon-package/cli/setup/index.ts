@@ -100,6 +100,20 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	let framework: Framework = detection.framework
 
+	// Resolve the source folder up front. For Next.js (the only framework
+	// where srcDir varies from the `'src'` convention) this may prompt the
+	// user; for every other framework it's a silent no-op. Done *before* the
+	// webpack5 bail so Next.js users still benefit from the srcDir flow —
+	// the rest of their setup is manual per the webpack docs, but at least
+	// `sb-deps.config.{js,cjs}` gets written for them below.
+	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
+	if (resolvedSrcDir.promptedUser) {
+		const display =
+			resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
+		log(`Source folder      : ${display}`)
+		rule()
+	}
+
 	// Webpack-based Storybook frameworks aren't supported by the wizard — Vite is
 	// required for the addon's `import.meta.glob` story-discovery. They share a
 	// single manual-setup doc that walks through the webpack additions (custom
@@ -112,6 +126,22 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(
 			'Manual setup guide: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md',
 		)
+		// Next.js users may have just told us a non-default srcDir via the
+		// prompt above. Persist it to sb-deps.config so the manual setup
+		// steps don't need to re-derive it and so the runtime dep-cruiser
+		// scan picks up the right folder on first run.
+		if (framework === 'nextjs-webpack' && resolvedSrcDir.isCustom) {
+			const cfg = writeSbDepsConfigIfNeeded({
+				cwd,
+				srcDir: resolvedSrcDir.srcDir,
+				isEsm: detection.isEsm,
+			})
+			if (cfg.kind === 'created') {
+				log(`✓ wrote ${cfg.path} (srcDir: '${resolvedSrcDir.srcDir}')`)
+			} else if (cfg.kind === 'failed') {
+				log(`⚠ ${cfg.reason}`)
+			}
+		}
 		return
 	}
 
@@ -151,18 +181,6 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	if (!isFrameworkSupported(framework)) {
 		log('Internal error: framework not supported after detection. Aborting.')
 		process.exit(1)
-	}
-
-	// Resolve the source folder up front so we can pass it through to the
-	// preview patcher and decide later whether to write `sb-deps.config.{js,cjs}`.
-	// For every framework except Next.js this is a silent no-op (returns
-	// `'src'`); Next.js without an existing `src/` is the only case that
-	// prompts the user.
-	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
-	if (resolvedSrcDir.promptedUser) {
-		const display = resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
-		log(`Source folder      : ${display}`)
-		rule()
 	}
 
 	const proceed = await confirm(

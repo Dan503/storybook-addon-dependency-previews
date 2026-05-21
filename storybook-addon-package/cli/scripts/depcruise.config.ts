@@ -6,11 +6,13 @@ import type { IConfiguration } from 'dependency-cruiser'
 //
 // `''` is a deliberate sentinel meaning "the project root is the source
 // folder" — in that mode the `from` matchers can't anchor on `^src`; they
-// have to allow everything-except-node_modules instead. The CLI-level
-// `--include-only` flag set by `runDepCruiseOnce` does the same node_modules
-// denylist so the two layers agree.
+// have to allow everything-except-node_modules instead. The denylist rejects
+// `node_modules` as any path segment (top-level *or* nested under workspace
+// packages), and the CLI-level `--include-only` flag set by
+// `runDepCruiseOnce` uses the same pattern so the two layers agree.
 const SRC_DIR = process.env.SB_DEPS_SRC_DIR ?? 'src'
-const fromAnchor = SRC_DIR === '' ? '^(?!node_modules/)' : `^${SRC_DIR}`
+const fromAnchor =
+	SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${SRC_DIR}`
 const componentsPath =
 	SRC_DIR === ''
 		? '^(components|ui|lib)/'

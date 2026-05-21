@@ -82,10 +82,11 @@ export interface SbDepsConfig {
 	 * config's rule `path` matchers (passed through `SB_DEPS_SRC_DIR` env so
 	 * `^src` rebuilds to `^<srcDir>` automatically).
 	 *
-	 * When set to `''`, dep-cruiser's `--include-only` regex switches to
-	 * `^(?!node_modules/)` so the scan doesn't dive into `node_modules`.
-	 * Very large monorepos may still want to set an explicit folder to keep
-	 * the scan tight.
+	 * When set to `''`, dep-cruiser's `--include-only` regex switches to a
+	 * node_modules denylist that rejects `node_modules` as any path segment
+	 * (top-level or nested under workspace packages), so the scan doesn't
+	 * dive into `node_modules` even in monorepos. Very large monorepos may
+	 * still want to set an explicit folder to keep the scan tight.
 	 *
 	 * Must be either the empty string, or a single path segment containing
 	 * only alphanumerics, `.`, `_`, or `-` — `src`, `app`, `my-source`,
