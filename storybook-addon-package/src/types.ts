@@ -29,7 +29,8 @@ export type StoryParameters = StorybookParameters & {
 	 *
 	 * The addon's primary lookup is by `storyId`, derived at build time from
 	 * the story file's `title:` literal. For typical projects (literal title
-	 * string, component file under `src/components|ui|lib/`) the storyId
+	 * string, component file somewhere under the project's source root — `src/`
+	 * by default, or whatever `SbDepsConfig.srcDir` is set to) the storyId
 	 * lookup is sufficient and `__filePath` can be omitted.
 	 *
 	 * Set this only when the storyId lookup can't reach your story — for
