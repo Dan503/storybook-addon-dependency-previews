@@ -99,23 +99,40 @@ const FRAMEWORK_REGEX =
 	/framework\s*:\s*(?:\{\s*name\s*:\s*['"]([^'"]+)['"]|['"]([^'"]+)['"])/
 
 /**
- * Storybook framework packages the wizard knows how to handle. Most projects
- * declare one of these directly in their own `dependencies` / `devDependencies`
- * / `peerDependencies` and the `package.json` scan picks it up. Edge case:
- * monorepos / pnpm workspaces with hoisted root deps may not list the framework
- * in the storybook-owning package's own `package.json` — those projects fall
- * through to the `.storybook/main` regex.
+ * Maps the **core framework package** (e.g. `react`, `@angular/core`,
+ * `@sveltejs/kit`) declared in the consumer's `package.json` to the
+ * corresponding `@storybook/<framework>` value that `frameworkFromRaw` knows
+ * how to map.
+ *
+ * Why core packages and not `@storybook/<framework>`: a minimal Storybook
+ * install does not necessarily pull in a framework-specific Storybook package
+ * (Storybook can be wired up without one, or with the framework picked at
+ * runtime), so scanning for `@storybook/react-vite` etc. is unreliable. The
+ * core framework package, on the other hand, is always present in any project
+ * that actually uses that framework — the project literally can't run without
+ * it.
+ *
+ * **Order matters — first match wins.** Frameworks that pull in another
+ * framework as a transitive dependency must appear *before* that other
+ * framework so the more-specific detection wins:
+ *
+ * - Next.js depends on `react`, so check `next` first.
+ * - SvelteKit depends on `svelte`, so check `@sveltejs/kit` first.
  *
  * This list is the input to the `package.json` scan only. It is NOT a gate on
- * the regex path: the regex captures any `framework:` string literal it finds,
- * and `frameworkFromRaw` is what decides whether that string is recognised.
+ * the regex path: the regex captures any `framework:` string literal it finds
+ * in `.storybook/main.*`, and `frameworkFromRaw` is what decides whether the
+ * matched string is recognised.
  */
-const KNOWN_FRAMEWORK_PACKAGES: ReadonlyArray<string> = [
-	'@storybook/react-vite',
-	'@storybook/sveltekit',
-	'@storybook/svelte-vite',
-	'@storybook/angular',
-	'@storybook/nextjs',
+const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
+	corePackage: string
+	framework: string
+}> = [
+	{ corePackage: '@angular/core', framework: '@storybook/angular' },
+	{ corePackage: 'next', framework: '@storybook/nextjs' },
+	{ corePackage: '@sveltejs/kit', framework: '@storybook/sveltekit' },
+	{ corePackage: 'svelte', framework: '@storybook/svelte-vite' },
+	{ corePackage: 'react', framework: '@storybook/react-vite' },
 ]
 
 function frameworkFromRaw(raw: string | null): Framework {
@@ -132,19 +149,19 @@ function frameworkFromRaw(raw: string | null): Framework {
 }
 
 /**
- * Scan a project's full dependency surface (deps + devDeps + peerDeps) for
- * exactly one known Storybook framework package. Returns the matched package
- * name when there's an unambiguous winner, otherwise `null` (zero matches OR
- * multiple matches — caller falls back to the `.storybook/main` regex to
- * disambiguate).
+ * Scan a project's full dependency surface (deps + devDeps + peerDeps) for the
+ * highest-priority core framework package and return the corresponding
+ * `@storybook/<framework>` value. Returns `null` if no recognised core
+ * framework package is present (caller falls back to the `.storybook/main`
+ * regex).
  */
 function findFrameworkInDeps(
 	allDependencyKeys: ReadonlySet<string>,
 ): string | null {
-	const matches = KNOWN_FRAMEWORK_PACKAGES.filter((pkg) =>
-		allDependencyKeys.has(pkg),
-	)
-	return matches.length === 1 ? matches[0]! : null
+	for (const { corePackage, framework } of CORE_FRAMEWORK_DETECTORS) {
+		if (allDependencyKeys.has(corePackage)) return framework
+	}
+	return null
 }
 
 function bundlerFromFramework(framework: Framework): Detection['bundler'] {
@@ -186,8 +203,10 @@ export function detectProject(cwd: string): Detection {
 		}
 		installedPackages = new Set(Object.keys(installed))
 		// `allDependencyKeys` additionally includes peerDependencies — used only
-		// for framework detection, because Angular consumers commonly declare
-		// `@storybook/angular` as a peer dep rather than a direct dev dep.
+		// for framework detection. Apps typically declare their core framework
+		// (`react`, `@angular/core`, etc.) in deps/devDeps, but intermediate
+		// packages (component libraries, shared UI kits) declare it as a peer
+		// dep instead. Including peerDeps lets the wizard work in both cases.
 		allDependencyKeys = new Set([
 			...Object.keys(installed),
 			...Object.keys(pkg.peerDependencies ?? {}),
