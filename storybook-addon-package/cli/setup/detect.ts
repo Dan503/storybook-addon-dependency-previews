@@ -223,11 +223,11 @@ export function detectProject(cwd: string): Detection {
 	let frameworkDetectionSource: FrameworkDetectionSource =
 		frameworkRaw ? 'package.json' : 'none'
 
-	// Fallback: regex-match the `.storybook/main.*` config file. Runs when the
-	// package.json scan turned up zero matches OR multiple matches (the latter
-	// happens in monorepos / in-progress migrations where multiple framework
-	// packages legitimately coexist — the regex disambiguates by what the
-	// main config file actually imports).
+	// Fallback: regex-match the `.storybook/main.*` config file. Runs only
+	// when no recognised core framework package was found in the dependency
+	// scan above — multi-match cases don't get here because the priority
+	// order in `CORE_FRAMEWORK_DETECTORS` (e.g. `next` before `react`,
+	// `@sveltejs/kit` before `svelte`) is the disambiguation mechanism.
 	if (frameworkRaw === null && mainFile) {
 		try {
 			const content = readFileSync(mainFile.path, 'utf8')
