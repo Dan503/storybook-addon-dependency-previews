@@ -115,7 +115,7 @@ export const Primary: Story = {
 
 ### Optional: `__filePath` fallback
 
-The addon matches each docs page to its graph entry by **storyId** — derived at build time from your story file's `title:` literal. For typical projects (literal `title:` string, component file under `src/components|ui|lib/`) this works without any extra parameter on the story.
+The addon matches each docs page to its graph entry by **storyId** — derived at build time from your story file's `title:` literal. For typical projects (literal `title:` string, component file somewhere under your project's source root — `src/` by default, configurable via the [`srcDir`](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/README.md#srcdir) option) this works without any extra parameter on the story.
 
 If your storyId-based lookup ever fails — for example because the title is computed dynamically and the build-time scanner can't read it, or your file layout doesn't match the conventions above — you can add a `__filePath` parameter as a fallback. The addon will then match the story to its graph entry by source path:
 

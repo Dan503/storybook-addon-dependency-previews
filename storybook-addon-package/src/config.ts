@@ -69,6 +69,37 @@ export interface AngularStoryScaffoldContext extends AngularBaseScaffoldContext 
 
 export interface SbDepsConfig {
 	/**
+	 * Top-level source directory (relative to the project root) where your
+	 * component source lives. Defaults to `'src'`. Set to e.g. `'app'` for
+	 * projects that lay out their source under a non-standard root.
+	 *
+	 * Drives the postprocess filter that decides which modules survive into
+	 * `.storybook/dependency-previews.json`, the `dep-cruiser` `--include-only`
+	 * flag, the file-watcher globs in watch mode, and the source-root paths
+	 * used by the component / story scaffolders.
+	 *
+	 * **Non-`src` layouts also need to override the bundled `depcruise.config.ts`.**
+	 * The bundled `forbidden` rules (`no-node-modules-imports`,
+	 * `no-orphans-in-components`) hardcode `^src` in their `path` matchers, so
+	 * the rules won't fire on a non-`src` tree. Drop your own
+	 * `depcruise.config.cjs` (or `.dependency-cruiser.{js,cjs}`) in the project
+	 * root to take full control — the CLI picks up project-root overrides
+	 * automatically.
+	 *
+	 * Must be a single path segment containing only alphanumerics, `.`, `_`,
+	 * or `-` — `src`, `app`, `my-source`, `app.v2` are fine; anything with
+	 * path separators, glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or
+	 * shell metacharacters (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is
+	 * rejected at load time with a warning + fallback to `'src'`. The leading
+	 * segment of every key in `dependency-previews.json` will match this value.
+	 *
+	 * @example 'src'   (default)
+	 * @example 'app'
+	 * @example 'source'
+	 */
+	srcDir?: string
+
+	/**
 	 * Prefix prepended to Angular component selectors.
 	 * Defaults to `'app-'`. Set to `''` for no prefix.
 	 * @example 'app-'  →  selector: 'app-button-atom'

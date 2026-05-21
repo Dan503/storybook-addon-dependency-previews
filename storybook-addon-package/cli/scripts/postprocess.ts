@@ -3,18 +3,42 @@ import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
 
-const [, , inPathArg, outPathArg] = process.argv
+const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
+// Defensive trim + empty check — sb-deps.ts already validates srcDir before
+// invoking this script, but a direct invocation (or future caller) could pass
+// `''` or whitespace and shouldn't end up matching every path under the sun.
+const normalizedSrcDir = (srcDirArg || 'src').replace(/[\\/]+$/, '').trim()
+const srcDir = normalizedSrcDir || 'src'
+const escapedSrcDir = srcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const srcDirRegex = new RegExp(`^${escapedSrcDir}\\/`)
 
 if (!existsSync(dirname(outPath)))
 	mkdirSync(dirname(outPath), { recursive: true })
 
 const raw = JSON.parse(readFileSync(inPath, 'utf8'))
 const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
+/**
+ * Decide whether a module path from dep-cruiser should appear in the graph.
+ *
+ * The `srcDir` arg (defaults to `'src'`, configurable via `SbDepsConfig.srcDir`
+ * and passed to this script via the third CLI argument) constrains modules to
+ * the project's source-root directory. CSS / HTML asset extensions are dropped.
+ *
+ * A previous version of this filter ALSO restricted to a hardcoded directory
+ * list like `src/(components|ui|lib)/`, which broke any project laying out
+ * components anywhere else — including any fresh `@storybook/sveltekit` install,
+ * where the init wizard scaffolds its sample components under `src/stories/`.
+ *
+ * Files without a `.stories.X` sibling still degrade gracefully downstream:
+ * `getStoryId` returns `null` for them, the resulting graph entry has no
+ * `storyId`, and `DepsPreviewItem` renders them as plain (non-clickable) leaves
+ * via its `storyId ? <Expandable> : <StoryLink>` ternary.
+ */
 const isComponent = (p: string) => {
 	return (
-		/src\/(components|ui|lib)\//.test(p) &&
+		srcDirRegex.test(p) &&
 		// Ignore css and html template files
 		!/\.(css|scss|sass|less|html)$/.test(p)
 	)

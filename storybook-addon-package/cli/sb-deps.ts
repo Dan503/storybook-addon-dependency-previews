@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 import watcherParcel from '@parcel/watcher'
 import micromatch from 'micromatch'
-import { execSync, spawn, type ChildProcess } from 'node:child_process'
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import {
 	existsSync,
 	mkdirSync,
@@ -108,28 +108,107 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
+let SRC_DIR = 'src'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
 // ───────────────────────────────────────────────────────────────────────────────
+const IS_WIN = process.platform === 'win32'
+
+/**
+ * Locate the `dependency-cruiser` CLI binary in the user's `node_modules/.bin`.
+ * Returns the absolute path with the right extension for the platform (`.cmd`
+ * shim on Windows, bare name elsewhere). Falls back to `null` if it can't be
+ * found — caller decides what to do.
+ *
+ * Going through the resolved binary lets us call `execFileSync` directly
+ * (with `shell: false`) and pass each flag as its own array element — no
+ * shell quoting, no `cmd.exe` metacharacter mangling (`^` is a `cmd.exe`
+ * escape character, which would silently strip the `^` anchor from our
+ * `--include-only` regex if we went through a shell). It also avoids spawning
+ * `npx`, which on Windows is a `.cmd` shim that requires `shell: true` to
+ * launch — which would reintroduce the very quoting problem we're trying to
+ * avoid.
+ */
+function resolveDepCruiseBin(): string | null {
+	const bin = join(
+		projectRoot,
+		'node_modules',
+		'.bin',
+		IS_WIN ? 'depcruise.cmd' : 'depcruise',
+	)
+	return existsSync(bin) ? bin : null
+}
+
 function runDepCruiseOnce() {
-	const cfgFlag = configPath ? `--config "${configPath}"` : '--no-config'
-	const cmd = `npx depcruise . ${cfgFlag} --output-type json`
+	// Pass --include-only at the CLI level so it overrides whatever the loaded
+	// depcruise config has (depcruise CLI flags take precedence over config-file
+	// options). That way SRC_DIR controls dep-cruiser's scan scope without
+	// requiring users with non-`src` layouts to also override the bundled config.
+	//
+	// The regex must escape any regex metacharacters in SRC_DIR (a value like
+	// `src.app` would otherwise broaden the scope unintentionally) and anchor
+	// to a `/` so the directory boundary is respected — without the trailing
+	// slash `^src` would also match `src2/`, `srcabc/`, etc.
+	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const args: Array<string> = ['.']
+	if (configPath) {
+		args.push('--config', configPath)
+	} else {
+		args.push('--no-config')
+	}
+	args.push('--include-only', `^${escapedSrcDir}/`, '--output-type', 'json')
+
+	const depcruiseBin = resolveDepCruiseBin()
+	if (!depcruiseBin) {
+		throw new Error(
+			'Could not locate `dependency-cruiser` in node_modules/.bin. Run the setup wizard (`sb-deps setup`) or install `dependency-cruiser` as a dev dependency.',
+		)
+	}
+
 	const start = Date.now()
-	const stdout = execSync(cmd, {
-		cwd: projectRoot,
-		stdio: ['ignore', 'pipe', 'inherit'],
-		encoding: 'utf8',
-	})
+	// `.cmd` shims on Windows need `shell: true` to launch, BUT once shell is
+	// on, cmd.exe re-interprets `^` as an escape character — which would strip
+	// the anchor from our regex. Workaround: spawn the `.cmd` itself with
+	// shell:true (cmd.exe wraps the call) and pre-escape `^` for cmd.exe by
+	// doubling it. On Unix the binary is a real ELF/script (no shim), shell:false
+	// is the default, args pass through unmolested.
+	const stdout = execFileSync(
+		depcruiseBin,
+		IS_WIN ? args.map(escapeForCmdExe) : args,
+		{
+			cwd: projectRoot,
+			stdio: ['ignore', 'pipe', 'inherit'],
+			encoding: 'utf8',
+			shell: IS_WIN,
+		},
+	)
 	writeFileSync(rawPath, stdout, 'utf8')
 	info(`graph ✓ (${ms(Date.now() - start)})`)
 }
 
 function postprocessOnce() {
 	const start = Date.now()
-	const postCmd = `node "${post}" "${rawPath}" "${cookedPath}"`
-	execSync(postCmd, { cwd: projectRoot, stdio: 'inherit' })
+	// `node` is a real executable on every platform (no `.cmd` shim), so we
+	// don't need shell:true here — args pass through directly with no quoting
+	// or escape concerns.
+	execFileSync('node', [post, rawPath, cookedPath, SRC_DIR], {
+		cwd: projectRoot,
+		stdio: 'inherit',
+	})
 	info(`compiled ✓ → ${rel(cookedPath)} (${ms(Date.now() - start)})`)
+}
+
+/**
+ * Escape an argument so that it survives `cmd.exe` parsing when `execFileSync`
+ * is invoked with `shell: true` on Windows. `^` is the cmd.exe escape character,
+ * even inside double quotes — doubling it makes cmd.exe pass through a literal
+ * `^`. Other shell metacharacters (`&`, `|`, `<`, `>`, `(`, `)`, `%`, `!`) are
+ * already wrapped in double quotes by Node's internal arg-quoter when
+ * `shell: true`, so we only need to handle `^` ourselves.
+ */
+function escapeForCmdExe(arg: string): string {
+	return arg.replace(/\^/g, '^^')
 }
 
 function buildOnce() {
@@ -175,40 +254,60 @@ function isEmptyOrWhitespace(absPath: string) {
 	}
 }
 
-// src/components/**/Thing.tsx ? (and not a story file)
-function isComponentsTsx(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
-	return (
-		/(?:^|\/)src\/components\/.+\.tsx$/i.test(norm) &&
-		!/\.stories?\.tsx$/i.test(norm)
-	)
+/**
+ * Build a regex that matches `<SRC_DIR>/...<suffix>` for the scaffolding-trigger
+ * helpers below. `SRC_DIR` is interpolated at call time (these helpers run
+ * inside the watcher event loop, after the boot block has loaded the config
+ * and finalised `SRC_DIR`).
+ *
+ * Files don't have to live under a `components/` subfolder — same philosophy
+ * as the postprocess filter: any source file under `srcDir` with the right
+ * extension is a candidate. The framework-agnostic story-file exclusion
+ * (`STORY_FILE_REGEX`) is applied separately in the individual helpers.
+ */
+function srcSubpathRegex(suffixPattern: string): RegExp {
+	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	return new RegExp(`(?:^|\\/)${escapedSrcDir}\\/.+${suffixPattern}`, 'i')
 }
 
-// src/components/**/Thing.svelte ? (and not a story file)
+/**
+ * Matches story files in any framework: `.story.<ext>` or `.stories.<ext>`
+ * where `<ext>` is any single-segment file extension (`.svelte`, `.ts`, `.tsx`,
+ * `.js`, `.jsx`, `.mdx`, …). Used by the scaffolding-trigger helpers to make
+ * sure they don't try to auto-scaffold a story file for an existing story.
+ */
+const STORY_FILE_REGEX = /\.stories?\.\w+$/i
+
+// <srcDir>/**/Thing.tsx ? (and not a story file)
+function isComponentsTsx(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return srcSubpathRegex('\\.tsx$').test(norm) && !STORY_FILE_REGEX.test(norm)
+}
+
+// <srcDir>/**/Thing.svelte ? (and not a story file)
 function isComponentsSvelte(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
 	return (
-		/(?:^|\/)src\/components\/.+\.svelte$/i.test(norm) &&
-		!/\.stories?\.svelte$/i.test(norm)
+		srcSubpathRegex('\\.svelte$').test(norm) && !STORY_FILE_REGEX.test(norm)
 	)
 }
 
-// src/components/**/Thing.decorator.svelte ?
+// <srcDir>/**/Thing.decorator.svelte ?
 function isDecoratorSvelte(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /(?:^|\/)src\/components\/.+\.decorator\.svelte$/i.test(norm)
+	return srcSubpathRegex('\\.decorator\\.svelte$').test(norm)
 }
 
-// src/components/**/Thing.component.ts ? (and not a story file)
+// <srcDir>/**/Thing.component.ts ?
 function isComponentsAngularTs(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /(?:^|\/)src\/components\/.+\.component\.ts$/i.test(norm)
+	return srcSubpathRegex('\\.component\\.ts$').test(norm)
 }
 
-// src/components/**/Thing.component.html ?
+// <srcDir>/**/Thing.component.html ?
 function isComponentsAngularHtml(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return /(?:^|\/)src\/components\/.+\.component\.html$/i.test(norm)
+	return srcSubpathRegex('\\.component\\.html$').test(norm)
 }
 
 function componentBaseFromComponent(absCompPath: string) {
@@ -252,7 +351,7 @@ function storyPathForSvelteComponent(absCompPath: string) {
 }
 
 function makeTitleFromComponent(absCompPath: string) {
-	const srcRoot = join(projectRoot, 'src') + sep
+	const srcRoot = join(projectRoot, SRC_DIR) + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
 	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
 		? normAbs.slice(srcRoot.length)
@@ -413,7 +512,7 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 }
 
 function makeTitleFromSvelteComponent(absCompPath: string) {
-	const srcRoot = join(projectRoot, 'src') + sep
+	const srcRoot = join(projectRoot, SRC_DIR) + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
 	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
 		? normAbs.slice(srcRoot.length)
@@ -488,7 +587,7 @@ function storyPathForAngularComponent(absCompPath: string) {
 }
 
 function makeTitleFromAngularComponent(absCompPath: string) {
-	const srcRoot = join(projectRoot, 'src') + sep
+	const srcRoot = join(projectRoot, SRC_DIR) + sep
 	const normAbs = absCompPath.replace(/\\/g, '/')
 	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
 		? normAbs.slice(srcRoot.length)
@@ -751,8 +850,8 @@ function startWatcher() {
 	const includeGlobs = [
 		'**/*.stories.{ts,tsx,js,jsx,mdx,svelte}',
 		'**/*.story.{ts,tsx,js,jsx,mdx,svelte}',
-		'src/**/*.{ts,tsx,js,jsx,svelte}',
-		'src/**/*.component.html',
+		`${SRC_DIR}/**/*.{ts,tsx,js,jsx,svelte}`,
+		`${SRC_DIR}/**/*.component.html`,
 		'depcruise.config.cjs',
 		'.dependency-cruiser.{js,cjs}',
 	]
@@ -954,6 +1053,34 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
+	// `?? 'src'` only falls back on null/undefined, so an explicit `srcDir: ''`
+	// in the user's config would slip through and produce overly-broad watcher
+	// globs (`/**/*`) and an `--include-only "^/"` depcruise scan. Trim and
+	// validate against a strict safe-character allow-list:
+	//
+	//   - alphanumerics + `.`, `_`, `-` — covers every directory name people
+	//     conventionally use (`src`, `app`, `my-source`, `app.v2`, etc.)
+	//   - rejects glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`) that
+	//     would otherwise change watcher-glob matching when interpolated into
+	//     `${SRC_DIR}/**/*.{ts,...}`
+	//   - rejects path separators (`/`, `\`) — srcDir must be a single segment
+	//   - rejects cmd.exe metacharacters including `%` (which triggers `%VAR%`
+	//     env expansion when the args go through a `cmd.exe`-invoked `.cmd`
+	//     shim on Windows) and `^` / `&` / `|` / `<` / `>` / `(` / `)` / `!`
+	//
+	// Bounding the input here means downstream interpolation sites (watcher
+	// globs, dep-cruiser `--include-only` regex, scaffold-helper regexes) can
+	// trust their `SRC_DIR` source and don't each need their own escape pass.
+	const rawSrcDir = (cfg.srcDir ?? 'src').replace(/[\\/]+$/, '').trim()
+	const SAFE_SRCDIR_PATTERN = /^[A-Za-z0-9._-]+$/
+	if (!rawSrcDir || !SAFE_SRCDIR_PATTERN.test(rawSrcDir)) {
+		error(
+			`srcDir "${cfg.srcDir ?? ''}" is invalid — must be a single non-empty directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). Falling back to "src".`,
+		)
+		SRC_DIR = 'src'
+	} else {
+		SRC_DIR = rawSrcDir
+	}
 
 	banner('sb-deps')
 	info(`outDir: ${rel(outDir)}`)

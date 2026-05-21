@@ -80,6 +80,8 @@ The wizard:
 
 When it finishes, run `npm run sb` (or your package manager's equivalent) to start Storybook with dependency watching.
 
+**Source directory.** The wizard (and the `sb-deps` CLI more generally) assumes your application source files live under the `src/` folder of your project. If your project uses a different top-level directory to hold source files — `app/`, `source/`, anything else — place a `sb-deps.config.mjs` in the root folder of your project and set the [`srcDir`](#srcdir) option to the name of your source folder.
+
 ### Manual setup
 
 The wizard supports React (`@storybook/react-vite`) and Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
@@ -101,6 +103,27 @@ export default defineSbDepsConfig({
 	// options go here
 })
 ```
+
+### `srcDir`
+
+The top-level source directory (relative to your project root) that the addon scans for components and stories. Every key in the generated `.storybook/dependency-previews.json` starts with this prefix.
+
+**Default:** `'src'`
+
+Set this if your project's source lives somewhere other than `src/` — for example `app/` for some Nuxt / Next-style layouts, or `source/` if that's your team's convention:
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	srcDir: 'app',
+})
+```
+
+**Constraints.** Must be a single directory name (no path separators) made of alphanumerics, `.`, `_`, or `-`. Anything containing glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`) or shell metacharacters (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is rejected at load time — the CLI warns and falls back to `'src'`. Examples that are fine: `'src'`, `'app'`, `'source'`, `'my-source'`, `'app.v2'`. Examples that are rejected: `'src/components'`, `'src/*'`, `'%PROJECT%'`, `''`.
+
+**Note for non-`src` layouts.** The `srcDir` option re-points the dep-cruiser scan, the watcher globs, and the dependency-graph lookup. It does **not** rewrite the bundled `cli/scripts/depcruise.config.ts`'s `warn`-level `forbidden` rules — those still reference `^src` literally and won't fire on a non-`src` tree. If you want those warnings (`no-orphans-in-components`, `no-node-modules-imports`) to fire against your custom layout, drop your own `depcruise.config.cjs` (or `.dependency-cruiser.{js,cjs}`) in your project root with the matching `path:` patterns — the CLI picks up project-root overrides automatically. The dependency-previews graph itself works fine in either case.
 
 ### `angularSelectorPrefix`
 
