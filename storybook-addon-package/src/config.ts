@@ -80,7 +80,9 @@ export interface SbDepsConfig {
 	 * flag, the file-watcher globs in watch mode, the source-root paths used
 	 * by the component / story scaffolders, and the bundled depcruise
 	 * config's rule `path` matchers (passed through `SB_DEPS_SRC_DIR` env so
-	 * `^src` rebuilds to `^<srcDir>` automatically).
+	 * `^src/` rebuilds to `^<srcDir>/` automatically — anchored to a
+	 * directory boundary so a srcDir of `src` doesn't also match sibling
+	 * folders like `src2/`).
 	 *
 	 * When set to `''`, dep-cruiser's `--include-only` regex switches to a
 	 * node_modules denylist that rejects `node_modules` as any path segment

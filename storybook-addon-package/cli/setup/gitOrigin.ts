@@ -112,6 +112,20 @@ export function parseOriginUrl(raw: string): ParsedOrigin | null {
 	const trimmed = raw.trim()
 	if (!trimmed) return null
 
+	// Reject local-path remotes — Git allows `../repo`, `./repo`, `/srv/foo`,
+	// `~/foo`, and Windows drive paths like `C:\repos\foo` as origin URLs.
+	// Without this gate, the SCP regex below misparses `C:\repos\foo` as
+	// host=`C`, path=`\repos\foo` and surfaces a misleading "Unknown git host
+	// 'C'" warning. Returning null here lets the caller fall back to the
+	// manual prompt cleanly.
+	if (
+		/^[./~]/.test(trimmed) || // ../foo, ./foo, /foo, ~/foo
+		/^[A-Za-z]:[\\/]/.test(trimmed) || // C:\foo, C:/foo
+		trimmed.startsWith('\\') // \\server\share style
+	) {
+		return null
+	}
+
 	// SCP-style: user@host:path  (no `://`, single colon separating host and path).
 	// Must check this BEFORE protocol-style parsing because the protocol-style
 	// regex would not match this, but anchoring on `://` lets us distinguish.
@@ -187,6 +201,16 @@ export function providerFromHost(host: string): GitProvider {
  * Returns `''` for providers whose URL shape is incompatible with the concat
  * (currently `azure-devops`) or where we have no known shape (`unknown`).
  */
+/**
+ * URL-encode a slash-delimited path. Encodes each segment individually with
+ * `encodeURIComponent` (which handles spaces, `#`, `%`, `?`, etc.) and rejoins
+ * with literal `/`, so the path-segment structure is preserved while every
+ * URL-significant character inside a segment is escaped.
+ */
+function encodePath(path: string): string {
+	return path.split('/').map(encodeURIComponent).join('/')
+}
+
 export function buildUrl(
 	provider: GitProvider,
 	scheme: 'http' | 'https',
@@ -196,9 +220,15 @@ export function buildUrl(
 	branch: string,
 	subpath: string,
 ): string {
-	const tail = subpath ? `/${subpath}` : ''
+	// Encode subpath/ownerRepo per-segment so spaces, `#`, `%`, etc. in a
+	// monorepo project name or repo name produce a valid URL.
+	// ComponentSourceLink only `encodeURI`-encodes the appended componentPath,
+	// not the base, so the base has to be pre-encoded here.
+	const encodedOwnerRepo = encodePath(ownerRepo)
+	const encodedSubpath = subpath ? encodePath(subpath) : ''
+	const tail = encodedSubpath ? `/${encodedSubpath}` : ''
 	const hostPort = port ? `${host}:${port}` : host
-	const base = `${scheme}://${hostPort}/${ownerRepo}`
+	const base = `${scheme}://${hostPort}/${encodedOwnerRepo}`
 
 	switch (provider) {
 		case 'github':
