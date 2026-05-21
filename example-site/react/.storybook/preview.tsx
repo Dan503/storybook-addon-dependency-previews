@@ -24,7 +24,7 @@ const previewConfig: StorybookPreviewConfig = {
 			dependenciesJson,
 			projectRootPath: new URL('..', import.meta.url).pathname,
 			storyModules: import.meta.glob(
-				'/src/**/*.stories.@(tsx|ts|jsx|js|svelte)',
+				'/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
 				{ eager: false },
 			),
 			sourceRootUrl:

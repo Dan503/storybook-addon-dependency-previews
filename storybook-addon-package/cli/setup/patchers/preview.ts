@@ -19,10 +19,14 @@ export type PreviewPatchResult =
 
 type SupportedFramework = 'react-vite' | 'sveltekit' | 'svelte-vite'
 
+// Brace expansion `{a,b,c}` works under both Vite 7 (micromatch) and Vite 8
+// (tinyglobby). Extglob `@(a|b|c)` silently returns zero matches under tinyglobby,
+// which was the root cause of every wizard-generated preview.ts on Vite 8 showing
+// "No story module found at this path: …" for every story.
 const STORY_GLOBS: Record<SupportedFramework, string> = {
-	'react-vite': '/src/**/*.stories.@(tsx|ts|jsx|js)',
-	sveltekit: '/src/**/*.stories.@(ts|js|svelte)',
-	'svelte-vite': '/src/**/*.stories.@(ts|js|svelte)',
+	'react-vite': '/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
+	sveltekit: '/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
+	'svelte-vite': '/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
 }
 
 function dependencyPreviewsBlock(
