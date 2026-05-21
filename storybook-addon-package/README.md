@@ -80,7 +80,7 @@ The wizard:
 
 When it finishes, run `npm run sb` (or your package manager's equivalent) to start Storybook with dependency watching.
 
-**Source directory.** The wizard (and the `sb-deps` CLI more generally) assumes your component source lives under `src/`. If your project uses a different top-level directory — `app/`, `source/`, anything else — drop a `sb-deps.config.mjs` and set the [`srcDir`](#srcdir) option. The default works out of the box for `src/`-based layouts including any fresh `npx storybook@latest init` scaffold.
+**Source directory.** The wizard (and the `sb-deps` CLI more generally) assumes your application source files live under the `src/` folder of your project. If your project uses a different top-level directory to hold source files — `app/`, `source/`, anything else — place a `sb-deps.config.mjs` in the root folder of your project and set the [`srcDir`](#srcdir) option to the name of your source folder.
 
 ### Manual setup
 
