@@ -23,11 +23,12 @@ type SupportedFramework = 'react-vite' | 'sveltekit' | 'svelte-vite'
 // (tinyglobby). Extglob `@(a|b|c)` silently returns zero matches under tinyglobby,
 // which was the root cause of every wizard-generated preview.ts on Vite 8 showing
 // "No story module found at this path: …" for every story.
-const STORY_GLOBS: Record<SupportedFramework, string> = {
-	'react-vite': '/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
-	sveltekit: '/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
-	'svelte-vite': '/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
-}
+//
+// Every currently-supported framework uses the same union extension list, so this is
+// a single const rather than a per-framework record. `dependencyPreviewsBlock` still
+// takes `framework` so future per-framework divergence (a glob a framework should
+// strictly exclude, say) is a one-line change here, not a signature shuffle.
+const STORY_GLOB = '/src/**/*.stories.{tsx,ts,jsx,js,svelte}'
 
 function dependencyPreviewsBlock(
 	framework: SupportedFramework,
@@ -58,7 +59,7 @@ function dependencyPreviewsBlock(
 		`${l3}dependenciesJson,`,
 		`${l3}projectRootPath: new URL(${quote}..${quote}, import.meta.url).pathname,`,
 		`${l3}storyModules: import.meta.glob(`,
-		`${l4}${quote}${STORY_GLOBS[framework]}${quote},`,
+		`${l4}${quote}${STORY_GLOB}${quote},`,
 		`${l4}{ eager: false },`,
 		`${l3}),`,
 		`${l3}sourceRootUrl: ${serialisedSourceRootUrl},`,

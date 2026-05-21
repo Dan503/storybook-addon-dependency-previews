@@ -78,7 +78,13 @@ export function useDynamicStory(storyInfo: StoryInfo) {
 
 	useEffect(() => {
 		let alive = true
+		// Reset before kicking off the new load: PrimaryPreview checks `error` first,
+		// so a stale error from a previous story would keep rendering even after a
+		// successful import for the new one. Same logic for `csfModule` — clearing it
+		// makes the loading state visible while the new module resolves.
 		setIsLoading(true)
+		setErr(null)
+		setCsfModule(null)
 		;(async () => {
 			try {
 				if (!importer)
@@ -88,7 +94,7 @@ export function useDynamicStory(storyInfo: StoryInfo) {
 			} catch (e: any) {
 				if (alive) setErr(e?.message || String(e))
 			} finally {
-				setIsLoading(false)
+				if (alive) setIsLoading(false)
 			}
 		})()
 		return () => {
