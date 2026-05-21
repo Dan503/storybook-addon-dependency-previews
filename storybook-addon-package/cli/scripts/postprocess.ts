@@ -6,13 +6,19 @@ import type { Deps, Graph, StoryInfo } from '../../src/types.js'
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
-// Defensive trim + empty check — sb-deps.ts already validates srcDir before
-// invoking this script, but a direct invocation (or future caller) could pass
-// `''` or whitespace and shouldn't end up matching every path under the sun.
-const normalizedSrcDir = (srcDirArg || 'src').replace(/[\\/]+$/, '').trim()
-const srcDir = normalizedSrcDir || 'src'
-const escapedSrcDir = srcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-const srcDirRegex = new RegExp(`^${escapedSrcDir}\\/`)
+// `srcDirArg` is the literal `srcDir` value from `SbDepsConfig` (or `'src'`
+// when omitted upstream). The empty string is a deliberate "project root is
+// the source folder" sentinel; everything else trims to a single non-empty
+// directory name. `undefined` from a direct invocation that omits the arg
+// entirely still falls back to `'src'`.
+//
+// Project-root mode swaps the `^<srcDir>/` anchor for a node_modules denylist
+// — anything outside node_modules counts as project source.
+const rawSrcDir = (srcDirArg ?? 'src').replace(/[\\/]+$/, '').trim()
+const srcDirRegex =
+	rawSrcDir === ''
+		? /^(?!node_modules\/)/
+		: new RegExp(`^${rawSrcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\/`)
 
 if (!existsSync(dirname(outPath)))
 	mkdirSync(dirname(outPath), { recursive: true })

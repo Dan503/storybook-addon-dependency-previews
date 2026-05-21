@@ -71,31 +71,35 @@ export interface SbDepsConfig {
 	/**
 	 * Top-level source directory (relative to the project root) where your
 	 * component source lives. Defaults to `'src'`. Set to e.g. `'app'` for
-	 * projects that lay out their source under a non-standard root.
+	 * projects that lay out their source under a non-standard root (common
+	 * for Next.js App Router projects with no `src/` folder), or to the empty
+	 * string `''` to use the project root itself as the source folder.
 	 *
 	 * Drives the postprocess filter that decides which modules survive into
 	 * `.storybook/dependency-previews.json`, the `dep-cruiser` `--include-only`
-	 * flag, the file-watcher globs in watch mode, and the source-root paths
-	 * used by the component / story scaffolders.
+	 * flag, the file-watcher globs in watch mode, the source-root paths used
+	 * by the component / story scaffolders, and the bundled depcruise
+	 * config's rule `path` matchers (passed through `SB_DEPS_SRC_DIR` env so
+	 * `^src` rebuilds to `^<srcDir>` automatically).
 	 *
-	 * **Non-`src` layouts also need to override the bundled `depcruise.config.ts`.**
-	 * The bundled `forbidden` rules (`no-node-modules-imports`,
-	 * `no-orphans-in-components`) hardcode `^src` in their `path` matchers, so
-	 * the rules won't fire on a non-`src` tree. Drop your own
-	 * `depcruise.config.cjs` (or `.dependency-cruiser.{js,cjs}`) in the project
-	 * root to take full control — the CLI picks up project-root overrides
-	 * automatically.
+	 * When set to `''`, dep-cruiser's `--include-only` regex switches to
+	 * `^(?!node_modules/)` so the scan doesn't dive into `node_modules`.
+	 * Very large monorepos may still want to set an explicit folder to keep
+	 * the scan tight.
 	 *
-	 * Must be a single path segment containing only alphanumerics, `.`, `_`,
-	 * or `-` — `src`, `app`, `my-source`, `app.v2` are fine; anything with
-	 * path separators, glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or
-	 * shell metacharacters (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is
-	 * rejected at load time with a warning + fallback to `'src'`. The leading
-	 * segment of every key in `dependency-previews.json` will match this value.
+	 * Must be either the empty string, or a single path segment containing
+	 * only alphanumerics, `.`, `_`, or `-` — `src`, `app`, `my-source`,
+	 * `app.v2`, `''` are fine; anything with path separators, glob
+	 * metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or shell metacharacters
+	 * (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is rejected at load time
+	 * with a warning + fallback to `'src'`. The leading segment of every key
+	 * in `dependency-previews.json` will match this value (or have no leading
+	 * folder prefix when `''`).
 	 *
 	 * @example 'src'   (default)
 	 * @example 'app'
 	 * @example 'source'
+	 * @example ''      (project root is the source folder)
 	 */
 	srcDir?: string
 

@@ -7,11 +7,14 @@ import {
 	isFrameworkSupported,
 	type Framework,
 } from './detect.js'
+import { detectProjectRepoUrl } from './gitOrigin.js'
 import { installMissingPackages } from './install.js'
 import { patchMainFile } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
+import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
 import { choose, confirm, input } from './prompt.js'
+import { resolveSrcDir } from './srcDir.js'
 
 function log(line: string) {
 	console.log(line)
@@ -150,6 +153,18 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		process.exit(1)
 	}
 
+	// Resolve the source folder up front so we can pass it through to the
+	// preview patcher and decide later whether to write `sb-deps.config.{js,cjs}`.
+	// For every framework except Next.js this is a silent no-op (returns
+	// `'src'`); Next.js without an existing `src/` is the only case that
+	// prompts the user.
+	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
+	if (resolvedSrcDir.promptedUser) {
+		const display = resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
+		log(`Source folder      : ${display}`)
+		rule()
+	}
+
 	const proceed = await confirm(
 		'Proceed with installing dependencies and patching your Storybook config?',
 		true,
@@ -218,22 +233,42 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	rule()
 	log('Step 3/5: configuring preview file')
-	const sourceRootInputMessage = [
-		'\n= Source root URL =',
-		'Please provide the URL to the root of your source code.',
-		'NOT the PROJECT root, the SOURCE root.',
-		'The folder that holds your precompiled source files, typically the "src" folder.',
-		'This is used to link nodes in the dependency tree back to their source files.',
-		'Example: https://github.com/your-org/your-repo/blob/main/src',
-		'\nEnter your source root URL (blank = disable source links):',
-	].join('\n')
-	const sourceRootUrl = await input(sourceRootInputMessage, '')
+	// The runtime concatenates `sourceRootUrl + '/' + componentPath` (where
+	// `componentPath` is the project-relative dep-graph key, e.g.
+	// `src/components/Foo.tsx`), so the URL must point at the *project root*
+	// inside the git repo — NOT a `src/` subfolder. Auto-detecting from the git
+	// remote gives us exactly that for every mainstream provider; when it
+	// works we just use it. Falls back to the manual prompt only when we can't
+	// produce a working URL (no git, Azure DevOps, unknown host).
+	const detectedRepoUrl = detectProjectRepoUrl(cwd)
+	let sourceRootUrl: string
+	if (detectedRepoUrl && detectedRepoUrl.url) {
+		log(`  ✓ source root URL: ${detectedRepoUrl.url}`)
+		log(`    (detected from git origin — edit preview.${detection.previewFile?.lang ?? 'ts'} to change it)`)
+		if (detectedRepoUrl.branchSource === 'fallback-main') {
+			log(`    note: couldn't read the default branch from the remote, used 'main'`)
+		}
+		sourceRootUrl = detectedRepoUrl.url
+	} else {
+		if (detectedRepoUrl?.warning) log(`  ⚠ ${detectedRepoUrl.warning}`)
+		const sourceRootInputMessage = [
+			'\n= Source root URL =',
+			'Provide the URL to the root of your project inside your git repo.',
+			'This is the folder that contains your package.json — NOT the src folder.',
+			'Component file paths are appended to this URL to build "view source" links.',
+			'Example: https://github.com/your-org/your-repo/blob/main',
+			'(For a monorepo, include the project subpath: .../blob/main/packages/my-app)',
+			'\nEnter your source root URL (blank = disable source links):',
+		].join('\n')
+		sourceRootUrl = await input(sourceRootInputMessage, '')
+	}
 	const previewResult = patchPreviewFile({
 		storybookDir: detection.storybookDir,
 		previewFile: detection.previewFile,
 		mainFile: detection.mainFile,
 		framework,
 		sourceRootUrl,
+		srcDir: resolvedSrcDir.srcDir,
 	})
 	switch (previewResult.kind) {
 		case 'created':
@@ -275,6 +310,24 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				log(`  ✓ "${outcome.name}" already correct`)
 				break
 		}
+	}
+
+	// Write `sb-deps.config.{js,cjs}` when the resolved srcDir isn't the default
+	// `'src'`. Must happen before Step 5 so the sb-deps build below picks up
+	// the configured srcDir on its first run. Silent no-op for the default
+	// case so non-Next.js setups don't see an extra log line.
+	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
+		cwd,
+		srcDir: resolvedSrcDir.srcDir,
+		isEsm: detection.isEsm,
+	})
+	if (sbDepsConfigResult.kind === 'created') {
+		rule()
+		log(`  ✓ wrote ${sbDepsConfigResult.path} (srcDir: '${resolvedSrcDir.srcDir}')`)
+	} else if (sbDepsConfigResult.kind === 'failed') {
+		rule()
+		log(`  ⚠ ${sbDepsConfigResult.reason}`)
+		log(`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`)
 	}
 
 	rule()
