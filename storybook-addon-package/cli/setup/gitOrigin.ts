@@ -135,13 +135,17 @@ export function parseOriginUrl(raw: string): ParsedOrigin | null {
 	if (!m) return null
 	const rawScheme = m[1]!.toLowerCase()
 	const host = m[2]!
-	const port = m[3] ?? ''
+	const rawPort = m[3] ?? ''
 	const ownerRepo = stripDotGit(m[4]!)
 	if (!host || !ownerRepo) return null
 	// Preserve the scheme only when it's a web scheme; non-web protocols
-	// (ssh, git) get rewritten to https.
-	const scheme: 'http' | 'https' =
-		rawScheme === 'http' ? 'http' : 'https'
+	// (ssh, git) get rewritten to https. Similarly, only preserve the port
+	// when the *original* scheme is http/https — the port from an ssh:// or
+	// git:// origin is the SSH/git port (e.g. 2222), not the web UI port, and
+	// reusing it in the rewritten HTTPS URL would produce a broken link.
+	const isWebScheme = rawScheme === 'http' || rawScheme === 'https'
+	const scheme: 'http' | 'https' = rawScheme === 'http' ? 'http' : 'https'
+	const port = isWebScheme ? rawPort : ''
 	return { scheme, host, port, ownerRepo }
 }
 
