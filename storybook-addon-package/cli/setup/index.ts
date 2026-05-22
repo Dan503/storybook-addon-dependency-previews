@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
+import { relative as pathRelative } from 'node:path'
 
 import {
 	detectProject,
@@ -121,9 +122,16 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
 	log(`Source folder      : ${displaySrcDir}`)
 
-	log(`Storybook main file: ${detection.mainFile.path}`)
+	// Show file paths relative to cwd so the detection block stays compact —
+	// absolute Windows paths in particular are noisy and push the actually-
+	// useful bits of the line off-screen.
+	log(`Storybook main file: ${pathRelative(cwd, detection.mainFile.path)}`)
 	log(
-		`Preview file       : ${detection.previewFile?.path ?? '(does not exist — will be created)'}`,
+		`Preview file       : ${
+			detection.previewFile
+				? pathRelative(cwd, detection.previewFile.path)
+				: '(does not exist — will be created)'
+		}`,
 	)
 	rule()
 
