@@ -32,6 +32,19 @@ export function detectEol(content: string): string {
  * commented-out example doesn't skew the count, and uses a tiny state
  * machine so quote characters that appear *inside* the other quote's
  * string literal don't get double-counted.
+ *
+ * **Known limitation — template-literal expressions are opaque.** A
+ * backtick string is treated as a single span until the closing backtick,
+ * so any `'…'` / `"…"` literals that appear inside `${ … }` interpolation
+ * expressions are not counted toward the tally. In practice this is fine
+ * for the wizard's actual targets — `.storybook/main.{ts,js}` and
+ * `.storybook/preview.{ts,tsx,js,jsx}` files in storybook-init scaffolds
+ * are dominated by plain string literals, not template expressions — but
+ * a file that relies heavily on interpolated strings of one quote style
+ * could in theory be misclassified. Fixing it would require tracking
+ * `${` open and matching `}` close inside template mode, which adds
+ * complexity for a case that hasn't been observed in real consumer
+ * projects. Worth revisiting only if a real-world bug surfaces.
  */
 export function detectQuoteStyle(content: string): "'" | '"' {
 	const stripped = stripCommentsRespectingStrings(content)
