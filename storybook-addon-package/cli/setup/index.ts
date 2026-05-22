@@ -92,27 +92,40 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		`Detected framework : ${detection.frameworkRaw ?? '(unknown)'}${detectionSourceLabel}`,
 	)
 	log(`Detected pkg manager: ${detection.packageManager}`)
+
+	let framework: Framework = detection.framework
+
+	// Detect the source root URL (from git origin) and resolve the source
+	// folder up front, so both can be reported in this detection block — the
+	// user sees the full picture before they confirm. Both auto-detect
+	// without bothering the user except for the Next.js-without-`src/` edge
+	// case where `resolveSrcDir` may prompt for a folder name. That prompt
+	// fires after the framework has already been printed above so the
+	// context is established.
+	const detectedRepoUrl = detectProjectRepoUrl(cwd)
+	if (detectedRepoUrl?.url) {
+		log(`Source root URL    : ${detectedRepoUrl.url}`)
+		if (detectedRepoUrl.branchSource === 'fallback-main') {
+			log(
+				`                     (couldn't read default branch from remote — used 'main')`,
+			)
+		}
+	} else if (detectedRepoUrl?.warning) {
+		log(`Source root URL    : (auto-detect skipped — see step 3)`)
+	} else {
+		log(`Source root URL    : (no git origin detected — will prompt in step 3)`)
+	}
+
+	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
+	const displaySrcDir =
+		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
+	log(`Source folder      : ${displaySrcDir}`)
+
 	log(`Storybook main file: ${detection.mainFile.path}`)
 	log(
 		`Preview file       : ${detection.previewFile?.path ?? '(does not exist — will be created)'}`,
 	)
 	rule()
-
-	let framework: Framework = detection.framework
-
-	// Resolve the source folder up front. For Next.js (the only framework
-	// where srcDir varies from the `'src'` convention) this may prompt the
-	// user; for every other framework it's a silent no-op. Done *before* the
-	// webpack5 bail so Next.js users still benefit from the srcDir flow —
-	// the rest of their setup is manual per the webpack docs, but at least
-	// `sb-deps.config.{js,cjs}` gets written for them below.
-	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
-	if (resolvedSrcDir.promptedUser) {
-		const display =
-			resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
-		log(`Source folder      : ${display}`)
-		rule()
-	}
 
 	// Webpack-based Storybook frameworks aren't supported by the wizard — Vite is
 	// required for the addon's `import.meta.glob` story-discovery. They share a
@@ -254,26 +267,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// The runtime concatenates `sourceRootUrl + '/' + componentPath` (where
 	// `componentPath` is the project-relative dep-graph key, e.g.
 	// `src/components/Foo.tsx`), so the URL must point at the *project root*
-	// inside the git repo — NOT a `src/` subfolder. Auto-detecting from the git
-	// remote gives us exactly that for every mainstream provider; when it
-	// works we just use it. Falls back to the manual prompt only when we can't
-	// produce a working URL (no git, Azure DevOps, unknown host).
-	const detectedRepoUrl = detectProjectRepoUrl(cwd)
+	// inside the git repo — NOT a `src/` subfolder. The URL was already
+	// auto-detected and reported in the detection block above; here we
+	// either use that detected value or fall back to a manual prompt when
+	// detection couldn't produce a working URL.
 	let sourceRootUrl: string
 	if (detectedRepoUrl && detectedRepoUrl.url) {
-		// Derive the preview filename from `mainFile.lang` when no preview file
-		// exists yet — the patcher uses the same `ts ? 'ts' : 'js'` mapping
-		// (see `previewLangForMainLang`), so the log line points at the file
-		// the wizard actually generates rather than always saying `preview.ts`.
-		const previewExt =
-			detection.previewFile?.lang ??
-			(detection.mainFile.lang === 'ts' ? 'ts' : 'js')
-		log(`  ✓ source root URL: ${detectedRepoUrl.url}`)
-		log(`    (detected from git origin — edit preview.${previewExt} to change it)`)
-		if (detectedRepoUrl.branchSource === 'fallback-main') {
-			log(`    note: couldn't read the default branch from the remote, used 'main'`)
-		}
 		sourceRootUrl = detectedRepoUrl.url
+		log(`  ✓ using detected source root URL`)
 	} else {
 		if (detectedRepoUrl?.warning) log(`  ⚠ ${detectedRepoUrl.warning}`)
 		const sourceRootInputMessage = [
