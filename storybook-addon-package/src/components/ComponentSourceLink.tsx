@@ -35,11 +35,22 @@ export function ComponentSourceLink({ storyInfo, ariaDescribedBy }: Props) {
 		(sourceRootUrl.endsWith('/') ? sourceRootUrl : sourceRootUrl + '/') +
 		encodeURI(relativePath)
 
+	function onClick(event: React.MouseEvent) {
+		// vscode:// navigation from a sandboxed iframe via target="_blank" is
+		// silently blocked by Chromium. Route it through the top window so the
+		// protocol handler fires reliably and VS Code actually launches.
+		if (!isLocalHost) return
+		event.preventDefault()
+		const topWindow = window.top ?? window
+		topWindow.location.href = href
+	}
+
 	return (
 		<TooltipTrigger
 			TriggerElem="a"
 			className={s.ComponentSourceLink}
 			href={href}
+			onClick={onClick}
 			newWindow
 			aria-describedby={ariaDescribedBy}
 			tooltipText={`View source (opens in ${
