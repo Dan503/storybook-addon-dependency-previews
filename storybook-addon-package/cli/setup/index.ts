@@ -172,7 +172,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This addon currently supports React and Svelte only. Detected "${detection.frameworkRaw}".`,
+			`This addon currently supports React, Svelte, and Vue only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
 			'If you would like to see support added for your framework, please open an issue on GitHub.',
@@ -183,9 +183,10 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
 		const choice = await choose<
-			'react-vite' | 'sveltekit' | 'svelte-vite' | 'cancel'
+			'react-vite' | 'sveltekit' | 'svelte-vite' | 'vue3-vite' | 'cancel'
 		>('Which framework is this project using?', [
 			{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
+			{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
 			{
 				label: 'Svelte with SvelteKit (@storybook/sveltekit)',
 				value: 'sveltekit',

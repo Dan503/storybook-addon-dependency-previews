@@ -17,7 +17,11 @@ export type PreviewPatchResult =
 	| { kind: 'patched'; path: string }
 	| { kind: 'failed'; reason: string }
 
-type SupportedFramework = 'react-vite' | 'sveltekit' | 'svelte-vite'
+type SupportedFramework =
+	| 'react-vite'
+	| 'sveltekit'
+	| 'svelte-vite'
+	| 'vue3-vite'
 
 // Brace expansion `{a,b,c}` works under both Vite 7 (micromatch) and Vite 8
 // (tinyglobby). Extglob `@(a|b|c)` silently returns zero matches under tinyglobby,
@@ -632,7 +636,8 @@ export function patchPreviewFile(
 	if (
 		framework !== 'react-vite' &&
 		framework !== 'sveltekit' &&
-		framework !== 'svelte-vite'
+		framework !== 'svelte-vite' &&
+		framework !== 'vue3-vite'
 	) {
 		return {
 			kind: 'failed',

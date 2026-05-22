@@ -1,4 +1,4 @@
-# Manual setup — Vite (React, Svelte)
+# Manual setup — Vite (React, Svelte, Vue)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
 >
@@ -8,7 +8,7 @@
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.
 >
-> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Svelte with SvelteKit, vanilla Svelte). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Svelte` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks.
+> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Svelte with SvelteKit, vanilla Svelte, Vue 3). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Svelte` / `// if using Vue` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Vue stories use the same `.stories.ts` shape as React — see the React example and swap the component import for your `.vue` SFC).
 
 ## 1. Install the addon
 
@@ -39,14 +39,15 @@ bun add -d storybook-addon-dependency-previews dependency-cruiser
 import type { StorybookConfig } from '@storybook/react-vite' // if using React
 import type { StorybookConfig } from '@storybook/sveltekit' // if using Svelte (SvelteKit)
 import type { StorybookConfig } from '@storybook/svelte-vite' // if using Svelte (without SvelteKit)
+import type { StorybookConfig } from '@storybook/vue3-vite' // if using Vue 3
 
 const config: StorybookConfig = {
-	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React
+	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React or Vue
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'], // if using Svelte
 	addons: [
 		// autodocs is required for this addon to work
 		'@storybook/addon-docs',
-		// required for .stories.svelte CSF format (Svelte projects only — delete if using React)
+		// required for .stories.svelte CSF format (Svelte projects only — delete if using React or Vue)
 		'@storybook/addon-svelte-csf',
 		// the storybook dependency previews addon registration
 		'storybook-addon-dependency-previews/addon',
@@ -54,6 +55,7 @@ const config: StorybookConfig = {
 	framework: { name: '@storybook/react-vite', options: {} }, // if using React
 	framework: '@storybook/sveltekit', // if using Svelte (SvelteKit)
 	framework: '@storybook/svelte-vite', // if using Svelte (without SvelteKit)
+	framework: '@storybook/vue3-vite', // if using Vue 3
 }
 
 export default config

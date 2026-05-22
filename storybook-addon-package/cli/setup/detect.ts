@@ -7,6 +7,7 @@ export type Framework =
 	| 'react-vite'
 	| 'sveltekit'
 	| 'svelte-vite'
+	| 'vue3-vite'
 	| 'angular-webpack'
 	| 'nextjs-webpack'
 	| 'unsupported'
@@ -132,6 +133,11 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	{ corePackage: 'next', framework: '@storybook/nextjs' },
 	{ corePackage: '@sveltejs/kit', framework: '@storybook/sveltekit' },
 	{ corePackage: 'svelte', framework: '@storybook/svelte-vite' },
+	// Nuxt detector (`{ corePackage: 'nuxt', framework: '@storybook/nuxt' }`)
+	// will slot in here, ABOVE `vue`, in the follow-up Nuxt PR — Nuxt pulls in
+	// `vue` as a transitive dep, so the more-specific detector must run first
+	// (same rule as `next` before `react` and `@sveltejs/kit` before `svelte`).
+	{ corePackage: 'vue', framework: '@storybook/vue3-vite' },
 	{ corePackage: 'react', framework: '@storybook/react-vite' },
 ]
 
@@ -140,6 +146,7 @@ function frameworkFromRaw(raw: string | null): Framework {
 	if (raw === '@storybook/react-vite') return 'react-vite'
 	if (raw === '@storybook/sveltekit') return 'sveltekit'
 	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
+	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
 	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
 	// framework value for the future Vite-based Angular Storybook framework if it
 	// ships — current Angular goes in as `'angular-webpack'`.
@@ -169,6 +176,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'react-vite':
 		case 'sveltekit':
 		case 'svelte-vite':
+		case 'vue3-vite':
 			return 'vite'
 		case 'angular-webpack':
 		case 'nextjs-webpack':
@@ -182,7 +190,8 @@ export function isFrameworkSupported(framework: Framework): boolean {
 	return (
 		framework === 'react-vite' ||
 		framework === 'sveltekit' ||
-		framework === 'svelte-vite'
+		framework === 'svelte-vite' ||
+		framework === 'vue3-vite'
 	)
 }
 

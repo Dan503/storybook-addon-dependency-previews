@@ -4,6 +4,7 @@ packages:
   - 'example-site/react' # ← React demo app
   - 'example-site/svelte' # ← Svelte demo app
   - 'example-site/angular' # ← Angular demo app
+  - 'example-site/vue' # ← Vue demo app (currently throwaway plain Vue + Vite; will become Nuxt-powered in a follow-up PR)
 onlyBuiltDependencies:
   - esbuild
 patchedDependencies:
