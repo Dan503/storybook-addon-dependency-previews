@@ -1,17 +1,21 @@
 /* eslint-disable no-console */
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
+import { relative as pathRelative } from 'node:path'
 
 import {
 	detectProject,
 	isFrameworkSupported,
 	type Framework,
 } from './detect.js'
+import { detectProjectRepoUrl } from './gitOrigin.js'
 import { installMissingPackages } from './install.js'
 import { patchMainFile } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
-import { choose, confirm, input } from './prompt.js'
+import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
+import { choose, confirm, confirmOrEdit, input } from './prompt.js'
+import { resolveSrcDir } from './srcDir.js'
 
 function log(line: string) {
 	console.log(line)
@@ -86,16 +90,54 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			? ''
 			: ` (from ${detection.frameworkDetectionSource})`
 	log(
-		`Detected framework : ${detection.frameworkRaw ?? '(unknown)'}${detectionSourceLabel}`,
+		`Detected framework  : ${detection.frameworkRaw ?? '(unknown)'}${detectionSourceLabel}`,
 	)
 	log(`Detected pkg manager: ${detection.packageManager}`)
-	log(`Storybook main file: ${detection.mainFile.path}`)
-	log(
-		`Preview file       : ${detection.previewFile?.path ?? '(does not exist — will be created)'}`,
-	)
-	rule()
 
 	let framework: Framework = detection.framework
+
+	// Detect the source root URL (from git origin) and resolve the source
+	// folder up front, so both can be reported in this detection block — the
+	// user sees the full picture before they confirm. Both auto-detect
+	// without bothering the user except for the Next.js-without-`src/` edge
+	// case where `resolveSrcDir` may prompt for a folder name. That prompt
+	// fires after the framework has already been printed above so the
+	// context is established.
+	const detectedRepoUrl = detectProjectRepoUrl(cwd)
+	if (detectedRepoUrl?.url) {
+		log(`Git project root URL: ${detectedRepoUrl.url}`)
+		if (detectedRepoUrl.branchSource === 'fallback-main') {
+			log(
+				`                      (couldn't read default branch from remote — used 'main')`,
+			)
+		}
+	} else if (detectedRepoUrl?.warning) {
+		log(`Git project root URL: (auto-detect skipped — see step 3)`)
+	} else {
+		log(`Git project root URL: (no git origin detected — will prompt in step 3)`)
+	}
+
+	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
+	const displaySrcDir =
+		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
+	log(`Source folder       : ${displaySrcDir}`)
+
+	// Show file paths relative to cwd so the detection block stays compact —
+	// absolute Windows paths in particular are noisy and push the actually-
+	// useful bits of the line off-screen. Normalise `\` to `/` so the local
+	// paths read consistently with the forward-slash URL/glob fields shown
+	// elsewhere in the block.
+	const displayRelPath = (absPath: string) =>
+		pathRelative(cwd, absPath).replace(/\\/g, '/')
+	log(`Storybook main file : ${displayRelPath(detection.mainFile.path)}`)
+	log(
+		`Preview file        : ${
+			detection.previewFile
+				? displayRelPath(detection.previewFile.path)
+				: '(does not exist — will be created)'
+		}`,
+	)
+	rule()
 
 	// Webpack-based Storybook frameworks aren't supported by the wizard — Vite is
 	// required for the addon's `import.meta.glob` story-discovery. They share a
@@ -109,6 +151,22 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(
 			'Manual setup guide: https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md',
 		)
+		// Next.js users may have just told us a non-default srcDir via the
+		// prompt above. Persist it to sb-deps.config so the manual setup
+		// steps don't need to re-derive it and so the runtime dep-cruiser
+		// scan picks up the right folder on first run.
+		if (framework === 'nextjs-webpack' && resolvedSrcDir.isCustom) {
+			const cfg = writeSbDepsConfigIfNeeded({
+				cwd,
+				srcDir: resolvedSrcDir.srcDir,
+				isEsm: detection.isEsm,
+			})
+			if (cfg.kind === 'created') {
+				log(`✓ wrote ${cfg.path} (srcDir: '${resolvedSrcDir.srcDir}')`)
+			} else if (cfg.kind === 'failed') {
+				log(`⚠ ${cfg.reason}`)
+			}
+		}
 		return
 	}
 
@@ -150,13 +208,69 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		process.exit(1)
 	}
 
-	const proceed = await confirm(
+	// Values the rest of the wizard will use. Start with whatever auto-detect
+	// produced; the edit branch below can replace them with user-supplied
+	// values. `userOverrodeUrl` lets step 3 skip its fallback prompt when the
+	// user has consciously made a choice — including an explicit empty URL
+	// from the edit flow.
+	let effectiveSourceRootUrl = detectedRepoUrl?.url ?? ''
+	let effectiveSrcDir = resolvedSrcDir.srcDir
+	let userOverrodeUrl = false
+
+	const choice = await confirmOrEdit(
 		'Proceed with installing dependencies and patching your Storybook config?',
-		true,
 	)
-	if (!proceed) {
+	if (choice === 'no') {
 		log('Setup cancelled.')
 		return
+	}
+	if (choice === 'edit') {
+		rule()
+		log('= Edit detected values =')
+		log('Press Enter to keep the current value, or type a new one.')
+
+		// Git project root URL — the URL the addon links component file paths
+		// to. Blank disables source links.
+		effectiveSourceRootUrl = (
+			await input('\nGit project root URL', effectiveSourceRootUrl)
+		).trim()
+		userOverrodeUrl = true
+
+		// Source folder — must be a single folder name. Reject slashes
+		// explicitly so the user gets a clear "nested folders aren't
+		// supported" message rather than a generic character-class error.
+		while (true) {
+			const displayCurrent = effectiveSrcDir === '' ? '.' : effectiveSrcDir
+			const raw = (
+				await input(
+					'\nSource folder (single folder name, or "." for project root)',
+					displayCurrent,
+				)
+			).trim()
+			if (raw === '.' || raw === './') {
+				effectiveSrcDir = ''
+				break
+			}
+			if (raw.includes('/') || raw.includes('\\')) {
+				log(
+					`  "${raw}" contains a path separator — nested source folders aren't supported. Use a single folder name, or "." for the project root.`,
+				)
+				continue
+			}
+			if (raw === '..') {
+				log(`  ".." is not a valid source folder name.`)
+				continue
+			}
+			if (!/^[A-Za-z0-9._-]+$/.test(raw)) {
+				log(
+					`  "${raw}" is not a valid folder name — must be alphanumerics, ".", "_", or "-" (or "." for the project root).`,
+				)
+				continue
+			}
+			effectiveSrcDir = raw
+			break
+		}
+		rule()
 	}
 
 	rule()
@@ -218,22 +332,38 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	rule()
 	log('Step 3/5: configuring preview file')
-	const sourceRootInputMessage = [
-		'\n= Source root URL =',
-		'Please provide the URL to the root of your source code.',
-		'NOT the PROJECT root, the SOURCE root.',
-		'The folder that holds your precompiled source files, typically the "src" folder.',
-		'This is used to link nodes in the dependency tree back to their source files.',
-		'Example: https://github.com/your-org/your-repo/blob/main/src',
-		'\nEnter your source root URL (blank = disable source links):',
-	].join('\n')
-	const sourceRootUrl = await input(sourceRootInputMessage, '')
+	// The runtime concatenates `sourceRootUrl + '/' + componentPath` (where
+	// `componentPath` is the project-relative dep-graph key, e.g.
+	// `src/components/Foo.tsx`), so the URL must point at the *project root*
+	// inside the git repo — NOT a `src/` subfolder. By the time we get here
+	// the URL has been either (a) auto-detected, (b) set via the edit flow,
+	// or (c) left empty. Only case (c) needs the manual fallback prompt,
+	// and only when the user hasn't already been asked via edit mode.
+	let sourceRootUrl = effectiveSourceRootUrl
+	if (sourceRootUrl) {
+		log(`  ✓ using git project root URL: ${sourceRootUrl}`)
+	} else if (userOverrodeUrl) {
+		log(`  ✓ source links disabled (no URL set)`)
+	} else {
+		if (detectedRepoUrl?.warning) log(`  ⚠ ${detectedRepoUrl.warning}`)
+		const sourceRootInputMessage = [
+			'\n= Git project root URL =',
+			'Provide the URL to the root of your project inside your git repo.',
+			'This is the folder that contains your package.json — NOT the src folder.',
+			'Component file paths are appended to this URL to build "view source" links.',
+			'Example: https://github.com/your-org/your-repo/blob/main',
+			'(For a monorepo, include the project subpath: .../blob/main/packages/my-app)',
+			'\nEnter your git project root URL (blank = disable source links):',
+		].join('\n')
+		sourceRootUrl = await input(sourceRootInputMessage, '')
+	}
 	const previewResult = patchPreviewFile({
 		storybookDir: detection.storybookDir,
 		previewFile: detection.previewFile,
 		mainFile: detection.mainFile,
 		framework,
 		sourceRootUrl,
+		srcDir: effectiveSrcDir,
 	})
 	switch (previewResult.kind) {
 		case 'created':
@@ -275,6 +405,26 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				log(`  ✓ "${outcome.name}" already correct`)
 				break
 		}
+	}
+
+	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
+	// default `'src'`. Must happen before Step 5 so the sb-deps build below
+	// picks up the configured srcDir on its first run. Silent no-op for the
+	// default case so non-Next.js setups don't see an extra log line. Uses
+	// `effectiveSrcDir` so a user-edited value via the edit flow is what
+	// gets persisted, not the auto-detected one.
+	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
+		cwd,
+		srcDir: effectiveSrcDir,
+		isEsm: detection.isEsm,
+	})
+	if (sbDepsConfigResult.kind === 'created') {
+		rule()
+		log(`  ✓ wrote ${sbDepsConfigResult.path} (srcDir: '${effectiveSrcDir}')`)
+	} else if (sbDepsConfigResult.kind === 'failed') {
+		rule()
+		log(`  ⚠ ${sbDepsConfigResult.reason}`)
+		log(`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`)
 	}
 
 	rule()

@@ -71,31 +71,40 @@ export interface SbDepsConfig {
 	/**
 	 * Top-level source directory (relative to the project root) where your
 	 * component source lives. Defaults to `'src'`. Set to e.g. `'app'` for
-	 * projects that lay out their source under a non-standard root.
+	 * projects that lay out their source under a non-standard root (common
+	 * for Next.js App Router projects with no `src/` folder), or to the empty
+	 * string `''` to use the project root itself as the source folder.
 	 *
 	 * Drives the postprocess filter that decides which modules survive into
 	 * `.storybook/dependency-previews.json`, the `dep-cruiser` `--include-only`
-	 * flag, the file-watcher globs in watch mode, and the source-root paths
-	 * used by the component / story scaffolders.
+	 * flag, the file-watcher globs in watch mode, the source-root paths used
+	 * by the component / story scaffolders, and the bundled depcruise
+	 * config's rule `path` matchers (passed through `SB_DEPS_SRC_DIR` env so
+	 * `^src/` rebuilds to `^<srcDir>/` automatically — anchored to a
+	 * directory boundary so a srcDir of `src` doesn't also match sibling
+	 * folders like `src2/`).
 	 *
-	 * **Non-`src` layouts also need to override the bundled `depcruise.config.ts`.**
-	 * The bundled `forbidden` rules (`no-node-modules-imports`,
-	 * `no-orphans-in-components`) hardcode `^src` in their `path` matchers, so
-	 * the rules won't fire on a non-`src` tree. Drop your own
-	 * `depcruise.config.cjs` (or `.dependency-cruiser.{js,cjs}`) in the project
-	 * root to take full control — the CLI picks up project-root overrides
-	 * automatically.
+	 * When set to `''`, dep-cruiser's `--include-only` regex switches to a
+	 * node_modules denylist that rejects `node_modules` as any path segment
+	 * (top-level or nested under workspace packages), so the scan doesn't
+	 * dive into `node_modules` even in monorepos. Very large monorepos may
+	 * still want to set an explicit folder to keep the scan tight.
 	 *
-	 * Must be a single path segment containing only alphanumerics, `.`, `_`,
-	 * or `-` — `src`, `app`, `my-source`, `app.v2` are fine; anything with
-	 * path separators, glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or
-	 * shell metacharacters (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is
-	 * rejected at load time with a warning + fallback to `'src'`. The leading
-	 * segment of every key in `dependency-previews.json` will match this value.
+	 * Must be either the empty string, or a single path segment containing
+	 * only alphanumerics, `.`, `_`, or `-` — `src`, `app`, `my-source`,
+	 * `app.v2`, `''` are fine; anything with path separators, glob
+	 * metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or shell metacharacters
+	 * (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is rejected at load time
+	 * with a warning + fallback to `'src'`. With a non-empty value, every key
+	 * in `dependency-previews.json` starts with `<srcDir>/`. With `''`, keys
+	 * are still project-relative paths (e.g. `components/Foo.tsx`,
+	 * `packages/foo/Bar.tsx`) — there's just no fixed `srcDir` prefix
+	 * constraining which top-level folders appear.
 	 *
 	 * @example 'src'   (default)
 	 * @example 'app'
 	 * @example 'source'
+	 * @example ''      (project root is the source folder)
 	 */
 	srcDir?: string
 

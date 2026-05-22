@@ -216,8 +216,12 @@ const preview: Preview = {
 		...defaultPreviewParameters,
 		dependencyPreviews: {
 			dependenciesJson,
-			// Replace this with the URL to your src folder in your git repository.
-			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main/src',
+			// URL to the root of your project inside your git repository — the folder
+			// that contains your package.json, NOT the src folder. Component file
+			// paths are appended to this URL to build "view source" links, so a
+			// monorepo project needs to include its subpath: e.g.
+			// 'https://github.com/your-org/your-repo/blob/main/packages/my-app'.
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main',
 			// __PROJECT_ROOT__ is injected by DefinePlugin in main.ts.
 			projectRootPath: __PROJECT_ROOT__,
 		},

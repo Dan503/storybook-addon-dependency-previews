@@ -25,14 +25,24 @@ type SupportedFramework = 'react-vite' | 'sveltekit' | 'svelte-vite'
 // "No story module found at this path: …" for every story.
 //
 // Every currently-supported framework uses the same union extension list, so this is
-// a single const rather than a per-framework record. `dependencyPreviewsBlock` still
+// a single suffix rather than a per-framework record. `dependencyPreviewsBlock` still
 // takes `framework` so future per-framework divergence (a glob a framework should
 // strictly exclude, say) is a one-line change here, not a signature shuffle.
-const STORY_GLOB = '/src/**/*.stories.{tsx,ts,jsx,js,svelte}'
+const STORY_GLOB_SUFFIX = '**/*.stories.{tsx,ts,jsx,js,svelte}'
+
+/**
+ * Build the story-module glob from the resolved `srcDir`. Empty `srcDir`
+ * (project root is the source folder) drops the subfolder anchor entirely;
+ * any other value gates the glob to that folder.
+ */
+function storyGlobFor(srcDir: string): string {
+	return srcDir === '' ? `/${STORY_GLOB_SUFFIX}` : `/${srcDir}/${STORY_GLOB_SUFFIX}`
+}
 
 function dependencyPreviewsBlock(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
+	srcDir: string,
 	indent: string = '\t',
 	eol: string = '\n',
 	quote: "'" | '"' = "'",
@@ -54,12 +64,13 @@ function dependencyPreviewsBlock(
 					.replace(/'/g, "\\'")
 					.replace(/\n/g, '\\n')
 					.replace(/\r/g, '\\r')}'`
+	const storyGlob = storyGlobFor(srcDir)
 	const lines = [
 		`${l2}dependencyPreviews: {`,
 		`${l3}dependenciesJson,`,
 		`${l3}projectRootPath: new URL(${quote}..${quote}, import.meta.url).pathname,`,
 		`${l3}storyModules: import.meta.glob(`,
-		`${l4}${quote}${STORY_GLOB}${quote},`,
+		`${l4}${quote}${storyGlob}${quote},`,
 		`${l4}{ eager: false },`,
 		`${l3}),`,
 		`${l3}sourceRootUrl: ${serialisedSourceRootUrl},`,
@@ -73,6 +84,7 @@ type TemplateStyle = { indent: string; eol: string }
 function buildTemplate(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
+	srcDir: string,
 	style: TemplateStyle,
 	isTs: boolean,
 ): string {
@@ -97,7 +109,7 @@ function buildTemplate(
 			: `const previewConfig = {`,
 		`${l1}parameters: {`,
 		`${l2}...defaultPreviewParameters,`,
-		dependencyPreviewsBlock(framework, sourceRootUrl, indent, eol),
+		dependencyPreviewsBlock(framework, sourceRootUrl, srcDir, indent, eol),
 		`${l1}},`,
 		`${l1}decorators: [...dependencyPreviewDecorators],`,
 		`}`,
@@ -123,12 +135,13 @@ function previewLangForMainLang(
 function templateForFramework(
 	framework: SupportedFramework,
 	sourceRootUrl: string,
+	srcDir: string,
 	style: TemplateStyle,
 	mainLang: MainFile['lang'],
 ): { content: string; lang: PreviewFile['lang'] } {
 	const lang = previewLangForMainLang(mainLang)
 	return {
-		content: buildTemplate(framework, sourceRootUrl, style, lang === 'ts'),
+		content: buildTemplate(framework, sourceRootUrl, srcDir, style, lang === 'ts'),
 		lang,
 	}
 }
@@ -175,6 +188,7 @@ function patchExistingPreview(
 	previewFile: PreviewFile,
 	framework: SupportedFramework,
 	sourceRootUrl: string,
+	srcDir: string,
 ): PreviewPatchResult {
 	let content: string
 	try {
@@ -390,6 +404,7 @@ function patchExistingPreview(
 	const block = dependencyPreviewsBlock(
 		framework,
 		sourceRootUrl,
+		srcDir,
 		indent,
 		eol,
 		quote,
@@ -595,6 +610,12 @@ export interface PatchPreviewFileOptions {
 	 * it.
 	 */
 	sourceRootUrl: string
+	/**
+	 * Resolved source-folder name (`'src'`, `'app'`, etc.). Empty string is
+	 * the deliberate "project root *is* the source folder" sentinel. Drives
+	 * the `import.meta.glob` story pattern injected into the preview file.
+	 */
+	srcDir: string
 }
 
 /**
@@ -605,7 +626,8 @@ export interface PatchPreviewFileOptions {
 export function patchPreviewFile(
 	opts: PatchPreviewFileOptions,
 ): PreviewPatchResult {
-	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl } = opts
+	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl, srcDir } =
+		opts
 
 	if (
 		framework !== 'react-vite' &&
@@ -619,7 +641,7 @@ export function patchPreviewFile(
 	}
 
 	if (previewFile) {
-		return patchExistingPreview(previewFile, framework, sourceRootUrl)
+		return patchExistingPreview(previewFile, framework, sourceRootUrl, srcDir)
 	}
 
 	// Derive indent and EOL from the existing main.{ts,js,...} so the brand-new
@@ -638,6 +660,7 @@ export function patchPreviewFile(
 	const { content, lang } = templateForFramework(
 		framework,
 		sourceRootUrl,
+		srcDir,
 		style,
 		mainFile.lang,
 	)

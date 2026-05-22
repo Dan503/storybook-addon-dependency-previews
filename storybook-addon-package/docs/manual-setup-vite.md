@@ -187,9 +187,14 @@ const previewConfig: StorybookPreviewConfig = {
 				'/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
 				{ eager: false },
 			),
-			// Replace this with the URL to your src folder in your git repository.
-			// This enables the addon to link to the source code of the component.
-			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main/src',
+			// URL to the root of your project inside your git repository — the folder
+			// that contains your package.json, NOT the src folder. Component file
+			// paths are appended to this URL to build "view source" links, so a
+			// monorepo project needs to include its subpath: e.g.
+			// 'https://github.com/your-org/your-repo/blob/main/packages/my-app'.
+			// The setup wizard auto-detects this from your git remote when available
+			// (GitHub, GitLab, Bitbucket, Codeberg/Gitea, SourceHut, Gitee).
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main',
 			// `import.meta.url` is a Vite-specific feature.
 			// Allows opening the component file directly in VS Code when running locally.
 			projectRootPath: new URL('..', import.meta.url).pathname,

@@ -150,14 +150,24 @@ function runDepCruiseOnce() {
 	// `src.app` would otherwise broaden the scope unintentionally) and anchor
 	// to a `/` so the directory boundary is respected — without the trailing
 	// slash `^src` would also match `src2/`, `srcabc/`, etc.
-	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	//
+	// The empty-srcDir case (project root *is* the source folder) needs a
+	// different shape: anchoring on `^/` would still walk node_modules, so
+	// switch to a node_modules denylist via negative lookahead that rejects
+	// `node_modules` as any path segment — covers nested
+	// `packages/foo/node_modules/...` paths in monorepos, not just the
+	// top-level folder.
+	const includeOnly =
+		SRC_DIR === ''
+			? '^(?!(?:[^/]*/)*node_modules/)'
+			: `^${SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`
 	const args: Array<string> = ['.']
 	if (configPath) {
 		args.push('--config', configPath)
 	} else {
 		args.push('--no-config')
 	}
-	args.push('--include-only', `^${escapedSrcDir}/`, '--output-type', 'json')
+	args.push('--include-only', includeOnly, '--output-type', 'json')
 
 	const depcruiseBin = resolveDepCruiseBin()
 	if (!depcruiseBin) {
@@ -181,6 +191,12 @@ function runDepCruiseOnce() {
 			stdio: ['ignore', 'pipe', 'inherit'],
 			encoding: 'utf8',
 			shell: IS_WIN,
+			// Pass SRC_DIR through to the bundled `depcruise.config.ts` so its
+			// `forbidden` rules' path matchers (currently anchored on `^src`)
+			// rebuild from the configured srcDir at depcruise's module-load time.
+			// User-provided depcruise configs that ignore this env still work —
+			// they just won't track srcDir automatically.
+			env: { ...process.env, SB_DEPS_SRC_DIR: SRC_DIR },
 		},
 	)
 	writeFileSync(rawPath, stdout, 'utf8')
@@ -266,6 +282,13 @@ function isEmptyOrWhitespace(absPath: string) {
  * (`STORY_FILE_REGEX`) is applied separately in the individual helpers.
  */
 function srcSubpathRegex(suffixPattern: string): RegExp {
+	// Empty SRC_DIR (project root *is* the source folder) means there is no
+	// subfolder gate — match any path that ends with the given suffix. The
+	// watcher's ignore list (node_modules, .git, dist, build) keeps the noise
+	// out before paths ever reach here, so a permissive regex is fine.
+	if (SRC_DIR === '') {
+		return new RegExp(`.+${suffixPattern}`, 'i')
+	}
 	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 	return new RegExp(`(?:^|\\/)${escapedSrcDir}\\/.+${suffixPattern}`, 'i')
 }
@@ -847,11 +870,16 @@ function ensureStoryForAngularComponent(absCompPath: string) {
 // ───────────────────────────────────────────────────────────────────────────────
 function startWatcher() {
 	const root = projectRoot
+	// When SRC_DIR === '' (project root is the source folder), `${SRC_DIR}/**/*`
+	// would produce `/**/*` — a leading slash that micromatch doesn't match
+	// against the relative paths the watcher feeds it. Drop the prefix in that
+	// case so we watch every non-ignored file at the project root.
+	const srcPrefix = SRC_DIR === '' ? '' : `${SRC_DIR}/`
 	const includeGlobs = [
 		'**/*.stories.{ts,tsx,js,jsx,mdx,svelte}',
 		'**/*.story.{ts,tsx,js,jsx,mdx,svelte}',
-		`${SRC_DIR}/**/*.{ts,tsx,js,jsx,svelte}`,
-		`${SRC_DIR}/**/*.component.html`,
+		`${srcPrefix}**/*.{ts,tsx,js,jsx,svelte}`,
+		`${srcPrefix}**/*.component.html`,
 		'depcruise.config.cjs',
 		'.dependency-cruiser.{js,cjs}',
 	]
@@ -1053,33 +1081,61 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
-	// `?? 'src'` only falls back on null/undefined, so an explicit `srcDir: ''`
-	// in the user's config would slip through and produce overly-broad watcher
-	// globs (`/**/*`) and an `--include-only "^/"` depcruise scan. Trim and
-	// validate against a strict safe-character allow-list:
+	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//
+	//   - `undefined` / missing key  → fall back to the bundled default `'src'`.
+	//   - exactly `''`               → deliberate project-root sentinel
+	//                                  (downstream sites special-case this).
+	//   - anything else              → validate against the safe-character
+	//                                  allow-list and use, or fall back to
+	//                                  `'src'` with a warning.
+	//
+	// Whitespace-only values (e.g. `srcDir: '   '`) are treated as invalid —
+	// trimming produces an empty string, but that's almost certainly a typo,
+	// not a deliberate request for project-root mode. Match against the
+	// allow-list before stripping whitespace so we can distinguish the two.
+	//
+	// Allow-list:
 	//   - alphanumerics + `.`, `_`, `-` — covers every directory name people
 	//     conventionally use (`src`, `app`, `my-source`, `app.v2`, etc.)
 	//   - rejects glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`) that
 	//     would otherwise change watcher-glob matching when interpolated into
 	//     `${SRC_DIR}/**/*.{ts,...}`
 	//   - rejects path separators (`/`, `\`) — srcDir must be a single segment
+	//     (`projects/foo/src` style multi-project Angular workspaces aren't
+	//     supported; use the empty-string project-root mode instead)
 	//   - rejects cmd.exe metacharacters including `%` (which triggers `%VAR%`
 	//     env expansion when the args go through a `cmd.exe`-invoked `.cmd`
 	//     shim on Windows) and `^` / `&` / `|` / `<` / `>` / `(` / `)` / `!`
 	//
-	// Bounding the input here means downstream interpolation sites (watcher
-	// globs, dep-cruiser `--include-only` regex, scaffold-helper regexes) can
-	// trust their `SRC_DIR` source and don't each need their own escape pass.
-	const rawSrcDir = (cfg.srcDir ?? 'src').replace(/[\\/]+$/, '').trim()
+	// Bounding the input here means downstream interpolation sites can trust
+	// their `SRC_DIR` source and don't each need their own escape pass.
 	const SAFE_SRCDIR_PATTERN = /^[A-Za-z0-9._-]+$/
-	if (!rawSrcDir || !SAFE_SRCDIR_PATTERN.test(rawSrcDir)) {
-		error(
-			`srcDir "${cfg.srcDir ?? ''}" is invalid — must be a single non-empty directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). Falling back to "src".`,
-		)
+	const userSrcDir = cfg.srcDir
+	if (userSrcDir === undefined) {
 		SRC_DIR = 'src'
+	} else if (userSrcDir === '') {
+		SRC_DIR = ''
 	} else {
-		SRC_DIR = rawSrcDir
+		const trimmed = userSrcDir.replace(/[\\/]+$/, '').trim()
+		// Reject the special path segments `.` and `..` explicitly — they
+		// match the character allow-list but they're path-traversal segments,
+		// not real folder names, and would produce broken include-only regexes
+		// (e.g. `^./` matches "any-char then slash") plus potentially escape
+		// the project root when joined with other paths.
+		const isSpecialSegment = trimmed === '.' || trimmed === '..'
+		if (
+			trimmed !== '' &&
+			!isSpecialSegment &&
+			SAFE_SRCDIR_PATTERN.test(trimmed)
+		) {
+			SRC_DIR = trimmed
+		} else {
+			error(
+				`srcDir "${userSrcDir}" is invalid — must be either exactly the empty string (project root) or a single directory name containing only alphanumerics, ".", "_", or "-" (e.g. "src", "app", "my-source"). "." and ".." are not allowed. Falling back to "src".`,
+			)
+			SRC_DIR = 'src'
+		}
 	}
 
 	banner('sb-deps')
