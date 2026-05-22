@@ -42,7 +42,9 @@ export function ComponentSourceLink({ storyInfo, ariaDescribedBy }: Props) {
 		// silently blocked by Chromium. Route it through the top window so the
 		// protocol handler fires reliably and VS Code actually launches. Only
 		// intercept unmodified primary clicks so Ctrl/Cmd/Shift/Alt + click and
-		// middle-click keep their native semantics.
+		// middle-click keep their native semantics. Anchors natively dispatch a
+		// click event for Enter activation, so keyboard activation flows through
+		// this same path.
 		if (!isVsCodeUrl) return
 		if (
 			event.button !== 0 ||

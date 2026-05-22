@@ -97,7 +97,6 @@ export function TooltipTrigger({
 				<a
 					href={href}
 					onClick={onClick}
-					onKeyUp={onKeyUp}
 					onMouseEnter={onMouseEnter}
 					onMouseLeave={onMouseLeave}
 					onFocus={onFocus}
