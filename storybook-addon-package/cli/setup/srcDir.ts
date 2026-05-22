@@ -79,13 +79,17 @@ function detectNextjsSourceFolder(cwd: string): string | null {
 /**
  * Prompt the user for the Next.js source folder, with two distinct modes:
  *
- * - **Detected mode** (`app/` or `pages/` exists): the detected folder is
- *   the Enter-key default. Pressing Enter accepts it. Type any other folder
- *   name to override, or `.` to use the project root.
- * - **Not-detected mode** (neither folder exists): pressing Enter is the
- *   "no source folder" signal — `input(_, '')` returns `''`, which is the
- *   project-root sentinel. Type a folder name (`app`, `pages`, anything
- *   else) to use it instead.
+ * - **Detected mode** (`app/` or `pages/` exists): pressing Enter on a
+ *   blank line accepts the detected folder. Type any other folder name
+ *   to override, or `.` to use the project root.
+ * - **Not-detected mode** (neither folder exists): pressing Enter on a
+ *   blank line maps to `''` (the project-root sentinel). Type a folder
+ *   name (`app`, `pages`, anything else) to use it instead.
+ *
+ * Uses `ask()` directly rather than `input()` so we can see the raw
+ * untrimmed line and tell whether the user actually pressed Enter on a
+ * blank line vs. typed whitespace — whitespace-only inputs re-prompt
+ * with a hint instead of silently collapsing to project-root mode.
  *
  * This split lets a detected layout work with one keystroke while still
  * honouring the user's stated rule that an absent source folder maps to
