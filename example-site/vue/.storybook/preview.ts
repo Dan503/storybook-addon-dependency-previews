@@ -1,12 +1,11 @@
 import {
   defaultPreviewParameters,
   dependencyPreviewDecorators,
-  type StorybookPreviewConfig,
-} from 'storybook-addon-dependency-previews'
+} from 'storybook-addon-dependency-previews';
 
-import dependenciesJson from './dependency-previews.json'
+import dependenciesJson from './dependency-previews.json';
 
-import type { Preview } from '@storybook/vue3-vite'
+import type { Preview } from '@storybook/vue3-vite';
 
 const preview: Preview = {
   decorators: [...dependencyPreviewDecorators],
