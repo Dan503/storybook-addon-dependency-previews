@@ -35,14 +35,31 @@ export function ComponentSourceLink({ storyInfo, ariaDescribedBy }: Props) {
 		(sourceRootUrl.endsWith('/') ? sourceRootUrl : sourceRootUrl + '/') +
 		encodeURI(relativePath)
 
+	const isVsCodeUrl = href.startsWith('vscode://')
+
 	function onClick(event: React.MouseEvent) {
 		// vscode:// navigation from a sandboxed iframe via target="_blank" is
 		// silently blocked by Chromium. Route it through the top window so the
-		// protocol handler fires reliably and VS Code actually launches.
-		if (!isLocalHost) return
+		// protocol handler fires reliably and VS Code actually launches. Only
+		// intercept unmodified primary clicks so Ctrl/Cmd/Shift/Alt + click and
+		// middle-click keep their native semantics.
+		if (!isVsCodeUrl) return
+		if (
+			event.button !== 0 ||
+			event.metaKey ||
+			event.ctrlKey ||
+			event.shiftKey ||
+			event.altKey
+		) {
+			return
+		}
 		event.preventDefault()
-		const topWindow = window.top ?? window
-		topWindow.location.href = href
+		try {
+			const topWindow = window.top ?? window
+			topWindow.location.href = href
+		} catch {
+			window.location.href = href
+		}
 	}
 
 	return (
@@ -51,10 +68,10 @@ export function ComponentSourceLink({ storyInfo, ariaDescribedBy }: Props) {
 			className={s.ComponentSourceLink}
 			href={href}
 			onClick={onClick}
-			newWindow
+			newWindow={!isVsCodeUrl}
 			aria-describedby={ariaDescribedBy}
 			tooltipText={`View source (opens in ${
-				isLocalHost ? 'VS Code' : 'new tab'
+				isVsCodeUrl ? 'VS Code' : 'new tab'
 			})`}
 			dangerouslySetInnerHTML={{
 				// allow line breaks on slashes
