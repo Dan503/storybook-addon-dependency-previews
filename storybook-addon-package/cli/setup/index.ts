@@ -172,7 +172,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This addon currently supports React, Svelte, and Vue only. Detected "${detection.frameworkRaw}".`,
+			`This addon currently supports React, Svelte, and Vue 3 only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
 			'If you would like to see support added for your framework, please open an issue on GitHub.',

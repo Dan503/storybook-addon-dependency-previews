@@ -1,4 +1,4 @@
-# Manual setup — Vite (React, Svelte, Vue)
+# Manual setup — Vite (React, Svelte, Vue 3)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
 >

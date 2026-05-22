@@ -5,7 +5,7 @@ const config: StorybookConfig = {
     "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
   "addons": [
-    'storybook-addon-dependency-previews/addon',
+    "storybook-addon-dependency-previews/addon",
   ],
   "framework": "@storybook/vue3-vite"
 };
