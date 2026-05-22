@@ -124,12 +124,16 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	// Show file paths relative to cwd so the detection block stays compact —
 	// absolute Windows paths in particular are noisy and push the actually-
-	// useful bits of the line off-screen.
-	log(`Storybook main file: ${pathRelative(cwd, detection.mainFile.path)}`)
+	// useful bits of the line off-screen. Normalise `\` to `/` so the local
+	// paths read consistently with the forward-slash URL/glob fields shown
+	// elsewhere in the block.
+	const displayRelPath = (absPath: string) =>
+		pathRelative(cwd, absPath).replace(/\\/g, '/')
+	log(`Storybook main file: ${displayRelPath(detection.mainFile.path)}`)
 	log(
 		`Preview file       : ${
 			detection.previewFile
-				? pathRelative(cwd, detection.previewFile.path)
+				? displayRelPath(detection.previewFile.path)
 				: '(does not exist — will be created)'
 		}`,
 	)
