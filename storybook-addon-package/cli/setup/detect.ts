@@ -7,6 +7,7 @@ export type Framework =
 	| 'react-vite'
 	| 'sveltekit'
 	| 'svelte-vite'
+	| 'vue3-vite'
 	| 'angular-webpack'
 	| 'nextjs-webpack'
 	| 'unsupported'
@@ -112,12 +113,19 @@ const FRAMEWORK_REGEX =
  * that actually uses that framework — the project literally can't run without
  * it.
  *
- * **Order matters — first match wins.** Frameworks that pull in another
- * framework as a transitive dependency must appear *before* that other
- * framework so the more-specific detection wins:
+ * **Meta-framework subsumption** (`subsumes`): when both a meta-framework's
+ * core package and a base framework's core package are present in deps (e.g.
+ * `next` + `react`, `@sveltejs/kit` + `svelte`, eventually `nuxt` + `vue`),
+ * the meta-framework wins because it's more specific — the base package is
+ * just its transitive dep. Encoded explicitly via `subsumes` rather than
+ * relying on array ordering, so the scan can also tell the difference between
+ * "subsumed" (meta + base, meta wins) and "independent" (two unrelated
+ * frameworks both present — e.g. `vue` + `react` in a polyglot monorepo),
+ * which gets returned as ambiguous so the caller falls back to the
+ * `.storybook/main.*` regex.
  *
- * - Next.js depends on `react`, so check `next` first.
- * - SvelteKit depends on `svelte`, so check `@sveltejs/kit` first.
+ * Array order is now purely a human-readable convention (meta-frameworks
+ * listed above their base): it carries no logic.
  *
  * This list is the input to the `package.json` scan only. It is NOT a gate on
  * the regex path: the regex captures any `framework:` string literal it finds
@@ -127,11 +135,26 @@ const FRAMEWORK_REGEX =
 const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	corePackage: string
 	framework: string
+	/**
+	 * Core package this detector subsumes when both are present in deps —
+	 * i.e. the more-general framework that this one builds on top of. A
+	 * `next` match subsumes a `react` match because Next.js pulls in React;
+	 * `@sveltejs/kit` subsumes `svelte`; future `nuxt` will subsume `vue`.
+	 */
+	subsumes?: string
 }> = [
 	{ corePackage: '@angular/core', framework: '@storybook/angular' },
-	{ corePackage: 'next', framework: '@storybook/nextjs' },
-	{ corePackage: '@sveltejs/kit', framework: '@storybook/sveltekit' },
+	{ corePackage: 'next', framework: '@storybook/nextjs', subsumes: 'react' },
+	{
+		corePackage: '@sveltejs/kit',
+		framework: '@storybook/sveltekit',
+		subsumes: 'svelte',
+	},
 	{ corePackage: 'svelte', framework: '@storybook/svelte-vite' },
+	// Nuxt detector (`{ corePackage: 'nuxt', framework: '@storybook/nuxt',
+	// subsumes: 'vue' }`) will slot in here in the follow-up Nuxt PR. The
+	// `subsumes` field is what makes Nuxt win over Vue when both are present.
+	{ corePackage: 'vue', framework: '@storybook/vue3-vite' },
 	{ corePackage: 'react', framework: '@storybook/react-vite' },
 ]
 
@@ -140,6 +163,7 @@ function frameworkFromRaw(raw: string | null): Framework {
 	if (raw === '@storybook/react-vite') return 'react-vite'
 	if (raw === '@storybook/sveltekit') return 'sveltekit'
 	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
+	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
 	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
 	// framework value for the future Vite-based Angular Storybook framework if it
 	// ships — current Angular goes in as `'angular-webpack'`.
@@ -149,18 +173,43 @@ function frameworkFromRaw(raw: string | null): Framework {
 }
 
 /**
- * Scan a project's full dependency surface (deps + devDeps + peerDeps) for the
- * highest-priority core framework package and return the corresponding
- * `@storybook/<framework>` value. Returns `null` if no recognised core
- * framework package is present (caller falls back to the `.storybook/main`
- * regex).
+ * Scan a project's full dependency surface (deps + devDeps + peerDeps) for
+ * recognised core framework packages and return the unambiguous winner's
+ * `@storybook/<framework>` value, or `null` if no recognised package is
+ * present *or* if the result is ambiguous (caller falls back to the
+ * `.storybook/main.*` regex).
+ *
+ * The decision is two-pass:
+ *
+ *  1. Collect every detector whose `corePackage` is in deps.
+ *  2. For each meta-framework match with a `subsumes` field, drop the
+ *     subsumed core's match (e.g. `next` match drops `react` match;
+ *     `@sveltejs/kit` drops `svelte`; future `nuxt` will drop `vue`).
+ *
+ * If exactly one match survives, that's the winner. Zero matches → no
+ * recognised framework. **Multiple unrelated matches** (e.g. a polyglot
+ * monorepo with both `vue` and `react` in the dep surface) → ambiguous, so
+ * return `null` and let the `.storybook/main.*` regex decide based on the
+ * explicit `framework:` declaration. Without this ambiguity check the scan
+ * would silently pick whichever detector happened to come first in the
+ * array, which is fragile and produced exactly that bug for `vue` + `react`
+ * before this fix.
  */
 function findFrameworkInDeps(
 	allDependencyKeys: ReadonlySet<string>,
 ): string | null {
-	for (const { corePackage, framework } of CORE_FRAMEWORK_DETECTORS) {
-		if (allDependencyKeys.has(corePackage)) return framework
-	}
+	const matches = CORE_FRAMEWORK_DETECTORS.filter((d) =>
+		allDependencyKeys.has(d.corePackage),
+	)
+	if (matches.length === 0) return null
+	const subsumedCores = new Set(
+		matches.map((m) => m.subsumes).filter((s): s is string => !!s),
+	)
+	const survivors = matches.filter((m) => !subsumedCores.has(m.corePackage))
+	if (survivors.length === 1) return survivors[0]!.framework
+	// Zero (every match was subsumed, which can only happen if a detector
+	// `subsumes` is its own corePackage — guard anyway) or multiple
+	// independent matches → ambiguous; let the regex path decide.
 	return null
 }
 
@@ -169,6 +218,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'react-vite':
 		case 'sveltekit':
 		case 'svelte-vite':
+		case 'vue3-vite':
 			return 'vite'
 		case 'angular-webpack':
 		case 'nextjs-webpack':
@@ -182,7 +232,8 @@ export function isFrameworkSupported(framework: Framework): boolean {
 	return (
 		framework === 'react-vite' ||
 		framework === 'sveltekit' ||
-		framework === 'svelte-vite'
+		framework === 'svelte-vite' ||
+		framework === 'vue3-vite'
 	)
 }
 

@@ -17,7 +17,11 @@ export type PreviewPatchResult =
 	| { kind: 'patched'; path: string }
 	| { kind: 'failed'; reason: string }
 
-type SupportedFramework = 'react-vite' | 'sveltekit' | 'svelte-vite'
+type SupportedFramework =
+	| 'react-vite'
+	| 'sveltekit'
+	| 'svelte-vite'
+	| 'vue3-vite'
 
 // Brace expansion `{a,b,c}` works under both Vite 7 (micromatch) and Vite 8
 // (tinyglobby). Extglob `@(a|b|c)` silently returns zero matches under tinyglobby,
@@ -259,7 +263,18 @@ function patchExistingPreview(
 		'defaultPreviewParameters',
 		'dependencyPreviewDecorators',
 	]
-	const requiredTypeNames = isTs ? ['StorybookPreviewConfig'] : []
+	// Only require `StorybookPreviewConfig` as a type import when the existing
+	// preview body actually annotates with that type. A file that already types
+	// its config as the framework's own `Preview` (or any other type, or is
+	// untyped) keeps that annotation — adding our `StorybookPreviewConfig`
+	// import to such a file just produces a dead import that trips
+	// `noUnusedLocals` / lint in consumer projects. The CREATE path's template
+	// always uses `StorybookPreviewConfig` so this conditional doesn't affect
+	// fresh preview files.
+	const existingUsesOurType =
+		isTs && /:\s*StorybookPreviewConfig\b/.test(codeOnly)
+	const requiredTypeNames =
+		isTs && existingUsesOurType ? ['StorybookPreviewConfig'] : []
 
 	// The local binding names for the addon's value imports — usually identical
 	// to the original names, but if the user has aliased an import (e.g.
@@ -381,10 +396,16 @@ function patchExistingPreview(
 
 	const importsToInsert: string[] = []
 	if (allAddonImports.length === 0) {
+		// Mirror the `existingUsesOurType` check above: only emit the
+		// `StorybookPreviewConfig` type import when the existing preview body
+		// actually annotates with that type. Otherwise the wizard would
+		// produce a dead import on every patch of a `Preview`-typed (or
+		// untyped) preview file.
+		const includeTypeImport = isTs && existingUsesOurType
 		const addonImportBlock = [
 			`import {`,
 			`${indent}defaultPreviewParameters,`,
-			`${indent}dependencyPreviewDecorators,${isTs ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
+			`${indent}dependencyPreviewDecorators,${includeTypeImport ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
 			`} from ${quote}${PKG}${quote}${trailingSemi}`,
 		].join(eol)
 		importsToInsert.push(addonImportBlock)
@@ -632,7 +653,8 @@ export function patchPreviewFile(
 	if (
 		framework !== 'react-vite' &&
 		framework !== 'sveltekit' &&
-		framework !== 'svelte-vite'
+		framework !== 'svelte-vite' &&
+		framework !== 'vue3-vite'
 	) {
 		return {
 			kind: 'failed',

@@ -14,20 +14,67 @@ export function detectEol(content: string): string {
 }
 
 /**
- * Detect the project's preferred string-literal quote style by reading the
- * first import statement's `from <q>...<q>` quote. Defaults to single quotes.
+ * Detect the project's preferred string-literal quote style by counting the
+ * opening quote of every complete `'…'` and `"…"` literal in the file, and
+ * returning whichever quote appeared on more of them. Ties (including a file
+ * with zero string literals) default to single quotes — both because Prettier
+ * defaults to single and because the bulk of the JS/TS ecosystem leans single.
  *
- * The regex runs against `stripCommentsRespectingStrings(content)` so a
- * leading commented-out example like `// import x from "y"` (or a multi-line
- * block-comment example) can't pick up the wrong quote style. The strip is
- * position-preserving, so the captured quote character is identical to the
- * one in the original.
+ * Why majority-count rather than "first import": some scaffolders (notably
+ * Storybook init for `@storybook/vue3-vite`) emit a mixed-style `main.ts`
+ * where the leading `import` uses one quote style and the object literal
+ * underneath uses the other. The first-import heuristic picks the wrong
+ * answer for the body in that case and the wizard's inserted addon entry
+ * ends up visually inconsistent with the surrounding array. Majority across
+ * the whole file matches whichever style the body actually uses.
+ *
+ * Operates on the comment-stripped (but string-preserving) content so a
+ * commented-out example doesn't skew the count, and uses a tiny state
+ * machine so quote characters that appear *inside* the other quote's
+ * string literal don't get double-counted.
+ *
+ * **Known limitation — template-literal expressions are opaque.** A
+ * backtick string is treated as a single span until the closing backtick,
+ * so any `'…'` / `"…"` literals that appear inside `${ … }` interpolation
+ * expressions are not counted toward the tally. In practice this is fine
+ * for the wizard's actual targets — `.storybook/main.{ts,js}` and
+ * `.storybook/preview.{ts,tsx,js,jsx}` files in storybook-init scaffolds
+ * are dominated by plain string literals, not template expressions — but
+ * a file that relies heavily on interpolated strings of one quote style
+ * could in theory be misclassified. Fixing it would require tracking
+ * `${` open and matching `}` close inside template mode, which adds
+ * complexity for a case that hasn't been observed in real consumer
+ * projects. Worth revisiting only if a real-world bug surfaces.
  */
 export function detectQuoteStyle(content: string): "'" | '"' {
-	const m = stripCommentsRespectingStrings(content).match(
-		/import[\s\S]+?from\s+(['"])/,
-	)
-	return m ? (m[1] as "'" | '"') : "'"
+	const stripped = stripCommentsRespectingStrings(content)
+	let singles = 0
+	let doubles = 0
+	let mode: 'normal' | "'" | '"' | '`' = 'normal'
+	for (let i = 0; i < stripped.length; i++) {
+		const ch = stripped[i]
+		if (mode === 'normal') {
+			if (ch === "'") {
+				singles++
+				mode = "'"
+			} else if (ch === '"') {
+				doubles++
+				mode = '"'
+			} else if (ch === '`') {
+				mode = '`'
+			}
+			continue
+		}
+		// Inside a string/template — skip escapes, exit on matching closer.
+		if (ch === '\\') {
+			i++
+			continue
+		}
+		if (ch === mode) {
+			mode = 'normal'
+		}
+	}
+	return doubles > singles ? '"' : "'"
 }
 
 /**
