@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "sb": "sb-deps --watch --run-storybook",
-    "sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
+    "sb:build": "sb-deps && storybook build",
+    "sb:setup": "sb-deps setup",
     "sb:deps": "sb-deps"
   },
   "dependencies": {
