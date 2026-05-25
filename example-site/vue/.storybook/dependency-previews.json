@@ -1,0 +1,28 @@
+{
+  "components/HelloWorld.stories.ts": {
+    "componentPath": "components/HelloWorld.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/HelloWorld.vue",
+        "storyId": "example-helloworld--docs",
+        "storyTitle": "HelloWorld",
+        "storyTitlePath": "Example/HelloWorld",
+        "storyFilePath": "components/HelloWorld.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/HelloWorld.vue": {
+    "componentPath": "components/HelloWorld.vue",
+    "storyId": "example-helloworld--docs",
+    "storyTitle": "HelloWorld",
+    "storyTitlePath": "Example/HelloWorld",
+    "storyFilePath": "components/HelloWorld.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/HelloWorld.stories.ts"
+      }
+    ]
+  }
+}
