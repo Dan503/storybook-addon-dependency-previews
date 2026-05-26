@@ -22,10 +22,12 @@
     "@storybook/addon-docs": "^10.4.1",
     "@storybook/addon-links": "^10.4.1",
     "@storybook/vue3-vite": "^10.4.1",
+    "@tailwindcss/vite": "^4.0.6",
     "@vitejs/plugin-vue": "^6.0.7",
     "dependency-cruiser": "^17.3.8",
     "storybook": "^10.4.1",
     "storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
+    "tailwindcss": "^4.0.6",
     "vite": "^7.1.7"
   }
 }

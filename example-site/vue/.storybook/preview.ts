@@ -6,6 +6,7 @@ import {
 	type StorybookPreviewConfig,
 } from 'storybook-addon-dependency-previews'
 
+import '../app/assets/css/main.css'
 import dependenciesJson from './dependency-previews.json'
 
 const previewConfig: StorybookPreviewConfig = {
