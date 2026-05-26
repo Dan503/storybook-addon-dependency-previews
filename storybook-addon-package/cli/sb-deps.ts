@@ -321,6 +321,12 @@ function isDecoratorSvelte(absPath: string) {
 	return srcSubpathRegex('\\.decorator\\.svelte$').test(norm)
 }
 
+// <srcDir>/**/Thing.vue ? (and not a story file)
+function isComponentsVue(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return srcSubpathRegex('\\.vue$').test(norm) && !STORY_FILE_REGEX.test(norm)
+}
+
 // <srcDir>/**/Thing.component.ts ?
 function isComponentsAngularTs(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
@@ -339,6 +345,10 @@ function componentBaseFromComponent(absCompPath: string) {
 
 function componentBaseFromSvelteComponent(absCompPath: string) {
 	return basename(absCompPath, '.svelte')
+}
+
+function componentBaseFromVueComponent(absCompPath: string) {
+	return basename(absCompPath, '.vue')
 }
 
 function componentBaseFromAngularComponent(absCompPath: string) {
@@ -371,6 +381,12 @@ function storyPathForSvelteComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromSvelteComponent(absCompPath)
 	return join(dir, `${base}.stories.svelte`)
+}
+
+function storyPathForVueComponent(absCompPath: string) {
+	const dir = dirname(absCompPath)
+	const base = componentBaseFromVueComponent(absCompPath)
+	return join(dir, `${base}.stories.ts`)
 }
 
 function makeTitleFromComponent(absCompPath: string) {
@@ -598,6 +614,107 @@ function ensureStoryForSvelteComponent(absCompPath: string) {
 	const sPath = storyPathForSvelteComponent(absCompPath)
 	if (existsSync(sPath)) return null
 	return scaffoldStoryForSvelteComponent(absCompPath)
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Vue scaffolding
+// ───────────────────────────────────────────────────────────────────────────────
+function scaffoldVueComponent(absCompPath: string) {
+	const base = componentBaseFromVueComponent(absCompPath)
+	const componentName = toPascalCase(base)
+
+	const tpl =
+		SCAFFOLD_CONFIG?.vue?.component?.({ componentName }) ??
+		`<script setup lang="ts">
+export interface PropsFor${componentName} {
+}
+
+const {  } = defineProps<PropsFor${componentName}>()
+</script>
+
+<template>
+	<div class="${componentName}">
+		<p>${componentName}</p>
+		<slot />
+	</div>
+</template>
+`
+	writeFileSync(absCompPath, tpl, 'utf8')
+	info(`scaffolded vue component → ${rel(absCompPath)}`)
+}
+
+function makeTitleFromVueComponent(absCompPath: string) {
+	const srcRoot = join(projectRoot, SRC_DIR) + sep
+	const normAbs = absCompPath.replace(/\\/g, '/')
+	const relFromSrc = normAbs.startsWith(srcRoot.replace(/\\/g, '/'))
+		? normAbs.slice(srcRoot.length)
+		: absCompPath.replace(projectRoot + sep, '').replace(/\\/g, '/')
+
+	const dir = posix.dirname(relFromSrc)
+	let segments = dir.split('/').filter(Boolean)
+	if (segments[0] && /^components?$/i.test(segments[0]))
+		segments = segments.slice(1)
+
+	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
+	const compName = componentBaseFromVueComponent(absCompPath)
+	const compTitle = toTitleCase(toWords(compName))
+
+	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
+
+	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
+	const dedupedStoryPath = [...new Set(fullStoryPath)]
+
+	return dedupedStoryPath.join(' / ')
+}
+
+function scaffoldStoryForVueComponent(absCompPath: string) {
+	const base = componentBaseFromVueComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const title = makeTitleFromVueComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const storyTpl =
+		SCAFFOLD_CONFIG?.vue?.story?.({ componentName, title, tags }) ??
+		`import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import ${componentName}, { type PropsFor${componentName} } from './${componentName}.vue'
+
+const meta: Meta<typeof ${componentName}> = {
+	title: '${title}',
+	component: ${componentName},
+	tags: ${JSON.stringify(tags)},
+	parameters: {
+		layout: 'padded',
+	} satisfies StoryParameters,
+}
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Primary: Story = {
+	args: {} satisfies PropsFor${componentName},
+	render: (args) => ({
+		components: { ${componentName} },
+		setup() {
+			return { args }
+		},
+		template: \`<${componentName} v-bind="args">${componentName}</${componentName}>\`,
+	}),
+}
+`
+	const storyPath = storyPathForVueComponent(absCompPath)
+	writeFileSync(storyPath, storyTpl, 'utf8')
+	info(`scaffolded vue story → ${rel(storyPath)}`)
+	return storyPath
+}
+
+function ensureStoryForVueComponent(absCompPath: string) {
+	const sPath = storyPathForVueComponent(absCompPath)
+	if (existsSync(sPath)) return null
+	return scaffoldStoryForVueComponent(absCompPath)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -878,7 +995,7 @@ function startWatcher() {
 	const includeGlobs = [
 		'**/*.stories.{ts,tsx,js,jsx,mdx,svelte}',
 		'**/*.story.{ts,tsx,js,jsx,mdx,svelte}',
-		`${srcPrefix}**/*.{ts,tsx,js,jsx,svelte}`,
+		`${srcPrefix}**/*.{ts,tsx,js,jsx,svelte,vue}`,
 		`${srcPrefix}**/*.component.html`,
 		'depcruise.config.cjs',
 		'.dependency-cruiser.{js,cjs}',
@@ -937,6 +1054,12 @@ function startWatcher() {
 					// SVELTE COMPONENT CREATE — scaffold if empty and ensure story
 					if (isComponentsSvelte(abs) && ev.type === 'create') {
 						await handleSvelteComponentCreation(abs, relPath)
+						continue
+					}
+
+					// VUE COMPONENT CREATE — scaffold if empty and ensure story
+					if (isComponentsVue(abs) && ev.type === 'create') {
+						await handleVueComponentCreation(abs, relPath)
 						continue
 					}
 
@@ -1007,6 +1130,18 @@ function startWatcher() {
 		}
 
 		const createdStory = ensureStoryForSvelteComponent(abs)
+		if (createdStory) {
+			kick('create:story', createdStory)
+		}
+	}
+
+	async function handleVueComponentCreation(abs: string, relPath: string) {
+		if (isEmptyOrWhitespace(abs)) {
+			scaffoldVueComponent(abs)
+		}
+
+		console.log('Vue component creation detected:', relPath)
+		const createdStory = ensureStoryForVueComponent(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}

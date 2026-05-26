@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/vue3-vite'
+import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { mergeConfig } from 'vite'
 
@@ -18,7 +19,7 @@ const config: StorybookConfig = {
 	// We add it here so `.vue` SFC imports actually parse during the Storybook build.
 	viteFinal: async (viteConfig) =>
 		mergeConfig(viteConfig, {
-			plugins: [vue()],
+			plugins: [vue(), tailwindcss()],
 		}),
 }
 

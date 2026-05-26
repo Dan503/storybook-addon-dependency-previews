@@ -26,6 +26,18 @@ export interface SvelteStoryScaffoldContext extends SvelteComponentScaffoldConte
 	tags: string[]
 }
 
+export interface VueComponentScaffoldContext {
+	/** PascalCase component name, e.g. `"ButtonAtom"` */
+	componentName: string
+}
+
+export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
+	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
+	title: string
+	/** Story tags, e.g. `["autodocs", "atom"]` */
+	tags: string[]
+}
+
 export interface SvelteDecoratorScaffoldContext {
 	/**
 	 * PascalCase name of the **wrapped** component (the segment of the
@@ -153,6 +165,12 @@ export interface SbDepsConfig {
 			decorator?: (ctx: SvelteDecoratorScaffoldContext) => string
 			/** Template for the `.stories.svelte` story file */
 			story?: (ctx: SvelteStoryScaffoldContext) => string
+		}
+		vue?: {
+			/** Template for the `.vue` component file */
+			component?: (ctx: VueComponentScaffoldContext) => string
+			/** Template for the `.stories.ts` story file */
+			story?: (ctx: VueStoryScaffoldContext) => string
 		}
 		angular?: {
 			/** Template for the `.component.ts` file */
