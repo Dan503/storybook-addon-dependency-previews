@@ -50,5 +50,71 @@
         "componentPath": "components/01-atoms/ButtonAtom.stories.ts"
       }
     ]
+  },
+  "components/01-atoms/icons/ExternalLinkIcon.stories.ts": {
+    "componentPath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/ExternalLinkIcon.vue",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/01-atoms/icons/ExternalLinkIcon.vue": {
+    "componentPath": "components/01-atoms/icons/ExternalLinkIcon.vue",
+    "storyId": "01-atoms-icons-external-link-icon--docs",
+    "storyTitle": "External Link Icon",
+    "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+    "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/Svg.vue"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
+      }
+    ]
+  },
+  "components/01-atoms/icons/iconTypes.ts": {
+    "componentPath": "components/01-atoms/icons/iconTypes.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/01-atoms/icons/ExternalLinkIcon.vue",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/Svg.vue"
+      }
+    ]
+  },
+  "components/01-atoms/icons/Svg.vue": {
+    "componentPath": "components/01-atoms/icons/Svg.vue",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/01-atoms/icons/ExternalLinkIcon.vue",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
+      }
+    ]
   }
 }

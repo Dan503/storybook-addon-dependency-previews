@@ -8,7 +8,6 @@ const meta: Meta<typeof ButtonAtom> = {
 	tags: ['autodocs', 'atom'],
 	parameters: {
 		layout: 'padded',
-		__filePath: import.meta.url,
 	} satisfies StoryParameters,
 }
 
