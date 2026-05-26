@@ -1,27 +1,27 @@
 {
-  "components/HelloWorld.stories.ts": {
-    "componentPath": "components/HelloWorld.stories.ts",
+  "components/01-atom/ButtonAtom.stories.ts": {
+    "componentPath": "components/01-atom/ButtonAtom.stories.ts",
     "builtWith": [
       {
-        "componentPath": "components/HelloWorld.vue",
-        "storyId": "example-helloworld--docs",
-        "storyTitle": "HelloWorld",
-        "storyTitlePath": "Example/HelloWorld",
-        "storyFilePath": "components/HelloWorld.stories.ts"
+        "componentPath": "components/01-atom/ButtonAtom.vue",
+        "storyId": "01-atoms-button-atom--docs",
+        "storyTitle": "Button Atom",
+        "storyTitlePath": "01 Atoms / Button Atom",
+        "storyFilePath": "components/01-atom/ButtonAtom.stories.ts"
       }
     ],
     "usedIn": []
   },
-  "components/HelloWorld.vue": {
-    "componentPath": "components/HelloWorld.vue",
-    "storyId": "example-helloworld--docs",
-    "storyTitle": "HelloWorld",
-    "storyTitlePath": "Example/HelloWorld",
-    "storyFilePath": "components/HelloWorld.stories.ts",
+  "components/01-atom/ButtonAtom.vue": {
+    "componentPath": "components/01-atom/ButtonAtom.vue",
+    "storyId": "01-atoms-button-atom--docs",
+    "storyTitle": "Button Atom",
+    "storyTitlePath": "01 Atoms / Button Atom",
+    "storyFilePath": "components/01-atom/ButtonAtom.stories.ts",
     "builtWith": [],
     "usedIn": [
       {
-        "componentPath": "components/HelloWorld.stories.ts"
+        "componentPath": "components/01-atom/ButtonAtom.stories.ts"
       }
     ]
   }
