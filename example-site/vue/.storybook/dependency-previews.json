@@ -96,6 +96,20 @@
         "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
       },
       {
+        "componentPath": "components/01-atoms/icons/MapPinIcon.vue",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "components/01-atoms/icons/MapPinIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/PhoneIcon.vue",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "components/01-atoms/icons/PhoneIcon.stories.ts"
+      },
+      {
         "componentPath": "components/01-atoms/icons/Svg.vue"
       }
     ]
@@ -114,6 +128,86 @@
         "storyTitle": "External Link Icon",
         "storyTitlePath": "01 Atoms / Icons / External Link Icon",
         "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/MapPinIcon.vue",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "components/01-atoms/icons/MapPinIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/PhoneIcon.vue",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "components/01-atoms/icons/PhoneIcon.stories.ts"
+      }
+    ]
+  },
+  "components/01-atoms/icons/MapPinIcon.stories.ts": {
+    "componentPath": "components/01-atoms/icons/MapPinIcon.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/MapPinIcon.vue",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "components/01-atoms/icons/MapPinIcon.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/01-atoms/icons/MapPinIcon.vue": {
+    "componentPath": "components/01-atoms/icons/MapPinIcon.vue",
+    "storyId": "01-atoms-icons-map-pin-icon--docs",
+    "storyTitle": "Map Pin Icon",
+    "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+    "storyFilePath": "components/01-atoms/icons/MapPinIcon.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/Svg.vue"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/01-atoms/icons/MapPinIcon.stories.ts"
+      }
+    ]
+  },
+  "components/01-atoms/icons/PhoneIcon.stories.ts": {
+    "componentPath": "components/01-atoms/icons/PhoneIcon.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/PhoneIcon.vue",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "components/01-atoms/icons/PhoneIcon.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/01-atoms/icons/PhoneIcon.vue": {
+    "componentPath": "components/01-atoms/icons/PhoneIcon.vue",
+    "storyId": "01-atoms-icons-phone-icon--docs",
+    "storyTitle": "Phone Icon",
+    "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+    "storyFilePath": "components/01-atoms/icons/PhoneIcon.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/Svg.vue"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/01-atoms/icons/PhoneIcon.stories.ts"
       }
     ]
   }
