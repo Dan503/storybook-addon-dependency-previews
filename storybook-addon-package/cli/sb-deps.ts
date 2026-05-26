@@ -701,7 +701,10 @@ export const Primary: Story = {
 		setup() {
 			return { args }
 		},
-		template: \`<${componentName} v-bind="args">${componentName}</${componentName}>\`,
+		template: \`
+<${componentName} v-bind="args">
+	${componentName}
+</${componentName}>\`,
 	}),
 }
 `
