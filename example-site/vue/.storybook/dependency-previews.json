@@ -1,28 +1,28 @@
 {
-  "components/01-atom/ButtonAtom.stories.ts": {
-    "componentPath": "components/01-atom/ButtonAtom.stories.ts",
-    "builtWith": [
-      {
-        "componentPath": "components/01-atom/ButtonAtom.vue",
-        "storyId": "01-atoms-button-atom--docs",
-        "storyTitle": "Button Atom",
-        "storyTitlePath": "01 Atoms / Button Atom",
-        "storyFilePath": "components/01-atom/ButtonAtom.stories.ts"
-      }
-    ],
-    "usedIn": []
-  },
-  "components/01-atom/ButtonAtom.vue": {
-    "componentPath": "components/01-atom/ButtonAtom.vue",
-    "storyId": "01-atoms-button-atom--docs",
-    "storyTitle": "Button Atom",
-    "storyTitlePath": "01 Atoms / Button Atom",
-    "storyFilePath": "components/01-atom/ButtonAtom.stories.ts",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "components/01-atom/ButtonAtom.stories.ts"
-      }
-    ]
-  }
+	"components/01-atom/ButtonAtom.stories.ts": {
+		"componentPath": "components/01-atom/ButtonAtom.stories.ts",
+		"builtWith": [
+			{
+				"componentPath": "components/01-atom/ButtonAtom.vue",
+				"storyId": "01-atoms-button-atom--docs",
+				"storyTitle": "Button Atom",
+				"storyTitlePath": "01 Atoms / Button Atom",
+				"storyFilePath": "components/01-atom/ButtonAtom.stories.ts"
+			}
+		],
+		"usedIn": []
+	},
+	"components/01-atom/ButtonAtom.vue": {
+		"componentPath": "components/01-atom/ButtonAtom.vue",
+		"storyId": "01-atoms-button-atom--docs",
+		"storyTitle": "Button Atom",
+		"storyTitlePath": "01 Atoms / Button Atom",
+		"storyFilePath": "components/01-atom/ButtonAtom.stories.ts",
+		"builtWith": [],
+		"usedIn": [
+			{
+				"componentPath": "components/01-atom/ButtonAtom.stories.ts"
+			}
+		]
+	}
 }

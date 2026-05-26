@@ -10,7 +10,7 @@ const { type = 'button', onClick } = defineProps<PropsForButtonAtom>()
 <template>
 	<button
 		:type="type"
-		class="bg-teal-200 hover:bg-teal-100 focus:bg-teal-100 border-2 border-teal-900 px-4 py-1 rounded-lg"
+		class="rounded-lg border-2 border-teal-900 bg-teal-200 px-4 py-1 hover:bg-teal-100 focus:bg-teal-100"
 		@click="onClick"
 	>
 		<slot />

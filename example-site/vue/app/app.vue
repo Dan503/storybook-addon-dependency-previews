@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <HelloWorld msg="Welcome to the Nuxt example site" />
-  </div>
+	<div>
+		<HelloWorld msg="Welcome to the Nuxt example site" />
+	</div>
 </template>
 
 <script setup lang="ts">

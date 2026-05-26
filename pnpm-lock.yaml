@@ -402,6 +402,12 @@ importers:
       dependency-cruiser:
         specifier: ^17.3.8
         version: 17.3.9
+      prettier:
+        specifier: ^3.8.1
+        version: 3.8.3
+      prettier-plugin-tailwindcss:
+        specifier: ^0.7.2
+        version: 0.7.2(prettier-plugin-svelte@3.4.1(prettier@3.8.3)(svelte@5.49.1))(prettier@3.8.3)
       storybook:
         specifier: ^10.4.1
         version: 10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -25006,11 +25012,23 @@ snapshots:
       prettier: 3.8.1
       svelte: 5.49.1
 
+  prettier-plugin-svelte@3.4.1(prettier@3.8.3)(svelte@5.49.1):
+    dependencies:
+      prettier: 3.8.3
+      svelte: 5.49.1
+    optional: true
+
   prettier-plugin-tailwindcss@0.7.2(prettier-plugin-svelte@3.4.1(prettier@3.8.1)(svelte@5.49.1))(prettier@3.8.1):
     dependencies:
       prettier: 3.8.1
     optionalDependencies:
       prettier-plugin-svelte: 3.4.1(prettier@3.8.1)(svelte@5.49.1)
+
+  prettier-plugin-tailwindcss@0.7.2(prettier-plugin-svelte@3.4.1(prettier@3.8.3)(svelte@5.49.1))(prettier@3.8.3):
+    dependencies:
+      prettier: 3.8.3
+    optionalDependencies:
+      prettier-plugin-svelte: 3.4.1(prettier@3.8.3)(svelte@5.49.1)
 
   prettier@3.8.1: {}
 
