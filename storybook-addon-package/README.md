@@ -176,6 +176,12 @@ export function ${componentName}({}: ${propsName}) {
 			/** Customize the generated .stories.svelte file */
 			story: ({ componentName, title, tags }) => '...',
 		},
+		vue: {
+			/** Customize the generated .vue component file */
+			component: ({ componentName }) => '...',
+			/** Customize the generated .stories.ts file */
+			story: ({ componentName, title, tags }) => '...',
+		},
 		angular: {
 			/** Customize the generated .component.ts file */
 			component: ({
