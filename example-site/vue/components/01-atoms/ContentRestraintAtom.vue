@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ScreenPaddingAtom from './ScreenPaddingAtom.vue'
+import ScreenPaddingAtom, {
+	type PropsForScreenPaddingAtom,
+} from './ScreenPaddingAtom.vue'
 
-export interface PropsForContentRestraintAtom {
-	padVertical?: boolean
-}
+export type PropsForContentRestraintAtom = PropsForScreenPaddingAtom
 
 const { padVertical } = defineProps<PropsForContentRestraintAtom>()
 </script>
