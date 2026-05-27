@@ -51,15 +51,15 @@
       }
     ]
   },
-  "components/01-atoms/ScreenPaddingAtom.stories.ts": {
-    "componentPath": "components/01-atoms/ScreenPaddingAtom.stories.ts",
+  "components/01-atoms/ContentRestraintAtom.stories.ts": {
+    "componentPath": "components/01-atoms/ContentRestraintAtom.stories.ts",
     "builtWith": [
       {
-        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
-        "storyId": "01-atoms-screen-padding-atom--docs",
-        "storyTitle": "Screen Padding Atom",
-        "storyTitlePath": "01 Atoms / Screen Padding Atom",
-        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+        "componentPath": "components/01-atoms/ContentRestraintAtom.vue",
+        "storyId": "01-atoms-content-restraint-atom--docs",
+        "storyTitle": "Content Restraint Atom",
+        "storyTitlePath": "01 Atoms / Content Restraint Atom",
+        "storyFilePath": "components/01-atoms/ContentRestraintAtom.stories.ts"
       },
       {
         "componentPath": "components/zz-meta-components/ChildContentAtom.vue",
@@ -80,10 +80,34 @@
     "builtWith": [],
     "usedIn": [
       {
+        "componentPath": "components/01-atoms/ContentRestraintAtom.stories.ts"
+      },
+      {
         "componentPath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
       },
       {
         "componentPath": "components/zz-meta-components/ChildContentAtom.stories.ts"
+      }
+    ]
+  },
+  "components/01-atoms/ContentRestraintAtom.vue": {
+    "componentPath": "components/01-atoms/ContentRestraintAtom.vue",
+    "storyId": "01-atoms-content-restraint-atom--docs",
+    "storyTitle": "Content Restraint Atom",
+    "storyTitlePath": "01 Atoms / Content Restraint Atom",
+    "storyFilePath": "components/01-atoms/ContentRestraintAtom.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/01-atoms/ContentRestraintAtom.stories.ts"
       }
     ]
   },
@@ -96,9 +120,36 @@
     "builtWith": [],
     "usedIn": [
       {
+        "componentPath": "components/01-atoms/ContentRestraintAtom.vue",
+        "storyId": "01-atoms-content-restraint-atom--docs",
+        "storyTitle": "Content Restraint Atom",
+        "storyTitlePath": "01 Atoms / Content Restraint Atom",
+        "storyFilePath": "components/01-atoms/ContentRestraintAtom.stories.ts"
+      },
+      {
         "componentPath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
       }
     ]
+  },
+  "components/01-atoms/ScreenPaddingAtom.stories.ts": {
+    "componentPath": "components/01-atoms/ScreenPaddingAtom.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/zz-meta-components/ChildContentAtom.vue",
+        "storyId": "zz-meta-components-child-content-atom--docs",
+        "storyTitle": "Child Content Atom",
+        "storyTitlePath": "Zz Meta Components / Child Content Atom",
+        "storyFilePath": "components/zz-meta-components/ChildContentAtom.stories.ts"
+      }
+    ],
+    "usedIn": []
   },
   "components/01-atoms/icons/ExternalLinkIcon.stories.ts": {
     "componentPath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts",
