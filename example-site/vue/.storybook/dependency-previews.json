@@ -131,28 +131,25 @@
       }
     ]
   },
-  "components/01-atoms/ScreenPaddingAtom.stories.ts": {
-    "componentPath": "components/01-atoms/ScreenPaddingAtom.stories.ts",
+  "components/01-atoms/ExternalLinkAtom.stories.ts": {
+    "componentPath": "components/01-atoms/ExternalLinkAtom.stories.ts",
     "builtWith": [
       {
-        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
-        "storyId": "01-atoms-screen-padding-atom--docs",
-        "storyTitle": "Screen Padding Atom",
-        "storyTitlePath": "01 Atoms / Screen Padding Atom",
-        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
-      },
-      {
-        "componentPath": "components/zz-meta-components/ChildContentAtom.vue",
-        "storyId": "zz-meta-components-child-content-atom--docs",
-        "storyTitle": "Child Content Atom",
-        "storyTitlePath": "Zz Meta Components / Child Content Atom",
-        "storyFilePath": "components/zz-meta-components/ChildContentAtom.stories.ts"
+        "componentPath": "components/01-atoms/ExternalLinkAtom.vue",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "components/01-atoms/ExternalLinkAtom.stories.ts"
       }
     ],
     "usedIn": []
   },
-  "components/01-atoms/icons/ExternalLinkIcon.stories.ts": {
-    "componentPath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts",
+  "components/01-atoms/ExternalLinkAtom.vue": {
+    "componentPath": "components/01-atoms/ExternalLinkAtom.vue",
+    "storyId": "01-atoms-external-link-atom--docs",
+    "storyTitle": "External Link Atom",
+    "storyTitlePath": "01 Atoms / External Link Atom",
+    "storyFilePath": "components/01-atoms/ExternalLinkAtom.stories.ts",
     "builtWith": [
       {
         "componentPath": "components/01-atoms/icons/ExternalLinkIcon.vue",
@@ -162,7 +159,11 @@
         "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
       }
     ],
-    "usedIn": []
+    "usedIn": [
+      {
+        "componentPath": "components/01-atoms/ExternalLinkAtom.stories.ts"
+      }
+    ]
   },
   "components/01-atoms/icons/ExternalLinkIcon.vue": {
     "componentPath": "components/01-atoms/icons/ExternalLinkIcon.vue",
@@ -179,6 +180,13 @@
       }
     ],
     "usedIn": [
+      {
+        "componentPath": "components/01-atoms/ExternalLinkAtom.vue",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "components/01-atoms/ExternalLinkAtom.stories.ts"
+      },
       {
         "componentPath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
       }
@@ -244,6 +252,39 @@
         "storyFilePath": "components/01-atoms/icons/PhoneIcon.stories.ts"
       }
     ]
+  },
+  "components/01-atoms/ScreenPaddingAtom.stories.ts": {
+    "componentPath": "components/01-atoms/ScreenPaddingAtom.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/zz-meta-components/ChildContentAtom.vue",
+        "storyId": "zz-meta-components-child-content-atom--docs",
+        "storyTitle": "Child Content Atom",
+        "storyTitlePath": "Zz Meta Components / Child Content Atom",
+        "storyFilePath": "components/zz-meta-components/ChildContentAtom.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/01-atoms/icons/ExternalLinkIcon.stories.ts": {
+    "componentPath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/ExternalLinkIcon.vue",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "components/01-atoms/icons/ExternalLinkIcon.stories.ts"
+      }
+    ],
+    "usedIn": []
   },
   "components/01-atoms/icons/MapPinIcon.stories.ts": {
     "componentPath": "components/01-atoms/icons/MapPinIcon.stories.ts",
