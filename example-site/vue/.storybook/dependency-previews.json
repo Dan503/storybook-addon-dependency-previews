@@ -219,6 +219,13 @@
       },
       {
         "componentPath": "components/01-atoms/icons/Svg.vue"
+      },
+      {
+        "componentPath": "components/02-molecules/IconTextMolecule.vue",
+        "storyId": "02-molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "02 Molecules / Icon Text Molecule",
+        "storyFilePath": "components/02-molecules/IconTextMolecule.stories.ts"
       }
     ]
   },
@@ -316,6 +323,9 @@
     "usedIn": [
       {
         "componentPath": "components/01-atoms/icons/MapPinIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/02-molecules/IconTextMolecule.stories.ts"
       }
     ]
   },
@@ -349,6 +359,53 @@
     "usedIn": [
       {
         "componentPath": "components/01-atoms/icons/PhoneIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/02-molecules/IconTextMolecule.stories.ts"
+      }
+    ]
+  },
+  "components/02-molecules/IconTextMolecule.stories.ts": {
+    "componentPath": "components/02-molecules/IconTextMolecule.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/MapPinIcon.vue",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "components/01-atoms/icons/MapPinIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/PhoneIcon.vue",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "components/01-atoms/icons/PhoneIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/02-molecules/IconTextMolecule.vue",
+        "storyId": "02-molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "02 Molecules / Icon Text Molecule",
+        "storyFilePath": "components/02-molecules/IconTextMolecule.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/02-molecules/IconTextMolecule.vue": {
+    "componentPath": "components/02-molecules/IconTextMolecule.vue",
+    "storyId": "02-molecules-icon-text-molecule--docs",
+    "storyTitle": "Icon Text Molecule",
+    "storyTitlePath": "02 Molecules / Icon Text Molecule",
+    "storyFilePath": "components/02-molecules/IconTextMolecule.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/02-molecules/IconTextMolecule.stories.ts"
       }
     ]
   },
