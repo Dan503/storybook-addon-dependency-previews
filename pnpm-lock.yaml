@@ -8,6 +8,9 @@ patchedDependencies:
   '@formisch/react@0.4.5':
     hash: 0a29ee2429bbdedac4f5a41bb2af1a6ee47f9737774c7928d310a83e86747f9a
     path: patches/@formisch__react@0.4.5.patch
+  '@storybook/vue3-vite@10.4.1':
+    hash: 739cc409282d4d598d5c955364271619e2a2a7ed5f1da90950c606fed09039f5
+    path: patches/@storybook__vue3-vite@10.4.1.patch
 
 importers:
 
@@ -392,7 +395,7 @@ importers:
         version: 10.4.1(@types/react@19.1.13)(react@19.1.1)(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@storybook/vue3-vite':
         specifier: ^10.4.1
-        version: 10.4.1(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(vue@3.5.34(typescript@5.9.3))(webpack@5.105.4(esbuild@0.28.0))
+        version: 10.4.1(patch_hash=739cc409282d4d598d5c955364271619e2a2a7ed5f1da90950c606fed09039f5)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(vue@3.5.34(typescript@5.9.3))(webpack@5.105.4(esbuild@0.28.0))
       '@tailwindcss/vite':
         specifier: ^4.0.6
         version: 4.1.18(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))
@@ -18527,7 +18530,7 @@ snapshots:
       - rollup
       - webpack
 
-  '@storybook/vue3-vite@10.4.1(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(vue@3.5.34(typescript@5.9.3))(webpack@5.105.4(esbuild@0.28.0))':
+  '@storybook/vue3-vite@10.4.1(patch_hash=739cc409282d4d598d5c955364271619e2a2a7ed5f1da90950c606fed09039f5)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(vue@3.5.34(typescript@5.9.3))(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
       '@storybook/builder-vite': 10.4.1(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))
       '@storybook/vue3': 10.4.1(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vue@3.5.34(typescript@5.9.3))

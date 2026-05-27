@@ -1,0 +1,12 @@
+diff --git a/dist/preset.js b/dist/preset.js
+index 4f54cd50cd5a777e5dd7850ae407f66f778d6c34..4ae45a26390ce66e76e66cb2dc2715358b581a26 100644
+--- a/dist/preset.js
++++ b/dist/preset.js
+@@ -28,6 +28,7 @@ async function vueComponentMeta(tsconfigPath = "tsconfig.json") {
+   let { createFilter } = await import("vite"), exclude = /\.stories\.(ts|tsx|js|jsx)$|^\0\/virtual:|^\/virtual:|\.storybook\/.*\.(ts|js)$/, include = /\.(vue|ts|js|tsx|jsx)$/, filter = createFilter(include, exclude), checker = await createVueComponentMetaChecker(tsconfigPath);
+   return {
+     name: "storybook:vue-component-meta-plugin",
++    enforce: "post",
+     transform: {
+       filter: { id: { include, exclude } },
+       async handler(src, id) {

@@ -9,6 +9,7 @@ onlyBuiltDependencies:
   - esbuild
 patchedDependencies:
   '@formisch/react@0.4.5': patches/@formisch__react@0.4.5.patch
+  '@storybook/vue3-vite@10.4.1': patches/@storybook__vue3-vite@10.4.1.patch
 peerDependencyRules:
   allowedVersions:
     # @angular-devkit/core@21 peer dep declaration hasn't caught up to chokidar v5 yet
