@@ -634,7 +634,6 @@ const {  } = defineProps<PropsFor${componentName}>()
 
 <template>
 	<div class="${componentName}">
-		<p>${componentName}</p>
 		<slot />
 	</div>
 </template>
