@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+import { setup } from '@storybook/vue3-vite'
+import { createMemoryHistory, createRouter, RouterLink } from 'vue-router'
 import {
 	defaultPreviewParameters,
 	dependencyPreviewDecorators,
@@ -8,6 +10,22 @@ import {
 
 import '../app/assets/css/main.css'
 import dependenciesJson from './dependency-previews.json'
+
+const blankRouteComponent = { template: '<div />' }
+
+const router = createRouter({
+	history: createMemoryHistory(),
+	routes: [
+		{ path: '/', component: blankRouteComponent },
+		{ path: '/categories', component: blankRouteComponent },
+		{ path: '/contact', component: blankRouteComponent },
+	],
+})
+
+setup((app) => {
+	app.use(router)
+	app.component('NuxtLink', RouterLink)
+})
 
 const previewConfig: StorybookPreviewConfig = {
 	// Essential configuration for storybook-addon-dependency-previews

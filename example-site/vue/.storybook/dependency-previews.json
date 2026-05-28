@@ -409,6 +409,32 @@
       }
     ]
   },
+  "components/02-molecules/MainNavMolecule.stories.ts": {
+    "componentPath": "components/02-molecules/MainNavMolecule.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/02-molecules/MainNavMolecule.vue",
+        "storyId": "02-molecules-main-nav-molecule--docs",
+        "storyTitle": "Main Nav Molecule",
+        "storyTitlePath": "02 Molecules / Main Nav Molecule",
+        "storyFilePath": "components/02-molecules/MainNavMolecule.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/02-molecules/MainNavMolecule.vue": {
+    "componentPath": "components/02-molecules/MainNavMolecule.vue",
+    "storyId": "02-molecules-main-nav-molecule--docs",
+    "storyTitle": "Main Nav Molecule",
+    "storyTitlePath": "02 Molecules / Main Nav Molecule",
+    "storyFilePath": "components/02-molecules/MainNavMolecule.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/02-molecules/MainNavMolecule.stories.ts"
+      }
+    ]
+  },
   "components/zz-meta-components/ChildContentAtom.stories.ts": {
     "componentPath": "components/zz-meta-components/ChildContentAtom.stories.ts",
     "builtWith": [
