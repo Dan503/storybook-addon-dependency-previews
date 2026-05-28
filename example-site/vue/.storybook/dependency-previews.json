@@ -162,6 +162,13 @@
     "usedIn": [
       {
         "componentPath": "components/01-atoms/ExternalLinkAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/FooterOrganism.vue",
+        "storyId": "03-organisms-footer-organism--docs",
+        "storyTitle": "Footer Organism",
+        "storyTitlePath": "03 Organisms / Footer Organism",
+        "storyFilePath": "components/03-organisms/FooterOrganism.stories.ts"
       }
     ]
   },
@@ -432,6 +439,40 @@
     "usedIn": [
       {
         "componentPath": "components/02-molecules/MainNavMolecule.stories.ts"
+      }
+    ]
+  },
+  "components/03-organisms/FooterOrganism.stories.ts": {
+    "componentPath": "components/03-organisms/FooterOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/03-organisms/FooterOrganism.vue",
+        "storyId": "03-organisms-footer-organism--docs",
+        "storyTitle": "Footer Organism",
+        "storyTitlePath": "03 Organisms / Footer Organism",
+        "storyFilePath": "components/03-organisms/FooterOrganism.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/03-organisms/FooterOrganism.vue": {
+    "componentPath": "components/03-organisms/FooterOrganism.vue",
+    "storyId": "03-organisms-footer-organism--docs",
+    "storyTitle": "Footer Organism",
+    "storyTitlePath": "03 Organisms / Footer Organism",
+    "storyFilePath": "components/03-organisms/FooterOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ExternalLinkAtom.vue",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "components/01-atoms/ExternalLinkAtom.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/03-organisms/FooterOrganism.stories.ts"
       }
     ]
   },
