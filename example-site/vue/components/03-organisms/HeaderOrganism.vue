@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.vue'
 import MainNavMolecule from '../02-molecules/MainNavMolecule.vue'
+// @ts-ignore
 import logo from '../../app/assets/simplified-logo.png'
 
 export interface PropsForHeaderOrganism {}
