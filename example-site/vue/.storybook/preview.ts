@@ -23,6 +23,15 @@ const router = createRouter({
 })
 
 setup((app) => {
+	// Storybook reuses the app instance across re-renders (HMR, arg/control
+	// changes, viewport resizes, revisiting stories). vue-router's install
+	// defines non-configurable `$route`/`$router` globalProperties, so
+	// re-running `app.use(router)` on an already-configured app throws
+	// `TypeError: Cannot redefine property: $route`. Re-registering the
+	// `NuxtLink` component would likewise warn. Guard on the router-installed
+	// marker so this only runs once per app instance (new apps still get it).
+	if (app.config.globalProperties.$router) return
+
 	app.use(router)
 	app.component('NuxtLink', RouterLink)
 })
