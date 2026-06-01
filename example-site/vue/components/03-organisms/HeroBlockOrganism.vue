@@ -28,7 +28,6 @@ const {
 		:tintPercent="tintPercent"
 	>
 		<ScreenPaddingAtom padVertical>
-			<!-- No need for a Level wrapper here because the Wrapper is in the SiteFrame component -->
 			<h1 class="text-4xl font-bold">{{ title }}</h1>
 			<slot />
 		</ScreenPaddingAtom>

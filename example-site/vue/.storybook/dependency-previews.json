@@ -93,6 +93,9 @@
         "componentPath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
       },
       {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.stories.ts"
+      },
+      {
         "componentPath": "components/zz-meta-components/ChildContentAtom.stories.ts"
       }
     ]
@@ -501,6 +504,13 @@
     "usedIn": [
       {
         "componentPath": "components/03-organisms/FooterOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
       }
     ]
   },
@@ -542,6 +552,13 @@
     "usedIn": [
       {
         "componentPath": "components/03-organisms/HeaderOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
       }
     ]
   },
@@ -583,6 +600,54 @@
     "usedIn": [
       {
         "componentPath": "components/03-organisms/HeroBlockOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/03-organisms/SiteFrameOrganism.stories.ts": {
+    "componentPath": "components/03-organisms/SiteFrameOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/zz-meta-components/ChildContentAtom.vue",
+        "storyId": "zz-meta-components-child-content-atom--docs",
+        "storyTitle": "Child Content Atom",
+        "storyTitlePath": "Zz Meta Components / Child Content Atom",
+        "storyFilePath": "components/zz-meta-components/ChildContentAtom.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/03-organisms/SiteFrameOrganism.vue": {
+    "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+    "storyId": "03-organisms-site-frame-organism--docs",
+    "storyTitle": "Site Frame Organism",
+    "storyTitlePath": "03 Organisms / Site Frame Organism",
+    "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/03-organisms/FooterOrganism.vue",
+        "storyId": "03-organisms-footer-organism--docs",
+        "storyTitle": "Footer Organism",
+        "storyTitlePath": "03 Organisms / Footer Organism",
+        "storyFilePath": "components/03-organisms/FooterOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/HeaderOrganism.vue",
+        "storyId": "03-organisms-header-organism--docs",
+        "storyTitle": "Header Organism",
+        "storyTitlePath": "03 Organisms / Header Organism",
+        "storyFilePath": "components/03-organisms/HeaderOrganism.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.stories.ts"
       }
     ]
   },
