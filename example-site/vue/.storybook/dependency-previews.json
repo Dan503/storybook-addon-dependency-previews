@@ -22,6 +22,13 @@
     "usedIn": [
       {
         "componentPath": "components/01-atoms/BgImageContainerAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/HeroBlockOrganism.vue",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "components/03-organisms/HeroBlockOrganism.stories.ts"
       }
     ]
   },
@@ -135,6 +142,13 @@
         "storyTitle": "Header Organism",
         "storyTitlePath": "03 Organisms / Header Organism",
         "storyFilePath": "components/03-organisms/HeaderOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/HeroBlockOrganism.vue",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "components/03-organisms/HeroBlockOrganism.stories.ts"
       }
     ]
   },
@@ -528,6 +542,47 @@
     "usedIn": [
       {
         "componentPath": "components/03-organisms/HeaderOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/03-organisms/HeroBlockOrganism.stories.ts": {
+    "componentPath": "components/03-organisms/HeroBlockOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/03-organisms/HeroBlockOrganism.vue",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "components/03-organisms/HeroBlockOrganism.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/03-organisms/HeroBlockOrganism.vue": {
+    "componentPath": "components/03-organisms/HeroBlockOrganism.vue",
+    "storyId": "03-organisms-hero-block-organism--docs",
+    "storyTitle": "Hero Block Organism",
+    "storyTitlePath": "03 Organisms / Hero Block Organism",
+    "storyFilePath": "components/03-organisms/HeroBlockOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/BgImageContainerAtom.vue",
+        "storyId": "01-atoms-bg-image-container-atom--docs",
+        "storyTitle": "Bg Image Container Atom",
+        "storyTitlePath": "01 Atoms / Bg Image Container Atom",
+        "storyFilePath": "components/01-atoms/BgImageContainerAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/03-organisms/HeroBlockOrganism.stories.ts"
       }
     ]
   },
