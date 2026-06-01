@@ -651,6 +651,32 @@
       }
     ]
   },
+  "components/listings/card/CardMolecule.stories.ts": {
+    "componentPath": "components/listings/card/CardMolecule.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/card/CardMolecule.vue",
+        "storyId": "listings-card-card-molecule--docs",
+        "storyTitle": "Card Molecule",
+        "storyTitlePath": "Listings / Card / Card Molecule",
+        "storyFilePath": "components/listings/card/CardMolecule.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/listings/card/CardMolecule.vue": {
+    "componentPath": "components/listings/card/CardMolecule.vue",
+    "storyId": "listings-card-card-molecule--docs",
+    "storyTitle": "Card Molecule",
+    "storyTitlePath": "Listings / Card / Card Molecule",
+    "storyFilePath": "components/listings/card/CardMolecule.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/listings/card/CardMolecule.stories.ts"
+      }
+    ]
+  },
   "components/zz-meta-components/ChildContentAtom.stories.ts": {
     "componentPath": "components/zz-meta-components/ChildContentAtom.stories.ts",
     "builtWith": [
