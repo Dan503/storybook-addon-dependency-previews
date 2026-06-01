@@ -824,6 +824,47 @@
     "usedIn": [
       {
         "componentPath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/listings/compact/CompactListingOrganism.stories.ts": {
+    "componentPath": "components/listings/compact/CompactListingOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/listings/compact/CompactListingOrganism.vue": {
+    "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+    "storyId": "listings-compact-compact-listing-organism--docs",
+    "storyTitle": "Compact Listing Organism",
+    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+    "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/compact/CompactListingMolecule.vue",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.stories.ts"
       }
     ]
   },
