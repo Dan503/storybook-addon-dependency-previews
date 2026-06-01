@@ -651,6 +651,60 @@
       }
     ]
   },
+  "components/listings/card/CardListingOrganism.stories.ts": {
+    "componentPath": "components/listings/card/CardListingOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/card/CardListingOrganism.vue",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "components/listings/card/CardListingOrganism.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/listings/card/CardListingOrganism.vue": {
+    "componentPath": "components/listings/card/CardListingOrganism.vue",
+    "storyId": "listings-card-card-listing-organism--docs",
+    "storyTitle": "Card Listing Organism",
+    "storyTitlePath": "Listings / Card / Card Listing Organism",
+    "storyFilePath": "components/listings/card/CardListingOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/card/CardMolecule.vue",
+        "storyId": "listings-card-card-molecule--docs",
+        "storyTitle": "Card Molecule",
+        "storyTitlePath": "Listings / Card / Card Molecule",
+        "storyFilePath": "components/listings/card/CardMolecule.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/listings/card/CardListingOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/listings/card/CardMolecule.vue": {
+    "componentPath": "components/listings/card/CardMolecule.vue",
+    "storyId": "listings-card-card-molecule--docs",
+    "storyTitle": "Card Molecule",
+    "storyTitlePath": "Listings / Card / Card Molecule",
+    "storyFilePath": "components/listings/card/CardMolecule.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/listings/card/CardListingOrganism.vue",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "components/listings/card/CardListingOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/card/CardMolecule.stories.ts"
+      }
+    ]
+  },
   "components/listings/card/CardMolecule.stories.ts": {
     "componentPath": "components/listings/card/CardMolecule.stories.ts",
     "builtWith": [
@@ -663,19 +717,6 @@
       }
     ],
     "usedIn": []
-  },
-  "components/listings/card/CardMolecule.vue": {
-    "componentPath": "components/listings/card/CardMolecule.vue",
-    "storyId": "listings-card-card-molecule--docs",
-    "storyTitle": "Card Molecule",
-    "storyTitlePath": "Listings / Card / Card Molecule",
-    "storyFilePath": "components/listings/card/CardMolecule.stories.ts",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "components/listings/card/CardMolecule.stories.ts"
-      }
-    ]
   },
   "components/zz-meta-components/ChildContentAtom.stories.ts": {
     "componentPath": "components/zz-meta-components/ChildContentAtom.stories.ts",
