@@ -55,6 +55,13 @@
     "usedIn": [
       {
         "componentPath": "components/01-atoms/ButtonAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.vue",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
       }
     ]
   },
@@ -159,6 +166,13 @@
         "storyTitle": "Card List Template",
         "storyTitlePath": "04 Templates / Card List Template",
         "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.vue",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
       }
     ]
   },
@@ -662,6 +676,13 @@
         "storyTitle": "Card List Template",
         "storyTitlePath": "04 Templates / Card List Template",
         "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.vue",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
       }
     ]
   },
@@ -775,6 +796,109 @@
       }
     ]
   },
+  "components/04-templates/DetailPageTemplate.stories.ts": {
+    "componentPath": "components/04-templates/DetailPageTemplate.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.vue",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/04-templates/DetailPageTemplate.vue": {
+    "componentPath": "components/04-templates/DetailPageTemplate.vue",
+    "storyId": "04-templates-detail-page-template--docs",
+    "storyTitle": "Detail Page Template",
+    "storyTitlePath": "04 Templates / Detail Page Template",
+    "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ButtonAtom.vue",
+        "storyId": "01-atoms-button-atom--docs",
+        "storyTitle": "Button Atom",
+        "storyTitlePath": "01 Atoms / Button Atom",
+        "storyFilePath": "components/01-atoms/ButtonAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.stories.ts"
+      }
+    ]
+  },
+  "components/listings/compact/CompactListingOrganism.vue": {
+    "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+    "storyId": "listings-compact-compact-listing-organism--docs",
+    "storyTitle": "Compact Listing Organism",
+    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+    "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/compact/CompactListingMolecule.vue",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.vue",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/listings/compact/CompactListingMolecule.vue": {
+    "componentPath": "components/listings/compact/CompactListingMolecule.vue",
+    "storyId": "listings-compact-compact-listing-molecule--docs",
+    "storyTitle": "Compact Listing Molecule",
+    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+    "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ]
+  },
   "components/listings/card/CardListingOrganism.stories.ts": {
     "componentPath": "components/listings/card/CardListingOrganism.stories.ts",
     "builtWith": [
@@ -814,26 +938,6 @@
     ],
     "usedIn": []
   },
-  "components/listings/compact/CompactListingMolecule.vue": {
-    "componentPath": "components/listings/compact/CompactListingMolecule.vue",
-    "storyId": "listings-compact-compact-listing-molecule--docs",
-    "storyTitle": "Compact Listing Molecule",
-    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-    "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "components/listings/compact/CompactListingMolecule.stories.ts"
-      },
-      {
-        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
-        "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Compact Listing Organism",
-        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
-      }
-    ]
-  },
   "components/listings/compact/CompactListingOrganism.stories.ts": {
     "componentPath": "components/listings/compact/CompactListingOrganism.stories.ts",
     "builtWith": [
@@ -846,27 +950,6 @@
       }
     ],
     "usedIn": []
-  },
-  "components/listings/compact/CompactListingOrganism.vue": {
-    "componentPath": "components/listings/compact/CompactListingOrganism.vue",
-    "storyId": "listings-compact-compact-listing-organism--docs",
-    "storyTitle": "Compact Listing Organism",
-    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-    "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts",
-    "builtWith": [
-      {
-        "componentPath": "components/listings/compact/CompactListingMolecule.vue",
-        "storyId": "listings-compact-compact-listing-molecule--docs",
-        "storyTitle": "Compact Listing Molecule",
-        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-        "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "components/listings/compact/CompactListingOrganism.stories.ts"
-      }
-    ]
   },
   "components/zz-meta-components/ChildContentAtom.stories.ts": {
     "componentPath": "components/zz-meta-components/ChildContentAtom.stories.ts",
