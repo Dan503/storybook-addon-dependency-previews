@@ -152,6 +152,13 @@
         "storyTitle": "Hero Block Organism",
         "storyTitlePath": "03 Organisms / Hero Block Organism",
         "storyFilePath": "components/03-organisms/HeroBlockOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/CardListTemplate.vue",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
       }
     ]
   },
@@ -648,21 +655,70 @@
     "usedIn": [
       {
         "componentPath": "components/03-organisms/SiteFrameOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/CardListTemplate.vue",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
       }
     ]
   },
-  "components/listings/card/CardListingOrganism.stories.ts": {
-    "componentPath": "components/listings/card/CardListingOrganism.stories.ts",
+  "components/04-templates/CardListTemplate.stories.ts": {
+    "componentPath": "components/04-templates/CardListTemplate.stories.ts",
     "builtWith": [
+      {
+        "componentPath": "components/04-templates/CardListTemplate.vue",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/04-templates/CardListTemplate.vue": {
+    "componentPath": "components/04-templates/CardListTemplate.vue",
+    "storyId": "04-templates-card-list-template--docs",
+    "storyTitle": "Card List Template",
+    "storyTitlePath": "04 Templates / Card List Template",
+    "storyFilePath": "components/04-templates/CardListTemplate.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
+      },
       {
         "componentPath": "components/listings/card/CardListingOrganism.vue",
         "storyId": "listings-card-card-listing-organism--docs",
         "storyTitle": "Card Listing Organism",
         "storyTitlePath": "Listings / Card / Card Listing Organism",
         "storyFilePath": "components/listings/card/CardListingOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/card/CardMolecule.vue",
+        "storyId": "listings-card-card-molecule--docs",
+        "storyTitle": "Card Molecule",
+        "storyTitlePath": "Listings / Card / Card Molecule",
+        "storyFilePath": "components/listings/card/CardMolecule.stories.ts"
       }
     ],
-    "usedIn": []
+    "usedIn": [
+      {
+        "componentPath": "components/04-templates/CardListTemplate.stories.ts"
+      }
+    ]
   },
   "components/listings/card/CardListingOrganism.vue": {
     "componentPath": "components/listings/card/CardListingOrganism.vue",
@@ -681,6 +737,13 @@
     ],
     "usedIn": [
       {
+        "componentPath": "components/04-templates/CardListTemplate.vue",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/listings/card/CardListingOrganism.stories.ts"
       }
     ]
@@ -694,6 +757,13 @@
     "builtWith": [],
     "usedIn": [
       {
+        "componentPath": "components/04-templates/CardListTemplate.vue",
+        "storyId": "04-templates-card-list-template--docs",
+        "storyTitle": "Card List Template",
+        "storyTitlePath": "04 Templates / Card List Template",
+        "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/listings/card/CardListingOrganism.vue",
         "storyId": "listings-card-card-listing-organism--docs",
         "storyTitle": "Card Listing Organism",
@@ -704,6 +774,19 @@
         "componentPath": "components/listings/card/CardMolecule.stories.ts"
       }
     ]
+  },
+  "components/listings/card/CardListingOrganism.stories.ts": {
+    "componentPath": "components/listings/card/CardListingOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/card/CardListingOrganism.vue",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "components/listings/card/CardListingOrganism.stories.ts"
+      }
+    ],
+    "usedIn": []
   },
   "components/listings/card/CardMolecule.stories.ts": {
     "componentPath": "components/listings/card/CardMolecule.stories.ts",
