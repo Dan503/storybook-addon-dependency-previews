@@ -801,6 +801,32 @@
     ],
     "usedIn": []
   },
+  "components/listings/compact/CompactListingMolecule.stories.ts": {
+    "componentPath": "components/listings/compact/CompactListingMolecule.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/compact/CompactListingMolecule.vue",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/listings/compact/CompactListingMolecule.vue": {
+    "componentPath": "components/listings/compact/CompactListingMolecule.vue",
+    "storyId": "listings-compact-compact-listing-molecule--docs",
+    "storyTitle": "Compact Listing Molecule",
+    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+    "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      }
+    ]
+  },
   "components/zz-meta-components/ChildContentAtom.stories.ts": {
     "componentPath": "components/zz-meta-components/ChildContentAtom.stories.ts",
     "builtWith": [
