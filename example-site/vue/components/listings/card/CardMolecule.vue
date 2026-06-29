@@ -11,8 +11,8 @@ const { title, imgSrc, description, href } = defineProps<PropsForCardMolecule>()
 
 <template>
 	<div class="CardMolecule @container grid">
-		<a
-			:href="href"
+		<NuxtLink
+			:to="href"
 			class="flex h-full gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
 		>
 			<img :src="imgSrc" alt="" class="aspect-video object-cover" />
@@ -20,7 +20,7 @@ const { title, imgSrc, description, href } = defineProps<PropsForCardMolecule>()
 				<h2 class="text-xl font-bold">{{ title }}</h2>
 				<p class="line-clamp-4">{{ description }}</p>
 			</div>
-		</a>
+		</NuxtLink>
 	</div>
 </template>
 

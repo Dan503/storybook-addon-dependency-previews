@@ -30,7 +30,7 @@ const cards = computed(() =>
 <template>
 	<SiteFrameOrganism>
 		<div class="HomeTemplate">
-			<HeroBlockOrganism :imgSrc="featureMeal.image">
+			<HeroBlockOrganism :imgSrc="featureMeal?.image">
 				<template #title>
 					Welcome to the
 					<br />
