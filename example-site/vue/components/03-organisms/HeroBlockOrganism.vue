@@ -3,7 +3,7 @@ import BgImageContainerAtom from '../01-atoms/BgImageContainerAtom.vue'
 import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.vue'
 
 export interface PropsForHeroBlockOrganism {
-	title: string
+	title?: string
 	imgSrc?: string
 	tintPercent?: number
 	tintColor?: string
@@ -28,7 +28,9 @@ const {
 		:tintPercent="tintPercent"
 	>
 		<ScreenPaddingAtom padVertical>
-			<h1 class="text-4xl font-bold">{{ title }}</h1>
+			<h1 class="text-4xl font-bold">
+				<slot name="title">{{ title }}</slot>
+			</h1>
 			<slot />
 		</ScreenPaddingAtom>
 	</BgImageContainerAtom>
