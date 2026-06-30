@@ -57,6 +57,13 @@
         "componentPath": "components/01-atoms/ButtonAtom.stories.ts"
       },
       {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/04-templates/DetailPageTemplate.vue",
         "storyId": "04-templates-detail-page-template--docs",
         "storyTitle": "Detail Page Template",
@@ -135,6 +142,13 @@
     "usedIn": [
       {
         "componentPath": "components/01-atoms/ContentRestraintAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
       }
     ]
   },
@@ -183,6 +197,13 @@
         "storyTitle": "Detail Page Template",
         "storyTitlePath": "04 Templates / Detail Page Template",
         "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/HomeTemplate.vue",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "components/04-templates/HomeTemplate.stories.ts"
       }
     ]
   },
@@ -224,6 +245,13 @@
         "storyTitle": "Footer Organism",
         "storyTitlePath": "03 Organisms / Footer Organism",
         "storyFilePath": "components/03-organisms/FooterOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/HomeTemplate.vue",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "components/04-templates/HomeTemplate.stories.ts"
       }
     ]
   },
@@ -388,6 +416,13 @@
       },
       {
         "componentPath": "components/02-molecules/IconTextMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
       }
     ]
   },
@@ -424,6 +459,13 @@
       },
       {
         "componentPath": "components/02-molecules/IconTextMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
       }
     ]
   },
@@ -468,6 +510,13 @@
     "usedIn": [
       {
         "componentPath": "components/02-molecules/IconTextMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
       }
     ]
   },
@@ -631,6 +680,13 @@
     "usedIn": [
       {
         "componentPath": "components/03-organisms/HeroBlockOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/HomeTemplate.vue",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "components/04-templates/HomeTemplate.stories.ts"
       }
     ]
   },
@@ -688,11 +744,25 @@
         "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
       },
       {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/04-templates/DetailPageTemplate.vue",
         "storyId": "04-templates-detail-page-template--docs",
         "storyTitle": "Detail Page Template",
         "storyTitlePath": "04 Templates / Detail Page Template",
         "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
+      },
+      {
+        "componentPath": "components/04-templates/HomeTemplate.vue",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "components/04-templates/HomeTemplate.stories.ts"
       }
     ]
   },
@@ -775,6 +845,13 @@
         "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
       },
       {
+        "componentPath": "components/04-templates/HomeTemplate.vue",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "components/04-templates/HomeTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/listings/card/CardListingOrganism.stories.ts"
       }
     ]
@@ -795,6 +872,13 @@
         "storyFilePath": "components/04-templates/CardListTemplate.stories.ts"
       },
       {
+        "componentPath": "components/04-templates/HomeTemplate.vue",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "components/04-templates/HomeTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/listings/card/CardListingOrganism.vue",
         "storyId": "listings-card-card-listing-organism--docs",
         "storyTitle": "Card Listing Organism",
@@ -806,25 +890,25 @@
       }
     ]
   },
-  "components/04-templates/DetailPageTemplate.stories.ts": {
-    "componentPath": "components/04-templates/DetailPageTemplate.stories.ts",
+  "components/04-templates/ContactTemplate.stories.ts": {
+    "componentPath": "components/04-templates/ContactTemplate.stories.ts",
     "builtWith": [
       {
-        "componentPath": "components/04-templates/DetailPageTemplate.vue",
-        "storyId": "04-templates-detail-page-template--docs",
-        "storyTitle": "Detail Page Template",
-        "storyTitlePath": "04 Templates / Detail Page Template",
-        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
       }
     ],
     "usedIn": []
   },
-  "components/04-templates/DetailPageTemplate.vue": {
-    "componentPath": "components/04-templates/DetailPageTemplate.vue",
-    "storyId": "04-templates-detail-page-template--docs",
-    "storyTitle": "Detail Page Template",
-    "storyTitlePath": "04 Templates / Detail Page Template",
-    "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts",
+  "components/04-templates/ContactTemplate.vue": {
+    "componentPath": "components/04-templates/ContactTemplate.vue",
+    "storyId": "04-templates-contact-template--docs",
+    "storyTitle": "Contact Template",
+    "storyTitlePath": "04 Templates / Contact Template",
+    "storyFilePath": "components/04-templates/ContactTemplate.stories.ts",
     "builtWith": [
       {
         "componentPath": "components/01-atoms/ButtonAtom.vue",
@@ -834,11 +918,32 @@
         "storyFilePath": "components/01-atoms/ButtonAtom.stories.ts"
       },
       {
-        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
-        "storyId": "01-atoms-screen-padding-atom--docs",
-        "storyTitle": "Screen Padding Atom",
-        "storyTitlePath": "01 Atoms / Screen Padding Atom",
-        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+        "componentPath": "components/01-atoms/ContentRestraintAtom.vue",
+        "storyId": "01-atoms-content-restraint-atom--docs",
+        "storyTitle": "Content Restraint Atom",
+        "storyTitlePath": "01 Atoms / Content Restraint Atom",
+        "storyFilePath": "components/01-atoms/ContentRestraintAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/MapPinIcon.vue",
+        "storyId": "01-atoms-icons-map-pin-icon--docs",
+        "storyTitle": "Map Pin Icon",
+        "storyTitlePath": "01 Atoms / Icons / Map Pin Icon",
+        "storyFilePath": "components/01-atoms/icons/MapPinIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/icons/PhoneIcon.vue",
+        "storyId": "01-atoms-icons-phone-icon--docs",
+        "storyTitle": "Phone Icon",
+        "storyTitlePath": "01 Atoms / Icons / Phone Icon",
+        "storyFilePath": "components/01-atoms/icons/PhoneIcon.stories.ts"
+      },
+      {
+        "componentPath": "components/02-molecules/IconTextMolecule.vue",
+        "storyId": "02-molecules-icon-text-molecule--docs",
+        "storyTitle": "Icon Text Molecule",
+        "storyTitlePath": "02 Molecules / Icon Text Molecule",
+        "storyFilePath": "components/02-molecules/IconTextMolecule.stories.ts"
       },
       {
         "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
@@ -847,71 +952,6 @@
         "storyTitlePath": "03 Organisms / Site Frame Organism",
         "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
       },
-      {
-        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
-        "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Compact Listing Organism",
-        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "components/04-templates/DetailPageTemplate.stories.ts"
-      }
-    ]
-  },
-  "components/listings/compact/CompactListingOrganism.vue": {
-    "componentPath": "components/listings/compact/CompactListingOrganism.vue",
-    "storyId": "listings-compact-compact-listing-organism--docs",
-    "storyTitle": "Compact Listing Organism",
-    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-    "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts",
-    "builtWith": [
-      {
-        "componentPath": "components/listings/compact/CompactListingMolecule.vue",
-        "storyId": "listings-compact-compact-listing-molecule--docs",
-        "storyTitle": "Compact Listing Molecule",
-        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-        "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "components/04-templates/DetailPageTemplate.vue",
-        "storyId": "04-templates-detail-page-template--docs",
-        "storyTitle": "Detail Page Template",
-        "storyTitlePath": "04 Templates / Detail Page Template",
-        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
-      },
-      {
-        "componentPath": "components/listings/compact/CompactListingOrganism.stories.ts"
-      }
-    ]
-  },
-  "components/listings/compact/CompactListingMolecule.vue": {
-    "componentPath": "components/listings/compact/CompactListingMolecule.vue",
-    "storyId": "listings-compact-compact-listing-molecule--docs",
-    "storyTitle": "Compact Listing Molecule",
-    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
-    "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "components/listings/compact/CompactListingMolecule.stories.ts"
-      },
-      {
-        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
-        "storyId": "listings-compact-compact-listing-organism--docs",
-        "storyTitle": "Compact Listing Organism",
-        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
-        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
-      }
-    ]
-  },
-  "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue": {
-    "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue",
-    "builtWith": [
       {
         "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.vue",
         "storyId": "forms-contact-form-organism--docs",
@@ -923,30 +963,6 @@
         "componentPath": "components/forms/ContactFormOrganism/useContactForm.ts"
       },
       {
-        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue",
-        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
-        "storyTitle": "Form Data Molecule",
-        "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Molecule",
-        "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts"
-      }
-    ],
-    "usedIn": [
-      {
-        "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.stories.ts"
-      }
-    ]
-  },
-  "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue": {
-    "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue",
-    "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
-    "storyTitle": "Form Data Molecule",
-    "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Molecule",
-    "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts",
-    "builtWith": [
-      {
-        "componentPath": "components/forms/FormTypes.ts"
-      },
-      {
         "componentPath": "components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.vue",
         "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
         "storyTitle": "Form Data Preview Atom",
@@ -956,16 +972,7 @@
     ],
     "usedIn": [
       {
-        "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue"
-      },
-      {
-        "componentPath": "components/forms/TextAreaMolecule/TextAreaMolecule.decorator.vue"
-      },
-      {
-        "componentPath": "components/forms/TextFieldMolecule/TextFieldMolecule.decorator.vue"
-      },
-      {
-        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts"
+        "componentPath": "components/04-templates/ContactTemplate.stories.ts"
       }
     ]
   },
@@ -1007,6 +1014,13 @@
     ],
     "usedIn": [
       {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue"
       },
       {
@@ -1019,55 +1033,14 @@
     "builtWith": [],
     "usedIn": [
       {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
+      },
+      {
         "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue"
-      }
-    ]
-  },
-  "components/forms/FormTypes.ts": {
-    "componentPath": "components/forms/FormTypes.ts",
-    "builtWith": [],
-    "usedIn": [
-      {
-        "componentPath": "components/forms/ErrorMessages/ErrorBlockOrganism.vue",
-        "storyId": "forms-error-messages-error-block-organism--docs",
-        "storyTitle": "Error Block Organism",
-        "storyTitlePath": "Forms / Error Messages / Error Block Organism",
-        "storyFilePath": "components/forms/ErrorMessages/ErrorBlockOrganism.stories.ts"
-      },
-      {
-        "componentPath": "components/forms/ErrorMessages/ErrorListMolecule.vue",
-        "storyId": "forms-error-messages-error-list-molecule--docs",
-        "storyTitle": "Error List Molecule",
-        "storyTitlePath": "Forms / Error Messages / Error List Molecule",
-        "storyFilePath": "components/forms/ErrorMessages/ErrorListMolecule.stories.ts"
-      },
-      {
-        "componentPath": "components/forms/TextAreaMolecule/TextAreaMolecule.vue",
-        "storyId": "forms-text-area-molecule--docs",
-        "storyTitle": "Text Area Molecule",
-        "storyTitlePath": "Forms / Text Area Molecule",
-        "storyFilePath": "components/forms/TextAreaMolecule/TextAreaMolecule.stories.ts"
-      },
-      {
-        "componentPath": "components/forms/TextFieldMolecule/TextFieldMolecule.vue",
-        "storyId": "forms-text-field-molecule--docs",
-        "storyTitle": "Text Field Molecule",
-        "storyTitlePath": "Forms / Text Field Molecule",
-        "storyFilePath": "components/forms/TextFieldMolecule/TextFieldMolecule.stories.ts"
-      },
-      {
-        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue",
-        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
-        "storyTitle": "Form Data Molecule",
-        "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Molecule",
-        "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts"
-      },
-      {
-        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.vue",
-        "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
-        "storyTitle": "Form Data Preview Atom",
-        "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Preview Atom",
-        "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.ts"
       }
     ]
   },
@@ -1083,6 +1056,13 @@
       }
     ],
     "usedIn": [
+      {
+        "componentPath": "components/04-templates/ContactTemplate.vue",
+        "storyId": "04-templates-contact-template--docs",
+        "storyTitle": "Contact Template",
+        "storyTitlePath": "04 Templates / Contact Template",
+        "storyFilePath": "components/04-templates/ContactTemplate.stories.ts"
+      },
       {
         "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue",
         "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
@@ -1194,6 +1174,54 @@
       }
     ]
   },
+  "components/forms/FormTypes.ts": {
+    "componentPath": "components/forms/FormTypes.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/forms/ErrorMessages/ErrorBlockOrganism.vue",
+        "storyId": "forms-error-messages-error-block-organism--docs",
+        "storyTitle": "Error Block Organism",
+        "storyTitlePath": "Forms / Error Messages / Error Block Organism",
+        "storyFilePath": "components/forms/ErrorMessages/ErrorBlockOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/forms/ErrorMessages/ErrorListMolecule.vue",
+        "storyId": "forms-error-messages-error-list-molecule--docs",
+        "storyTitle": "Error List Molecule",
+        "storyTitlePath": "Forms / Error Messages / Error List Molecule",
+        "storyFilePath": "components/forms/ErrorMessages/ErrorListMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/forms/TextAreaMolecule/TextAreaMolecule.vue",
+        "storyId": "forms-text-area-molecule--docs",
+        "storyTitle": "Text Area Molecule",
+        "storyTitlePath": "Forms / Text Area Molecule",
+        "storyFilePath": "components/forms/TextAreaMolecule/TextAreaMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/forms/TextFieldMolecule/TextFieldMolecule.vue",
+        "storyId": "forms-text-field-molecule--docs",
+        "storyTitle": "Text Field Molecule",
+        "storyTitlePath": "Forms / Text Field Molecule",
+        "storyFilePath": "components/forms/TextFieldMolecule/TextFieldMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue",
+        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
+        "storyTitle": "Form Data Molecule",
+        "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Molecule",
+        "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.vue",
+        "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
+        "storyTitle": "Form Data Preview Atom",
+        "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Preview Atom",
+        "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.ts"
+      }
+    ]
+  },
   "components/forms/ErrorMessages/ErrorListMolecule.vue": {
     "componentPath": "components/forms/ErrorMessages/ErrorListMolecule.vue",
     "storyId": "forms-error-messages-error-list-molecule--docs",
@@ -1256,6 +1284,238 @@
       },
       {
         "componentPath": "components/forms/ErrorMessages/ErrorMessageAtom.stories.ts"
+      }
+    ]
+  },
+  "components/04-templates/DetailPageTemplate.stories.ts": {
+    "componentPath": "components/04-templates/DetailPageTemplate.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.vue",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/04-templates/DetailPageTemplate.vue": {
+    "componentPath": "components/04-templates/DetailPageTemplate.vue",
+    "storyId": "04-templates-detail-page-template--docs",
+    "storyTitle": "Detail Page Template",
+    "storyTitlePath": "04 Templates / Detail Page Template",
+    "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ButtonAtom.vue",
+        "storyId": "01-atoms-button-atom--docs",
+        "storyTitle": "Button Atom",
+        "storyTitlePath": "01 Atoms / Button Atom",
+        "storyFilePath": "components/01-atoms/ButtonAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.stories.ts"
+      }
+    ]
+  },
+  "components/listings/compact/CompactListingOrganism.vue": {
+    "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+    "storyId": "listings-compact-compact-listing-organism--docs",
+    "storyTitle": "Compact Listing Organism",
+    "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+    "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/listings/compact/CompactListingMolecule.vue",
+        "storyId": "listings-compact-compact-listing-molecule--docs",
+        "storyTitle": "Compact Listing Molecule",
+        "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+        "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/04-templates/DetailPageTemplate.vue",
+        "storyId": "04-templates-detail-page-template--docs",
+        "storyTitle": "Detail Page Template",
+        "storyTitlePath": "04 Templates / Detail Page Template",
+        "storyFilePath": "components/04-templates/DetailPageTemplate.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/listings/compact/CompactListingMolecule.vue": {
+    "componentPath": "components/listings/compact/CompactListingMolecule.vue",
+    "storyId": "listings-compact-compact-listing-molecule--docs",
+    "storyTitle": "Compact Listing Molecule",
+    "storyTitlePath": "Listings / Compact / Compact Listing Molecule",
+    "storyFilePath": "components/listings/compact/CompactListingMolecule.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "components/listings/compact/CompactListingMolecule.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/compact/CompactListingOrganism.vue",
+        "storyId": "listings-compact-compact-listing-organism--docs",
+        "storyTitle": "Compact Listing Organism",
+        "storyTitlePath": "Listings / Compact / Compact Listing Organism",
+        "storyFilePath": "components/listings/compact/CompactListingOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/04-templates/HomeTemplate.stories.ts": {
+    "componentPath": "components/04-templates/HomeTemplate.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/04-templates/HomeTemplate.vue",
+        "storyId": "04-templates-home-template--docs",
+        "storyTitle": "Home Template",
+        "storyTitlePath": "04 Templates / Home Template",
+        "storyFilePath": "components/04-templates/HomeTemplate.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "components/04-templates/HomeTemplate.vue": {
+    "componentPath": "components/04-templates/HomeTemplate.vue",
+    "storyId": "04-templates-home-template--docs",
+    "storyTitle": "Home Template",
+    "storyTitlePath": "04 Templates / Home Template",
+    "storyFilePath": "components/04-templates/HomeTemplate.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/01-atoms/ExternalLinkAtom.vue",
+        "storyId": "01-atoms-external-link-atom--docs",
+        "storyTitle": "External Link Atom",
+        "storyTitlePath": "01 Atoms / External Link Atom",
+        "storyFilePath": "components/01-atoms/ExternalLinkAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/01-atoms/ScreenPaddingAtom.vue",
+        "storyId": "01-atoms-screen-padding-atom--docs",
+        "storyTitle": "Screen Padding Atom",
+        "storyTitlePath": "01 Atoms / Screen Padding Atom",
+        "storyFilePath": "components/01-atoms/ScreenPaddingAtom.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/HeroBlockOrganism.vue",
+        "storyId": "03-organisms-hero-block-organism--docs",
+        "storyTitle": "Hero Block Organism",
+        "storyTitlePath": "03 Organisms / Hero Block Organism",
+        "storyFilePath": "components/03-organisms/HeroBlockOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/03-organisms/SiteFrameOrganism.vue",
+        "storyId": "03-organisms-site-frame-organism--docs",
+        "storyTitle": "Site Frame Organism",
+        "storyTitlePath": "03 Organisms / Site Frame Organism",
+        "storyFilePath": "components/03-organisms/SiteFrameOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/card/CardListingOrganism.vue",
+        "storyId": "listings-card-card-listing-organism--docs",
+        "storyTitle": "Card Listing Organism",
+        "storyTitlePath": "Listings / Card / Card Listing Organism",
+        "storyFilePath": "components/listings/card/CardListingOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/listings/card/CardMolecule.vue",
+        "storyId": "listings-card-card-molecule--docs",
+        "storyTitle": "Card Molecule",
+        "storyTitlePath": "Listings / Card / Card Molecule",
+        "storyFilePath": "components/listings/card/CardMolecule.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/04-templates/HomeTemplate.stories.ts"
+      }
+    ]
+  },
+  "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue": {
+    "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue",
+    "builtWith": [
+      {
+        "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.vue",
+        "storyId": "forms-contact-form-organism--docs",
+        "storyTitle": "Contact Form Organism",
+        "storyTitlePath": "Forms / Contact Form Organism",
+        "storyFilePath": "components/forms/ContactFormOrganism/ContactFormOrganism.stories.ts"
+      },
+      {
+        "componentPath": "components/forms/ContactFormOrganism/useContactForm.ts"
+      },
+      {
+        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue",
+        "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
+        "storyTitle": "Form Data Molecule",
+        "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Molecule",
+        "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.stories.ts"
+      }
+    ]
+  },
+  "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue": {
+    "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.vue",
+    "storyId": "zz-meta-components-form-data-preview-form-data-molecule--docs",
+    "storyTitle": "Form Data Molecule",
+    "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Molecule",
+    "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "components/forms/FormTypes.ts"
+      },
+      {
+        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.vue",
+        "storyId": "zz-meta-components-form-data-preview-form-data-preview-atom--docs",
+        "storyTitle": "Form Data Preview Atom",
+        "storyTitlePath": "Zz Meta Components / Form Data Preview / Form Data Preview Atom",
+        "storyFilePath": "components/zz-meta-components/FormDataPreview/FormDataPreviewAtom.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "components/forms/ContactFormOrganism/ContactFormOrganism.decorator.vue"
+      },
+      {
+        "componentPath": "components/forms/TextAreaMolecule/TextAreaMolecule.decorator.vue"
+      },
+      {
+        "componentPath": "components/forms/TextFieldMolecule/TextFieldMolecule.decorator.vue"
+      },
+      {
+        "componentPath": "components/zz-meta-components/FormDataPreview/FormDataMolecule.stories.ts"
       }
     ]
   },
