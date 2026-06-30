@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+
+/*
+ * Tailwind v4 auto-detects content from the build tool's root. Under Storybook
+ * that root is the package dir, so `components/` is scanned automatically; under
+ * Nuxt the root is `app/`, so the sibling `components/` dir is missed. Declare it
+ * explicitly (relative to this file) so utilities generate in both builds.
+ */
+@source '../../../components';
+
+html,
+body,
+#storybook-root {
+	min-height: 100%;
+	display: grid;
+}
+
+body {
+	margin: 0;
+	font-family:
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+		'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	grid-template-rows: 1fr auto;
+}
+
+code {
+	font-family:
+		source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+button {
+	cursor: pointer;
+}

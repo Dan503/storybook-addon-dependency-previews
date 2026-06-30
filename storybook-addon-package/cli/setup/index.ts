@@ -172,10 +172,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This addon currently supports React and Svelte only. Detected "${detection.frameworkRaw}".`,
+			`This setup wizard currently supports React, Svelte, and Vue 3 (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
-			'If you would like to see support added for your framework, please open an issue on GitHub.',
+			'The addon itself also supports Angular and Next.js with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
+		)
+		log(
+			'If you would like to see wizard support added for your framework, please open an issue on GitHub.',
 		)
 		return
 	}
@@ -183,9 +186,10 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
 		const choice = await choose<
-			'react-vite' | 'sveltekit' | 'svelte-vite' | 'cancel'
+			'react-vite' | 'sveltekit' | 'svelte-vite' | 'vue3-vite' | 'cancel'
 		>('Which framework is this project using?', [
 			{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
+			{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
 			{
 				label: 'Svelte with SvelteKit (@storybook/sveltekit)',
 				value: 'sveltekit',

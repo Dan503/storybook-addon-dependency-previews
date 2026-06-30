@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Svelte**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Svelte) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
+Currently works with **React**, **Svelte**, **Vue 3**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Svelte, Vue 3) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -28,9 +28,17 @@ The below image demonstrates what you will see when you open up some of the depe
 
 #### Svelte demos
 
-- [Svelte Storybook demo site](https://dependency-previews-storybook-svelte.netlify.app/)
+- [Svelte Storybook demo site](https://dependency-previews-storybook-svelte.netlify.app/?path=/docs/04-templates-home-template--docs)
 - [Svelte rendered example website](https://dependency-previews-demo-site-svelte.netlify.app/)
 - [Svelte demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/svelte)
+
+#### Vue demos
+
+Vue version built for Vue 3.
+
+- [Vue Storybook demo site](https://dependency-previews-storybook-vue.netlify.app/?path=/docs/04-templates-home-template--docs)
+- [Vue rendered example website](https://dependency-previews-demo-site-vue.netlify.app/)
+- [Vue demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/vue)
 
 #### Angular demos
 
@@ -42,7 +50,7 @@ The below image demonstrates what you will see when you open up some of the depe
 
 ## Installation guide
 
-### Quick start (React and Svelte)
+### Quick start (React, Svelte, and Vue 3)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
@@ -84,9 +92,9 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`) and Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+The wizard supports React (`@storybook/react-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), and Vue 3 (`@storybook/vue3-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
 
-- [Manual setup — Vite (React, Svelte)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
+- [Manual setup — Vite (React, Svelte, Vue 3)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
 ## Configuration file (optional)
@@ -174,6 +182,12 @@ export function ${componentName}({}: ${propsName}) {
 			/** Customize the generated .decorator.svelte file */
 			decorator: ({ componentName }) => '...',
 			/** Customize the generated .stories.svelte file */
+			story: ({ componentName, title, tags }) => '...',
+		},
+		vue: {
+			/** Customize the generated .vue component file */
+			component: ({ componentName }) => '...',
+			/** Customize the generated .stories.ts file */
 			story: ({ componentName, title, tags }) => '...',
 		},
 		angular: {
