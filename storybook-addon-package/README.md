@@ -28,9 +28,17 @@ The below image demonstrates what you will see when you open up some of the depe
 
 #### Svelte demos
 
-- [Svelte Storybook demo site](https://dependency-previews-storybook-svelte.netlify.app/)
+- [Svelte Storybook demo site](https://dependency-previews-storybook-svelte.netlify.app/?path=/docs/04-templates-home-template--docs)
 - [Svelte rendered example website](https://dependency-previews-demo-site-svelte.netlify.app/)
 - [Svelte demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/svelte)
+
+#### Vue demos
+
+Vue version built for Vue 3.
+
+- [Vue Storybook demo site](https://dependency-previews-storybook-vue.netlify.app/?path=/docs/04-templates-home-template--docs)
+- [Vue rendered example website](https://dependency-previews-demo-site-vue.netlify.app/)
+- [Vue demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/vue)
 
 #### Angular demos
 
