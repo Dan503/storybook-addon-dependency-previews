@@ -111,8 +111,11 @@ let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
 // Which flavor to scaffold for `.tsx` files. React and Solid share the `.tsx`
 // extension, so this config-driven signal (default `'react'`) is what routes a
-// new `.tsx` component/story to the right templates.
-let TSX_FRAMEWORK: NonNullable<SbDepsConfig['tsxFramework']> = 'react'
+// new `.tsx` component/story to the right templates. Derived from the config
+// schema so the scaffolder can't drift from `SbDepsConfig` as new `.tsx`
+// frameworks are added.
+type TsxFlavor = NonNullable<SbDepsConfig['tsxFramework']>
+let TSX_FRAMEWORK: TsxFlavor = 'react'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -426,8 +429,8 @@ function makeTitleFromComponent(absCompPath: string) {
 // both. `flavor` — from `TSX_FRAMEWORK`, set by the sb-deps.config `tsxFramework`
 // field the wizard writes for Solid projects — selects the emitted template and
 // the scaffold-config override key. Svelte / Vue / Angular keep their own
-// scaffolders below (distinct extensions, distinct helpers).
-type TsxFlavor = 'react' | 'solid'
+// scaffolders below (distinct extensions, distinct helpers). `TsxFlavor` is
+// declared with `TSX_FRAMEWORK` above, derived from the config schema.
 
 function tsxComponentTemplate(
 	flavor: TsxFlavor,
