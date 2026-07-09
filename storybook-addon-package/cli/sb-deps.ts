@@ -525,10 +525,10 @@ function scaffoldComponent(absCompPath: string, flavor: TsxFlavor) {
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
 
-	const override =
-		flavor === 'solid'
-			? SCAFFOLD_CONFIG?.solid?.component?.({ componentName, propsName })
-			: SCAFFOLD_CONFIG?.react?.component?.({ componentName, propsName })
+	const override = SCAFFOLD_CONFIG?.[flavor]?.component?.({
+		componentName,
+		propsName,
+	})
 	const tpl = override ?? tsxComponentTemplate(flavor, componentName, propsName)
 	writeFileSync(absCompPath, tpl, 'utf8')
 	info(`scaffolded ${flavor} component → ${rel(absCompPath)}`)
@@ -543,10 +543,13 @@ function scaffoldStoryForComponent(absCompPath: string, flavor: TsxFlavor) {
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 
-	const override =
-		flavor === 'solid'
-			? SCAFFOLD_CONFIG?.solid?.story?.({ componentName, propsName, title, tags, base })
-			: SCAFFOLD_CONFIG?.react?.story?.({ componentName, propsName, title, tags, base })
+	const override = SCAFFOLD_CONFIG?.[flavor]?.story?.({
+		componentName,
+		propsName,
+		title,
+		tags,
+		base,
+	})
 	const storyTpl =
 		override ??
 		tsxStoryTemplate(flavor, componentName, propsName, base, title, tags)
@@ -1290,7 +1293,7 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
-	TSX_FRAMEWORK = cfg.tsxFramework === 'solid' ? 'solid' : 'react'
+	TSX_FRAMEWORK = cfg.tsxFramework ?? 'react'
 	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//
 	//   - `undefined` / missing key  → fall back to the bundled default `'src'`.

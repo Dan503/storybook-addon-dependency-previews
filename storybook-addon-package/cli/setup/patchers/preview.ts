@@ -651,13 +651,15 @@ export function patchPreviewFile(
 	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl, srcDir } =
 		opts
 
-	if (
+	// Keep this list in sync with `isFrameworkSupported` in detect.ts — both
+	// enumerate the Vite-based frameworks the wizard can patch a preview for.
+	const isUnsupportedForPreview =
 		framework !== 'react-vite' &&
 		framework !== 'sveltekit' &&
 		framework !== 'svelte-vite' &&
 		framework !== 'vue3-vite' &&
 		framework !== 'solid-vite'
-	) {
+	if (isUnsupportedForPreview) {
 		return {
 			kind: 'failed',
 			reason: `Preview patcher does not support framework "${framework}".`,
