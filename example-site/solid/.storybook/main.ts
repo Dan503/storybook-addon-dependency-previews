@@ -9,7 +9,7 @@ const config: StorybookConfig = {
     "@chromatic-com/storybook",
     "@storybook/addon-vitest",
     "@storybook/addon-a11y",
-    "@storybook/addon-docs"
+    "storybook-addon-dependency-previews/addon",
   ],
   "framework": "storybook-solidjs-vite"
 };
