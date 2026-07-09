@@ -236,7 +236,22 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 	}
 }
 
-export function isFrameworkSupported(framework: Framework): boolean {
+/**
+ * The Vite-based frameworks the wizard fully supports (detection + preview
+ * patching). A type predicate so callers narrow `Framework` to this set — the
+ * single source of truth the preview patcher's support guard reuses instead of
+ * re-listing the members.
+ */
+export type SupportedFramework =
+	| 'react-vite'
+	| 'sveltekit'
+	| 'svelte-vite'
+	| 'vue3-vite'
+	| 'solid-vite'
+
+export function isFrameworkSupported(
+	framework: Framework,
+): framework is SupportedFramework {
 	return (
 		framework === 'react-vite' ||
 		framework === 'sveltekit' ||
