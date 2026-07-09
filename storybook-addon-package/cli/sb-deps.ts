@@ -438,22 +438,27 @@ function tsxComponentTemplate(
 		return `import { createSignal, mergeProps, type ParentProps } from 'solid-js'
 
 export interface ${propsName} {
-  label?: string
+	label?: string
 }
 
 export function ${componentName}(props: ParentProps<${propsName}>) {
-  const merged = mergeProps({ label: '${componentName}' }, props)
-  const [count, setCount] = createSignal(0)
+	const merged = mergeProps(
+		{
+			label: '${componentName}',
+		} satisfies ${propsName},
+		props,
+	)
+	const [count, setCount] = createSignal(0)
 
-  return (
-    <div class="${componentName}">
-      <p>{merged.label}</p>
-      <button type="button" onClick={() => setCount(count() + 1)}>
-        count: {count()}
-      </button>
-      {merged.children}
-    </div>
-  )
+	return (
+		<div class="${componentName}">
+			<p>{merged.label}</p>
+			<button type="button" onClick={() => setCount(count() + 1)}>
+				count: {count()}
+			</button>
+			{merged.children}
+		</div>
+	)
 }
 `
 	}
