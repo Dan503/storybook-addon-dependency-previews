@@ -1293,7 +1293,26 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
-	TSX_FRAMEWORK = cfg.tsxFramework ?? 'react'
+	// `tsxFramework` comes from a config file that isn't type-checked at runtime
+	// (a JS config can hold any value), so validate it against the known set the
+	// same way `srcDir` is below — warn and fall back to `'react'` for anything
+	// unrecognised, rather than letting a stray value (e.g. a non-`.tsx`
+	// framework key like `'vue'`, which also collides with a scaffold-config key)
+	// drive `.tsx` scaffolding into the wrong templates.
+	const configuredTsxFramework = cfg.tsxFramework
+	if (configuredTsxFramework === undefined) {
+		TSX_FRAMEWORK = 'react'
+	} else if (
+		configuredTsxFramework === 'react' ||
+		configuredTsxFramework === 'solid'
+	) {
+		TSX_FRAMEWORK = configuredTsxFramework
+	} else {
+		error(
+			`tsxFramework "${configuredTsxFramework}" is invalid — must be 'react' or 'solid'. Falling back to 'react'.`,
+		)
+		TSX_FRAMEWORK = 'react'
+	}
 	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//
 	//   - `undefined` / missing key  → fall back to the bundled default `'src'`.
