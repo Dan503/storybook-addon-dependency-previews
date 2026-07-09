@@ -38,6 +38,22 @@ export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
 	tags: string[]
 }
 
+export interface SolidComponentScaffoldContext {
+	/** PascalCase component name, e.g. `"ButtonAtom"` */
+	componentName: string
+	/** Props interface name, e.g. `"PropsForButtonAtom"` */
+	propsName: string
+}
+
+export interface SolidStoryScaffoldContext extends SolidComponentScaffoldContext {
+	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
+	title: string
+	/** Story tags, e.g. `["autodocs", "atom"]` */
+	tags: string[]
+	/** Base file name without extension, e.g. `"ButtonAtom"` */
+	base: string
+}
+
 export interface SvelteDecoratorScaffoldContext {
 	/**
 	 * PascalCase name of the **wrapped** component (the segment of the
@@ -130,6 +146,22 @@ export interface SbDepsConfig {
 	angularSelectorPrefix?: string
 
 	/**
+	 * Which flavor to scaffold for `.tsx` component and story files. Defaults
+	 * to `'react'`.
+	 *
+	 * React and Solid both author components in `.tsx`, so the file extension
+	 * alone can't tell them apart. Set this to `'solid'` in a Solid project so
+	 * the watch-mode scaffolder emits Solid templates (`createSignal`,
+	 * `mergeProps`, `storybook-solidjs-vite` story imports) instead of React
+	 * ones. The `sb-deps setup` wizard writes this automatically for detected
+	 * Solid projects.
+	 *
+	 * @example 'react'  (default)
+	 * @example 'solid'
+	 */
+	tsxFramework?: 'react' | 'solid'
+
+	/**
 	 * Customize the scaffold templates used when new component or story files are created.
 	 * Each function receives a context object with relevant variables and must return the
 	 * full file content as a string.
@@ -171,6 +203,12 @@ export interface SbDepsConfig {
 			component?: (ctx: VueComponentScaffoldContext) => string
 			/** Template for the `.stories.ts` story file */
 			story?: (ctx: VueStoryScaffoldContext) => string
+		}
+		solid?: {
+			/** Template for the `.tsx` component file (Solid projects) */
+			component?: (ctx: SolidComponentScaffoldContext) => string
+			/** Template for the `.stories.tsx` story file (Solid projects) */
+			story?: (ctx: SolidStoryScaffoldContext) => string
 		}
 		angular?: {
 			/** Template for the `.component.ts` file */

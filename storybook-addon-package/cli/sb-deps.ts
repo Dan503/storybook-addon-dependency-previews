@@ -109,6 +109,10 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
+// Which flavor to scaffold for `.tsx` files. React and Solid share the `.tsx`
+// extension, so this config-driven signal (default `'react'`) is what routes a
+// new `.tsx` component/story to the right templates.
+let TSX_FRAMEWORK: NonNullable<SbDepsConfig['tsxFramework']> = 'react'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -490,6 +494,97 @@ function ensureStoryForComponent(absCompPath: string) {
 	const sPath = storyPathForComponent(absCompPath)
 	if (existsSync(sPath)) return null
 	return scaffoldStoryForComponent(absCompPath)
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Solid scaffolding
+//
+// Solid components live in `.tsx` — the same extension React uses — so these run
+// only when `tsxFramework: 'solid'` is set in sb-deps.config (the `sb-deps setup`
+// wizard writes it for detected Solid projects). They reuse the shared `.tsx`
+// path/name helpers (`componentBaseFromComponent`, `storyPathForComponent`,
+// `makeTitleFromComponent`, `detectAtomicTag`) — only the emitted templates differ.
+// ───────────────────────────────────────────────────────────────────────────────
+function scaffoldSolidComponent(absCompPath: string) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+
+	const tpl =
+		SCAFFOLD_CONFIG?.solid?.component?.({ componentName, propsName }) ??
+		`import { createSignal, mergeProps, type ParentProps } from 'solid-js'
+
+export interface ${propsName} {
+  label?: string
+}
+
+export function ${componentName}(props: ParentProps<${propsName}>) {
+  const merged = mergeProps({ label: '${componentName}' }, props)
+  const [count, setCount] = createSignal(0)
+
+  return (
+    <div class="${componentName}">
+      <p>{merged.label}</p>
+      <button type="button" onClick={() => setCount(count() + 1)}>
+        count: {count()}
+      </button>
+      {merged.children}
+    </div>
+  )
+}
+`
+	writeFileSync(absCompPath, tpl, 'utf8')
+	info(`scaffolded solid component → ${rel(absCompPath)}`)
+}
+
+function scaffoldStoryForSolidComponent(absCompPath: string) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+	const title = makeTitleFromComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const storyTpl =
+		SCAFFOLD_CONFIG?.solid?.story?.({
+			componentName,
+			propsName,
+			title,
+			tags,
+			base,
+		}) ??
+		`import type { Meta, StoryObj } from 'storybook-solidjs-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { ${componentName}, type ${propsName} } from './${componentName}'
+
+const meta: Meta<typeof ${componentName}> = {
+  title: '${title}',
+  component: ${componentName},
+  tags: ${JSON.stringify(tags)},
+  parameters: {
+    layout: 'padded',
+  } satisfies StoryParameters,
+}
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Primary: Story = {
+  args: {} satisfies ${propsName},
+}
+`
+	const storyPath = storyPathForComponent(absCompPath)
+	writeFileSync(storyPath, storyTpl, 'utf8')
+	info(`scaffolded solid story → ${rel(storyPath)}`)
+	return storyPath
+}
+
+function ensureStoryForSolidComponent(absCompPath: string) {
+	const sPath = storyPathForComponent(absCompPath)
+	if (existsSync(sPath)) return null
+	return scaffoldStoryForSolidComponent(absCompPath)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1108,12 +1203,21 @@ function startWatcher() {
 		.catch((e) => error(`watch init failed ${e?.message || e}`))
 
 	async function handleComponentCreation(abs: string, relPath: string) {
+		// React and Solid share the `.tsx` extension; `TSX_FRAMEWORK` (from
+		// sb-deps.config) decides which templates a new `.tsx` file gets.
+		const isSolid = TSX_FRAMEWORK === 'solid'
 		if (isEmptyOrWhitespace(abs)) {
-			scaffoldComponent(abs)
+			if (isSolid) {
+				scaffoldSolidComponent(abs)
+			} else {
+				scaffoldComponent(abs)
+			}
 		}
 
 		console.log('Component creation detected:', relPath)
-		const createdStory = ensureStoryForComponent(abs)
+		const createdStory = isSolid
+			? ensureStoryForSolidComponent(abs)
+			: ensureStoryForComponent(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
@@ -1218,6 +1322,7 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
+	TSX_FRAMEWORK = cfg.tsxFramework === 'solid' ? 'solid' : 'react'
 	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//
 	//   - `undefined` / missing key  → fall back to the bundled default `'src'`.
