@@ -2,7 +2,17 @@ import { existsSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 export type SbDepsConfigPatchResult =
-	| { kind: 'created'; path: string }
+	| {
+			kind: 'created'
+			path: string
+			/**
+			 * Human-readable summaries of the non-default fields actually written
+			 * (e.g. `["srcDir: 'app'", "tsxFramework: 'solid'"]`). The caller logs
+			 * these verbatim, so "which fields were written" has a single source of
+			 * truth here rather than being re-derived at the log site.
+			 */
+			fields: ReadonlyArray<string>
+	  }
 	| { kind: 'skipped'; reason: string }
 	| { kind: 'failed'; reason: string }
 
@@ -62,18 +72,27 @@ export function writeSbDepsConfigIfNeeded(
 	const ext = isEsm ? 'js' : 'cjs'
 	const path = resolve(cwd, `sb-deps.config.${ext}`)
 
-	// Only emit the fields that actually differ from the defaults: `srcDir` when
-	// it's non-default, and `tsxFramework: 'solid'` for Solid projects (so the
-	// scaffolder picks Solid templates for `.tsx` files).
-	const configLines: Array<string> = []
+	// Collect the non-default fields once, each as both its file line and a
+	// human-readable summary, so the written file and the caller's success log
+	// share a single source of truth for "which fields differ from the
+	// defaults": `srcDir` when it's non-default, and `tsxFramework: 'solid'` for
+	// Solid projects (so the scaffolder picks Solid templates for `.tsx` files).
+	// Adding a third field later updates both outputs from this one list.
+	const fields: Array<{ line: string; summary: string }> = []
 	if (needsSrcDir) {
 		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
-		configLines.push(`\tsrcDir: ${srcDirLiteral},`)
+		fields.push({
+			line: `\tsrcDir: ${srcDirLiteral},`,
+			summary: `srcDir: ${srcDirLiteral}`,
+		})
 	}
 	if (isSolid) {
-		configLines.push(`\ttsxFramework: 'solid',`)
+		fields.push({
+			line: `\ttsxFramework: 'solid',`,
+			summary: `tsxFramework: 'solid'`,
+		})
 	}
-	const configBody = configLines.join('\n')
+	const configBody = fields.map((f) => f.line).join('\n')
 
 	const content = isEsm
 		? `import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
@@ -97,5 +116,5 @@ ${configBody}
 			reason: `Could not write ${path}: ${(e as Error).message}`,
 		}
 	}
-	return { kind: 'created', path }
+	return { kind: 'created', path, fields: fields.map((f) => f.summary) }
 }

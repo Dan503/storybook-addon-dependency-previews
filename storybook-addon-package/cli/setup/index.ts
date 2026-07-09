@@ -162,7 +162,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				isEsm: detection.isEsm,
 			})
 			if (cfg.kind === 'created') {
-				log(`✓ wrote ${cfg.path} (srcDir: '${resolvedSrcDir.srcDir}')`)
+				log(`✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
 			} else if (cfg.kind === 'failed') {
 				log(`⚠ ${cfg.reason}`)
 			}
@@ -434,10 +434,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	})
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
-		const configBits: Array<string> = []
-		if (effectiveSrcDir !== 'src') configBits.push(`srcDir: '${effectiveSrcDir}'`)
-		if (isSolidProject) configBits.push(`tsxFramework: 'solid'`)
-		log(`  ✓ wrote ${sbDepsConfigResult.path} (${configBits.join(', ')})`)
+		log(`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`)
 	} else if (sbDepsConfigResult.kind === 'failed') {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
