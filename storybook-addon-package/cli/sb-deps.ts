@@ -420,99 +420,22 @@ function makeTitleFromComponent(absCompPath: string) {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story & component scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
-function scaffoldComponent(absCompPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
+// React and Solid both author components in `.tsx` and uniquely share every
+// path/name helper below (`componentBaseFromComponent`, `storyPathForComponent`,
+// `makeTitleFromComponent`, `detectAtomicTag`), so one parameterised pair serves
+// both. `flavor` — from `TSX_FRAMEWORK`, set by the sb-deps.config `tsxFramework`
+// field the wizard writes for Solid projects — selects the emitted template and
+// the scaffold-config override key. Svelte / Vue / Angular keep their own
+// scaffolders below (distinct extensions, distinct helpers).
+type TsxFlavor = 'react' | 'solid'
 
-	const tpl =
-		SCAFFOLD_CONFIG?.react?.component?.({ componentName, propsName }) ??
-		`import type { ReactNode } from 'react'
-
-export interface ${propsName} {
-  children?: ReactNode
-}
-
-export function ${componentName}({ children }: ${propsName}) {
-  return (
-    <div className="${componentName}">
-      <p>${componentName}</p>
-      {children}
-    </div>
-  )
-}
-`
-	writeFileSync(absCompPath, tpl, 'utf8')
-	info(`scaffolded component → \${rel(absCompPath)}`)
-}
-
-function scaffoldStoryForComponent(absCompPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
-	const title = makeTitleFromComponent(absCompPath)
-	const atomic = detectAtomicTag(absCompPath)
-	const tags = ['autodocs']
-	if (atomic) tags.push(atomic)
-
-	const storyTpl =
-		SCAFFOLD_CONFIG?.react?.story?.({
-			componentName,
-			propsName,
-			title,
-			tags,
-			base,
-		}) ??
-		`import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ${componentName}, type ${propsName} } from './${componentName}'
-
-const meta: Meta<typeof ${componentName}> = {
-  title: '${title}',
-  component: ${componentName},
-  tags: ${JSON.stringify(tags)},
-  parameters: {
-    layout: 'padded',
-  } satisfies StoryParameters,
-}
-
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-export const Primary: Story = {
-  args: {} satisfies ${propsName},
-}
-`
-	const storyPath = storyPathForComponent(absCompPath)
-	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded story → \${rel(storyPath)}`)
-	return storyPath
-}
-
-function ensureStoryForComponent(absCompPath: string) {
-	const sPath = storyPathForComponent(absCompPath)
-	if (existsSync(sPath)) return null
-	return scaffoldStoryForComponent(absCompPath)
-}
-
-// ───────────────────────────────────────────────────────────────────────────────
-// Solid scaffolding
-//
-// Solid components live in `.tsx` — the same extension React uses — so these run
-// only when `tsxFramework: 'solid'` is set in sb-deps.config (the `sb-deps setup`
-// wizard writes it for detected Solid projects). They reuse the shared `.tsx`
-// path/name helpers (`componentBaseFromComponent`, `storyPathForComponent`,
-// `makeTitleFromComponent`, `detectAtomicTag`) — only the emitted templates differ.
-// ───────────────────────────────────────────────────────────────────────────────
-function scaffoldSolidComponent(absCompPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
-
-	const tpl =
-		SCAFFOLD_CONFIG?.solid?.component?.({ componentName, propsName }) ??
-		`import { createSignal, mergeProps, type ParentProps } from 'solid-js'
+function tsxComponentTemplate(
+	flavor: TsxFlavor,
+	componentName: string,
+	propsName: string,
+): string {
+	if (flavor === 'solid') {
+		return `import { createSignal, mergeProps, type ParentProps } from 'solid-js'
 
 export interface ${propsName} {
   label?: string
@@ -533,28 +456,36 @@ export function ${componentName}(props: ParentProps<${propsName}>) {
   )
 }
 `
-	writeFileSync(absCompPath, tpl, 'utf8')
-	info(`scaffolded solid component → ${rel(absCompPath)}`)
+	}
+	return `import type { ReactNode } from 'react'
+
+export interface ${propsName} {
+  children?: ReactNode
 }
 
-function scaffoldStoryForSolidComponent(absCompPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
-	const title = makeTitleFromComponent(absCompPath)
-	const atomic = detectAtomicTag(absCompPath)
-	const tags = ['autodocs']
-	if (atomic) tags.push(atomic)
+export function ${componentName}({ children }: ${propsName}) {
+  return (
+    <div className="${componentName}">
+      <p>${componentName}</p>
+      {children}
+    </div>
+  )
+}
+`
+}
 
-	const storyTpl =
-		SCAFFOLD_CONFIG?.solid?.story?.({
-			componentName,
-			propsName,
-			title,
-			tags,
-			base,
-		}) ??
-		`import type { Meta, StoryObj } from 'storybook-solidjs-vite'
+function tsxStoryTemplate(
+	flavor: TsxFlavor,
+	componentName: string,
+	propsName: string,
+	title: string,
+	tags: Array<string>,
+): string {
+	// The React and Solid stories are identical apart from which package the
+	// Storybook types come from.
+	const frameworkImport =
+		flavor === 'solid' ? 'storybook-solidjs-vite' : '@storybook/react-vite'
+	return `import type { Meta, StoryObj } from '${frameworkImport}'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${componentName}'
 
@@ -575,16 +506,47 @@ export const Primary: Story = {
   args: {} satisfies ${propsName},
 }
 `
+}
+
+function scaffoldComponent(absCompPath: string, flavor: TsxFlavor) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+
+	const override =
+		flavor === 'solid'
+			? SCAFFOLD_CONFIG?.solid?.component?.({ componentName, propsName })
+			: SCAFFOLD_CONFIG?.react?.component?.({ componentName, propsName })
+	const tpl = override ?? tsxComponentTemplate(flavor, componentName, propsName)
+	writeFileSync(absCompPath, tpl, 'utf8')
+	info(`scaffolded ${flavor} component → ${rel(absCompPath)}`)
+}
+
+function scaffoldStoryForComponent(absCompPath: string, flavor: TsxFlavor) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+	const title = makeTitleFromComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const override =
+		flavor === 'solid'
+			? SCAFFOLD_CONFIG?.solid?.story?.({ componentName, propsName, title, tags, base })
+			: SCAFFOLD_CONFIG?.react?.story?.({ componentName, propsName, title, tags, base })
+	const storyTpl =
+		override ?? tsxStoryTemplate(flavor, componentName, propsName, title, tags)
 	const storyPath = storyPathForComponent(absCompPath)
 	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded solid story → ${rel(storyPath)}`)
+	info(`scaffolded ${flavor} story → ${rel(storyPath)}`)
 	return storyPath
 }
 
-function ensureStoryForSolidComponent(absCompPath: string) {
+function ensureStoryForComponent(absCompPath: string, flavor: TsxFlavor) {
 	const sPath = storyPathForComponent(absCompPath)
 	if (existsSync(sPath)) return null
-	return scaffoldStoryForSolidComponent(absCompPath)
+	return scaffoldStoryForComponent(absCompPath, flavor)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1205,19 +1167,12 @@ function startWatcher() {
 	async function handleComponentCreation(abs: string, relPath: string) {
 		// React and Solid share the `.tsx` extension; `TSX_FRAMEWORK` (from
 		// sb-deps.config) decides which templates a new `.tsx` file gets.
-		const isSolid = TSX_FRAMEWORK === 'solid'
 		if (isEmptyOrWhitespace(abs)) {
-			if (isSolid) {
-				scaffoldSolidComponent(abs)
-			} else {
-				scaffoldComponent(abs)
-			}
+			scaffoldComponent(abs, TSX_FRAMEWORK)
 		}
 
 		console.log('Component creation detected:', relPath)
-		const createdStory = isSolid
-			? ensureStoryForSolidComponent(abs)
-			: ensureStoryForComponent(abs)
+		const createdStory = ensureStoryForComponent(abs, TSX_FRAMEWORK)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
