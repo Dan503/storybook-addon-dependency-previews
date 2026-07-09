@@ -9,9 +9,10 @@ export type SbDepsConfigPatchResult =
 export interface WriteSbDepsConfigOptions {
 	cwd: string
 	/**
-	 * Resolved source-folder name. The patcher is a no-op for the bundled
-	 * default `'src'` — only non-default values (including the empty-string
-	 * project-root sentinel) result in a file being written.
+	 * Resolved source-folder name. On its own, a non-default value (anything
+	 * other than the bundled `'src'`, including the empty-string project-root
+	 * sentinel) triggers a config write; the default `'src'` does not — unless
+	 * `isSolid` is set (see below).
 	 */
 	srcDir: string
 	/**
@@ -19,22 +20,34 @@ export interface WriteSbDepsConfigOptions {
 	 * the file extension and module syntax of the generated config.
 	 */
 	isEsm: boolean
+	/**
+	 * Whether the project uses Solid. When true, the config is written even for
+	 * the default `srcDir` so it can carry `tsxFramework: 'solid'` — the signal
+	 * the `sb-deps` scaffolder needs to emit Solid (not React) templates for
+	 * `.tsx` component/story files, which the two frameworks share.
+	 */
+	isSolid?: boolean
 }
 
 /**
- * Write a project-root `sb-deps.config.{js,cjs}` containing the resolved
- * `srcDir`. No-op when `srcDir === 'src'` (bundled default — config file is
- * unnecessary) or when any of the candidate config filenames already exist
- * (the loader at `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never
+ * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved
+ * `srcDir` and/or the `tsxFramework` scaffolder signal. No-op when there's
+ * nothing worth persisting — i.e. `srcDir === 'src'` (bundled default) AND the
+ * project isn't Solid — or when any of the candidate config filenames already
+ * exist (the loader at `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never
  * overwrite a user's existing config without their say-so).
  */
 export function writeSbDepsConfigIfNeeded(
 	opts: WriteSbDepsConfigOptions,
 ): SbDepsConfigPatchResult {
-	const { cwd, srcDir, isEsm } = opts
+	const { cwd, srcDir, isEsm, isSolid = false } = opts
 
-	if (srcDir === 'src') {
-		return { kind: 'skipped', reason: 'srcDir is the default (src) — no config file needed' }
+	const needsSrcDir = srcDir !== 'src'
+	if (!needsSrcDir && !isSolid) {
+		return {
+			kind: 'skipped',
+			reason: 'srcDir is the default (src) and project is not Solid — no config file needed',
+		}
 	}
 
 	// Match the candidate list `sb-deps.ts` already loads from, so we don't
@@ -48,18 +61,31 @@ export function writeSbDepsConfigIfNeeded(
 
 	const ext = isEsm ? 'js' : 'cjs'
 	const path = resolve(cwd, `sb-deps.config.${ext}`)
-	const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+
+	// Only emit the fields that actually differ from the defaults: `srcDir` when
+	// it's non-default, and `tsxFramework: 'solid'` for Solid projects (so the
+	// scaffolder picks Solid templates for `.tsx` files).
+	const configLines: Array<string> = []
+	if (needsSrcDir) {
+		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+		configLines.push(`\tsrcDir: ${srcDirLiteral},`)
+	}
+	if (isSolid) {
+		configLines.push(`\ttsxFramework: 'solid',`)
+	}
+	const configBody = configLines.join('\n')
+
 	const content = isEsm
 		? `import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
 
 export default defineSbDepsConfig({
-\tsrcDir: ${srcDirLiteral},
+${configBody}
 })
 `
 		: `const { defineSbDepsConfig } = require('storybook-addon-dependency-previews/config')
 
 module.exports = defineSbDepsConfig({
-\tsrcDir: ${srcDirLiteral},
+${configBody}
 })
 `
 
