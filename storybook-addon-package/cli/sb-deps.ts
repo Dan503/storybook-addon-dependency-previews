@@ -483,16 +483,20 @@ function tsxStoryTemplate(
 	flavor: TsxFlavor,
 	componentName: string,
 	propsName: string,
+	base: string,
 	title: string,
 	tags: Array<string>,
 ): string {
 	// The React and Solid stories are identical apart from which package the
-	// Storybook types come from.
+	// Storybook types come from. Import the component from `./${base}` (the
+	// actual filename) rather than `./${componentName}` — the two differ for a
+	// non-PascalCase filename (e.g. `button-atom.tsx` exports `ButtonAtom`), so
+	// keying the module path off the symbol name would generate a broken import.
 	const frameworkImport =
 		flavor === 'solid' ? 'storybook-solidjs-vite' : '@storybook/react-vite'
 	return `import type { Meta, StoryObj } from '${frameworkImport}'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ${componentName}, type ${propsName} } from './${componentName}'
+import { ${componentName}, type ${propsName} } from './${base}'
 
 const meta: Meta<typeof ${componentName}> = {
   title: '${title}',
@@ -541,7 +545,8 @@ function scaffoldStoryForComponent(absCompPath: string, flavor: TsxFlavor) {
 			? SCAFFOLD_CONFIG?.solid?.story?.({ componentName, propsName, title, tags, base })
 			: SCAFFOLD_CONFIG?.react?.story?.({ componentName, propsName, title, tags, base })
 	const storyTpl =
-		override ?? tsxStoryTemplate(flavor, componentName, propsName, title, tags)
+		override ??
+		tsxStoryTemplate(flavor, componentName, propsName, base, title, tags)
 	const storyPath = storyPathForComponent(absCompPath)
 	writeFileSync(storyPath, storyTpl, 'utf8')
 	info(`scaffolded ${flavor} story → ${rel(storyPath)}`)
