@@ -440,17 +440,19 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
 		log(`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`)
 	} else if (sbDepsConfigResult.kind === 'skipped' && isSolidProject) {
-		// A pre-existing config (e.g. one written earlier for a custom srcDir, or
-		// predating Solid support) means `tsxFramework: 'solid'` was NOT persisted.
-		// Warn explicitly — without it the scaffolder defaults to React templates
-		// for this Solid project's `.tsx` files, silently, with no other signal.
+		// A pre-existing config blocked the write, so the wizard could NOT
+		// auto-persist `tsxFramework: 'solid'`. The existing config may or may not
+		// already carry it (the wizard doesn't parse it), so point the user at
+		// verifying it rather than assuming it's absent. Without the key the
+		// scaffolder defaults to React templates for this Solid project's `.tsx`
+		// files, silently, with no other signal.
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
 		log(
-			`    Add \`tsxFramework: 'solid'\` to it by hand — without that key the sb-deps`,
+			`    Ensure your existing sb-deps.config sets \`tsxFramework: 'solid'\` — without`,
 		)
 		log(
-			`    scaffolder emits React (not Solid) templates for your .tsx components.`,
+			`    that key the sb-deps scaffolder emits React (not Solid) templates for .tsx files.`,
 		)
 	}
 
