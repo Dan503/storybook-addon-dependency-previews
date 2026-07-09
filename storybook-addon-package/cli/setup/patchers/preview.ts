@@ -1,7 +1,13 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import type { Framework, MainFile, PreviewFile } from '../detect.js'
+import {
+	isFrameworkSupported,
+	type Framework,
+	type MainFile,
+	type PreviewFile,
+	type SupportedFramework,
+} from '../detect.js'
 import {
 	detectEol,
 	detectFileIndent,
@@ -16,12 +22,6 @@ export type PreviewPatchResult =
 	| { kind: 'skipped'; reason: string }
 	| { kind: 'patched'; path: string }
 	| { kind: 'failed'; reason: string }
-
-type SupportedFramework =
-	| 'react-vite'
-	| 'sveltekit'
-	| 'svelte-vite'
-	| 'vue3-vite'
 
 // Brace expansion `{a,b,c}` works under both Vite 7 (micromatch) and Vite 8
 // (tinyglobby). Extglob `@(a|b|c)` silently returns zero matches under tinyglobby,
@@ -650,17 +650,13 @@ export function patchPreviewFile(
 	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl, srcDir } =
 		opts
 
-	if (
-		framework !== 'react-vite' &&
-		framework !== 'sveltekit' &&
-		framework !== 'svelte-vite' &&
-		framework !== 'vue3-vite'
-	) {
+	if (!isFrameworkSupported(framework)) {
 		return {
 			kind: 'failed',
 			reason: `Preview patcher does not support framework "${framework}".`,
 		}
 	}
+	// `framework` is now narrowed to `SupportedFramework` for the rest of the fn.
 
 	if (previewFile) {
 		return patchExistingPreview(previewFile, framework, sourceRootUrl, srcDir)

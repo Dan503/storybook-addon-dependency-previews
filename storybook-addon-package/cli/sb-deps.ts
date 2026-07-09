@@ -109,6 +109,13 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
+// Which flavor to scaffold for `.tsx` files. React and Solid share the `.tsx`
+// extension, so this config-driven signal (default `'react'`) is what routes a
+// new `.tsx` component/story to the right templates. Derived from the config
+// schema so the scaffolder can't drift from `SbDepsConfig` as new `.tsx`
+// frameworks are added.
+type TsxFlavor = NonNullable<SbDepsConfig['tsxFramework']>
+let TSX_FRAMEWORK: TsxFlavor = 'react'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -416,14 +423,49 @@ function makeTitleFromComponent(absCompPath: string) {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story & component scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
-function scaffoldComponent(absCompPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
+// React and Solid both author components in `.tsx` and uniquely share every
+// path/name helper below (`componentBaseFromComponent`, `storyPathForComponent`,
+// `makeTitleFromComponent`, `detectAtomicTag`), so one parameterised pair serves
+// both. `flavor` — from `TSX_FRAMEWORK`, set by the sb-deps.config `tsxFramework`
+// field the wizard writes for Solid projects — selects the emitted template and
+// the scaffold-config override key. Svelte / Vue / Angular keep their own
+// scaffolders below (distinct extensions, distinct helpers). `TsxFlavor` is
+// declared with `TSX_FRAMEWORK` above, derived from the config schema.
 
-	const tpl =
-		SCAFFOLD_CONFIG?.react?.component?.({ componentName, propsName }) ??
-		`import type { ReactNode } from 'react'
+function tsxComponentTemplate(
+	flavor: TsxFlavor,
+	componentName: string,
+	propsName: string,
+): string {
+	if (flavor === 'solid') {
+		return `import { createSignal, mergeProps, type ParentProps } from 'solid-js'
+
+export interface ${propsName} {
+	label?: string
+}
+
+export function ${componentName}(props: ParentProps<${propsName}>) {
+	const merged = mergeProps(
+		{
+			label: '${componentName}',
+		} satisfies ${propsName},
+		props,
+	)
+	const [count, setCount] = createSignal(0)
+
+	return (
+		<div class="${componentName}">
+			<p>{merged.label}</p>
+			<button type="button" onClick={() => setCount(count() + 1)}>
+				count: {count()}
+			</button>
+			{merged.children}
+		</div>
+	)
+}
+`
+	}
+	return `import type { ReactNode } from 'react'
 
 export interface ${propsName} {
   children?: ReactNode
@@ -438,30 +480,26 @@ export function ${componentName}({ children }: ${propsName}) {
   )
 }
 `
-	writeFileSync(absCompPath, tpl, 'utf8')
-	info(`scaffolded component → \${rel(absCompPath)}`)
 }
 
-function scaffoldStoryForComponent(absCompPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
-	const title = makeTitleFromComponent(absCompPath)
-	const atomic = detectAtomicTag(absCompPath)
-	const tags = ['autodocs']
-	if (atomic) tags.push(atomic)
-
-	const storyTpl =
-		SCAFFOLD_CONFIG?.react?.story?.({
-			componentName,
-			propsName,
-			title,
-			tags,
-			base,
-		}) ??
-		`import type { Meta, StoryObj } from '@storybook/react-vite'
+function tsxStoryTemplate(
+	flavor: TsxFlavor,
+	componentName: string,
+	propsName: string,
+	base: string,
+	title: string,
+	tags: Array<string>,
+): string {
+	// The React and Solid stories are identical apart from which package the
+	// Storybook types come from. Import the component from `./${base}` (the
+	// actual filename) rather than `./${componentName}` — the two differ for a
+	// non-PascalCase filename (e.g. `button-atom.tsx` exports `ButtonAtom`), so
+	// keying the module path off the symbol name would generate a broken import.
+	const frameworkImport =
+		flavor === 'solid' ? 'storybook-solidjs-vite' : '@storybook/react-vite'
+	return `import type { Meta, StoryObj } from '${frameworkImport}'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ${componentName}, type ${propsName} } from './${componentName}'
+import { ${componentName}, type ${propsName} } from './${base}'
 
 const meta: Meta<typeof ${componentName}> = {
   title: '${title}',
@@ -480,16 +518,51 @@ export const Primary: Story = {
   args: {} satisfies ${propsName},
 }
 `
+}
+
+function scaffoldComponent(absCompPath: string, flavor: TsxFlavor) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+
+	const override = SCAFFOLD_CONFIG?.[flavor]?.component?.({
+		componentName,
+		propsName,
+	})
+	const tpl = override ?? tsxComponentTemplate(flavor, componentName, propsName)
+	writeFileSync(absCompPath, tpl, 'utf8')
+	info(`scaffolded ${flavor} component → ${rel(absCompPath)}`)
+}
+
+function scaffoldStoryForComponent(absCompPath: string, flavor: TsxFlavor) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+	const title = makeTitleFromComponent(absCompPath)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const override = SCAFFOLD_CONFIG?.[flavor]?.story?.({
+		componentName,
+		propsName,
+		title,
+		tags,
+		base,
+	})
+	const storyTpl =
+		override ??
+		tsxStoryTemplate(flavor, componentName, propsName, base, title, tags)
 	const storyPath = storyPathForComponent(absCompPath)
 	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded story → \${rel(storyPath)}`)
+	info(`scaffolded ${flavor} story → ${rel(storyPath)}`)
 	return storyPath
 }
 
-function ensureStoryForComponent(absCompPath: string) {
+function ensureStoryForComponent(absCompPath: string, flavor: TsxFlavor) {
 	const sPath = storyPathForComponent(absCompPath)
 	if (existsSync(sPath)) return null
-	return scaffoldStoryForComponent(absCompPath)
+	return scaffoldStoryForComponent(absCompPath, flavor)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1108,12 +1181,14 @@ function startWatcher() {
 		.catch((e) => error(`watch init failed ${e?.message || e}`))
 
 	async function handleComponentCreation(abs: string, relPath: string) {
+		// React and Solid share the `.tsx` extension; `TSX_FRAMEWORK` (from
+		// sb-deps.config) decides which templates a new `.tsx` file gets.
 		if (isEmptyOrWhitespace(abs)) {
-			scaffoldComponent(abs)
+			scaffoldComponent(abs, TSX_FRAMEWORK)
 		}
 
 		console.log('Component creation detected:', relPath)
-		const createdStory = ensureStoryForComponent(abs)
+		const createdStory = ensureStoryForComponent(abs, TSX_FRAMEWORK)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
@@ -1218,6 +1293,26 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
+	// `tsxFramework` comes from a config file that isn't type-checked at runtime
+	// (a JS config can hold any value), so validate it against the known set the
+	// same way `srcDir` is below — warn and fall back to `'react'` for anything
+	// unrecognised, rather than letting a stray value (e.g. a non-`.tsx`
+	// framework key like `'vue'`, which also collides with a scaffold-config key)
+	// drive `.tsx` scaffolding into the wrong templates.
+	const configuredTsxFramework = cfg.tsxFramework
+	if (configuredTsxFramework === undefined) {
+		TSX_FRAMEWORK = 'react'
+	} else if (
+		configuredTsxFramework === 'react' ||
+		configuredTsxFramework === 'solid'
+	) {
+		TSX_FRAMEWORK = configuredTsxFramework
+	} else {
+		error(
+			`tsxFramework "${configuredTsxFramework}" is invalid — must be 'react' or 'solid'. Falling back to 'react'.`,
+		)
+		TSX_FRAMEWORK = 'react'
+	}
 	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//
 	//   - `undefined` / missing key  → fall back to the bundled default `'src'`.

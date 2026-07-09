@@ -1,0 +1,150 @@
+{
+  "src/app.tsx": {
+    "componentPath": "src/app.tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/components/Counter.tsx": {
+    "componentPath": "src/components/Counter.tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/entry-client.tsx": {
+    "componentPath": "src/entry-client.tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/entry-server.tsx": {
+    "componentPath": "src/entry-server.tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/global.d.ts": {
+    "componentPath": "src/global.d.ts",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/routes/[...404].tsx": {
+    "componentPath": "src/routes/[...404].tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/routes/about.tsx": {
+    "componentPath": "src/routes/about.tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/routes/index.tsx": {
+    "componentPath": "src/routes/index.tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
+  "src/stories/Button.stories.ts": {
+    "componentPath": "src/stories/Button.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "src/stories/Button.tsx",
+        "storyId": "example-button--docs",
+        "storyTitle": "Button",
+        "storyTitlePath": "Example/Button",
+        "storyFilePath": "src/stories/Button.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/stories/Button.tsx": {
+    "componentPath": "src/stories/Button.tsx",
+    "storyId": "example-button--docs",
+    "storyTitle": "Button",
+    "storyTitlePath": "Example/Button",
+    "storyFilePath": "src/stories/Button.stories.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/stories/Button.stories.ts"
+      },
+      {
+        "componentPath": "src/stories/Header.tsx",
+        "storyId": "example-header--docs",
+        "storyTitle": "Header",
+        "storyTitlePath": "Example/Header",
+        "storyFilePath": "src/stories/Header.stories.ts"
+      }
+    ]
+  },
+  "src/stories/Header.stories.ts": {
+    "componentPath": "src/stories/Header.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "src/stories/Header.tsx",
+        "storyId": "example-header--docs",
+        "storyTitle": "Header",
+        "storyTitlePath": "Example/Header",
+        "storyFilePath": "src/stories/Header.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/stories/Header.tsx": {
+    "componentPath": "src/stories/Header.tsx",
+    "storyId": "example-header--docs",
+    "storyTitle": "Header",
+    "storyTitlePath": "Example/Header",
+    "storyFilePath": "src/stories/Header.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "src/stories/Button.tsx",
+        "storyId": "example-button--docs",
+        "storyTitle": "Button",
+        "storyTitlePath": "Example/Button",
+        "storyFilePath": "src/stories/Button.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/stories/Header.stories.ts"
+      },
+      {
+        "componentPath": "src/stories/Page.tsx",
+        "storyId": "example-page--docs",
+        "storyTitle": "Page",
+        "storyTitlePath": "Example/Page",
+        "storyFilePath": "src/stories/Page.stories.ts"
+      }
+    ]
+  },
+  "src/stories/Page.stories.ts": {
+    "componentPath": "src/stories/Page.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "src/stories/Page.tsx",
+        "storyId": "example-page--docs",
+        "storyTitle": "Page",
+        "storyTitlePath": "Example/Page",
+        "storyFilePath": "src/stories/Page.stories.ts"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/stories/Page.tsx": {
+    "componentPath": "src/stories/Page.tsx",
+    "storyId": "example-page--docs",
+    "storyTitle": "Page",
+    "storyTitlePath": "Example/Page",
+    "storyFilePath": "src/stories/Page.stories.ts",
+    "builtWith": [
+      {
+        "componentPath": "src/stories/Header.tsx",
+        "storyId": "example-header--docs",
+        "storyTitle": "Header",
+        "storyTitlePath": "Example/Header",
+        "storyFilePath": "src/stories/Header.stories.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/stories/Page.stories.ts"
+      }
+    ]
+  }
+}

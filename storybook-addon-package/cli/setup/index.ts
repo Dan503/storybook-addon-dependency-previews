@@ -162,7 +162,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				isEsm: detection.isEsm,
 			})
 			if (cfg.kind === 'created') {
-				log(`✓ wrote ${cfg.path} (srcDir: '${resolvedSrcDir.srcDir}')`)
+				log(`✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
 			} else if (cfg.kind === 'failed') {
 				log(`⚠ ${cfg.reason}`)
 			}
@@ -172,7 +172,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This setup wizard currently supports React, Svelte, and Vue 3 (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
+			`This setup wizard currently supports React, Svelte, Vue 3, and Solid (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
 			'The addon itself also supports Angular and Next.js with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
@@ -186,7 +186,12 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
 		const choice = await choose<
-			'react-vite' | 'sveltekit' | 'svelte-vite' | 'vue3-vite' | 'cancel'
+			| 'react-vite'
+			| 'sveltekit'
+			| 'svelte-vite'
+			| 'vue3-vite'
+			| 'solid-vite'
+			| 'cancel'
 		>('Which framework is this project using?', [
 			{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
 			{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
@@ -198,6 +203,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				label: 'Svelte without SvelteKit (@storybook/svelte-vite)',
 				value: 'svelte-vite',
 			},
+			{ label: 'Solid (storybook-solidjs-vite)', value: 'solid-vite' },
 			{ label: 'Cancel', value: 'cancel' },
 		])
 		if (choice === 'cancel') {
@@ -412,23 +418,42 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
-	// default `'src'`. Must happen before Step 5 so the sb-deps build below
-	// picks up the configured srcDir on its first run. Silent no-op for the
-	// default case so non-Next.js setups don't see an extra log line. Uses
-	// `effectiveSrcDir` so a user-edited value via the edit flow is what
+	// default `'src'`, or when the project is Solid (the config carries
+	// `tsxFramework: 'solid'` so the scaffolder knows to emit Solid — not React
+	// — templates for `.tsx` files). Must happen before Step 5 so the sb-deps
+	// build below picks up the configured srcDir on its first run. Silent no-op
+	// otherwise so non-Next.js/non-Solid setups don't see an extra log line.
+	// Uses `effectiveSrcDir` so a user-edited value via the edit flow is what
 	// gets persisted, not the auto-detected one.
+	const isSolidProject = framework === 'solid-vite'
 	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
 		cwd,
 		srcDir: effectiveSrcDir,
 		isEsm: detection.isEsm,
+		isSolid: isSolidProject,
 	})
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
-		log(`  ✓ wrote ${sbDepsConfigResult.path} (srcDir: '${effectiveSrcDir}')`)
+		log(`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`)
 	} else if (sbDepsConfigResult.kind === 'failed') {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
 		log(`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`)
+	} else if (sbDepsConfigResult.kind === 'skipped' && isSolidProject) {
+		// A pre-existing config blocked the write, so the wizard could NOT
+		// auto-persist `tsxFramework: 'solid'`. The existing config may or may not
+		// already carry it (the wizard doesn't parse it), so point the user at
+		// verifying it rather than assuming it's absent. Without the key the
+		// scaffolder defaults to React templates for this Solid project's `.tsx`
+		// files, silently, with no other signal.
+		rule()
+		log(`  ⚠ ${sbDepsConfigResult.reason}`)
+		log(
+			`    Ensure your existing sb-deps.config sets \`tsxFramework: 'solid'\` — without`,
+		)
+		log(
+			`    that key the sb-deps scaffolder emits React (not Solid) templates for .tsx files.`,
+		)
 	}
 
 	rule()

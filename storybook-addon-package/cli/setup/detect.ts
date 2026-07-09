@@ -8,6 +8,7 @@ export type Framework =
 	| 'sveltekit'
 	| 'svelte-vite'
 	| 'vue3-vite'
+	| 'solid-vite'
 	| 'angular-webpack'
 	| 'nextjs-webpack'
 	| 'unsupported'
@@ -156,6 +157,10 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	// `subsumes` field is what makes Nuxt win over Vue when both are present.
 	{ corePackage: 'vue', framework: '@storybook/vue3-vite' },
 	{ corePackage: 'react', framework: '@storybook/react-vite' },
+	// Solid's Storybook framework is the community package `storybook-solidjs-vite`
+	// (not under the `@storybook/` scope). It's an independent framework — nothing
+	// subsumes it and it subsumes nothing.
+	{ corePackage: 'solid-js', framework: 'storybook-solidjs-vite' },
 ]
 
 function frameworkFromRaw(raw: string | null): Framework {
@@ -164,6 +169,8 @@ function frameworkFromRaw(raw: string | null): Framework {
 	if (raw === '@storybook/sveltekit') return 'sveltekit'
 	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
 	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
+	// Solid uses the community `storybook-solidjs-vite` package (Vite-only).
+	if (raw === 'storybook-solidjs-vite') return 'solid-vite'
 	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
 	// framework value for the future Vite-based Angular Storybook framework if it
 	// ships — current Angular goes in as `'angular-webpack'`.
@@ -219,6 +226,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'sveltekit':
 		case 'svelte-vite':
 		case 'vue3-vite':
+		case 'solid-vite':
 			return 'vite'
 		case 'angular-webpack':
 		case 'nextjs-webpack':
@@ -228,12 +236,28 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 	}
 }
 
-export function isFrameworkSupported(framework: Framework): boolean {
+/**
+ * The Vite-based frameworks the wizard fully supports (detection + preview
+ * patching). A type predicate so callers narrow `Framework` to this set — the
+ * single source of truth the preview patcher's support guard reuses instead of
+ * re-listing the members.
+ */
+export type SupportedFramework =
+	| 'react-vite'
+	| 'sveltekit'
+	| 'svelte-vite'
+	| 'vue3-vite'
+	| 'solid-vite'
+
+export function isFrameworkSupported(
+	framework: Framework,
+): framework is SupportedFramework {
 	return (
 		framework === 'react-vite' ||
 		framework === 'sveltekit' ||
 		framework === 'svelte-vite' ||
-		framework === 'vue3-vite'
+		framework === 'vue3-vite' ||
+		framework === 'solid-vite'
 	)
 }
 
