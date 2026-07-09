@@ -1,4 +1,4 @@
-# Manual setup — Vite (React, Svelte, Vue 3)
+# Manual setup — Vite (React, Svelte, Vue 3, Solid)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
 >
@@ -8,7 +8,7 @@
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.
 >
-> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Svelte with SvelteKit, vanilla Svelte, Vue 3). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Svelte` / `// if using Vue` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Vue stories use the same `.stories.ts` shape as React — see the React example and swap the component import for your `.vue` SFC).
+> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Svelte` / `// if using Vue` / `// if using Solid` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for `storybook-solidjs-vite` and the component import for your Solid `.tsx`).
 
 ## 1. Install the addon
 
@@ -40,9 +40,10 @@ import type { StorybookConfig } from '@storybook/react-vite' // if using React
 import type { StorybookConfig } from '@storybook/sveltekit' // if using Svelte (SvelteKit)
 import type { StorybookConfig } from '@storybook/svelte-vite' // if using Svelte (without SvelteKit)
 import type { StorybookConfig } from '@storybook/vue3-vite' // if using Vue 3
+import type { StorybookConfig } from 'storybook-solidjs-vite' // if using Solid
 
 const config: StorybookConfig = {
-	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React or Vue
+	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React, Vue, or Solid
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'], // if using Svelte
 	addons: [
 		// autodocs is required for this addon to work
@@ -56,6 +57,7 @@ const config: StorybookConfig = {
 	framework: '@storybook/sveltekit', // if using Svelte (SvelteKit)
 	framework: '@storybook/svelte-vite', // if using Svelte (without SvelteKit)
 	framework: '@storybook/vue3-vite', // if using Vue 3
+	framework: 'storybook-solidjs-vite', // if using Solid
 }
 
 export default config
