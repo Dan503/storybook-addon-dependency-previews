@@ -14,8 +14,10 @@ import { patchMainFile } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
 import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
-import { choose, confirm, confirmOrEdit, input } from './prompt.js'
+import { ask, choose, confirm, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
+
+import type { SbDepsConfig } from '../../src/config.js'
 
 function log(line: string) {
 	console.log(line)
@@ -121,6 +123,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const displaySrcDir =
 		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
 	log(`Source folder       : ${displaySrcDir}`)
+	// Assumed default; the user can change it in the edit flow below.
+	log(`Storybook Extension : stories`)
 
 	// Show file paths relative to cwd so the detection block stays compact —
 	// absolute Windows paths in particular are noisy and push the actually-
@@ -220,6 +224,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	let effectiveSourceRootUrl = detectedRepoUrl?.url ?? ''
 	let effectiveSrcDir = resolvedSrcDir.srcDir
 	let userOverrodeUrl = false
+	let effectiveStorybookFileExtension: NonNullable<
+		SbDepsConfig['storybookFileExtension']
+	> = 'stories'
 
 	const choice = await confirmOrEdit(
 		'Proceed with installing dependencies and patching your Storybook config?',
@@ -274,18 +281,31 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			effectiveSrcDir = raw
 			break
 		}
+
+		// Storybook file extension — the naming used for generated story files.
+		// Numbered choice; Enter keeps the current value (default `stories`).
+		while (true) {
+			log('\nStorybook file extension for generated stories:')
+			log('  1) story   → Foo.story.tsx')
+			log('  2) stories → Foo.stories.tsx (default)')
+			const raw = (
+				await ask(
+					`  Enter 1 or 2, or press Enter to keep "${effectiveStorybookFileExtension}": `,
+				)
+			).trim()
+			if (raw === '') break
+			if (raw === '1') {
+				effectiveStorybookFileExtension = 'story'
+				break
+			}
+			if (raw === '2') {
+				effectiveStorybookFileExtension = 'stories'
+				break
+			}
+			log(`  "${raw}" not recognised — enter 1, 2, or press Enter.`)
+		}
 		rule()
 	}
-
-	// Ask which naming to use for scaffolded story files. Always asked (it's a
-	// preference, not a detected value); Enter keeps Storybook's default plural
-	// `.stories`. Only a non-default `'story'` is persisted to the config below.
-	rule()
-	const shouldUseSingularStoryExtension = await confirm(
-		'Name generated story files ".story" instead of the default ".stories"?',
-		false,
-	)
-	const storybookFileExtension = shouldUseSingularStoryExtension ? 'story' : 'stories'
 
 	rule()
 	log('Step 1/5: installing dependencies')
@@ -432,7 +452,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		cwd,
 		srcDir: effectiveSrcDir,
 		isEsm: detection.isEsm,
-		storybookFileExtension,
+		storybookFileExtension: effectiveStorybookFileExtension,
 	})
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
