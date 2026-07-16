@@ -281,11 +281,11 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// preference, not a detected value); Enter keeps Storybook's default plural
 	// `.stories`. Only a non-default `'story'` is persisted to the config below.
 	rule()
-	const useSingularStoryExtension = await confirm(
+	const shouldUseSingularStoryExtension = await confirm(
 		'Name generated story files ".story" instead of the default ".stories"?',
 		false,
 	)
-	const storybookFileExtension = useSingularStoryExtension ? 'story' : 'stories'
+	const storybookFileExtension = shouldUseSingularStoryExtension ? 'story' : 'stories'
 
 	rule()
 	log('Step 1/5: installing dependencies')
