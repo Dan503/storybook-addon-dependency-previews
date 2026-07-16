@@ -50,7 +50,7 @@ function buildMissingStoryModuleError(
 			'        the extglob syntax `@(a|b|c)` you are likely on Vite 8 (tinyglobby),',
 			'        which does not support extglob — switch to brace expansion',
 			'        `{a,b,c}` instead. Example:',
-			"        import.meta.glob('/src/**/*.stories.{tsx,ts,jsx,js,svelte}', { eager: false })",
+			"        import.meta.glob('/src/**/*.{story,stories}.{tsx,ts,jsx,js,svelte}', { eager: false })",
 		)
 	} else {
 		const sample = keys.slice(0, 10)

@@ -60,7 +60,7 @@ export type DependencyPreviewStorybookParameters = Omit<
 		 *
 		 * Use the following as the value for this property:
 		 * ```ts
-		 * import.meta.glob('/src/**\/*.stories.{tsx,ts,jsx,js,svelte}', { eager: false });
+		 * import.meta.glob('/src/**\/*.{story,stories}.{tsx,ts,jsx,js,svelte}', { eager: false });
 		 * ``` */
 		storyModules: StoryModules
 		/**

@@ -304,7 +304,7 @@ function srcSubpathRegex(suffixPattern: string): RegExp {
  * `.js`, `.jsx`, `.mdx`, …). Used by the scaffolding-trigger helpers to make
  * sure they don't try to auto-scaffold a story file for an existing story.
  */
-const STORY_FILE_REGEX = /\.stories?\.\w+$/i
+const STORY_FILE_REGEX = /\.stor(?:y|ies)\.\w+$/i
 
 // <srcDir>/**/Thing.tsx ? (and not a story file)
 function isComponentsTsx(absPath: string) {
