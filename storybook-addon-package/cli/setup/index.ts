@@ -27,6 +27,22 @@ function rule() {
 	console.log('────────────────────────────────────────────')
 }
 
+// The story-file extension the scaffolder generates for each framework — used
+// only to render a concrete example next to the story-extension preference
+// (Vue stories are `.stories.ts`, Svelte `.stories.svelte`, React `.stories.tsx`).
+function exampleStoryFileExtension(framework: Framework): string {
+	switch (framework) {
+		case 'sveltekit':
+		case 'svelte-vite':
+			return 'svelte'
+		case 'vue3-vite':
+		case 'angular-webpack':
+			return 'ts'
+		default:
+			return 'tsx'
+	}
+}
+
 export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	void argv
 	const cwd = process.cwd()
@@ -123,8 +139,12 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const displaySrcDir =
 		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
 	log(`Source folder       : ${displaySrcDir}`)
-	// Assumed default; the user can change it in the edit flow below.
-	log(`Storybook Extension : stories`)
+	// Assumed default; the user can change it in the edit flow below. The
+	// example filename uses the story extension the scaffolder emits for the
+	// detected framework.
+	log(
+		`Storybook Extension : stories (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`,
+	)
 
 	// Show file paths relative to cwd so the detection block stays compact —
 	// absolute Windows paths in particular are noisy and push the actually-
@@ -283,11 +303,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 
 		// Storybook file extension — the naming used for generated story files.
-		// Numbered choice; Enter keeps the current value (default `stories`).
+		// Numbered choice; Enter keeps the current value (default `stories`). The
+		// examples use the story extension the scaffolder emits for this framework.
+		const exampleExt = exampleStoryFileExtension(framework)
 		while (true) {
 			log('\nStorybook file extension for generated stories:')
-			log('  1) story   → Foo.story.tsx')
-			log('  2) stories → Foo.stories.tsx (default)')
+			log(`  1) story   → Foo.story.${exampleExt}`)
+			log(`  2) stories → Foo.stories.${exampleExt} (default)`)
 			const raw = (
 				await ask(
 					`  Enter 1 or 2, or press Enter to keep "${effectiveStorybookFileExtension}": `,
