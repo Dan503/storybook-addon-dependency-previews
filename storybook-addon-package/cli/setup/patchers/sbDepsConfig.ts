@@ -1,6 +1,8 @@
 import { existsSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import type { SbDepsConfig } from '../../../src/config.js'
+
 export type SbDepsConfigPatchResult =
 	| {
 			kind: 'created'
@@ -36,7 +38,7 @@ export interface WriteSbDepsConfigOptions {
 	 * `'story'` triggers a config write on its own.
 	 * @default 'stories'
 	 */
-	storybookFileExtension?: 'story' | 'stories'
+	storybookFileExtension?: NonNullable<SbDepsConfig['storybookFileExtension']>
 }
 
 /**
