@@ -2,7 +2,18 @@ import { existsSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 export type SbDepsConfigPatchResult =
-	| { kind: 'created'; path: string }
+	| {
+			kind: 'created'
+			path: string
+			/**
+			 * Human-readable summaries of the non-default fields actually written
+			 * (e.g. `["srcDir: 'app'", "storybookFileExtension: 'story'"]`). The
+			 * caller logs these verbatim, so "which fields were written" has a
+			 * single source of truth here rather than being re-derived at the log
+			 * site.
+			 */
+			fields: ReadonlyArray<string>
+	  }
 	| { kind: 'skipped'; reason: string }
 	| { kind: 'failed'; reason: string }
 
@@ -19,22 +30,37 @@ export interface WriteSbDepsConfigOptions {
 	 * the file extension and module syntax of the generated config.
 	 */
 	isEsm: boolean
+	/**
+	 * Preferred story-file extension the scaffolder should use — `'stories'`
+	 * (Storybook's convention, the default) or `'story'`. Only a non-default
+	 * `'story'` triggers a config write on its own.
+	 * @default 'stories'
+	 */
+	storybookFileExtension?: 'story' | 'stories'
 }
 
 /**
- * Write a project-root `sb-deps.config.{js,cjs}` containing the resolved
- * `srcDir`. No-op when `srcDir === 'src'` (bundled default — config file is
- * unnecessary) or when any of the candidate config filenames already exist
- * (the loader at `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never
- * overwrite a user's existing config without their say-so).
+ * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`
+ * and/or a non-default `storybookFileExtension`. No-op when there's nothing
+ * worth persisting — i.e. `srcDir === 'src'` (bundled default) AND
+ * `storybookFileExtension` is the default `'stories'` — or when any of the
+ * candidate config filenames already exist (the loader at `sb-deps.ts` accepts
+ * `.js`, `.mjs`, and `.cjs`; we never overwrite a user's existing config
+ * without their say-so).
  */
 export function writeSbDepsConfigIfNeeded(
 	opts: WriteSbDepsConfigOptions,
 ): SbDepsConfigPatchResult {
-	const { cwd, srcDir, isEsm } = opts
+	const { cwd, srcDir, isEsm, storybookFileExtension = 'stories' } = opts
 
-	if (srcDir === 'src') {
-		return { kind: 'skipped', reason: 'srcDir is the default (src) — no config file needed' }
+	const needsSrcDir = srcDir !== 'src'
+	const needsStorybookFileExtension = storybookFileExtension === 'story'
+	if (!needsSrcDir && !needsStorybookFileExtension) {
+		return {
+			kind: 'skipped',
+			reason:
+				'srcDir is the default (src) and storybookFileExtension is the default (stories) — no config file needed',
+		}
 	}
 
 	// Match the candidate list `sb-deps.ts` already loads from, so we don't
@@ -48,18 +74,38 @@ export function writeSbDepsConfigIfNeeded(
 
 	const ext = isEsm ? 'js' : 'cjs'
 	const path = resolve(cwd, `sb-deps.config.${ext}`)
-	const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+
+	// Collect each non-default field once as both its file line and a
+	// human-readable summary, so the written file and the caller's success log
+	// share a single source of truth for "which fields differ from the
+	// defaults". Adding a field later updates both outputs from this one list.
+	const fields: Array<{ line: string; summary: string }> = []
+	if (needsSrcDir) {
+		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+		fields.push({
+			line: `\tsrcDir: ${srcDirLiteral},`,
+			summary: `srcDir: ${srcDirLiteral}`,
+		})
+	}
+	if (needsStorybookFileExtension) {
+		fields.push({
+			line: `\tstorybookFileExtension: 'story',`,
+			summary: `storybookFileExtension: 'story'`,
+		})
+	}
+	const configBody = fields.map((f) => f.line).join('\n')
+
 	const content = isEsm
 		? `import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
 
 export default defineSbDepsConfig({
-\tsrcDir: ${srcDirLiteral},
+${configBody}
 })
 `
 		: `const { defineSbDepsConfig } = require('storybook-addon-dependency-previews/config')
 
 module.exports = defineSbDepsConfig({
-\tsrcDir: ${srcDirLiteral},
+${configBody}
 })
 `
 
@@ -71,5 +117,5 @@ module.exports = defineSbDepsConfig({
 			reason: `Could not write ${path}: ${(e as Error).message}`,
 		}
 	}
-	return { kind: 'created', path }
+	return { kind: 'created', path, fields: fields.map((f) => f.summary) }
 }

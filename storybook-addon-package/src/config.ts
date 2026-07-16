@@ -130,6 +130,15 @@ export interface SbDepsConfig {
 	angularSelectorPrefix?: string
 
 	/**
+	 * Extension used when the scaffolder generates a story file for a new
+	 * component. `'stories'` → `Foo.stories.tsx` (Storybook's convention, the
+	 * default); `'story'` → `Foo.story.tsx`. The setup wizard asks for this
+	 * preference and persists a non-default choice.
+	 * @default 'stories'
+	 */
+	storybookFileExtension?: 'story' | 'stories'
+
+	/**
 	 * Customize the scaffold templates used when new component or story files are created.
 	 * Each function receives a context object with relevant variables and must return the
 	 * full file content as a string.

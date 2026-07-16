@@ -162,7 +162,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				isEsm: detection.isEsm,
 			})
 			if (cfg.kind === 'created') {
-				log(`✓ wrote ${cfg.path} (srcDir: '${resolvedSrcDir.srcDir}')`)
+				log(`✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
 			} else if (cfg.kind === 'failed') {
 				log(`⚠ ${cfg.reason}`)
 			}
@@ -276,6 +276,16 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 		rule()
 	}
+
+	// Ask which naming to use for scaffolded story files. Always asked (it's a
+	// preference, not a detected value); Enter keeps Storybook's default plural
+	// `.stories`. Only a non-default `'story'` is persisted to the config below.
+	rule()
+	const useSingularStoryExtension = await confirm(
+		'Name generated story files ".story" instead of the default ".stories"?',
+		false,
+	)
+	const storybookFileExtension = useSingularStoryExtension ? 'story' : 'stories'
 
 	rule()
 	log('Step 1/5: installing dependencies')
@@ -412,19 +422,21 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
-	// default `'src'`. Must happen before Step 5 so the sb-deps build below
-	// picks up the configured srcDir on its first run. Silent no-op for the
-	// default case so non-Next.js setups don't see an extra log line. Uses
-	// `effectiveSrcDir` so a user-edited value via the edit flow is what
-	// gets persisted, not the auto-detected one.
+	// default `'src'`, or when the user chose a non-default story-file
+	// extension. Must happen before Step 5 so the sb-deps build below picks up
+	// the configured values on its first run. Silent no-op when everything is
+	// default so setups without overrides don't see an extra log line. Uses
+	// `effectiveSrcDir` so a user-edited value via the edit flow is what gets
+	// persisted, not the auto-detected one.
 	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
 		cwd,
 		srcDir: effectiveSrcDir,
 		isEsm: detection.isEsm,
+		storybookFileExtension,
 	})
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
-		log(`  ✓ wrote ${sbDepsConfigResult.path} (srcDir: '${effectiveSrcDir}')`)
+		log(`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`)
 	} else if (sbDepsConfigResult.kind === 'failed') {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)

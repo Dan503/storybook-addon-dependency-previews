@@ -109,6 +109,11 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
+// Which extension the scaffolder emits for generated story files —
+// `Foo.stories.tsx` vs `Foo.story.tsx`. Config-driven (default `'stories'`,
+// Storybook's convention), so all four `storyPathFor*` helpers stay in sync.
+type StorybookFileExtension = NonNullable<SbDepsConfig['storybookFileExtension']>
+let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -374,19 +379,19 @@ function detectAtomicTag(absPath: string) {
 function storyPathForComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromComponent(absCompPath)
-	return join(dir, `${base}.stories.tsx`)
+	return join(dir, `${base}.${STORYBOOK_FILE_EXTENSION}.tsx`)
 }
 
 function storyPathForSvelteComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromSvelteComponent(absCompPath)
-	return join(dir, `${base}.stories.svelte`)
+	return join(dir, `${base}.${STORYBOOK_FILE_EXTENSION}.svelte`)
 }
 
 function storyPathForVueComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromVueComponent(absCompPath)
-	return join(dir, `${base}.stories.ts`)
+	return join(dir, `${base}.${STORYBOOK_FILE_EXTENSION}.ts`)
 }
 
 function makeTitleFromComponent(absCompPath: string) {
@@ -725,7 +730,7 @@ function ensureStoryForVueComponent(absCompPath: string) {
 function storyPathForAngularComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromAngularComponent(absCompPath)
-	return join(dir, `${base}.stories.ts`)
+	return join(dir, `${base}.${STORYBOOK_FILE_EXTENSION}.ts`)
 }
 
 function makeTitleFromAngularComponent(absCompPath: string) {
@@ -1273,6 +1278,26 @@ async function startStorybook() {
 			)
 			SRC_DIR = 'src'
 		}
+	}
+
+	// `storybookFileExtension` comes from a config file that isn't type-checked
+	// at runtime (a JS config can hold any value), so validate it against the
+	// known set the same way `srcDir` is above — warn and fall back to the
+	// default `'stories'` for anything unrecognised, rather than letting a stray
+	// value produce broken story filenames.
+	const configuredStorybookFileExtension = cfg.storybookFileExtension
+	if (configuredStorybookFileExtension === undefined) {
+		STORYBOOK_FILE_EXTENSION = 'stories'
+	} else if (
+		configuredStorybookFileExtension === 'story' ||
+		configuredStorybookFileExtension === 'stories'
+	) {
+		STORYBOOK_FILE_EXTENSION = configuredStorybookFileExtension
+	} else {
+		error(
+			`storybookFileExtension "${configuredStorybookFileExtension}" is invalid — must be 'story' or 'stories'. Falling back to 'stories'.`,
+		)
+		STORYBOOK_FILE_EXTENSION = 'stories'
 	}
 
 	banner('sb-deps')
