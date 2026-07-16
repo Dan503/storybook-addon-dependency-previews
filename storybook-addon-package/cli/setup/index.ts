@@ -35,11 +35,13 @@ function exampleStoryFileExtension(framework: Framework): string {
 		case 'sveltekit':
 		case 'svelte-vite':
 			return 'svelte'
-		case 'vue3-vite':
-		case 'angular-webpack':
-			return 'ts'
-		default:
+		case 'react-vite':
+		case 'nextjs-webpack':
 			return 'tsx'
+		case 'angular-webpack':
+			return 'component.ts'
+		default:
+			return 'ts'
 	}
 }
 
@@ -132,7 +134,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	} else if (detectedRepoUrl?.warning) {
 		log(`Git project root URL: (auto-detect skipped — see step 3)`)
 	} else {
-		log(`Git project root URL: (no git origin detected — will prompt in step 3)`)
+		log(
+			`Git project root URL: (no git origin detected — will prompt in step 3)`,
+		)
 	}
 
 	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
@@ -478,11 +482,15 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	})
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
-		log(`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`)
+		log(
+			`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`,
+		)
 	} else if (sbDepsConfigResult.kind === 'failed') {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		log(`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`)
+		log(
+			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
+		)
 	}
 
 	rule()
