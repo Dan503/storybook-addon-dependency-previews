@@ -581,11 +581,22 @@ export function patchStoriesGlobForStoryExtension(
 		to: bodyRange.bodyEnd,
 	})
 	if (!key || content[key.valueStart] !== '[') {
-		return { kind: 'skipped', reason: 'no literal `stories` array found' }
+		// Not an idempotent no-op — the `.story.` choice can't be applied and the
+		// user needs to widen the glob themselves, so report it as `failed` (the
+		// caller surfaces `failed` with manual-widen guidance; only the
+		// already-widened case below stays a silent `skipped`).
+		return {
+			kind: 'failed',
+			reason:
+				'Could not find a literal `stories` array in main.ts to widen for the `.story.` naming.',
+		}
 	}
 	const closeIndex = findMatchingBrace(content, key.valueStart)
 	if (closeIndex === null) {
-		return { kind: 'skipped', reason: 'could not parse the `stories` array' }
+		return {
+			kind: 'failed',
+			reason: 'Could not parse the `stories` array in main.ts.',
+		}
 	}
 
 	const arrayBody = content.slice(key.valueStart + 1, closeIndex)
