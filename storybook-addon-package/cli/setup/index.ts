@@ -41,8 +41,9 @@ function exampleStoryFileExtension(framework: Framework): string {
 		case 'react-vite':
 		case 'nextjs-webpack':
 			return 'tsx'
-		case 'angular-webpack':
-			return 'component.ts'
+		// Angular, Vue, and unknown fall through to `ts` — the Angular scaffolder
+		// strips `.component` and emits `<Name>.stories.ts`, and Vue emits
+		// `<Name>.stories.ts`, so `ComponentName.stories.ts` is the accurate example.
 		default:
 			return 'ts'
 	}
