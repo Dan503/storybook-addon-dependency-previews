@@ -538,3 +538,74 @@ export function patchMainFile(mainFile: MainFile): PatchResult {
 	}
 	return { kind: 'patched', appliedTo: 'new-array', addedAddon: true }
 }
+
+export type StoriesGlobPatchResult =
+	| { kind: 'patched' }
+	| { kind: 'skipped'; reason: string }
+	| { kind: 'failed'; reason: string }
+
+/**
+ * Widen Storybook's own `stories` glob so it discovers singular `.story.*`
+ * files in addition to the default plural `.stories.*`. Called only when the
+ * project uses `storybookFileExtension: 'story'` — without it Storybook's
+ * sidebar never lists the scaffolded `.story.*` files even though the addon
+ * generates them correctly.
+ *
+ * This targets Storybook's OWN discovery glob (matched with picomatch, which
+ * supports the `@(story|stories)` extglob) — NOT the addon's Vite
+ * `import.meta.glob`, so extglob is fine here. Idempotent: a glob already
+ * written as `@(story|stories)` has no bare `.stories.` left to widen.
+ */
+export function patchStoriesGlobForStoryExtension(
+	mainFile: MainFile,
+): StoriesGlobPatchResult {
+	let content: string
+	try {
+		content = readFileSync(mainFile.path, 'utf8')
+	} catch (e) {
+		return {
+			kind: 'failed',
+			reason: `Could not read ${mainFile.path}: ${(e as Error).message}`,
+		}
+	}
+
+	const bodyRange = findConfigBodyRange(content)
+	if (!bodyRange) {
+		return {
+			kind: 'failed',
+			reason: 'Could not locate the Storybook config object in main file.',
+		}
+	}
+	const key = findTopLevelKey(content, 'stories', {
+		from: bodyRange.bodyStart,
+		to: bodyRange.bodyEnd,
+	})
+	if (!key || content[key.valueStart] !== '[') {
+		return { kind: 'skipped', reason: 'no literal `stories` array found' }
+	}
+	const closeIndex = findMatchingBrace(content, key.valueStart)
+	if (closeIndex === null) {
+		return { kind: 'skipped', reason: 'could not parse the `stories` array' }
+	}
+
+	const arrayBody = content.slice(key.valueStart + 1, closeIndex)
+	const widenedBody = arrayBody.replace(/\.stories\./g, '.@(story|stories).')
+	if (widenedBody === arrayBody) {
+		return {
+			kind: 'skipped',
+			reason: 'stories glob already matches `.story.` (or none present)',
+		}
+	}
+
+	const newContent =
+		content.slice(0, key.valueStart + 1) + widenedBody + content.slice(closeIndex)
+	try {
+		writeFileSync(mainFile.path, newContent, 'utf8')
+	} catch (e) {
+		return {
+			kind: 'failed',
+			reason: `Could not write ${mainFile.path}: ${(e as Error).message}`,
+		}
+	}
+	return { kind: 'patched' }
+}

@@ -10,7 +10,10 @@ import {
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
 import { installMissingPackages } from './install.js'
-import { patchMainFile } from './patchers/main.js'
+import {
+	patchMainFile,
+	patchStoriesGlobForStoryExtension,
+} from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
 import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
@@ -388,6 +391,23 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				"  Add `'storybook-addon-dependency-previews/addon'` to your `addons:` array manually, then re-run.",
 			)
 			process.exit(1)
+	}
+
+	// When the project uses the singular `.story.` naming, widen Storybook's own
+	// `stories` glob so it discovers `.story.*` files — otherwise the scaffolded
+	// stories are created correctly but never show up in the Storybook sidebar.
+	if (effectiveStorybookFileExtension === 'story') {
+		const storiesGlobResult = patchStoriesGlobForStoryExtension(
+			detection.mainFile,
+		)
+		if (storiesGlobResult.kind === 'patched') {
+			log('  ✓ widened the Storybook `stories` glob to also match `.story.*`')
+		} else if (storiesGlobResult.kind === 'failed') {
+			log(`  ⚠ ${storiesGlobResult.reason}`)
+			log(
+				'    Add `.story.` to the `stories` glob in main.ts manually so Storybook lists .story.* files.',
+			)
+		}
 	}
 
 	rule()
