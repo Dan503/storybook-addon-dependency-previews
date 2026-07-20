@@ -10,12 +10,17 @@ import {
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
 import { installMissingPackages } from './install.js'
-import { patchMainFile } from './patchers/main.js'
+import {
+	patchMainFile,
+	patchStoriesGlobForStoryExtension,
+} from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
 import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
-import { choose, confirm, confirmOrEdit, input } from './prompt.js'
+import { ask, choose, confirm, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
+
+import type { SbDepsConfig } from '../../src/config.js'
 
 function log(line: string) {
 	console.log(line)
@@ -23,6 +28,25 @@ function log(line: string) {
 
 function rule() {
 	console.log('────────────────────────────────────────────')
+}
+
+// The story-file extension the scaffolder generates for each framework — used
+// only to render a concrete example next to the story-extension preference
+// (Vue stories are `.stories.ts`, Svelte `.stories.svelte`, React `.stories.tsx`).
+function exampleStoryFileExtension(framework: Framework): string {
+	switch (framework) {
+		case 'sveltekit':
+		case 'svelte-vite':
+			return 'svelte'
+		case 'react-vite':
+		case 'nextjs-webpack':
+			return 'tsx'
+		// Angular, Vue, and unknown fall through to `ts` — the Angular scaffolder
+		// strips `.component` and emits `<Name>.stories.ts`, and Vue emits
+		// `<Name>.stories.ts`, so `ComponentName.stories.ts` is the accurate example.
+		default:
+			return 'ts'
+	}
 }
 
 export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
@@ -114,13 +138,21 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	} else if (detectedRepoUrl?.warning) {
 		log(`Git project root URL: (auto-detect skipped — see step 3)`)
 	} else {
-		log(`Git project root URL: (no git origin detected — will prompt in step 3)`)
+		log(
+			`Git project root URL: (no git origin detected — will prompt in step 3)`,
+		)
 	}
 
 	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
 	const displaySrcDir =
 		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
 	log(`Source folder       : ${displaySrcDir}`)
+	// Assumed default; the user can change it in the edit flow below. The
+	// example filename uses the story extension the scaffolder emits for the
+	// detected framework.
+	log(
+		`Storybook Extension : stories (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`,
+	)
 
 	// Show file paths relative to cwd so the detection block stays compact —
 	// absolute Windows paths in particular are noisy and push the actually-
@@ -162,7 +194,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				isEsm: detection.isEsm,
 			})
 			if (cfg.kind === 'created') {
-				log(`✓ wrote ${cfg.path} (srcDir: '${resolvedSrcDir.srcDir}')`)
+				log(`✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
 			} else if (cfg.kind === 'failed') {
 				log(`⚠ ${cfg.reason}`)
 			}
@@ -220,6 +252,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	let effectiveSourceRootUrl = detectedRepoUrl?.url ?? ''
 	let effectiveSrcDir = resolvedSrcDir.srcDir
 	let userOverrodeUrl = false
+	let effectiveStorybookFileExtension: NonNullable<
+		SbDepsConfig['storybookFileExtension']
+	> = 'stories'
 
 	const choice = await confirmOrEdit(
 		'Proceed with installing dependencies and patching your Storybook config?',
@@ -273,6 +308,31 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			}
 			effectiveSrcDir = raw
 			break
+		}
+
+		// Storybook file extension — the naming used for generated story files.
+		// Numbered choice; Enter keeps the current value (default `stories`). The
+		// examples use the story extension the scaffolder emits for this framework.
+		const exampleExt = exampleStoryFileExtension(framework)
+		while (true) {
+			log('\nStorybook file extension for generated stories:')
+			log(`  1) story   → Foo.story.${exampleExt}`)
+			log(`  2) stories → Foo.stories.${exampleExt} (default)`)
+			const raw = (
+				await ask(
+					`  Enter 1 or 2, or press Enter to keep "${effectiveStorybookFileExtension}": `,
+				)
+			).trim()
+			if (raw === '') break
+			if (raw === '1') {
+				effectiveStorybookFileExtension = 'story'
+				break
+			}
+			if (raw === '2') {
+				effectiveStorybookFileExtension = 'stories'
+				break
+			}
+			log(`  "${raw}" not recognised — enter 1, 2, or press Enter.`)
 		}
 		rule()
 	}
@@ -332,6 +392,23 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				"  Add `'storybook-addon-dependency-previews/addon'` to your `addons:` array manually, then re-run.",
 			)
 			process.exit(1)
+	}
+
+	// When the project uses the singular `.story.` naming, widen Storybook's own
+	// `stories` glob so it discovers `.story.*` files — otherwise the scaffolded
+	// stories are created correctly but never show up in the Storybook sidebar.
+	if (effectiveStorybookFileExtension === 'story') {
+		const storiesGlobResult = patchStoriesGlobForStoryExtension(
+			detection.mainFile,
+		)
+		if (storiesGlobResult.kind === 'patched') {
+			log('  ✓ widened the Storybook `stories` glob to also match `.story.*`')
+		} else if (storiesGlobResult.kind === 'failed') {
+			log(`  ⚠ ${storiesGlobResult.reason}`)
+			log(
+				'    Add `.story.` to the `stories` glob in main.ts manually so Storybook lists .story.* files.',
+			)
+		}
 	}
 
 	rule()
@@ -412,23 +489,29 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
-	// default `'src'`. Must happen before Step 5 so the sb-deps build below
-	// picks up the configured srcDir on its first run. Silent no-op for the
-	// default case so non-Next.js setups don't see an extra log line. Uses
-	// `effectiveSrcDir` so a user-edited value via the edit flow is what
-	// gets persisted, not the auto-detected one.
+	// default `'src'`, or when the user chose a non-default story-file
+	// extension. Must happen before Step 5 so the sb-deps build below picks up
+	// the configured values on its first run. Silent no-op when everything is
+	// default so setups without overrides don't see an extra log line. Uses
+	// `effectiveSrcDir` so a user-edited value via the edit flow is what gets
+	// persisted, not the auto-detected one.
 	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
 		cwd,
 		srcDir: effectiveSrcDir,
 		isEsm: detection.isEsm,
+		storybookFileExtension: effectiveStorybookFileExtension,
 	})
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
-		log(`  ✓ wrote ${sbDepsConfigResult.path} (srcDir: '${effectiveSrcDir}')`)
+		log(
+			`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`,
+		)
 	} else if (sbDepsConfigResult.kind === 'failed') {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		log(`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`)
+		log(
+			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
+		)
 	}
 
 	rule()
