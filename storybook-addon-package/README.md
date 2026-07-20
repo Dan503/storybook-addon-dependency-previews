@@ -154,6 +154,26 @@ export default defineSbDepsConfig({
 })
 ```
 
+### `storybookFileExtension`
+
+The extension `sb-deps` uses when it auto-scaffolds a story file for a new component — `'stories'` (Storybook's convention) or `'story'`. The setup wizard asks for this preference.
+
+**Default:** `'stories'`
+
+| Value                | Generated story file |
+| -------------------- | -------------------- |
+| `'stories'` (default) | `ButtonAtom.stories.tsx` |
+| `'story'`             | `ButtonAtom.story.tsx`   |
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	storybookFileExtension: 'story',
+})
+```
+
 ### `scaffold`
 
 Override the templates used when `sb-deps` auto-scaffolds new component and story files. Each template function receives a context object with relevant variables and must return the full file content as a string.

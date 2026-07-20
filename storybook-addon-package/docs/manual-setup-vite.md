@@ -188,7 +188,7 @@ const previewConfig: StorybookPreviewConfig = {
 		dependencyPreviews: {
 			dependenciesJson,
 			storyModules: import.meta.glob(
-				'/src/**/*.stories.{tsx,ts,jsx,js,svelte}',
+				'/src/**/*.{story,stories}.{tsx,ts,jsx,js,svelte}',
 				{ eager: false },
 			),
 			// URL to the root of your project inside your git repository — the folder

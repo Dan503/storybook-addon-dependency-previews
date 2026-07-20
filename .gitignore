@@ -9,3 +9,6 @@ storybook-static
 # postprocessed `dependency-previews.json` (next to it) is consumed by the
 # addon at runtime; the `.raw.json` is debug output, not a deliverable.
 **/.storybook/dependency-previews.raw.json
+
+# graphify-axet
+.graphify/

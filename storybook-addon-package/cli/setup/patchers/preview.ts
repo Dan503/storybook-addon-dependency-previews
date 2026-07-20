@@ -32,7 +32,11 @@ export type PreviewPatchResult =
 // a single suffix rather than a per-framework record. `dependencyPreviewsBlock` still
 // takes `framework` so future per-framework divergence (a glob a framework should
 // strictly exclude, say) is a one-line change here, not a signature shuffle.
-const STORY_GLOB_SUFFIX = '**/*.stories.{tsx,ts,jsx,js,svelte}'
+// Matches both the plural `.stories.` (default) and singular `.story.` naming —
+// the `storybookFileExtension` config lets a project pick either. Brace
+// expansion `{story,stories}` (NOT extglob `@(story|stories)`, which returns
+// zero matches under Vite 8 / tinyglobby) keeps both discoverable.
+const STORY_GLOB_SUFFIX = '**/*.{story,stories}.{tsx,ts,jsx,js,svelte}'
 
 /**
  * Build the story-module glob from the resolved `srcDir`. Empty `srcDir`
