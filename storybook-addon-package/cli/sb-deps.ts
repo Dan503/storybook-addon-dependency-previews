@@ -1025,7 +1025,11 @@ export const Primary: Story = {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story-file creation (mirror of component creation)
 // ───────────────────────────────────────────────────────────────────────────────
-type StoryFramework = 'react' | 'svelte' | 'vue' | 'angular'
+// Derived from the scaffold-config keys — the single source of truth for which
+// frameworks this addon scaffolds — so adding a framework there (e.g. the
+// upcoming Solid flavor) expands this union and makes STORY_SCAFFOLDERS fail to
+// compile until its scaffolder trio is added.
+type StoryFramework = keyof NonNullable<SbDepsConfig['scaffold']>
 
 /**
  * Per-framework scaffolders + story-path helper, keyed by `StoryFramework`. Lets
