@@ -12,9 +12,10 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
-import { basename, dirname, join, posix, resolve, sep } from 'node:path'
+import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
+import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -114,6 +115,17 @@ let SRC_DIR = 'src'
 // Storybook's convention), so all four `storyPathFor*` helpers stay in sync.
 type StorybookFileExtension = NonNullable<SbDepsConfig['storybookFileExtension']>
 let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
+
+// Framework of the project the CLI is running in — needed to disambiguate a
+// `.stories.ts` story with no sibling component (Vue vs Angular both use `.ts`).
+// `detectProject` reads package.json + `.storybook/main.*`, so cache the result:
+// the framework can't change mid-run.
+let cachedProjectFramework: Framework | null = null
+function getProjectFramework(): Framework {
+	if (cachedProjectFramework === null)
+		cachedProjectFramework = detectProject(projectRoot).framework
+	return cachedProjectFramework
+}
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Runners
@@ -447,7 +459,10 @@ export function ${componentName}({ children }: ${propsName}) {
 	info(`scaffolded component → \${rel(absCompPath)}`)
 }
 
-function scaffoldStoryForComponent(absCompPath: string) {
+function scaffoldStoryForComponent(
+	absCompPath: string,
+	targetStoryPath: string = storyPathForComponent(absCompPath),
+) {
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
@@ -485,15 +500,38 @@ export const Primary: Story = {
   args: {} satisfies ${propsName},
 }
 `
-	const storyPath = storyPathForComponent(absCompPath)
-	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded story → \${rel(storyPath)}`)
-	return storyPath
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
+	info(`scaffolded story → \${rel(targetStoryPath)}`)
+	return targetStoryPath
+}
+
+/**
+ * Return the on-disk story file for `canonicalStoryPath` if one already exists —
+ * under either the `.stories.<ext>` or the `.story.<ext>` naming. The canonical
+ * path is built from `STORYBOOK_FILE_EXTENSION`, which may itself be either
+ * variant, so both directions are checked. Used by the `ensureStoryFor*` guards
+ * so auto-creating a component never emits a duplicate story when the sibling
+ * was created under the other naming.
+ */
+function findExistingStory(canonicalStoryPath: string): string | null {
+	if (existsSync(canonicalStoryPath)) return canonicalStoryPath
+	const alternateStoryPath = getAlternateStoryNaming(canonicalStoryPath)
+	if (alternateStoryPath && existsSync(alternateStoryPath))
+		return alternateStoryPath
+	return null
+}
+
+/** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
+function getAlternateStoryNaming(storyPath: string): string | null {
+	if (/\.story\.\w+$/i.test(storyPath))
+		return storyPath.replace(/\.story\.(\w+)$/i, '.stories.$1')
+	if (/\.stories\.\w+$/i.test(storyPath))
+		return storyPath.replace(/\.stories\.(\w+)$/i, '.story.$1')
+	return null
 }
 
 function ensureStoryForComponent(absCompPath: string) {
-	const sPath = storyPathForComponent(absCompPath)
-	if (existsSync(sPath)) return null
+	if (findExistingStory(storyPathForComponent(absCompPath))) return null
 	return scaffoldStoryForComponent(absCompPath)
 }
 
@@ -579,7 +617,10 @@ function makeTitleFromSvelteComponent(absCompPath: string) {
 	return dedupedStoryPath.join(' / ')
 }
 
-function scaffoldStoryForSvelteComponent(absCompPath: string) {
+function scaffoldStoryForSvelteComponent(
+	absCompPath: string,
+	targetStoryPath: string = storyPathForSvelteComponent(absCompPath),
+) {
 	const base = componentBaseFromSvelteComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const title = makeTitleFromSvelteComponent(absCompPath)
@@ -609,15 +650,13 @@ function scaffoldStoryForSvelteComponent(absCompPath: string) {
 	<p>${title}</p>
 </Story>
 `
-	const storyPath = storyPathForSvelteComponent(absCompPath)
-	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded svelte story → ${rel(storyPath)}`)
-	return storyPath
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
+	info(`scaffolded svelte story → ${rel(targetStoryPath)}`)
+	return targetStoryPath
 }
 
 function ensureStoryForSvelteComponent(absCompPath: string) {
-	const sPath = storyPathForSvelteComponent(absCompPath)
-	if (existsSync(sPath)) return null
+	if (findExistingStory(storyPathForSvelteComponent(absCompPath))) return null
 	return scaffoldStoryForSvelteComponent(absCompPath)
 }
 
@@ -671,7 +710,10 @@ function makeTitleFromVueComponent(absCompPath: string) {
 	return dedupedStoryPath.join(' / ')
 }
 
-function scaffoldStoryForVueComponent(absCompPath: string) {
+function scaffoldStoryForVueComponent(
+	absCompPath: string,
+	targetStoryPath: string = storyPathForVueComponent(absCompPath),
+) {
 	const base = componentBaseFromVueComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const title = makeTitleFromVueComponent(absCompPath)
@@ -712,15 +754,13 @@ export const Primary: Story = {
 	}),
 }
 `
-	const storyPath = storyPathForVueComponent(absCompPath)
-	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded vue story → ${rel(storyPath)}`)
-	return storyPath
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
+	info(`scaffolded vue story → ${rel(targetStoryPath)}`)
+	return targetStoryPath
 }
 
 function ensureStoryForVueComponent(absCompPath: string) {
-	const sPath = storyPathForVueComponent(absCompPath)
-	if (existsSync(sPath)) return null
+	if (findExistingStory(storyPathForVueComponent(absCompPath))) return null
 	return scaffoldStoryForVueComponent(absCompPath)
 }
 
@@ -939,7 +979,10 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 }
 
-function scaffoldStoryForAngularComponent(absCompPath: string) {
+function scaffoldStoryForAngularComponent(
+	absCompPath: string,
+	targetStoryPath: string = storyPathForAngularComponent(absCompPath),
+) {
 	const base = componentBaseFromAngularComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const className = `${componentName}Component`
@@ -977,16 +1020,107 @@ export const Primary: Story = {
 	args: {},
 }
 `
-	const storyPath = storyPathForAngularComponent(absCompPath)
-	writeFileSync(storyPath, storyTpl, 'utf8')
-	info(`scaffolded angular story → ${rel(storyPath)}`)
-	return storyPath
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
+	info(`scaffolded angular story → ${rel(targetStoryPath)}`)
+	return targetStoryPath
 }
 
 function ensureStoryForAngularComponent(absCompPath: string) {
-	const sPath = storyPathForAngularComponent(absCompPath)
-	if (existsSync(sPath)) return null
+	if (findExistingStory(storyPathForAngularComponent(absCompPath))) return null
 	return scaffoldStoryForAngularComponent(absCompPath)
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Story-file creation (mirror of component creation)
+// ───────────────────────────────────────────────────────────────────────────────
+type StoryFramework = 'react' | 'svelte' | 'vue' | 'angular'
+
+/**
+ * Per-framework component + story scaffolders, keyed by `StoryFramework`. Lets
+ * `scaffoldStoryFromCreatedStoryFile` pick the right pair without four
+ * near-identical branches. Angular's component scaffolder takes a template-style
+ * arg, wrapped here to `'internal'` (inline template) to match the signature.
+ */
+const STORY_SCAFFOLDERS: Record<
+	StoryFramework,
+	{
+		component: (compPath: string) => void
+		story: (compPath: string, targetStoryPath: string) => string
+	}
+> = {
+	react: { component: scaffoldComponent, story: scaffoldStoryForComponent },
+	svelte: {
+		component: scaffoldSvelteComponent,
+		story: scaffoldStoryForSvelteComponent,
+	},
+	vue: { component: scaffoldVueComponent, story: scaffoldStoryForVueComponent },
+	angular: {
+		component: (compPath) => scaffoldAngularComponent(compPath, 'internal'),
+		story: scaffoldStoryForAngularComponent,
+	},
+}
+
+/**
+ * Work out the component a created story file belongs to, and which framework's
+ * scaffolders to use. `.tsx` → React, `.svelte` → Svelte, `.ts` → Vue or Angular
+ * (disambiguated in `resolveTsStoryComponent`). Any other extension (`.js`,
+ * `.jsx`, `.mdx`) returns `null` — not something we scaffold.
+ */
+function resolveComponentForStory(
+	absStoryPath: string,
+): { compPath: string; framework: StoryFramework } | null {
+	const storyBase = absStoryPath.replace(/\.stor(?:y|ies)\.\w+$/i, '')
+	const ext = extname(absStoryPath).toLowerCase()
+	if (ext === '.tsx') return { compPath: `${storyBase}.tsx`, framework: 'react' }
+	if (ext === '.svelte')
+		return { compPath: `${storyBase}.svelte`, framework: 'svelte' }
+	if (ext === '.ts') return resolveTsStoryComponent(storyBase)
+	return null
+}
+
+/**
+ * A `.stories.ts` story is Vue or Angular. Prefer an existing sibling component
+ * to decide (`<base>.vue` → Vue, `<base>.component.ts` → Angular); with neither
+ * present, fall back to the project's detected framework.
+ */
+function resolveTsStoryComponent(
+	storyBase: string,
+): { compPath: string; framework: StoryFramework } | null {
+	const vuePath = `${storyBase}.vue`
+	if (existsSync(vuePath)) return { compPath: vuePath, framework: 'vue' }
+	const angularPath = `${storyBase}.component.ts`
+	if (existsSync(angularPath))
+		return { compPath: angularPath, framework: 'angular' }
+	const projectFramework = getProjectFramework()
+	if (projectFramework === 'vue3-vite')
+		return { compPath: vuePath, framework: 'vue' }
+	if (projectFramework === 'angular-webpack')
+		return { compPath: angularPath, framework: 'angular' }
+	return null
+}
+
+/**
+ * Fill a directly-created story file (the mirror of component creation). Skips
+ * non-empty files (an existing story is never clobbered) and stories whose
+ * framework/extension we don't scaffold. When the sibling component is missing,
+ * the story is filled first and the component backfilled after — the story
+ * scaffolder needs the component's path, never its contents — so the
+ * component's own watcher event then no-ops on its `ensureStoryFor*` guard
+ * (the story already exists). Returns the filled story path, or `null` if
+ * nothing was scaffolded.
+ */
+function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null {
+	if (!isEmptyOrWhitespace(absStoryPath)) return null
+	const resolved = resolveComponentForStory(absStoryPath)
+	if (!resolved) return null
+	const { compPath, framework } = resolved
+	const { component: scaffoldFrameworkComponent, story: scaffoldFrameworkStory } =
+		STORY_SCAFFOLDERS[framework]
+	const isComponentMissing =
+		!existsSync(compPath) || isEmptyOrWhitespace(compPath)
+	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
+	if (isComponentMissing) scaffoldFrameworkComponent(compPath)
+	return createdStory
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1052,6 +1186,13 @@ function startWatcher() {
 						continue
 					}
 
+					// STORY CREATE — fill the story (and its component if missing).
+					// Falls through to the normal rebuild when there's nothing to
+					// scaffold (non-empty story, or an extension we don't template).
+					if (STORY_FILE_REGEX.test(relPath) && ev.type === 'create') {
+						if (handleStoryCreation(abs)) continue
+					}
+
 					// COMPONENT CREATE — scaffold if empty and ensure story
 					if (isComponentsTsx(abs) && ev.type === 'create') {
 						await handleComponentCreation(abs, relPath)
@@ -1111,6 +1252,15 @@ function startWatcher() {
 			return result
 		})
 		.catch((e) => error(`watch init failed ${e?.message || e}`))
+
+	function handleStoryCreation(abs: string): boolean {
+		const createdStory = scaffoldStoryFromCreatedStoryFile(abs)
+		if (createdStory) {
+			kick('create:story', createdStory)
+			return true
+		}
+		return false
+	}
 
 	async function handleComponentCreation(abs: string, relPath: string) {
 		if (isEmptyOrWhitespace(abs)) {
