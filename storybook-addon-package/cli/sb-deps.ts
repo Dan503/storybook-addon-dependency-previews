@@ -1130,9 +1130,9 @@ const STORY_SCAFFOLDERS: Record<
 	}
 > = {
 	react: {
-		component: (compPath) => scaffoldComponent(compPath, 'react'),
+		component: (compPath) => scaffoldComponent(compPath, TSX_FRAMEWORK),
 		story: (compPath, targetStoryPath) =>
-			scaffoldStoryForComponent(compPath, 'react', targetStoryPath),
+			scaffoldStoryForComponent(compPath, TSX_FRAMEWORK, targetStoryPath),
 		storyPath: storyPathForComponent,
 	},
 	svelte: {
