@@ -1129,8 +1129,12 @@ function resolveTsStoryComponent(
 	if (existsSync(angularPath))
 		return { compPath: angularPath, framework: 'angular' }
 	const projectFramework = getProjectFramework()
-	if (projectFramework === 'react-vite')
-		return { compPath: reactPath, framework: 'react' }
+	// nextjs-webpack is a React meta-framework (components are `.tsx`), and the
+	// component-create path already treats any `.tsx` as React — group it with
+	// react-vite so story-first scaffolding stays symmetric with component-first.
+	const isReactFramework =
+		projectFramework === 'react-vite' || projectFramework === 'nextjs-webpack'
+	if (isReactFramework) return { compPath: reactPath, framework: 'react' }
 	if (projectFramework === 'vue3-vite')
 		return { compPath: vuePath, framework: 'vue' }
 	if (projectFramework === 'angular-webpack')
