@@ -509,8 +509,8 @@ export const Primary: Story = {
  * Return the on-disk story file for `canonicalStoryPath` if one already exists —
  * under either the `.stories.<ext>` or the `.story.<ext>` naming. The canonical
  * path is built from `STORYBOOK_FILE_EXTENSION`, which may itself be either
- * variant, so both directions are checked. Used by the `ensureStoryFor*` guards
- * so auto-creating a component never emits a duplicate story when the sibling
+ * variant, so both directions are checked. Used by `ensureStoryFor` so
+ * auto-creating a component never emits a duplicate story when the sibling
  * was created under the other naming.
  */
 function findExistingStory(canonicalStoryPath: string): string | null {
@@ -528,11 +528,6 @@ function getAlternateStoryNaming(storyPath: string): string | null {
 	if (/\.stories\.\w+$/i.test(storyPath))
 		return storyPath.replace(/\.stories\.(\w+)$/i, '.story.$1')
 	return null
-}
-
-function ensureStoryForComponent(absCompPath: string) {
-	if (findExistingStory(storyPathForComponent(absCompPath))) return null
-	return scaffoldStoryForComponent(absCompPath)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -655,11 +650,6 @@ function scaffoldStoryForSvelteComponent(
 	return targetStoryPath
 }
 
-function ensureStoryForSvelteComponent(absCompPath: string) {
-	if (findExistingStory(storyPathForSvelteComponent(absCompPath))) return null
-	return scaffoldStoryForSvelteComponent(absCompPath)
-}
-
 // ───────────────────────────────────────────────────────────────────────────────
 // Vue scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
@@ -757,11 +747,6 @@ export const Primary: Story = {
 	writeFileSync(targetStoryPath, storyTpl, 'utf8')
 	info(`scaffolded vue story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
-}
-
-function ensureStoryForVueComponent(absCompPath: string) {
-	if (findExistingStory(storyPathForVueComponent(absCompPath))) return null
-	return scaffoldStoryForVueComponent(absCompPath)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1025,39 +1010,61 @@ export const Primary: Story = {
 	return targetStoryPath
 }
 
-function ensureStoryForAngularComponent(absCompPath: string) {
-	if (findExistingStory(storyPathForAngularComponent(absCompPath))) return null
-	return scaffoldStoryForAngularComponent(absCompPath)
-}
-
 // ───────────────────────────────────────────────────────────────────────────────
 // Story-file creation (mirror of component creation)
 // ───────────────────────────────────────────────────────────────────────────────
 type StoryFramework = 'react' | 'svelte' | 'vue' | 'angular'
 
 /**
- * Per-framework component + story scaffolders, keyed by `StoryFramework`. Lets
- * `scaffoldStoryFromCreatedStoryFile` pick the right pair without four
- * near-identical branches. Angular's component scaffolder takes a template-style
- * arg, wrapped here to `'internal'` (inline template) to match the signature.
+ * Per-framework scaffolders + story-path helper, keyed by `StoryFramework`. Lets
+ * `ensureStoryFor` and `scaffoldStoryFromCreatedStoryFile` pick the right trio
+ * without four near-identical branches per operation. Angular's component
+ * scaffolder takes a template-style arg, wrapped here to `'internal'` (inline
+ * template) to match the signature.
  */
 const STORY_SCAFFOLDERS: Record<
 	StoryFramework,
 	{
 		component: (compPath: string) => void
-		story: (compPath: string, targetStoryPath: string) => string
+		story: (compPath: string, targetStoryPath?: string) => string
+		storyPath: (compPath: string) => string
 	}
 > = {
-	react: { component: scaffoldComponent, story: scaffoldStoryForComponent },
+	react: {
+		component: scaffoldComponent,
+		story: scaffoldStoryForComponent,
+		storyPath: storyPathForComponent,
+	},
 	svelte: {
 		component: scaffoldSvelteComponent,
 		story: scaffoldStoryForSvelteComponent,
+		storyPath: storyPathForSvelteComponent,
 	},
-	vue: { component: scaffoldVueComponent, story: scaffoldStoryForVueComponent },
+	vue: {
+		component: scaffoldVueComponent,
+		story: scaffoldStoryForVueComponent,
+		storyPath: storyPathForVueComponent,
+	},
 	angular: {
 		component: (compPath) => scaffoldAngularComponent(compPath, 'internal'),
 		story: scaffoldStoryForAngularComponent,
+		storyPath: storyPathForAngularComponent,
 	},
+}
+
+/**
+ * Ensure the component at `absCompPath` has a story file, scaffolding one if it
+ * doesn't already exist under either naming variant. The component-side mirror
+ * of `scaffoldStoryFromCreatedStoryFile`; called when a component file is
+ * created. Returns the scaffolded story path, or `null` if one already existed.
+ */
+function ensureStoryFor(
+	framework: StoryFramework,
+	absCompPath: string,
+): string | null {
+	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
+	if (findExistingStory(storyPath(absCompPath))) return null
+	return story(absCompPath)
 }
 
 /**
@@ -1105,7 +1112,7 @@ function resolveTsStoryComponent(
  * framework/extension we don't scaffold. When the sibling component is missing,
  * the story is filled first and the component backfilled after — the story
  * scaffolder needs the component's path, never its contents — so the
- * component's own watcher event then no-ops on its `ensureStoryFor*` guard
+ * component's own watcher event then no-ops on its `ensureStoryFor` guard
  * (the story already exists). Returns the filled story path, or `null` if
  * nothing was scaffolded.
  */
@@ -1226,7 +1233,7 @@ function startWatcher() {
 								scaffoldAngularHtmlFromTs(abs, tsPath)
 							}
 							console.log('Angular component creation detected:', rel(abs))
-							const createdStory = ensureStoryForAngularComponent(tsPath)
+							const createdStory = ensureStoryFor('angular', tsPath)
 							if (createdStory) {
 								kick('create:story', createdStory)
 							}
@@ -1268,7 +1275,7 @@ function startWatcher() {
 		}
 
 		console.log('Component creation detected:', relPath)
-		const createdStory = ensureStoryForComponent(abs)
+		const createdStory = ensureStoryFor('react', abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
@@ -1286,7 +1293,7 @@ function startWatcher() {
 			scaffoldSvelteComponent(abs)
 		}
 
-		const createdStory = ensureStoryForSvelteComponent(abs)
+		const createdStory = ensureStoryFor('svelte', abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
@@ -1298,7 +1305,7 @@ function startWatcher() {
 		}
 
 		console.log('Vue component creation detected:', relPath)
-		const createdStory = ensureStoryForVueComponent(abs)
+		const createdStory = ensureStoryFor('vue', abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
@@ -1314,7 +1321,7 @@ function startWatcher() {
 		}
 
 		console.log('Angular component creation detected:', relPath)
-		const createdStory = ensureStoryForAngularComponent(abs)
+		const createdStory = ensureStoryFor('angular', abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
