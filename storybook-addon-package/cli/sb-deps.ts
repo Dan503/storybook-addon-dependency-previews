@@ -493,7 +493,7 @@ function scaffoldStoryForComponent(
 		}) ??
 		`import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ${componentName}, type ${propsName} } from './${componentName}'
+import { ${componentName}, type ${propsName} } from './${base}'
 
 const meta: Meta<typeof ${componentName}> = {
   title: '${title}',
@@ -639,7 +639,7 @@ function scaffoldStoryForSvelteComponent(
 		SCAFFOLD_CONFIG?.svelte?.story?.({ componentName, title, tags }) ??
 		`<script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews'
-	import ${componentName}, { type PropsFor${componentName} } from './${componentName}.svelte'
+	import ${componentName}, { type PropsFor${componentName} } from './${base}.svelte'
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
@@ -727,7 +727,7 @@ function scaffoldStoryForVueComponent(
 		SCAFFOLD_CONFIG?.vue?.story?.({ componentName, title, tags }) ??
 		`import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import ${componentName}, { type PropsFor${componentName} } from './${componentName}.vue'
+import ${componentName}, { type PropsFor${componentName} } from './${base}.vue'
 
 const meta: Meta<typeof ${componentName}> = {
 	title: '${title}',
