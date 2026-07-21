@@ -318,6 +318,18 @@ function srcSubpathRegex(suffixPattern: string): RegExp {
  */
 const STORY_FILE_REGEX = /\.stor(?:y|ies)\.\w+$/i
 
+// <srcDir>/**/Thing.story.<ext> or Thing.stories.<ext> ? Gates story-file
+// scaffolding to the configured source dir, mirroring the component detectors
+// below. The story watcher globs match any directory (so out-of-src stories
+// still trigger a graph rebuild), but scaffolding a story — and backfilling its
+// component — should only fire under SRC_DIR, exactly like component-driven
+// creation, so a root-level `stories/Foo.stories.tsx` never writes `Foo.tsx`
+// into a non-source folder.
+function isStoryFileUnderSrc(absPath: string) {
+	const norm = absPath.replace(/\\/g, '/')
+	return srcSubpathRegex('\\.stor(?:y|ies)\\.\\w+$').test(norm)
+}
+
 // <srcDir>/**/Thing.tsx ? (and not a story file)
 function isComponentsTsx(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
@@ -1194,9 +1206,11 @@ function startWatcher() {
 					}
 
 					// STORY CREATE — fill the story (and its component if missing).
+					// Src-gated like the component-create branches below, so a story
+					// created outside SRC_DIR never scaffolds a component there.
 					// Falls through to the normal rebuild when there's nothing to
 					// scaffold (non-empty story, or an extension we don't template).
-					if (STORY_FILE_REGEX.test(relPath) && ev.type === 'create') {
+					if (isStoryFileUnderSrc(abs) && ev.type === 'create') {
 						if (handleStoryCreation(abs)) continue
 					}
 
