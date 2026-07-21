@@ -1169,9 +1169,10 @@ function ensureStoryFor(
 
 /**
  * Work out the component a created story file belongs to, and which framework's
- * scaffolders to use. `.tsx` → React, `.svelte` → Svelte, `.ts` → React, Vue,
- * or Angular (disambiguated in `resolveTsStoryComponent`). Any other extension
- * (`.js`, `.jsx`, `.mdx`) returns `null` — not something we scaffold.
+ * scaffolders to use. `.tsx` → React/Solid, `.svelte` → Svelte, `.ts` →
+ * React/Solid, Vue, or Angular (disambiguated in `resolveTsStoryComponent`). Any
+ * other extension (`.js`, `.jsx`, `.mdx`) returns `null` — not something we
+ * scaffold.
  */
 function resolveComponentForStory(
 	absStoryPath: string,
@@ -1186,10 +1187,10 @@ function resolveComponentForStory(
 }
 
 /**
- * A `.stories.ts` story can be React, Vue, or Angular — all three use `.ts`
- * story files (React's scaffolded template is JSX-free, so it's valid as `.ts`
- * even though React stories are `.tsx` by convention). Prefer an existing
- * sibling component to decide (`<base>.tsx` → React, `<base>.vue` → Vue,
+ * A `.stories.ts` story can be React, Solid, Vue, or Angular — all use `.ts`
+ * story files (the React/Solid scaffolded template is JSX-free, so it's valid as
+ * `.ts` even though those stories are `.tsx` by convention). Prefer an existing
+ * sibling component to decide (`<base>.tsx` → React/Solid, `<base>.vue` → Vue,
  * `<base>.component.ts` → Angular); with none present, fall back to the
  * project's detected framework. Svelte is intentionally excluded: its story
  * template is `.svelte`-specific, so a `.ts` Svelte story can't be scaffolded
@@ -1198,20 +1199,23 @@ function resolveComponentForStory(
 function resolveTsStoryComponent(
 	storyBase: string,
 ): { compPath: string; framework: StoryFramework } | null {
-	const reactPath = `${storyBase}.tsx`
-	if (existsSync(reactPath)) return { compPath: reactPath, framework: 'react' }
+	const tsxPath = `${storyBase}.tsx`
+	if (existsSync(tsxPath)) return { compPath: tsxPath, framework: 'react' }
 	const vuePath = `${storyBase}.vue`
 	if (existsSync(vuePath)) return { compPath: vuePath, framework: 'vue' }
 	const angularPath = `${storyBase}.component.ts`
 	if (existsSync(angularPath))
 		return { compPath: angularPath, framework: 'angular' }
 	const projectFramework = getProjectFramework()
-	// nextjs-webpack is a React meta-framework (components are `.tsx`), and the
-	// component-create path already treats any `.tsx` as React — group it with
-	// react-vite so story-first scaffolding stays symmetric with component-first.
-	const isReactFramework =
-		projectFramework === 'react-vite' || projectFramework === 'nextjs-webpack'
-	if (isReactFramework) return { compPath: reactPath, framework: 'react' }
+	// react-vite, nextjs-webpack (a React meta-framework), and solid-vite all
+	// author components in `.tsx`; the tsx `.story` slot (keyed `'react'`) emits
+	// React or Solid templates per TSX_FRAMEWORK, so group them so story-first
+	// `.ts` scaffolding stays symmetric with component-first.
+	const isTsxFramework =
+		projectFramework === 'react-vite' ||
+		projectFramework === 'nextjs-webpack' ||
+		projectFramework === 'solid-vite'
+	if (isTsxFramework) return { compPath: tsxPath, framework: 'react' }
 	if (projectFramework === 'vue3-vite')
 		return { compPath: vuePath, framework: 'vue' }
 	if (projectFramework === 'angular-webpack')
