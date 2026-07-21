@@ -327,7 +327,7 @@ const STORY_FILE_REGEX = /\.stor(?:y|ies)\.\w+$/i
 // into a non-source folder.
 function isStoryFileUnderSrc(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return srcSubpathRegex('\\.stor(?:y|ies)\\.\\w+$').test(norm)
+	return srcSubpathRegex(STORY_FILE_REGEX.source).test(norm)
 }
 
 // <srcDir>/**/Thing.tsx ? (and not a story file)
