@@ -468,7 +468,7 @@ export function ${componentName}({ children }: ${propsName}) {
 }
 `
 	writeFileSync(absCompPath, tpl, 'utf8')
-	info(`scaffolded component → \${rel(absCompPath)}`)
+	info(`scaffolded component → ${rel(absCompPath)}`)
 }
 
 function scaffoldStoryForComponent(
@@ -513,24 +513,31 @@ export const Primary: Story = {
 }
 `
 	writeFileSync(targetStoryPath, storyTpl, 'utf8')
-	info(`scaffolded story → \${rel(targetStoryPath)}`)
+	info(`scaffolded story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
 }
 
 /**
  * Return the on-disk story file for `canonicalStoryPath` if one already exists —
- * under either the `.stories.<ext>` or the `.story.<ext>` naming. The canonical
- * path is built from `STORYBOOK_FILE_EXTENSION`, which may itself be either
- * variant, so both directions are checked. Used by `ensureStoryFor` so
- * auto-creating a component never emits a duplicate story when the sibling
- * was created under the other naming.
+ * under either `.story.` / `.stories.` naming AND, for React, either extension
+ * (canonical `.tsx`, or a JSX-free `.ts`). The canonical path is built from
+ * `STORYBOOK_FILE_EXTENSION` and the component's own extension, so it may not
+ * match the exact file the user authored; checking every variant is what stops
+ * `ensureStoryFor` emitting a duplicate story when the sibling was created under
+ * a different naming or extension.
  */
 function findExistingStory(canonicalStoryPath: string): string | null {
-	if (existsSync(canonicalStoryPath)) return canonicalStoryPath
+	const namingVariants = [canonicalStoryPath]
 	const alternateStoryPath = getAlternateStoryNaming(canonicalStoryPath)
-	if (alternateStoryPath && existsSync(alternateStoryPath))
-		return alternateStoryPath
-	return null
+	if (alternateStoryPath) namingVariants.push(alternateStoryPath)
+
+	// A React story is `.tsx` by convention but valid JSX-free as `.ts`, so each
+	// `.tsx` candidate also stands in for its `.ts` sibling (Vue/Angular `.ts`
+	// and Svelte `.svelte` have no such extension ambiguity).
+	const allVariants = namingVariants.flatMap((path) =>
+		path.endsWith('.tsx') ? [path, path.replace(/\.tsx$/, '.ts')] : [path],
+	)
+	return allVariants.find((path) => existsSync(path)) ?? null
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1085,9 +1092,9 @@ function ensureStoryFor(
 
 /**
  * Work out the component a created story file belongs to, and which framework's
- * scaffolders to use. `.tsx` → React, `.svelte` → Svelte, `.ts` → Vue or Angular
- * (disambiguated in `resolveTsStoryComponent`). Any other extension (`.js`,
- * `.jsx`, `.mdx`) returns `null` — not something we scaffold.
+ * scaffolders to use. `.tsx` → React, `.svelte` → Svelte, `.ts` → React, Vue,
+ * or Angular (disambiguated in `resolveTsStoryComponent`). Any other extension
+ * (`.js`, `.jsx`, `.mdx`) returns `null` — not something we scaffold.
  */
 function resolveComponentForStory(
 	absStoryPath: string,
@@ -1102,19 +1109,28 @@ function resolveComponentForStory(
 }
 
 /**
- * A `.stories.ts` story is Vue or Angular. Prefer an existing sibling component
- * to decide (`<base>.vue` → Vue, `<base>.component.ts` → Angular); with neither
- * present, fall back to the project's detected framework.
+ * A `.stories.ts` story can be React, Vue, or Angular — all three use `.ts`
+ * story files (React's scaffolded template is JSX-free, so it's valid as `.ts`
+ * even though React stories are `.tsx` by convention). Prefer an existing
+ * sibling component to decide (`<base>.tsx` → React, `<base>.vue` → Vue,
+ * `<base>.component.ts` → Angular); with none present, fall back to the
+ * project's detected framework. Svelte is intentionally excluded: its story
+ * template is `.svelte`-specific, so a `.ts` Svelte story can't be scaffolded
+ * from it.
  */
 function resolveTsStoryComponent(
 	storyBase: string,
 ): { compPath: string; framework: StoryFramework } | null {
+	const reactPath = `${storyBase}.tsx`
+	if (existsSync(reactPath)) return { compPath: reactPath, framework: 'react' }
 	const vuePath = `${storyBase}.vue`
 	if (existsSync(vuePath)) return { compPath: vuePath, framework: 'vue' }
 	const angularPath = `${storyBase}.component.ts`
 	if (existsSync(angularPath))
 		return { compPath: angularPath, framework: 'angular' }
 	const projectFramework = getProjectFramework()
+	if (projectFramework === 'react-vite')
+		return { compPath: reactPath, framework: 'react' }
 	if (projectFramework === 'vue3-vite')
 		return { compPath: vuePath, framework: 'vue' }
 	if (projectFramework === 'angular-webpack')
