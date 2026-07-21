@@ -1076,7 +1076,7 @@ function ensureStoryFor(
 function resolveComponentForStory(
 	absStoryPath: string,
 ): { compPath: string; framework: StoryFramework } | null {
-	const storyBase = absStoryPath.replace(/\.stor(?:y|ies)\.\w+$/i, '')
+	const storyBase = absStoryPath.replace(STORY_FILE_REGEX, '')
 	const ext = extname(absStoryPath).toLowerCase()
 	if (ext === '.tsx') return { compPath: `${storyBase}.tsx`, framework: 'react' }
 	if (ext === '.svelte')
