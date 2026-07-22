@@ -12,7 +12,15 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
-import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path'
+import {
+	basename,
+	dirname,
+	extname,
+	join,
+	posix,
+	resolve,
+	sep,
+} from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
 import { detectProject, type Framework } from './setup/detect.js'
@@ -110,17 +118,17 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
-// Which flavor to scaffold for `.tsx` files. React and Solid share the `.tsx`
-// extension, so this config-driven signal (default `'react'`) is what routes a
-// new `.tsx` component/story to the right templates. Derived from the config
-// schema so the scaffolder can't drift from `SbDepsConfig` as new `.tsx`
-// frameworks are added.
-type TsxFlavor = NonNullable<SbDepsConfig['tsxFramework']>
-let TSX_FRAMEWORK: TsxFlavor = 'react'
+// Which framework's `.tsx` templates to scaffold. Unlike earlier iterations,
+// this is derived from the detected project framework at runtime rather than
+// from config: Solid and React are treated as distinct frameworks that happen
+// to share the `.tsx` extension.
+type TsxFlavor = 'react' | 'solid'
 // Which extension the scaffolder emits for generated story files —
 // `Foo.stories.tsx` vs `Foo.story.tsx`. Config-driven (default `'stories'`,
 // Storybook's convention), so all four `storyPathFor*` helpers stay in sync.
-type StorybookFileExtension = NonNullable<SbDepsConfig['storybookFileExtension']>
+type StorybookFileExtension = NonNullable<
+	SbDepsConfig['storybookFileExtension']
+>
 let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 
 // Framework of the project the CLI is running in — needed to disambiguate a
@@ -129,7 +137,7 @@ let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 // the framework can't change mid-run.
 let cachedProjectFramework: Framework | null = null
 function getProjectFramework(): Framework {
-	if (cachedProjectFramework === null)
+	if (!cachedProjectFramework)
 		cachedProjectFramework = detectProject(projectRoot).framework
 	return cachedProjectFramework
 }
@@ -334,7 +342,10 @@ const STORY_FILE_REGEX = /\.stor(?:y|ies)\.\w+$/i
 // into a non-source folder.
 function isStoryFileUnderSrc(absPath: string) {
 	const norm = absPath.replace(/\\/g, '/')
-	return srcSubpathRegex(STORY_FILE_REGEX.source).test(norm)
+	if (SRC_DIR === '') return STORY_FILE_REGEX.test(norm)
+	const normalizedRoot = projectRoot.replace(/\\/g, '/').replace(/\/+$/, '')
+	const expectedPrefix = `${normalizedRoot}/${SRC_DIR.replace(/\\/g, '/')}/`
+	return norm.startsWith(expectedPrefix) && STORY_FILE_REGEX.test(norm)
 }
 
 // <srcDir>/**/Thing.tsx ? (and not a story file)
@@ -525,7 +536,11 @@ function tsxStoryTemplate(
 	// non-PascalCase filename (e.g. `button-atom.tsx` exports `ButtonAtom`), so
 	// keying the module path off the symbol name would generate a broken import.
 	const frameworkImport =
-		flavor === 'solid' ? 'storybook-solidjs-vite' : '@storybook/react-vite'
+		flavor === 'solid'
+			? 'storybook-solidjs-vite'
+			: getProjectFramework() === 'nextjs-webpack'
+				? '@storybook/nextjs'
+				: '@storybook/react-vite'
 	return `import type { Meta, StoryObj } from '${frameworkImport}'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${base}'
@@ -1106,13 +1121,14 @@ export const Primary: Story = {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story-file creation (mirror of component creation)
 // ───────────────────────────────────────────────────────────────────────────────
-// The frameworks that own a story *file*, keyed into STORY_SCAFFOLDERS below.
-// Derived from the scaffold-config keys minus `solid`: React and Solid share the
-// `.tsx` story extension, so a `.tsx` story always resolves to `'react'` and the
-// React slot emits Solid templates when TSX_FRAMEWORK is `'solid'`. Adding a
-// genuinely new framework to the scaffold config expands this union and makes
-// STORY_SCAFFOLDERS fail to compile until its scaffolder trio is added.
-type StoryFramework = Exclude<keyof NonNullable<SbDepsConfig['scaffold']>, 'solid'>
+/**
+ * Frameworks with distinct story scaffolding behavior.
+ *
+ * React and Solid are treated as separate frameworks. They share the `.tsx`
+ * extension, but routing decisions are based on the detected project
+ * framework, not on a synthetic `'tsx'` slot.
+ */
+type StoryFramework = keyof NonNullable<SbDepsConfig['scaffold']>
 
 /**
  * Per-framework scaffolders + story-path helper, keyed by `StoryFramework`. Lets
@@ -1130,9 +1146,15 @@ const STORY_SCAFFOLDERS: Record<
 	}
 > = {
 	react: {
-		component: (compPath) => scaffoldComponent(compPath, TSX_FRAMEWORK),
+		component: (compPath) => scaffoldComponent(compPath, 'react'),
 		story: (compPath, targetStoryPath) =>
-			scaffoldStoryForComponent(compPath, TSX_FRAMEWORK, targetStoryPath),
+			scaffoldStoryForComponent(compPath, 'react', targetStoryPath),
+		storyPath: storyPathForComponent,
+	},
+	solid: {
+		component: (compPath) => scaffoldComponent(compPath, 'solid'),
+		story: (compPath, targetStoryPath) =>
+			scaffoldStoryForComponent(compPath, 'solid', targetStoryPath),
 		storyPath: storyPathForComponent,
 	},
 	svelte: {
@@ -1169,17 +1191,19 @@ function ensureStoryFor(
 
 /**
  * Work out the component a created story file belongs to, and which framework's
- * scaffolders to use. `.tsx` → React/Solid, `.svelte` → Svelte, `.ts` →
- * React/Solid, Vue, or Angular (disambiguated in `resolveTsStoryComponent`). Any
- * other extension (`.js`, `.jsx`, `.mdx`) returns `null` — not something we
- * scaffold.
+ * scaffolders to use. `.tsx` stories reuse the same sibling/framework
+ * resolution as `.ts` so Vue/Angular projects don't backfill a junk `.tsx`
+ * component when a user creates a placeholder story with the wrong extension.
+ * `.svelte` → Svelte, `.ts` → React/Solid, Vue, or Angular (disambiguated in
+ * `resolveTsStoryComponent`). Any other extension (`.js`, `.jsx`, `.mdx`)
+ * returns `null` — not something we scaffold.
  */
 function resolveComponentForStory(
 	absStoryPath: string,
 ): { compPath: string; framework: StoryFramework } | null {
 	const storyBase = absStoryPath.replace(STORY_FILE_REGEX, '')
 	const ext = extname(absStoryPath).toLowerCase()
-	if (ext === '.tsx') return { compPath: `${storyBase}.tsx`, framework: 'react' }
+	if (ext === '.tsx') return resolveTsxStoryComponent(storyBase)
 	if (ext === '.svelte')
 		return { compPath: `${storyBase}.svelte`, framework: 'svelte' }
 	if (ext === '.ts') return resolveTsStoryComponent(storyBase)
@@ -1200,27 +1224,92 @@ function resolveTsStoryComponent(
 	storyBase: string,
 ): { compPath: string; framework: StoryFramework } | null {
 	const tsxPath = `${storyBase}.tsx`
-	if (existsSync(tsxPath)) return { compPath: tsxPath, framework: 'react' }
+	const detectedTsxFramework = getTsxStoryFramework()
+	if (existsSync(tsxPath) && detectedTsxFramework)
+		return { compPath: tsxPath, framework: detectedTsxFramework }
 	const vuePath = `${storyBase}.vue`
 	if (existsSync(vuePath)) return { compPath: vuePath, framework: 'vue' }
-	const angularPath = `${storyBase}.component.ts`
-	if (existsSync(angularPath))
-		return { compPath: angularPath, framework: 'angular' }
-	const projectFramework = getProjectFramework()
-	// react-vite, nextjs-webpack (a React meta-framework), and solid-vite all
-	// author components in `.tsx`; the tsx `.story` slot (keyed `'react'`) emits
-	// React or Solid templates per TSX_FRAMEWORK, so group them so story-first
-	// `.ts` scaffolding stays symmetric with component-first.
-	const isTsxFramework =
-		projectFramework === 'react-vite' ||
-		projectFramework === 'nextjs-webpack' ||
-		projectFramework === 'solid-vite'
-	if (isTsxFramework) return { compPath: tsxPath, framework: 'react' }
-	if (projectFramework === 'vue3-vite')
-		return { compPath: vuePath, framework: 'vue' }
-	if (projectFramework === 'angular-webpack')
-		return { compPath: angularPath, framework: 'angular' }
+	const angularPath = resolveAngularComponentPathFromStoryBase(storyBase)
+	if (angularPath) return { compPath: angularPath, framework: 'angular' }
+	const frameworkSlot = getStoryFrameworkForProjectFramework(
+		getProjectFramework(),
+	)
+	if (frameworkSlot === 'react' || frameworkSlot === 'solid')
+		return { compPath: tsxPath, framework: frameworkSlot }
+	if (frameworkSlot === 'vue') return { compPath: vuePath, framework: 'vue' }
+	if (frameworkSlot === 'angular')
+		return { compPath: `${storyBase}.component.ts`, framework: 'angular' }
 	return null
+}
+
+/**
+ * Resolve a `.tsx` story file to its sibling component/framework. This mirrors
+ * the `.ts` resolution rules so placeholder `.tsx` stories in Vue/Angular
+ * projects link to an existing `.vue` / `.component.ts` sibling when present,
+ * and otherwise fall back to the project's scaffold slot.
+ */
+function resolveTsxStoryComponent(
+	storyBase: string,
+): { compPath: string; framework: StoryFramework } | null {
+	const tsxPath = `${storyBase}.tsx`
+	const detectedTsxFramework = getTsxStoryFramework()
+	if (!detectedTsxFramework) return null
+	return { compPath: tsxPath, framework: detectedTsxFramework }
+}
+
+/**
+ * Resolve the Angular component file that belongs to a story basename. Handles
+ * both the normal `x.stories.ts` → `x.component.ts` mapping and the standard
+ * Angular `x.component.stories.ts` naming, which should map back to the real
+ * `x.component.ts` instead of inventing `x.component.component.ts`.
+ */
+function resolveAngularComponentPathFromStoryBase(
+	storyBase: string,
+): string | null {
+	const directAngularPath = `${storyBase}.component.ts`
+	if (existsSync(directAngularPath)) return directAngularPath
+	if (storyBase.endsWith('.component')) {
+		const duplicateSuffixAngularPath = `${storyBase}.ts`
+		if (existsSync(duplicateSuffixAngularPath))
+			return duplicateSuffixAngularPath
+	}
+	return null
+}
+
+/**
+ * Map the detected project framework onto the story scaffolder slot it uses.
+ * This switch is intentionally exhaustive so new `Framework` variants fail to
+ * compile here until their story-file behavior is decided explicitly.
+ */
+function getTsxStoryFramework(): 'react' | 'solid' | null {
+	const framework = getStoryFrameworkForProjectFramework(getProjectFramework())
+	return framework === 'react' || framework === 'solid' ? framework : null
+}
+
+function getStoryFrameworkForProjectFramework(
+	projectFramework: Framework,
+): StoryFramework | null {
+	switch (projectFramework) {
+		case 'react-vite':
+		case 'nextjs-webpack':
+			return 'react'
+		case 'solid-vite':
+			return 'solid'
+		case 'vue3-vite':
+			return 'vue'
+		case 'angular-webpack':
+			return 'angular'
+		case 'sveltekit':
+		case 'svelte-vite':
+			return 'svelte'
+		case 'unsupported':
+		case 'unknown':
+			return null
+		default: {
+			const _exhaustive: never = projectFramework
+			return _exhaustive
+		}
+	}
 }
 
 /**
@@ -1233,13 +1322,19 @@ function resolveTsStoryComponent(
  * (the story already exists). Returns the filled story path, or `null` if
  * nothing was scaffolded.
  */
-function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null {
+function scaffoldStoryFromCreatedStoryFile(
+	absStoryPath: string,
+): string | null {
 	if (!isEmptyOrWhitespace(absStoryPath)) return null
+	const existingStoryPath = findExistingStory(absStoryPath)
+	if (existingStoryPath && existingStoryPath !== absStoryPath) return null
 	const resolved = resolveComponentForStory(absStoryPath)
 	if (!resolved) return null
 	const { compPath, framework } = resolved
-	const { component: scaffoldFrameworkComponent, story: scaffoldFrameworkStory } =
-		STORY_SCAFFOLDERS[framework]
+	const {
+		component: scaffoldFrameworkComponent,
+		story: scaffoldFrameworkStory,
+	} = STORY_SCAFFOLDERS[framework]
 	const isComponentMissing =
 		!existsSync(compPath) || isEmptyOrWhitespace(compPath)
 	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
@@ -1389,14 +1484,15 @@ function startWatcher() {
 	}
 
 	async function handleComponentCreation(abs: string, relPath: string) {
-		// React and Solid share the `.tsx` extension; `TSX_FRAMEWORK` (from
-		// sb-deps.config) decides which templates a new `.tsx` file gets.
+		const detectedTsxFramework = getTsxStoryFramework()
+		if (!detectedTsxFramework) return
+
 		if (isEmptyOrWhitespace(abs)) {
-			scaffoldComponent(abs, TSX_FRAMEWORK)
+			scaffoldComponent(abs, detectedTsxFramework)
 		}
 
 		console.log('Component creation detected:', relPath)
-		const createdStory = ensureStoryFor('react', abs)
+		const createdStory = ensureStoryFor(detectedTsxFramework, abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
@@ -1501,26 +1597,8 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
-	// `tsxFramework` comes from a config file that isn't type-checked at runtime
-	// (a JS config can hold any value), so validate it against the known set the
-	// same way `srcDir` is below — warn and fall back to `'react'` for anything
-	// unrecognised, rather than letting a stray value (e.g. a non-`.tsx`
-	// framework key like `'vue'`, which also collides with a scaffold-config key)
-	// drive `.tsx` scaffolding into the wrong templates.
-	const configuredTsxFramework = cfg.tsxFramework
-	if (configuredTsxFramework === undefined) {
-		TSX_FRAMEWORK = 'react'
-	} else if (
-		configuredTsxFramework === 'react' ||
-		configuredTsxFramework === 'solid'
-	) {
-		TSX_FRAMEWORK = configuredTsxFramework
-	} else {
-		error(
-			`tsxFramework "${configuredTsxFramework}" is invalid — must be 'react' or 'solid'. Falling back to 'react'.`,
-		)
-		TSX_FRAMEWORK = 'react'
-	}
+	// TSX scaffold flavor is determined exclusively from the detected project
+	// framework now. `cfg.tsxFramework` is intentionally ignored.
 	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//
 	//   - `undefined` / missing key  → fall back to the bundled default `'src'`.
