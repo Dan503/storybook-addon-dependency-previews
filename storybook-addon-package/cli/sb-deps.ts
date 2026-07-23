@@ -289,7 +289,7 @@ function isEmptyOrWhitespace(absPath: string) {
 
 /**
  * Convert an absolute path to a project-root-relative, forward-slash path. The
- * `srcSubpathRegex` gates below match against this (not the raw absolute path)
+ * `srcSubpathRegex` checks below match against this (not the raw absolute path)
  * so the `srcDir` anchor only ever matches the project's *own* source folder —
  * a `src` (or whatever `srcDir` is) segment sitting *above* the project root
  * (e.g. `C:/dev/src/myproject/...`) must not count as being under `srcDir`.
@@ -306,7 +306,7 @@ function toProjectRelativePath(absPath: string): string {
  * Build a regex that matches `<SRC_DIR>/...<suffix>` for the scaffolding-trigger
  * helpers below. `SRC_DIR` is interpolated at call time (these helpers run
  * inside the watcher event loop, after the boot block has loaded the config
- * and finalised `SRC_DIR`). The gates test it against a **root-relative** path
+ * and finalised `SRC_DIR`). The checks test it against a **root-relative** path
  * (via `toProjectRelativePath`), so the pattern is anchored at the start (`^`) —
  * only the project's own `srcDir` matches, not a same-named segment higher up.
  *
@@ -317,7 +317,7 @@ function toProjectRelativePath(absPath: string): string {
  */
 function srcSubpathRegex(suffixPattern: string): RegExp {
 	// Empty SRC_DIR (project root *is* the source folder) means there is no
-	// subfolder gate — match any path that ends with the given suffix. The
+	// subfolder check — match any path that ends with the given suffix. The
 	// watcher's ignore list (node_modules, .git, dist, build) keeps the noise
 	// out before paths ever reach here, so a permissive regex is fine.
 	if (SRC_DIR === '') {
@@ -335,7 +335,7 @@ function srcSubpathRegex(suffixPattern: string): RegExp {
  */
 const STORY_FILE_REGEX = /\.stor(?:y|ies)\.\w+$/i
 
-// <srcDir>/**/Thing.story.<ext> or Thing.stories.<ext> ? Gates story-file
+// <srcDir>/**/Thing.story.<ext> or Thing.stories.<ext> ? Limits story-file
 // scaffolding to the configured source dir, mirroring the component detectors
 // below. The story watcher globs match any directory (so out-of-src stories
 // still trigger a graph rebuild), but scaffolding a story — and backfilling its
@@ -1180,7 +1180,7 @@ function resolveComponentForStory(
 	const ext = extname(absStoryPath).toLowerCase()
 	// `.tsx`/`.svelte` are framework-specific — a stray one in a non-matching
 	// project is ignored + warned rather than backfilled as the wrong framework.
-	// `.ts` is framework-agnostic (resolved by sibling/framework), so no gate.
+	// `.ts` is framework-agnostic (resolved by sibling/framework), so no check.
 	if (ext === '.tsx') {
 		if (!checkDoesFileFrameworkMatchProject('react', absStoryPath)) return null
 		return { compPath: `${storyBase}.tsx`, framework: 'react' }
@@ -1363,7 +1363,7 @@ function startWatcher() {
 					}
 
 					// STORY CREATE — fill the story (and its component if missing).
-					// Src-gated like the component-create branches below, so a story
+					// Limited to SRC_DIR like the component-create branches below, so a story
 					// created outside SRC_DIR never scaffolds a component there.
 					// Falls through to the normal rebuild when there's nothing to
 					// scaffold (non-empty story, or an extension we don't template).
