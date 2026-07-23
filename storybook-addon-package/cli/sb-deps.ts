@@ -276,14 +276,23 @@ function toKebabCase(input: string) {
 		.join('-')
 }
 
+/**
+ * Is there nothing at `absPath` worth keeping — no file, or one holding only
+ * whitespace? Callers use this to decide whether it's safe to write a scaffold
+ * there, so it has to fail on the safe side: a file that exists but can't be
+ * read right now (an editor save, antivirus, or cloud sync holding a lock) is
+ * reported as NOT empty, so we never write over content we couldn't see. Only a
+ * genuinely missing file counts as empty.
+ */
 function isEmptyOrWhitespace(absPath: string) {
 	try {
 		const s = statSync(absPath)
 		if (s.size === 0) return true
 		const txt = readFileSync(absPath, 'utf8')
 		return !txt.trim()
-	} catch {
-		return true
+	} catch (e) {
+		const isMissing = (e as NodeJS.ErrnoException)?.code === 'ENOENT'
+		return isMissing
 	}
 }
 
@@ -390,25 +399,27 @@ const COMPONENT_STORY_TS_REGEX = new RegExp(
 /** Does a file base already end in `.component`? Matched case-insensitively, like every other `.component` check here. */
 const COMPONENT_SUFFIX_REGEX = /\.component$/i
 
-// <srcDir>/**/Thing.story.<ext> or Thing.stories.<ext> ? Limits story-file
-// scaffolding to the configured source dir, mirroring the component detectors
-// below. The story watcher globs match any directory (so out-of-src stories
-// still trigger a graph rebuild), but scaffolding a story — and backfilling its
-// component — should only fire under SRC_DIR, exactly like component-driven
-// creation, so a root-level `stories/Foo.stories.tsx` never writes `Foo.tsx`
-// into a non-source folder.
+/**
+ * Is this `<srcDir>/**​/Thing.story.<ext>` or `Thing.stories.<ext>`? Limits
+ * story-file scaffolding to the configured source dir, mirroring the component
+ * detectors below. The story watcher globs match any directory (so out-of-src
+ * stories still trigger a graph rebuild), but scaffolding a story — and
+ * backfilling its component — should only fire under SRC_DIR, exactly like
+ * component-driven creation, so a root-level `stories/Foo.stories.tsx` never
+ * writes `Foo.tsx` into a non-source folder.
+ */
 function isStoryFileUnderSrc(absPath: string) {
 	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex(STORY_FILE_REGEX.source).test(norm)
 }
 
-// <srcDir>/**/Thing.tsx ? (and not a story file)
+/** Is this `<srcDir>/**​/Thing.tsx` (and not a story file)? */
 function isComponentsTsx(absPath: string) {
 	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.tsx$').test(norm) && !STORY_FILE_REGEX.test(norm)
 }
 
-// <srcDir>/**/Thing.svelte ? (and not a story file)
+/** Is this `<srcDir>/**​/Thing.svelte` (and not a story file)? */
 function isComponentsSvelte(absPath: string) {
 	const norm = toProjectRelativePath(absPath)
 	return (
@@ -416,25 +427,25 @@ function isComponentsSvelte(absPath: string) {
 	)
 }
 
-// <srcDir>/**/Thing.decorator.svelte ?
+/** Is this `<srcDir>/**​/Thing.decorator.svelte`? */
 function isDecoratorSvelte(absPath: string) {
 	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.decorator\\.svelte$').test(norm)
 }
 
-// <srcDir>/**/Thing.vue ? (and not a story file)
+/** Is this `<srcDir>/**​/Thing.vue` (and not a story file)? */
 function isComponentsVue(absPath: string) {
 	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.vue$').test(norm) && !STORY_FILE_REGEX.test(norm)
 }
 
-// <srcDir>/**/Thing.component.ts ?
+/** Is this `<srcDir>/**​/Thing.component.ts`? */
 function isComponentsAngularTs(absPath: string) {
 	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.component\\.ts$').test(norm)
 }
 
-// <srcDir>/**/Thing.component.html ?
+/** Is this `<srcDir>/**​/Thing.component.html`? */
 function isComponentsAngularHtml(absPath: string) {
 	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.component\\.html$').test(norm)
@@ -630,11 +641,8 @@ function findExistingStory(
 		path.endsWith('.tsx') ? [path, path.replace(/\.tsx$/, '.ts')] : [path],
 	)
 
-	return (
-		allVariants.find(
-			(path) => existsSync(path) && !isEmptyOrWhitespace(path),
-		) ?? null
-	)
+	// No `existsSync` needed — a missing file already reports as empty.
+	return allVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
 }
 
 /**
@@ -1333,12 +1341,29 @@ function findSiblingComponent(
 	storyBase: string,
 ): { compPath: string; framework: StoryFramework } | null {
 	// `for…of` rather than a callback: this stops at the first spelling found.
-	for (const family of TS_STORY_SIBLING_FAMILIES) {
+	for (const family of getSiblingProbeOrder()) {
 		const compPath = getComponentPathForFamily(storyBase, family)
 		if (compPath && existsSync(compPath))
 			return { compPath, framework: family }
 	}
 	return null
+}
+
+/**
+ * The order to probe sibling families in, with the project's own family first.
+ * A sibling from any other family can only ever end in a decline, so letting one
+ * win the race would veto the correct component sitting right beside it — e.g. a
+ * leftover `Foo.tsx` in a Vue project hiding the `Foo.vue` next to it. The other
+ * families still follow, so a genuinely cross-framework sibling is found and
+ * reported rather than silently ignored.
+ */
+function getSiblingProbeOrder(): Array<StoryFramework> {
+	const projectFamily = getProjectFrameworkFamily()
+	if (!projectFamily) return TS_STORY_SIBLING_FAMILIES
+	const otherFamilies = TS_STORY_SIBLING_FAMILIES.filter(
+		(family) => family !== projectFamily,
+	)
+	return [projectFamily, ...otherFamilies]
 }
 
 /**
@@ -1545,8 +1570,11 @@ function startWatcher() {
 					// reasoning as the component branches above. The match check logs
 					// its own warning, so keep it out of an inline `&&` chain where
 					// that would be easy to miss.
+					// `ev.type` first, so the predicate (a path conversion plus regex
+					// work) is skipped for the update events that dominate while
+					// editing — same treatment the table branches above get.
 					const isAngularHtmlCreate =
-						isComponentsAngularHtml(abs) && ev.type === 'create'
+						ev.type === 'create' && isComponentsAngularHtml(abs)
 					const isScaffoldableAngularHtml =
 						isAngularHtmlCreate &&
 						checkDoesFileFrameworkMatchProject('angular', abs)
