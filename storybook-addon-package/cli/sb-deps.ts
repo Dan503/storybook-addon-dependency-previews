@@ -287,10 +287,10 @@ function isEmptyOrWhitespace(absPath: string) {
 	}
 }
 
-// Windows and macOS treat file paths as case-insensitive. Path comparisons here
-// have to match that, or a casing difference between `process.cwd()` and the
-// paths the watcher reports (drive-letter casing being the usual culprit) would
-// read as a completely different path.
+// Windows and macOS treat file system (FS) paths as case-insensitive. Path
+// comparisons here have to match that, or a casing difference between
+// `process.cwd()` and the paths the watcher reports (drive-letter casing being
+// the usual culprit) would read as a completely different path.
 const IS_CASE_INSENSITIVE_PATH_FS = IS_WIN || process.platform === 'darwin'
 
 /** Lower-case a path on platforms whose file paths ignore case, so two spellings of the same file compare equal. */
@@ -366,9 +366,10 @@ function srcSubpathRegex(suffixPattern: string): RegExp {
 }
 
 /**
- * The `story` / `stories` alternation every story-file pattern is built from —
- * one source of truth, so a helper that needs its own anchoring can't drift
- * from `STORY_FILE_REGEX` if the accepted naming ever changes.
+ * The either/or pattern matching `story` or `stories`, shared by
+ * `STORY_FILE_REGEX` and `COMPONENT_STORY_TS_REGEX` so the two can't drift
+ * apart. (Other spots — `getAlternateStoryNaming` and the watcher globs — still
+ * spell the two words out themselves.)
  */
 const STORY_WORD_PATTERN = 'stor(?:y|ies)'
 
@@ -379,6 +380,15 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  * sure they don't try to auto-scaffold a story file for an existing story.
  */
 const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`, 'i')
+
+/** Splits a `.ts` story path into its base and story suffix, for building Angular's `.component`-carrying spelling. */
+const COMPONENT_STORY_TS_REGEX = new RegExp(
+	`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts)$`,
+	'i',
+)
+
+/** Does a file base already end in `.component`? Matched case-insensitively, like every other `.component` check here. */
+const COMPONENT_SUFFIX_REGEX = /\.component$/i
 
 // <srcDir>/**/Thing.story.<ext> or Thing.stories.<ext> ? Limits story-file
 // scaffolding to the configured source dir, mirroring the component detectors
@@ -585,15 +595,15 @@ export const Primary: Story = {
  * `ensureStoryFor` emitting a duplicate story when the sibling was created under
  * a different naming or extension.
  *
- * `excludePath` is skipped from the scan. The story-first path passes the file
- * it's about to fill so that file doesn't count as "an existing story" (it was
- * just created, empty) — leaving the check to report only a *different*,
- * genuinely pre-existing story under the alternate naming.
+ * Only a **non-empty** file counts. An empty one isn't a story yet — Storybook
+ * reports it as having no exports — so treating it as one would refuse to fill
+ * a freshly-created story and leave two empty files blaming each other. It also
+ * means the story-first caller needs no "ignore the file I'm about to fill"
+ * argument: that file is empty by definition, so it can never match here.
  */
 function findExistingStory(
 	canonicalStoryPath: string,
 	framework: StoryFramework,
-	excludePath?: string,
 ): string | null {
 	const namingVariants = [canonicalStoryPath]
 	const alternateStoryPath = getAlternateStoryNaming(canonicalStoryPath)
@@ -620,24 +630,11 @@ function findExistingStory(
 		path.endsWith('.tsx') ? [path, path.replace(/\.tsx$/, '.ts')] : [path],
 	)
 
-	// Drop the excluded path up front so the scan itself stays a plain
-	// existence check.
-	const candidates = getVariantsWithoutExcluded(allVariants, excludePath)
-	return candidates.find((path) => existsSync(path)) ?? null
-}
-
-/** Remove `excludePath` from `variants`, comparing resolved paths (and ignoring case where the file system does). */
-function getVariantsWithoutExcluded(
-	variants: Array<string>,
-	excludePath?: string,
-): Array<string> {
-	if (!excludePath) return variants
-	const resolvedExclude = resolve(excludePath)
-	const comparableExclude = toComparablePath(resolvedExclude)
-	return variants.filter((path) => {
-		const resolvedPath = resolve(path)
-		return toComparablePath(resolvedPath) !== comparableExclude
-	})
+	return (
+		allVariants.find(
+			(path) => existsSync(path) && !isEmptyOrWhitespace(path),
+		) ?? null
+	)
 }
 
 /**
@@ -647,14 +644,10 @@ function getVariantsWithoutExcluded(
  * for anything that isn't a `.ts` story — only Angular uses this shape.
  */
 function getComponentSuffixedStoryNaming(storyPath: string): string | null {
-	const componentStoryRegex = new RegExp(
-		`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts)$`,
-		'i',
-	)
-	const match = storyPath.match(componentStoryRegex)
+	const match = storyPath.match(COMPONENT_STORY_TS_REGEX)
 	if (!match) return null
 	const [, base, storySuffix] = match
-	if (/\.component$/i.test(base)) return null
+	if (COMPONENT_SUFFIX_REGEX.test(base)) return null
 	return `${base}.component${storySuffix}`
 }
 
@@ -1157,35 +1150,6 @@ export const Primary: Story = {
 type StoryFramework = keyof NonNullable<SbDepsConfig['scaffold']>
 
 /**
- * Map a detected project `Framework` to the scaffold "family" it belongs to
- * (`StoryFramework`), or `null` when the framework is unknown/unsupported (no
- * family). This is the single place that knows, e.g., that both `sveltekit` and
- * `svelte-vite` scaffold Svelte, or that `nextjs-webpack` scaffolds React.
- */
-function getFrameworkFamily(framework: Framework): StoryFramework | null {
-	switch (framework) {
-		case 'react-vite':
-		case 'nextjs-webpack':
-			return 'react'
-		case 'vue3-vite':
-			return 'vue'
-		case 'sveltekit':
-		case 'svelte-vite':
-			return 'svelte'
-		case 'angular-webpack':
-			return 'angular'
-		default:
-			return null
-	}
-}
-
-/** The scaffold family of the project's own detected framework, or `null` when it's unknown/unsupported. */
-function getProjectFrameworkFamily(): StoryFramework | null {
-	const projectFramework = getProjectFramework()
-	return getFrameworkFamily(projectFramework)
-}
-
-/**
  * True when a created file's framework `family` matches the project's detected
  * framework, so it should be scaffolded. On a mismatch — a file belonging to a
  * different framework (`.tsx` in a Vue project, `.vue` in React, …), or any
@@ -1206,6 +1170,35 @@ function checkDoesFileFrameworkMatchProject(
 			`files matching the project's own framework.`,
 	)
 	return false
+}
+
+/** The scaffold family of the project's own detected framework, or `null` when it's unknown/unsupported. */
+function getProjectFrameworkFamily(): StoryFramework | null {
+	const projectFramework = getProjectFramework()
+	return getFrameworkFamily(projectFramework)
+}
+
+/**
+ * Map a detected project `Framework` to the scaffold "family" it belongs to
+ * (`StoryFramework`), or `null` when the framework is unknown/unsupported (no
+ * family). This is the single place that knows, e.g., that both `sveltekit` and
+ * `svelte-vite` scaffold Svelte, or that `nextjs-webpack` scaffolds React.
+ */
+function getFrameworkFamily(framework: Framework): StoryFramework | null {
+	switch (framework) {
+		case 'react-vite':
+		case 'nextjs-webpack':
+			return 'react'
+		case 'vue3-vite':
+			return 'vue'
+		case 'sveltekit':
+		case 'svelte-vite':
+			return 'svelte'
+		case 'angular-webpack':
+			return 'angular'
+		default:
+			return null
+	}
 }
 
 /**
@@ -1318,38 +1311,54 @@ function resolveTsStoryComponent(
 	// (its template is `.svelte`-specific) and an unknown/unsupported project
 	// has no family, so both fall through to null.
 	const projectFamily = getProjectFrameworkFamily()
-	if (projectFamily === 'react')
-		return { compPath: `${storyBase}.tsx`, framework: 'react' }
-	if (projectFamily === 'vue')
-		return { compPath: `${storyBase}.vue`, framework: 'vue' }
-	if (projectFamily === 'angular')
-		return { compPath: getAngularComponentPath(storyBase), framework: 'angular' }
-	return null
+	if (!projectFamily) return null
+	const compPath = getComponentPathForFamily(storyBase, projectFamily)
+	if (!compPath) return null
+	return { compPath, framework: projectFamily }
 }
 
-/** The existing sibling component for a `.ts` story base — `<base>.tsx` React, `<base>.vue` Vue, `<base>.component.ts` Angular — or `null` when none is on disk. */
+/**
+ * Families a `.ts` story can name via a sibling component, in probe order.
+ * Svelte is absent on purpose: its story template is `.svelte`-specific, so a
+ * `.ts` story can't be scaffolded from a Svelte component.
+ */
+const TS_STORY_SIBLING_FAMILIES: Array<StoryFramework> = [
+	'react',
+	'vue',
+	'angular',
+]
+
+/** The existing sibling component for a `.ts` story base, or `null` when none of the candidate spellings is on disk. */
 function findSiblingComponent(
 	storyBase: string,
 ): { compPath: string; framework: StoryFramework } | null {
-	const reactPath = `${storyBase}.tsx`
-	if (existsSync(reactPath)) return { compPath: reactPath, framework: 'react' }
-	const vuePath = `${storyBase}.vue`
-	if (existsSync(vuePath)) return { compPath: vuePath, framework: 'vue' }
-	const angularPath = getAngularComponentPath(storyBase)
-	if (existsSync(angularPath))
-		return { compPath: angularPath, framework: 'angular' }
+	// `for…of` rather than a callback: this stops at the first spelling found.
+	for (const family of TS_STORY_SIBLING_FAMILIES) {
+		const compPath = getComponentPathForFamily(storyBase, family)
+		if (compPath && existsSync(compPath))
+			return { compPath, framework: family }
+	}
 	return null
 }
 
 /**
- * The Angular component file for a `.ts` story base: `Foo` → `Foo.component.ts`.
- * A `Foo.component.stories.ts` story leaves the base as `Foo.component`, so only
- * append `.component` when it isn't already there — otherwise the lookup builds
- * a junk `Foo.component.component.ts`. Matched case-insensitively, like every
- * other `.component` matcher here, so `Foo.Component` is handled too.
+ * The component file a `.ts` story base would belong to for `family`, or `null`
+ * for a family a `.ts` story can't scaffold (Svelte's template is
+ * `.svelte`-specific). Single source for the spelling, so the sibling scan and
+ * the project-framework fallback can't drift apart.
+ *
+ * Angular is the special one: a `Foo.component.stories.ts` story leaves the base
+ * as `Foo.component`, so `.component` is only appended when it isn't already
+ * there — otherwise this builds a junk `Foo.component.component.ts`.
  */
-function getAngularComponentPath(storyBase: string): string {
-	const doesStoryBaseIncludeComponent = /\.component$/i.test(storyBase)
+function getComponentPathForFamily(
+	storyBase: string,
+	family: StoryFramework,
+): string | null {
+	if (family === 'react') return `${storyBase}.tsx`
+	if (family === 'vue') return `${storyBase}.vue`
+	if (family !== 'angular') return null
+	const doesStoryBaseIncludeComponent = COMPONENT_SUFFIX_REGEX.test(storyBase)
 	return doesStoryBaseIncludeComponent
 		? `${storyBase}.ts`
 		: `${storyBase}.component.ts`
@@ -1380,11 +1389,7 @@ function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null 
 	// `Foo.story.ts`) — that would produce a duplicate story ID. Exclude the
 	// just-created trigger file so it isn't mistaken for a pre-existing story.
 	const canonicalStoryPath = storyPath(compPath)
-	const existingStory = findExistingStory(
-		canonicalStoryPath,
-		framework,
-		absStoryPath,
-	)
+	const existingStory = findExistingStory(canonicalStoryPath, framework)
 	if (existingStory) {
 		// Say why. The empty trigger file stays on disk and still matches the
 		// Storybook globs, so Storybook will report a file with no exports —
@@ -1490,7 +1495,12 @@ function startWatcher() {
 
 				for (const ev of events) {
 					const abs = ev.path
-					const relPath = rel(abs)
+					// Use the same converter the scaffolding checks use, not `rel()`.
+					// `rel()` strips the root prefix case-sensitively, so any casing
+					// drift would leave this path absolute, the `srcDir`-anchored
+					// component globs would stop matching, and component creates
+					// would go silently dead while story globs still matched.
+					const relPath = toProjectRelativePath(abs)
 					if (!micromatch.isMatch(relPath, includeGlobs)) continue
 
 					if (ev.type === 'delete') {
@@ -1793,9 +1803,10 @@ async function startStorybook() {
 // Utils
 // ───────────────────────────────────────────────────────────────────────────────
 function rel(p: string) {
-	// remove the projectRoot prefix and normalize slashes for logs
+	// remove the projectRoot prefix and normalize slashes for logs, so paths
+	// read the same whether they came through here or `toProjectRelativePath`
 	const prefix = resolve(projectRoot) + sep
-	return p.replace(prefix, '')
+	return p.replace(prefix, '').replace(/\\/g, '/')
 }
 function ms(n: number) {
 	return `${Math.max(1, Math.round(n))}ms`
