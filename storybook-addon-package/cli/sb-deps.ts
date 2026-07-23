@@ -1305,6 +1305,42 @@ function startWatcher() {
 		}, 120)
 	}
 
+	/**
+	 * The framework component-create branches, which differ only by their path
+	 * predicate, their framework family, and the handler they call. Ordered —
+	 * the first matching entry wins, mirroring the if-chain this replaces.
+	 *
+	 * Angular's `.component.html` branch is deliberately not in here: it carries
+	 * extra template-migration logic, so it stays inline below.
+	 */
+	const COMPONENT_CREATE_BRANCHES: Array<{
+		checkIsMatch: (absPath: string) => boolean
+		family: StoryFramework
+		handle: (absPath: string, relPath: string) => Promise<void>
+	}> = [
+		{
+			checkIsMatch: isComponentsTsx,
+			family: 'react',
+			handle: handleComponentCreation,
+		},
+		{
+			checkIsMatch: isComponentsSvelte,
+			family: 'svelte',
+			handle: handleSvelteComponentCreation,
+		},
+		{
+			checkIsMatch: isComponentsVue,
+			family: 'vue',
+			handle: handleVueComponentCreation,
+		},
+		{
+			checkIsMatch: isComponentsAngularTs,
+			family: 'angular',
+			handle: (absPath, relPath) =>
+				handleAngularComponentCreation(absPath, relPath, 'internal'),
+		},
+	]
+
 	return watcherParcel
 		.subscribe(
 			root,
@@ -1335,35 +1371,19 @@ function startWatcher() {
 						if (handleStoryCreation(abs)) continue
 					}
 
-					// COMPONENT CREATE — scaffold if empty and ensure story. Each
-					// branch only scaffolds when the file's extension matches the
-					// project's framework; a mismatch is ignored + warned inside
+					// COMPONENT CREATE — scaffold if empty and ensure story. Only
+					// scaffolds when the file's extension matches the project's
+					// framework; a mismatch is ignored + warned inside
 					// `checkDoesFileFrameworkMatchProject`.
-					if (isComponentsTsx(abs) && ev.type === 'create') {
-						if (checkDoesFileFrameworkMatchProject('react', abs))
-							await handleComponentCreation(abs, relPath)
-						continue
-					}
-
-					// SVELTE COMPONENT CREATE — scaffold if empty and ensure story
-					if (isComponentsSvelte(abs) && ev.type === 'create') {
-						if (checkDoesFileFrameworkMatchProject('svelte', abs))
-							await handleSvelteComponentCreation(abs, relPath)
-						continue
-					}
-
-					// VUE COMPONENT CREATE — scaffold if empty and ensure story
-					if (isComponentsVue(abs) && ev.type === 'create') {
-						if (checkDoesFileFrameworkMatchProject('vue', abs))
-							await handleVueComponentCreation(abs, relPath)
-						continue
-					}
-
-					// ANGULAR .component.ts CREATE — scaffold with inline template
-					if (isComponentsAngularTs(abs) && ev.type === 'create') {
-						if (checkDoesFileFrameworkMatchProject('angular', abs))
-							await handleAngularComponentCreation(abs, relPath, 'internal')
-						continue
+					if (ev.type === 'create') {
+						const componentBranch = COMPONENT_CREATE_BRANCHES.find((branch) =>
+							branch.checkIsMatch(abs),
+						)
+						if (componentBranch) {
+							if (checkDoesFileFrameworkMatchProject(componentBranch.family, abs))
+								await componentBranch.handle(abs, relPath)
+							continue
+						}
 					}
 
 					// ANGULAR .component.html CREATE
