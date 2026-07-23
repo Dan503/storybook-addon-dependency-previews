@@ -122,7 +122,7 @@ let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 // the framework can't change mid-run.
 let cachedProjectFramework: Framework | null = null
 function getProjectFramework(): Framework {
-	if (cachedProjectFramework === null)
+	if (!cachedProjectFramework)
 		cachedProjectFramework = detectProject(projectRoot).framework
 	return cachedProjectFramework
 }
@@ -288,10 +288,27 @@ function isEmptyOrWhitespace(absPath: string) {
 }
 
 /**
+ * Convert an absolute path to a project-root-relative, forward-slash path. The
+ * `srcSubpathRegex` gates below match against this (not the raw absolute path)
+ * so the `srcDir` anchor only ever matches the project's *own* source folder —
+ * a `src` (or whatever `srcDir` is) segment sitting *above* the project root
+ * (e.g. `C:/dev/src/myproject/...`) must not count as being under `srcDir`.
+ */
+function toProjectRelativePath(absPath: string): string {
+	const normAbs = absPath.replace(/\\/g, '/')
+	const normRoot = projectRoot.replace(/\\/g, '/').replace(/\/+$/, '')
+	if (normAbs === normRoot) return ''
+	if (normAbs.startsWith(`${normRoot}/`)) return normAbs.slice(normRoot.length + 1)
+	return normAbs // not under the project root — shouldn't happen from the watcher
+}
+
+/**
  * Build a regex that matches `<SRC_DIR>/...<suffix>` for the scaffolding-trigger
  * helpers below. `SRC_DIR` is interpolated at call time (these helpers run
  * inside the watcher event loop, after the boot block has loaded the config
- * and finalised `SRC_DIR`).
+ * and finalised `SRC_DIR`). The gates test it against a **root-relative** path
+ * (via `toProjectRelativePath`), so the pattern is anchored at the start (`^`) —
+ * only the project's own `srcDir` matches, not a same-named segment higher up.
  *
  * Files don't have to live under a `components/` subfolder — same philosophy
  * as the postprocess filter: any source file under `srcDir` with the right
@@ -307,7 +324,7 @@ function srcSubpathRegex(suffixPattern: string): RegExp {
 		return new RegExp(`.+${suffixPattern}`, 'i')
 	}
 	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	return new RegExp(`(?:^|\\/)${escapedSrcDir}\\/.+${suffixPattern}`, 'i')
+	return new RegExp(`^${escapedSrcDir}\\/.+${suffixPattern}`, 'i')
 }
 
 /**
@@ -326,19 +343,19 @@ const STORY_FILE_REGEX = /\.stor(?:y|ies)\.\w+$/i
 // creation, so a root-level `stories/Foo.stories.tsx` never writes `Foo.tsx`
 // into a non-source folder.
 function isStoryFileUnderSrc(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
+	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex(STORY_FILE_REGEX.source).test(norm)
 }
 
 // <srcDir>/**/Thing.tsx ? (and not a story file)
 function isComponentsTsx(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
+	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.tsx$').test(norm) && !STORY_FILE_REGEX.test(norm)
 }
 
 // <srcDir>/**/Thing.svelte ? (and not a story file)
 function isComponentsSvelte(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
+	const norm = toProjectRelativePath(absPath)
 	return (
 		srcSubpathRegex('\\.svelte$').test(norm) && !STORY_FILE_REGEX.test(norm)
 	)
@@ -346,25 +363,25 @@ function isComponentsSvelte(absPath: string) {
 
 // <srcDir>/**/Thing.decorator.svelte ?
 function isDecoratorSvelte(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
+	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.decorator\\.svelte$').test(norm)
 }
 
 // <srcDir>/**/Thing.vue ? (and not a story file)
 function isComponentsVue(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
+	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.vue$').test(norm) && !STORY_FILE_REGEX.test(norm)
 }
 
 // <srcDir>/**/Thing.component.ts ?
 function isComponentsAngularTs(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
+	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.component\\.ts$').test(norm)
 }
 
 // <srcDir>/**/Thing.component.html ?
 function isComponentsAngularHtml(absPath: string) {
-	const norm = absPath.replace(/\\/g, '/')
+	const norm = toProjectRelativePath(absPath)
 	return srcSubpathRegex('\\.component\\.html$').test(norm)
 }
 
@@ -525,8 +542,16 @@ export const Primary: Story = {
  * match the exact file the user authored; checking every variant is what stops
  * `ensureStoryFor` emitting a duplicate story when the sibling was created under
  * a different naming or extension.
+ *
+ * `excludePath` is skipped from the scan. The story-first path passes the file
+ * it's about to fill so that file doesn't count as "an existing story" (it was
+ * just created, empty) — leaving the check to report only a *different*,
+ * genuinely pre-existing story under the alternate naming.
  */
-function findExistingStory(canonicalStoryPath: string): string | null {
+function findExistingStory(
+	canonicalStoryPath: string,
+	excludePath?: string,
+): string | null {
 	const namingVariants = [canonicalStoryPath]
 	const alternateStoryPath = getAlternateStoryNaming(canonicalStoryPath)
 	if (alternateStoryPath) namingVariants.push(alternateStoryPath)
@@ -537,7 +562,12 @@ function findExistingStory(canonicalStoryPath: string): string | null {
 	const allVariants = namingVariants.flatMap((path) =>
 		path.endsWith('.tsx') ? [path, path.replace(/\.tsx$/, '.ts')] : [path],
 	)
-	return allVariants.find((path) => existsSync(path)) ?? null
+	const excludeResolved = excludePath ? resolve(excludePath) : null
+	return (
+		allVariants.find(
+			(path) => resolve(path) !== excludeResolved && existsSync(path),
+		) ?? null
+	)
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1039,6 +1069,52 @@ export const Primary: Story = {
 type StoryFramework = keyof NonNullable<SbDepsConfig['scaffold']>
 
 /**
+ * Map a detected project `Framework` to the scaffold "family" it belongs to
+ * (`StoryFramework`), or `null` when the framework is unknown/unsupported (no
+ * family). This is the single place that knows, e.g., that both `sveltekit` and
+ * `svelte-vite` scaffold Svelte, or that `nextjs-webpack` scaffolds React.
+ */
+function getFrameworkFamily(framework: Framework): StoryFramework | null {
+	switch (framework) {
+		case 'react-vite':
+		case 'nextjs-webpack':
+			return 'react'
+		case 'vue3-vite':
+			return 'vue'
+		case 'sveltekit':
+		case 'svelte-vite':
+			return 'svelte'
+		case 'angular-webpack':
+			return 'angular'
+		default:
+			return null
+	}
+}
+
+/**
+ * True when a created file's framework `family` matches the project's detected
+ * framework, so it should be scaffolded. On a mismatch — a file whose extension
+ * belongs to a different framework (`.tsx` in a Vue project, `.vue` in React,
+ * …), or any framework-specific file in an unknown/unsupported project — logs a
+ * warning that an unsupported extension was used and returns false, so the
+ * caller ignores the file instead of scaffolding it as the wrong framework.
+ */
+function checkDoesFileFrameworkMatchProject(
+	family: StoryFramework,
+	absPath: string,
+): boolean {
+	const projectFramework = getProjectFramework()
+	const projectFamily = getFrameworkFamily(projectFramework)
+	if (projectFamily === family) return true
+	warn(
+		`ignoring "${rel(absPath)}" — it's a ${family} file, but this project's ` +
+			`framework is ${projectFramework}. Framework scaffolding only runs for ` +
+			`files matching the project's own framework.`,
+	)
+	return false
+}
+
+/**
  * Per-framework scaffolders + story-path helper, keyed by `StoryFramework`. Lets
  * `ensureStoryFor` and `scaffoldStoryFromCreatedStoryFile` pick the right trio
  * without four near-identical branches per operation. Angular's component
@@ -1086,8 +1162,9 @@ function ensureStoryFor(
 	absCompPath: string,
 ): string | null {
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
-	if (findExistingStory(storyPath(absCompPath))) return null
-	return story(absCompPath)
+	const canonicalStoryPath = storyPath(absCompPath)
+	if (findExistingStory(canonicalStoryPath)) return null
+	return story(absCompPath, canonicalStoryPath)
 }
 
 /**
@@ -1101,9 +1178,17 @@ function resolveComponentForStory(
 ): { compPath: string; framework: StoryFramework } | null {
 	const storyBase = absStoryPath.replace(STORY_FILE_REGEX, '')
 	const ext = extname(absStoryPath).toLowerCase()
-	if (ext === '.tsx') return { compPath: `${storyBase}.tsx`, framework: 'react' }
-	if (ext === '.svelte')
+	// `.tsx`/`.svelte` are framework-specific — a stray one in a non-matching
+	// project is ignored + warned rather than backfilled as the wrong framework.
+	// `.ts` is framework-agnostic (resolved by sibling/framework), so no gate.
+	if (ext === '.tsx') {
+		if (!checkDoesFileFrameworkMatchProject('react', absStoryPath)) return null
+		return { compPath: `${storyBase}.tsx`, framework: 'react' }
+	}
+	if (ext === '.svelte') {
+		if (!checkDoesFileFrameworkMatchProject('svelte', absStoryPath)) return null
 		return { compPath: `${storyBase}.svelte`, framework: 'svelte' }
+	}
 	if (ext === '.ts') return resolveTsStoryComponent(storyBase)
 	return null
 }
@@ -1125,19 +1210,22 @@ function resolveTsStoryComponent(
 	if (existsSync(reactPath)) return { compPath: reactPath, framework: 'react' }
 	const vuePath = `${storyBase}.vue`
 	if (existsSync(vuePath)) return { compPath: vuePath, framework: 'vue' }
-	const angularPath = `${storyBase}.component.ts`
+	// A `Foo.component.stories.ts` story leaves `storyBase` as `Foo.component`,
+	// so appending `.component.ts` would produce `Foo.component.component.ts`.
+	// Only append `.component` when it isn't already there.
+	const doesStoryBaseIncludeComponent = storyBase.endsWith('.component')
+	const angularPath = doesStoryBaseIncludeComponent
+		? `${storyBase}.ts`
+		: `${storyBase}.component.ts`
 	if (existsSync(angularPath))
 		return { compPath: angularPath, framework: 'angular' }
-	const projectFramework = getProjectFramework()
-	// nextjs-webpack is a React meta-framework (components are `.tsx`), and the
-	// component-create path already treats any `.tsx` as React — group it with
-	// react-vite so story-first scaffolding stays symmetric with component-first.
-	const isReactFramework =
-		projectFramework === 'react-vite' || projectFramework === 'nextjs-webpack'
-	if (isReactFramework) return { compPath: reactPath, framework: 'react' }
-	if (projectFramework === 'vue3-vite')
-		return { compPath: vuePath, framework: 'vue' }
-	if (projectFramework === 'angular-webpack')
+	// No sibling component — fall back to the project's detected framework. A
+	// `.ts` story can't scaffold Svelte (its template is `.svelte`-specific) and
+	// an unknown/unsupported project has no family, so both fall through to null.
+	const projectFamily = getFrameworkFamily(getProjectFramework())
+	if (projectFamily === 'react') return { compPath: reactPath, framework: 'react' }
+	if (projectFamily === 'vue') return { compPath: vuePath, framework: 'vue' }
+	if (projectFamily === 'angular')
 		return { compPath: angularPath, framework: 'angular' }
 	return null
 }
@@ -1157,8 +1245,17 @@ function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null 
 	const resolved = resolveComponentForStory(absStoryPath)
 	if (!resolved) return null
 	const { compPath, framework } = resolved
-	const { component: scaffoldFrameworkComponent, story: scaffoldFrameworkStory } =
-		STORY_SCAFFOLDERS[framework]
+	const {
+		component: scaffoldFrameworkComponent,
+		story: scaffoldFrameworkStory,
+		storyPath,
+	} = STORY_SCAFFOLDERS[framework]
+	// Don't fill a second story when one already exists under the alternate
+	// naming (e.g. an empty `Foo.stories.ts` created beside an existing
+	// `Foo.story.ts`) — that would produce a duplicate story ID. Exclude the
+	// just-created trigger file so it isn't mistaken for a pre-existing story.
+	const canonicalStoryPath = storyPath(compPath)
+	if (findExistingStory(canonicalStoryPath, absStoryPath)) return null
 	const isComponentMissing =
 		!existsSync(compPath) || isEmptyOrWhitespace(compPath)
 	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
@@ -1238,32 +1335,40 @@ function startWatcher() {
 						if (handleStoryCreation(abs)) continue
 					}
 
-					// COMPONENT CREATE — scaffold if empty and ensure story
+					// COMPONENT CREATE — scaffold if empty and ensure story. Each
+					// branch only scaffolds when the file's extension matches the
+					// project's framework; a mismatch is ignored + warned inside
+					// `checkDoesFileFrameworkMatchProject`.
 					if (isComponentsTsx(abs) && ev.type === 'create') {
-						await handleComponentCreation(abs, relPath)
+						if (checkDoesFileFrameworkMatchProject('react', abs))
+							await handleComponentCreation(abs, relPath)
 						continue
 					}
 
 					// SVELTE COMPONENT CREATE — scaffold if empty and ensure story
 					if (isComponentsSvelte(abs) && ev.type === 'create') {
-						await handleSvelteComponentCreation(abs, relPath)
+						if (checkDoesFileFrameworkMatchProject('svelte', abs))
+							await handleSvelteComponentCreation(abs, relPath)
 						continue
 					}
 
 					// VUE COMPONENT CREATE — scaffold if empty and ensure story
 					if (isComponentsVue(abs) && ev.type === 'create') {
-						await handleVueComponentCreation(abs, relPath)
+						if (checkDoesFileFrameworkMatchProject('vue', abs))
+							await handleVueComponentCreation(abs, relPath)
 						continue
 					}
 
 					// ANGULAR .component.ts CREATE — scaffold with inline template
 					if (isComponentsAngularTs(abs) && ev.type === 'create') {
-						await handleAngularComponentCreation(abs, relPath, 'internal')
+						if (checkDoesFileFrameworkMatchProject('angular', abs))
+							await handleAngularComponentCreation(abs, relPath, 'internal')
 						continue
 					}
 
 					// ANGULAR .component.html CREATE
 					if (isComponentsAngularHtml(abs) && ev.type === 'create') {
+						if (!checkDoesFileFrameworkMatchProject('angular', abs)) continue
 						const tsPath = angularComponentTsPath(abs)
 						if (existsSync(tsPath) && !isEmptyOrWhitespace(tsPath)) {
 							// .ts already exists — scaffold HTML from it (migrate inline template if present)
@@ -1525,6 +1630,9 @@ function ms(n: number) {
 }
 function info(msg: string) {
 	console.log('[sb-deps]', msg)
+}
+function warn(msg: string) {
+	console.warn('[sb-deps]', msg)
 }
 function error(msg: string) {
 	console.error('[sb-deps]', msg)
