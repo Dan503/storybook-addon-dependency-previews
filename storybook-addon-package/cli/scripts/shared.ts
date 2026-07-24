@@ -15,6 +15,24 @@
 export const IS_CASE_INSENSITIVE_PATH_FS =
 	process.platform === 'win32' || process.platform === 'darwin'
 
+/**
+ * Escape a folder name for a pattern that has to match a path on disk, and
+ * decide for the caller whether the pattern should ignore case. On the
+ * platforms whose file systems ignore case it matches either capitalisation,
+ * because `src` and `Src` are the same folder there; elsewhere it matches the
+ * name exactly, because there they really are two different folders.
+ *
+ * Every place that builds a path pattern goes through this one function, so a
+ * later call site can't quietly reach for the plain escape below and bring
+ * back the bug where a capitalisation difference made the pattern match
+ * nothing at all.
+ */
+export function escapeForPathRegex(text: string): string {
+	return IS_CASE_INSENSITIVE_PATH_FS
+		? escapeForRegexIgnoringCase(text)
+		: escapeForRegex(text)
+}
+
 /** Backslash-escape every character that has a special meaning in a regex, so the text only matches itself. */
 export function escapeForRegex(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -24,9 +42,10 @@ export function escapeForRegex(text: string): string {
  * Like `escapeForRegex`, but every letter becomes a pair matching both of its
  * cases (`s` → `[sS]`). For a pattern that has to ignore case in a place we
  * can't hand the compiled regex an `i` flag — dependency-cruiser builds its
- * `--include-only` regex itself, with no flags.
+ * `--include-only` regex itself, with no flags. Reached through
+ * `escapeForPathRegex`, which owns the platform decision.
  */
-export function escapeForRegexIgnoringCase(text: string): string {
+function escapeForRegexIgnoringCase(text: string): string {
 	return text
 		.split('')
 		.map((char) => {

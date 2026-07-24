@@ -27,8 +27,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
 import {
 	IS_CASE_INSENSITIVE_PATH_FS,
+	escapeForPathRegex,
 	escapeForRegex,
-	escapeForRegexIgnoringCase,
 } from './scripts/shared.js'
 import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
@@ -200,11 +200,10 @@ function runDepCruiseOnce() {
 	//
 	// dependency-cruiser compiles the pattern with a plain case-SENSITIVE
 	// `new RegExp(...)` — unlike the path checks in this file, which all ignore
-	// case on the file systems that do. So on those platforms every letter is
-	// written as a pair matching both of its cases (`s` → `[sS]`): with srcDir
-	// spelled `src` in the config but `Src` on disk, a case-sensitive `^src/`
-	// would reject every module dependency-cruiser finds and the graph would
-	// come out empty.
+	// case on the file systems that do. `escapeForPathRegex` matches either
+	// capitalisation on those platforms: with srcDir spelled `src` in the config
+	// but `Src` on disk, a case-sensitive `^src/` would reject every module
+	// dependency-cruiser finds and the graph would come out empty.
 	//
 	// The empty-srcDir case (project root *is* the source folder) needs a
 	// different shape: anchoring on `^/` would still walk node_modules, so
@@ -212,9 +211,7 @@ function runDepCruiseOnce() {
 	// `node_modules` as any path segment — covers nested
 	// `packages/foo/node_modules/...` paths in monorepos, not just the
 	// top-level folder.
-	const escapedSrcDir = IS_CASE_INSENSITIVE_PATH_FS
-		? escapeForRegexIgnoringCase(SRC_DIR)
-		: escapeForRegex(SRC_DIR)
+	const escapedSrcDir = escapeForPathRegex(SRC_DIR)
 	const includeOnly =
 		SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${escapedSrcDir}/`
 	const args: Array<string> = ['.']
@@ -1208,18 +1205,30 @@ function scaffoldStoryForAngularComponent(
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
 	// Import the component by its on-disk file name (minus the `.ts` extension),
-	// keeping its exact casing. Angular builds with webpack's case-sensitive
-	// path check, which rejects a story that imports `./Test.component` when the
-	// file on disk is `Test.Component.ts`. Rebuilding the specifier from `base`
-	// plus a lower-case `.component` literal would produce exactly that mismatch,
-	// so read the real name instead — the watcher admits either casing.
-	const componentModuleSpecifier = stripExtension(absCompPath, '.ts')
+	// keeping its exact capitalisation. Angular builds with webpack's
+	// case-sensitive path check, which rejects a story that imports
+	// `./Test.component` when the file on disk is `Test.Component.ts`.
+	//
+	// Read the name off the disk rather than trusting `absCompPath`: only the
+	// component-first flow hands this function the spelling the watcher saw. The
+	// story-first and template-first flows rebuild the path with a lower-case
+	// `.component.ts` literal, so trusting it would write the broken import for
+	// them. When the component doesn't exist yet — story-first fills the story
+	// before backfilling its component — there is nothing on disk to read, and
+	// the passed-in name is the one the component is about to be created under,
+	// which is what the import should say anyway.
+	const onDiskComponentFileName = getOnDiskFileName(absCompPath)
+	const componentModuleSpecifier = stripExtension(
+		onDiskComponentFileName,
+		'.ts',
+	)
 
 	const storyTpl =
 		SCAFFOLD_CONFIG?.angular?.story?.({
 			componentName,
 			className,
 			base,
+			componentModuleSpecifier,
 			title,
 			tags,
 		}) ??
@@ -1526,6 +1535,25 @@ function getComponentPathForFamily(
 		: `${storyBase}.component.ts`
 }
 
+/** What became of a directly-created story file. */
+type CreatedStoryFileOutcome = {
+	/** The story that was filled, or `null` when nothing was written. */
+	createdStory: string | null
+	/**
+	 * True when the fill was skipped because the component already has a story
+	 * under another naming. The caller uses this to stay quiet about the file's
+	 * own capitalisation: it has just been told to delete the file, and renaming
+	 * it would only collide with the story that suppressed it.
+	 */
+	isDeclinedAsDuplicate: boolean
+}
+
+/** Nothing was written, and no duplicate story is the reason why. */
+const NOTHING_SCAFFOLDED: CreatedStoryFileOutcome = {
+	createdStory: null,
+	isDeclinedAsDuplicate: false,
+}
+
 /**
  * Fill a directly-created story file (the mirror of component creation). Skips
  * non-empty files (an existing story is never clobbered), stories whose
@@ -1534,15 +1562,14 @@ function getComponentPathForFamily(
  * the story is filled first and the component backfilled after — the story
  * scaffolder needs the component's path, never its contents — so the
  * component's own watcher event then no-ops on its `ensureStoryFor` guard
- * (the story already exists). Returns the filled story path, or `null` if
- * nothing was scaffolded.
+ * (the story already exists).
  */
 function scaffoldStoryFromCreatedStoryFile(
 	absStoryPath: string,
-): string | null {
-	if (!isEmptyOrWhitespace(absStoryPath)) return null
+): CreatedStoryFileOutcome {
+	if (!isEmptyOrWhitespace(absStoryPath)) return NOTHING_SCAFFOLDED
 	const resolved = resolveComponentForStory(absStoryPath)
-	if (!resolved) return null
+	if (!resolved) return NOTHING_SCAFFOLDED
 	const { compPath, framework } = resolved
 	const {
 		component: scaffoldFrameworkComponent,
@@ -1567,13 +1594,19 @@ function scaffoldStoryFromCreatedStoryFile(
 		// invisible to Storybook — worth saying here too, or the decline above
 		// points at a story that never shows up.
 		warnWhenStoryFileCasingHidesItFromStorybook(existingStory)
-		return null
+		return { createdStory: null, isDeclinedAsDuplicate: true }
 	}
 	const isComponentMissing = isEmptyOrWhitespace(compPath)
 	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
 	if (isComponentMissing) scaffoldFrameworkComponent(compPath)
-	return createdStory
+	return { createdStory, isDeclinedAsDuplicate: false }
 }
+
+/**
+ * Story files already named in a capitalisation warning, so the same file is
+ * only ever flagged once however many watcher events reach the check.
+ */
+const storyPathsAlreadyWarnedAboutCasing = new Set<string>()
 
 /**
  * Storybook's own stories globs (`../src/**​/*.stories.@(ts|tsx|…)`) match
@@ -1601,6 +1634,12 @@ function warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath: string) {
 		storyFileName.slice(0, storyFileName.length - storySuffix.length) +
 		lowerCaseSuffix
 	const onDiskPath = join(dirname(absStoryPath), storyFileName)
+	// One story file reaches this check from two separate watcher events — its
+	// own creation, and the creation of the component that then looks for an
+	// existing story — and the same sentence twice reads like two problems.
+	const comparablePath = toComparablePath(onDiskPath)
+	if (storyPathsAlreadyWarnedAboutCasing.has(comparablePath)) return
+	storyPathsAlreadyWarnedAboutCasing.add(comparablePath)
 	warn(
 		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook — rename "${rel(onDiskPath)}" to "${expectedFileName}".`,
 	)
@@ -1846,12 +1885,16 @@ function startWatcher() {
 		.catch((e) => error(`watch init failed ${e?.message || e}`))
 
 	function handleStoryCreation(abs: string): boolean {
-		const createdStory = scaffoldStoryFromCreatedStoryFile(abs)
+		const { createdStory, isDeclinedAsDuplicate } =
+			scaffoldStoryFromCreatedStoryFile(abs)
 		// For every created story file, not just the ones the fill ran on — a
 		// story created WITH content (copy-paste, save-as, git checkout) skips
 		// the fill entirely but is hidden from Storybook just the same when its
 		// name is odd-cased. After the fill so it lands under the success lines.
-		warnWhenStoryFileCasingHidesItFromStorybook(abs)
+		// The one exception is a file declined as a duplicate: the decline has
+		// already said to delete it, so telling the user to rename it as well
+		// would be advising two different things about the same file.
+		if (!isDeclinedAsDuplicate) warnWhenStoryFileCasingHidesItFromStorybook(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 			return true

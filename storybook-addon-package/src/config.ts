@@ -73,6 +73,14 @@ export interface AngularComponentHtmlScaffoldContext {
 }
 
 export interface AngularStoryScaffoldContext extends AngularBaseScaffoldContext {
+	/**
+	 * What to import the component from, relative to the story file and without
+	 * a leading `./` — e.g. `"button-atom.component"`. Spelled the way the file
+	 * is spelled on disk, so use this rather than building the path from `base`
+	 * plus your own `.component`: Angular's build rejects an import whose
+	 * capitalisation doesn't match the file.
+	 */
+	componentModuleSpecifier: string
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */

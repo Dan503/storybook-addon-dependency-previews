@@ -1,9 +1,5 @@
 import type { IConfiguration } from 'dependency-cruiser'
-import {
-	IS_CASE_INSENSITIVE_PATH_FS,
-	escapeForRegex,
-	escapeForRegexIgnoringCase,
-} from './shared.js'
+import { escapeForPathRegex } from './shared.js'
 
 // Source-folder name is passed in from `sb-deps.ts` via env (see
 // `runDepCruiseOnce`). Defaults to `'src'` so manual `depcruise` invocations
@@ -23,13 +19,12 @@ const SRC_DIR = process.env.SB_DEPS_SRC_DIR ?? 'src'
 //
 // dependency-cruiser compiles these rule matchers with a plain case-SENSITIVE
 // `new RegExp(...)`, and module paths carry their on-disk spelling — so on the
-// platforms whose file systems ignore case, every letter is written as a pair
-// matching both of its cases (`s` → `[sS]`), the same treatment the CLI-level
-// `--include-only` regex gets in `sb-deps.ts`. Otherwise srcDir `src` in the
-// config with `Src` on disk would make these rules silently match nothing.
-const escapedSrcDir = IS_CASE_INSENSITIVE_PATH_FS
-	? escapeForRegexIgnoringCase(SRC_DIR)
-	: escapeForRegex(SRC_DIR)
+// platforms whose file systems ignore case the pattern has to match either
+// capitalisation, the same treatment the CLI-level `--include-only` regex gets
+// in `sb-deps.ts`. Otherwise srcDir `src` in the config with `Src` on disk
+// would make these rules silently match nothing. `escapeForPathRegex` owns
+// that decision for all three places that build one of these patterns.
+const escapedSrcDir = escapeForPathRegex(SRC_DIR)
 // Anchor the non-empty case to a directory boundary (`^<srcDir>/`) so a
 // SRC_DIR of `src` doesn't accidentally also match sibling folders like
 // `src2/` or `srcabc/`. Matches the trailing-slash anchor used by the
@@ -43,9 +38,7 @@ const fromAnchor =
 // nothing (the same half-tolerant state the srcDir escape just fixed).
 const componentFolderNames = ['components', 'ui', 'lib']
 const componentFolderPattern = componentFolderNames
-	.map(
-		IS_CASE_INSENSITIVE_PATH_FS ? escapeForRegexIgnoringCase : escapeForRegex,
-	)
+	.map((folderName) => escapeForPathRegex(folderName))
 	.join('|')
 const componentsPath =
 	SRC_DIR === ''
