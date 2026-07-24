@@ -1207,6 +1207,13 @@ function scaffoldStoryForAngularComponent(
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
+	// Import the component by its on-disk file name (minus the `.ts` extension),
+	// keeping its exact casing. Angular builds with webpack's case-sensitive
+	// path check, which rejects a story that imports `./Test.component` when the
+	// file on disk is `Test.Component.ts`. Rebuilding the specifier from `base`
+	// plus a lower-case `.component` literal would produce exactly that mismatch,
+	// so read the real name instead — the watcher admits either casing.
+	const componentModuleSpecifier = stripExtension(absCompPath, '.ts')
 
 	const storyTpl =
 		SCAFFOLD_CONFIG?.angular?.story?.({
@@ -1218,7 +1225,7 @@ function scaffoldStoryForAngularComponent(
 		}) ??
 		`import type { Meta, StoryObj } from '@storybook/angular'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ${className} } from './${base}.component'
+import { ${className} } from './${componentModuleSpecifier}'
 
 const meta: Meta<${className}> = {
 	title: '${title}',
