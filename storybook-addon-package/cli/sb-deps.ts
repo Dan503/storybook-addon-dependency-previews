@@ -8,6 +8,7 @@ import {
 	existsSync,
 	mkdirSync,
 	readFileSync,
+	realpathSync,
 	statSync,
 	writeFileSync,
 } from 'node:fs'
@@ -38,7 +39,20 @@ const SB_PORT =
 // ───────────────────────────────────────────────────────────────────────────────
 // Paths
 // ───────────────────────────────────────────────────────────────────────────────
-const projectRoot = process.cwd()
+/** A path with any symlinks resolved, or the path unchanged if it can't be resolved. */
+function resolveRealPath(path: string): string {
+	try {
+		return realpathSync(path)
+	} catch {
+		return path
+	}
+}
+
+// Resolved through any symlinks, because the watcher reports paths under the
+// real directory. If this kept the linked spelling, every event would look like
+// it sat outside the project and scaffolding would go quietly dead. Falls back
+// to the raw value if the path can't be resolved.
+const projectRoot = resolveRealPath(process.cwd())
 const outDir = resolve(projectRoot, '.storybook')
 const rawPath = join(outDir, 'dependency-previews.raw.json')
 const cookedPath = join(outDir, 'dependency-previews.json')
@@ -403,7 +417,22 @@ function getPathRelativeToSrcRoot(absCompPath: string): string {
  * extension is a candidate. The framework-agnostic story-file exclusion
  * (`STORY_FILE_REGEX`) is applied separately in the individual helpers.
  */
+/**
+ * Built patterns, keyed by suffix. `SRC_DIR` is fixed once the boot block
+ * finishes, so every pattern this can produce is constant for the life of the
+ * watcher — and a single create event consults up to six of the checks below.
+ */
+const srcSubpathRegexCache = new Map<string, RegExp>()
+
 function srcSubpathRegex(suffixPattern: string): RegExp {
+	const cached = srcSubpathRegexCache.get(suffixPattern)
+	if (cached) return cached
+	const built = buildSrcSubpathRegex(suffixPattern)
+	srcSubpathRegexCache.set(suffixPattern, built)
+	return built
+}
+
+function buildSrcSubpathRegex(suffixPattern: string): RegExp {
 	// Empty SRC_DIR (project root *is* the source folder) means there is no
 	// subfolder check — match any path that ends with the given suffix. The
 	// watcher's ignore list (node_modules, .git, dist, build) keeps the noise
@@ -485,16 +514,30 @@ function isComponentsAngularHtml(relPath: string) {
 	return srcSubpathRegex('\\.component\\.html$').test(relPath)
 }
 
+/**
+ * Strip a known extension from a file name, ignoring its case — `Button.TSX`
+ * and `Button.tsx` both give `Button`. The watcher accepts either spelling (the
+ * globs and detectors all ignore case), so stripping case-sensitively would
+ * leave the extension embedded in the name and scaffold from it.
+ */
+function stripExtension(absPath: string, extension: string) {
+	const extensionRegex = new RegExp(
+		`${extension.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+		'i',
+	)
+	return basename(absPath).replace(extensionRegex, '')
+}
+
 function componentBaseFromComponent(absCompPath: string) {
-	return basename(absCompPath, '.tsx')
+	return stripExtension(absCompPath, '.tsx')
 }
 
 function componentBaseFromSvelteComponent(absCompPath: string) {
-	return basename(absCompPath, '.svelte')
+	return stripExtension(absCompPath, '.svelte')
 }
 
 function componentBaseFromVueComponent(absCompPath: string) {
-	return basename(absCompPath, '.vue')
+	return stripExtension(absCompPath, '.vue')
 }
 
 function componentBaseFromAngularComponent(absCompPath: string) {
@@ -1029,10 +1072,9 @@ export class ${className} {
 	}
 
 	// Only scaffold the HTML file when using an external template
-	if (
-		templateLocation === 'external' &&
-		isEmptyOrWhitespace(htmlPath)
-	) {
+	const shouldScaffoldExternalHtml =
+		templateLocation === 'external' && isEmptyOrWhitespace(htmlPath)
+	if (shouldScaffoldExternalHtml) {
 		writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
 		info(`scaffolded angular template → ${rel(htmlPath)}`)
 	}
@@ -1066,8 +1108,14 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
 			}
 		} catch (e) {
+			// Either the read or the swap-to-templateUrl write can throw. If it was
+			// the write, the extracted template is already in `htmlContent` — but
+			// the `.ts` still holds its inline `template:`, so writing it out to the
+			// `.html` too would leave two copies to drift apart. Drop it and fall
+			// back to the default, which is what the message says happens.
+			htmlContent = null
 			warn(
-				`couldn't read "${rel(absTsPath)}" to migrate its inline template (${(e as Error)?.message}) — scaffolding the default template instead.`,
+				`couldn't migrate the inline template from "${rel(absTsPath)}" (${(e as Error)?.message}) — scaffolding the default template instead.`,
 			)
 		}
 	}
@@ -1258,7 +1306,12 @@ function resolveComponentForStory(
 	// sibling lookup runs the same check, since a sibling can name any framework.
 	if (ext === '.tsx') {
 		if (!checkDoesFileFrameworkMatchProject('react', absStoryPath)) return null
-		return { compPath: `${storyBase}.tsx`, framework: 'react' }
+		// Through the shared helper, so the react spelling has one owner. (The
+		// `.svelte` branch below can't: the helper has no Svelte spelling, since a
+		// `.ts` story can't scaffold one.)
+		const compPath = getComponentPathForFamily(storyBase, 'react')
+		if (!compPath) return null
+		return { compPath, framework: 'react' }
 	}
 	if (ext === '.svelte') {
 		if (!checkDoesFileFrameworkMatchProject('svelte', absStoryPath)) return null
@@ -1444,6 +1497,13 @@ function startWatcher() {
 		'depcruise.config.cjs',
 		'.dependency-cruiser.{js,cjs}',
 	]
+	// Compiled once at watcher start rather than per event: micromatch re-parses
+	// its patterns on every `isMatch` call, and this is the check every single
+	// event passes through, save bursts included.
+	const includeMatchers = includeGlobs.map((glob) =>
+		micromatch.matcher(glob, MICROMATCH_OPTIONS),
+	)
+
 	const ignoreGlobs = [
 		'node_modules/**',
 		'.git/**',
@@ -1514,6 +1574,14 @@ function startWatcher() {
 				}
 
 				for (const ev of events) {
+					// Every scaffold below writes files, and the watcher library
+					// ignores the promise this callback returns — so a throw from any
+					// write (a just-created file grabbed by antivirus or cloud sync, a
+					// read-only folder, a full disk) would escape and kill the whole
+					// process, taking Storybook with it under `--run-storybook`. One
+					// unwritable file should cost that file, not the session. (`continue`
+					// inside this block still moves to the next event, as before.)
+					try {
 					const abs = ev.path
 					// Use the same converter the scaffolding checks use, not `rel()`.
 					// `rel()` strips the root prefix case-sensitively, so any casing
@@ -1527,8 +1595,7 @@ function startWatcher() {
 					// a case-sensitive match drops component creates here while the
 					// source-independent story globs still match. Every check behind
 					// this one already ignores case.
-					if (!micromatch.isMatch(relPath, includeGlobs, MICROMATCH_OPTIONS))
-						continue
+					if (!includeMatchers.some((isMatch) => isMatch(relPath))) continue
 
 					if (ev.type === 'delete') {
 						console.log('Deleted:', relPath)
@@ -1561,7 +1628,11 @@ function startWatcher() {
 						const isScaffoldableComponent =
 							!!componentBranch &&
 							checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
-						if (componentBranch && isScaffoldableComponent) {
+						// Only `isScaffoldableComponent` — it already includes the
+						// branch-matched check. A framework mismatch deliberately falls
+						// through to the rebuild below rather than `continue`ing, so the
+						// graph doesn't go stale for a real source file we declined.
+						if (isScaffoldableComponent) {
 							await componentBranch.handle(abs, relPath)
 							continue
 						}
@@ -1605,6 +1676,11 @@ function startWatcher() {
 
 					// normal rebuild
 					kick(ev.type, abs)
+					} catch (e) {
+						error(
+							`failed handling ${ev.type} for ${rel(ev.path)} — skipping it: ${(e as Error)?.message ?? e}`,
+						)
+					}
 				}
 			},
 			{ ignore: ignoreGlobs },
