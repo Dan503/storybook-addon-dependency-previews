@@ -26,10 +26,21 @@ const rawSrcDir: string =
 		: srcDirArg === ''
 			? ''
 			: srcDirArg.replace(/[\\/]+$/, '').trim() || 'src'
+// Match the srcDir prefix ignoring case on the platforms whose file systems
+// do — dependency-cruiser reports module paths with their on-disk spelling, so
+// with srcDir `src` in the config but `Src` on disk, a case-sensitive filter
+// would drop every module and the graph would come out empty. Mirrors the
+// case-tolerant `--include-only` pattern `sb-deps.ts` hands dependency-cruiser.
+const isCaseInsensitivePathFs =
+	process.platform === 'win32' || process.platform === 'darwin'
+const srcDirRegexFlags = isCaseInsensitivePathFs ? 'i' : ''
 const srcDirRegex =
 	rawSrcDir === ''
 		? /^(?!(?:[^/]*\/)*node_modules\/)/
-		: new RegExp(`^${rawSrcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\/`)
+		: new RegExp(
+				`^${rawSrcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\/`,
+				srcDirRegexFlags,
+			)
 
 if (!existsSync(dirname(outPath)))
 	mkdirSync(dirname(outPath), { recursive: true })

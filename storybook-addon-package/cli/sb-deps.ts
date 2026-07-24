@@ -182,16 +182,25 @@ function runDepCruiseOnce() {
 	// to a `/` so the directory boundary is respected — without the trailing
 	// slash `^src` would also match `src2/`, `srcabc/`, etc.
 	//
+	// dependency-cruiser compiles the pattern with a plain case-SENSITIVE
+	// `new RegExp(...)` — unlike the path checks in this file, which all ignore
+	// case on the file systems that do. So on those platforms every letter is
+	// written as a pair matching both of its cases (`s` → `[sS]`): with srcDir
+	// spelled `src` in the config but `Src` on disk, a case-sensitive `^src/`
+	// would reject every module dependency-cruiser finds and the graph would
+	// come out empty.
+	//
 	// The empty-srcDir case (project root *is* the source folder) needs a
 	// different shape: anchoring on `^/` would still walk node_modules, so
 	// switch to a node_modules denylist via negative lookahead that rejects
 	// `node_modules` as any path segment — covers nested
 	// `packages/foo/node_modules/...` paths in monorepos, not just the
 	// top-level folder.
+	const escapedSrcDir = IS_CASE_INSENSITIVE_PATH_FS
+		? escapeForRegexIgnoringCase(SRC_DIR)
+		: escapeForRegex(SRC_DIR)
 	const includeOnly =
-		SRC_DIR === ''
-			? '^(?!(?:[^/]*/)*node_modules/)'
-			: `^${SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`
+		SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${escapedSrcDir}/`
 	const args: Array<string> = ['.']
 	if (configPath) {
 		args.push('--config', configPath)
@@ -244,6 +253,29 @@ function postprocessOnce() {
 		stdio: 'inherit',
 	})
 	info(`compiled ✓ → ${rel(cookedPath)} (${ms(Date.now() - start)})`)
+}
+
+/**
+ * Like `escapeForRegex`, but every letter becomes a pair matching both of its
+ * cases (`s` → `[sS]`). For a pattern that has to ignore case in a place we
+ * can't hand the compiled regex an `i` flag — dependency-cruiser builds its
+ * `--include-only` regex itself, with no flags.
+ */
+function escapeForRegexIgnoringCase(text: string): string {
+	return text
+		.split('')
+		.map((char) => {
+			const isLetter = /[a-z]/i.test(char)
+			return isLetter
+				? `[${char.toLowerCase()}${char.toUpperCase()}]`
+				: escapeForRegex(char)
+		})
+		.join('')
+}
+
+/** Backslash-escape every character that has a special meaning in a regex, so the text only matches itself. */
+function escapeForRegex(text: string): string {
+	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 /**
@@ -405,11 +437,19 @@ function getPathRelativeToSrcRoot(absCompPath: string): string {
 }
 
 /**
- * Build a regex that matches `<SRC_DIR>/...<suffix>` for the scaffolding-trigger
- * helpers below. `SRC_DIR` is interpolated at call time (these helpers run
- * inside the watcher event loop, after the boot block has loaded the config
- * and finalised `SRC_DIR`). The checks test it against a **root-relative** path
- * (via `toProjectRelativePath`), so the pattern is anchored at the start (`^`) —
+ * Built patterns, keyed by suffix. `SRC_DIR` is fixed once the boot block
+ * finishes, so every pattern this can produce is constant for the life of the
+ * watcher — and a single create event consults up to six of the checks below.
+ */
+const srcSubpathRegexCache = new Map<string, RegExp>()
+
+/**
+ * The regex matching `<SRC_DIR>/...<suffix>` for the scaffolding-trigger
+ * helpers below. Each pattern is built once, at its first call — these helpers
+ * run inside the watcher event loop, after the boot block has loaded the
+ * config and finalised `SRC_DIR` — and served from the cache above after that.
+ * The checks test it against a **root-relative** path (via
+ * `toProjectRelativePath`), so the pattern is anchored at the start (`^`) —
  * only the project's own `srcDir` matches, not a same-named segment higher up.
  *
  * Files don't have to live under a `components/` subfolder — same philosophy
@@ -417,13 +457,6 @@ function getPathRelativeToSrcRoot(absCompPath: string): string {
  * extension is a candidate. The framework-agnostic story-file exclusion
  * (`STORY_FILE_REGEX`) is applied separately in the individual helpers.
  */
-/**
- * Built patterns, keyed by suffix. `SRC_DIR` is fixed once the boot block
- * finishes, so every pattern this can produce is constant for the life of the
- * watcher — and a single create event consults up to six of the checks below.
- */
-const srcSubpathRegexCache = new Map<string, RegExp>()
-
 function srcSubpathRegex(suffixPattern: string): RegExp {
 	const cached = srcSubpathRegexCache.get(suffixPattern)
 	if (cached) return cached
@@ -440,7 +473,7 @@ function buildSrcSubpathRegex(suffixPattern: string): RegExp {
 	if (SRC_DIR === '') {
 		return new RegExp(`.+${suffixPattern}`, 'i')
 	}
-	const escapedSrcDir = SRC_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const escapedSrcDir = escapeForRegex(SRC_DIR)
 	return new RegExp(`^${escapedSrcDir}\\/.+${suffixPattern}`, 'i')
 }
 
@@ -515,16 +548,26 @@ function isComponentsAngularHtml(relPath: string) {
 }
 
 /**
+ * Compiled extension-strippers, keyed by extension. Only a handful of fixed
+ * extensions are ever passed in, and the watcher consults these on every
+ * create event, so each regex is built once and reused — same treatment as
+ * `srcSubpathRegexCache`.
+ */
+const stripExtensionRegexCache = new Map<string, RegExp>()
+
+/**
  * Strip a known extension from a file name, ignoring its case — `Button.TSX`
  * and `Button.tsx` both give `Button`. The watcher accepts either spelling (the
  * globs and detectors all ignore case), so stripping case-sensitively would
  * leave the extension embedded in the name and scaffold from it.
  */
 function stripExtension(absPath: string, extension: string) {
-	const extensionRegex = new RegExp(
-		`${extension.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
-		'i',
-	)
+	let extensionRegex = stripExtensionRegexCache.get(extension)
+	if (!extensionRegex) {
+		const escapedExtension = escapeForRegex(extension)
+		extensionRegex = new RegExp(`${escapedExtension}$`, 'i')
+		stripExtensionRegexCache.set(extension, extensionRegex)
+	}
 	return basename(absPath).replace(extensionRegex, '')
 }
 
@@ -1084,7 +1127,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	const base = componentBaseFromAngularComponent(absHtmlPath)
 	const componentName = toPascalCase(base)
 
-	let htmlContent: string | null = null
+	let isHtmlWritten = false
 
 	// Try to extract inline template from the existing .ts file. Wrapped in a
 	// try/catch because a file can be present-but-unreadable (an editor save,
@@ -1098,7 +1141,14 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 			const tsContent = readFileSync(absTsPath, 'utf8')
 			const match = tsContent.match(/template:\s*`([\s\S]*?)`/)
 			if (match) {
-				htmlContent = normalizeHtmlIndentation(match[1].trim()) + '\n'
+				const extractedHtml = normalizeHtmlIndentation(match[1].trim()) + '\n'
+				// Write the `.html` BEFORE swapping the `.ts` over to templateUrl,
+				// so a failed write at either step still leaves the template in at
+				// least one of the two files. The reverse order would strip it out
+				// of the `.ts` and then lose it entirely if the `.html` write threw.
+				writeFileSync(absHtmlPath, extractedHtml, 'utf8')
+				isHtmlWritten = true
+				info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 				// Swap template: `...` → templateUrl in the .ts file
 				const updated = tsContent.replace(
 					/template:\s*`[\s\S]*?`/,
@@ -1108,25 +1158,28 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
 			}
 		} catch (e) {
-			// Either the read or the swap-to-templateUrl write can throw. If it was
-			// the write, the extracted template is already in `htmlContent` — but
-			// the `.ts` still holds its inline `template:`, so writing it out to the
-			// `.html` too would leave two copies to drift apart. Drop it and fall
-			// back to the default, which is what the message says happens.
-			htmlContent = null
+			// The read, the `.html` write, or the swap-to-templateUrl write can
+			// throw. Once the `.html` write has succeeded, the template exists in
+			// both files (the `.ts` kept its inline copy) — leave the `.html` as
+			// written and just say so, rather than overwriting it with the default.
+			if (isHtmlWritten) {
+				warn(
+					`wrote the template to "${rel(absHtmlPath)}" but couldn't update "${rel(absTsPath)}" to use it (${(e as Error)?.message}) — the component still uses its inline template.`,
+				)
+				return
+			}
 			warn(
 				`couldn't migrate the inline template from "${rel(absTsPath)}" (${(e as Error)?.message}) — scaffolding the default template instead.`,
 			)
 		}
 	}
 
-	// Fall back to default scaffold
-	if (htmlContent === null) {
-		htmlContent = defaultAngularHtmlTemplate(componentName)
+	// No inline template migrated (none found, or the read/write failed before
+	// the `.html` was written) — fall back to the default scaffold.
+	if (!isHtmlWritten) {
+		writeFileSync(absHtmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
+		info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 	}
-
-	writeFileSync(absHtmlPath, htmlContent, 'utf8')
-	info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 }
 
 function scaffoldStoryForAngularComponent(
@@ -1476,7 +1529,31 @@ function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null 
 		isEmptyOrWhitespace(compPath)
 	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
 	if (isComponentMissing) scaffoldFrameworkComponent(compPath)
+	warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath)
 	return createdStory
+}
+
+/**
+ * Storybook's own stories globs (`../src/**​/*.stories.@(ts|tsx|…)`) match
+ * case-SENSITIVELY even on file systems that ignore case — unlike this
+ * watcher's checks, which admit a trigger file like `Button.STORIES.TSX`. Such
+ * a story is real on disk but never appears in Storybook, and the fill's two
+ * success log lines would suggest everything worked. The fill still happens
+ * (the file is the user's, so renaming it is their call) — this just says,
+ * right after those success lines, why the story won't show up.
+ */
+function warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath: string) {
+	const storyFileName = basename(absStoryPath)
+	const storySuffix = storyFileName.match(STORY_FILE_REGEX)?.[0]
+	if (!storySuffix) return
+	const lowerCaseSuffix = storySuffix.toLowerCase()
+	if (storySuffix === lowerCaseSuffix) return
+	const expectedFileName =
+		storyFileName.slice(0, storyFileName.length - storySuffix.length) +
+		lowerCaseSuffix
+	warn(
+		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook — rename "${rel(absStoryPath)}" to "${expectedFileName}".`,
+	)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1582,104 +1659,112 @@ function startWatcher() {
 					// unwritable file should cost that file, not the session. (`continue`
 					// inside this block still moves to the next event, as before.)
 					try {
-					const abs = ev.path
-					// Use the same converter the scaffolding checks use, not `rel()`.
-					// `rel()` strips the root prefix case-sensitively, so any casing
-					// drift would leave this path absolute, the `srcDir`-anchored
-					// component globs would stop matching, and component creates
-					// would go silently dead while story globs still matched.
-					const relPath = toProjectRelativePath(abs)
-					// `nocase` for the same reason: the globs embed the configured
-					// source folder, so if its spelling differs from the folder on
-					// disk (config `src`, folder `Src` — the same folder to the OS)
-					// a case-sensitive match drops component creates here while the
-					// source-independent story globs still match. Every check behind
-					// this one already ignores case.
-					if (!includeMatchers.some((isMatch) => isMatch(relPath))) continue
+						const abs = ev.path
+						// Use the same converter the scaffolding checks use, not `rel()`.
+						// `rel()` strips the root prefix case-sensitively, so any casing
+						// drift would leave this path absolute, the `srcDir`-anchored
+						// component globs would stop matching, and component creates
+						// would go silently dead while story globs still matched.
+						const relPath = toProjectRelativePath(abs)
+						// `nocase` for the same reason: the globs embed the configured
+						// source folder, so if its spelling differs from the folder on
+						// disk (config `src`, folder `Src` — the same folder to the OS)
+						// a case-sensitive match drops component creates here while the
+						// source-independent story globs still match. Every check behind
+						// this one already ignores case.
+						if (!includeMatchers.some((isMatch) => isMatch(relPath))) continue
 
-					if (ev.type === 'delete') {
-						console.log('Deleted:', relPath)
-						isDeletingFile = true
-						kick('unlink', abs)
-						continue
-					}
-
-					// STORY CREATE — fill the story (and its component if missing).
-					// Limited to SRC_DIR like the component-create branches below, so a story
-					// created outside SRC_DIR never scaffolds a component there.
-					// Falls through to the normal rebuild when there's nothing to
-					// scaffold (non-empty story, or an extension we don't template).
-					if (ev.type === 'create' && isStoryFileUnderSrc(relPath)) {
-						if (handleStoryCreation(abs)) continue
-					}
-
-					// COMPONENT CREATE — scaffold if empty and ensure story. Only
-					// scaffolds when the file's extension matches the project's
-					// framework; a mismatch is ignored + warned inside
-					// `checkDoesFileFrameworkMatchProject`.
-					if (ev.type === 'create') {
-						const componentBranch = COMPONENT_CREATE_BRANCHES.find((branch) =>
-							branch.checkIsMatch(relPath),
-						)
-						// On a framework mismatch, fall through to the normal rebuild at
-						// the bottom rather than `continue` — the file is still a real
-						// source file, so skipping it would leave the graph stale until
-						// its next save. (The match check logs its own warning.)
-						const isScaffoldableComponent =
-							!!componentBranch &&
-							checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
-						// Only `isScaffoldableComponent` — it already includes the
-						// branch-matched check. A framework mismatch deliberately falls
-						// through to the rebuild below rather than `continue`ing, so the
-						// graph doesn't go stale for a real source file we declined.
-						if (isScaffoldableComponent) {
-							await componentBranch.handle(abs, relPath)
+						if (ev.type === 'delete') {
+							console.log('Deleted:', relPath)
+							isDeletingFile = true
+							kick('unlink', abs)
 							continue
 						}
-					}
 
-					// ANGULAR .component.html CREATE
-					// A mismatch here falls through to the normal rebuild below, same
-					// reasoning as the component branches above. The match check logs
-					// its own warning, so keep it out of an inline `&&` chain where
-					// that would be easy to miss.
-					// `ev.type` first, so the path check (a conversion plus regex work)
-					// is skipped for the update events that dominate while editing —
-					// same treatment the table branches above get.
-					const isAngularHtmlCreate =
-						ev.type === 'create' && isComponentsAngularHtml(relPath)
-					const isScaffoldableAngularHtml =
-						isAngularHtmlCreate &&
-						checkDoesFileFrameworkMatchProject('angular', abs)
-					if (isScaffoldableAngularHtml) {
-						const tsPath = angularComponentTsPath(abs)
-						if (!isEmptyOrWhitespace(tsPath)) {
-							// .ts already exists — scaffold HTML from it (migrate inline template if present)
-							if (isEmptyOrWhitespace(abs)) {
-								scaffoldAngularHtmlFromTs(abs, tsPath)
-							}
-							console.log('Angular component creation detected:', rel(abs))
-							const createdStory = ensureStoryFor('angular', tsPath)
-							if (createdStory) {
-								kick('create:story', createdStory)
-							}
-						} else {
-							// .ts doesn't exist yet — existing behavior: scaffold both with external templateUrl
-							await handleAngularComponentCreation(
-								tsPath,
-								rel(tsPath),
-								'external',
-							)
+						// STORY CREATE — fill the story (and its component if missing).
+						// Limited to SRC_DIR like the component-create branches below, so a story
+						// created outside SRC_DIR never scaffolds a component there.
+						// Falls through to the normal rebuild when there's nothing to
+						// scaffold (non-empty story, or an extension we don't template).
+						if (ev.type === 'create' && isStoryFileUnderSrc(relPath)) {
+							if (handleStoryCreation(abs)) continue
 						}
-						continue
-					}
 
-					// normal rebuild
-					kick(ev.type, abs)
+						// COMPONENT CREATE — scaffold if empty and ensure story. Only
+						// scaffolds when the file's extension matches the project's
+						// framework; a mismatch is ignored + warned inside
+						// `checkDoesFileFrameworkMatchProject`.
+						if (ev.type === 'create') {
+							const componentBranch = COMPONENT_CREATE_BRANCHES.find((branch) =>
+								branch.checkIsMatch(relPath),
+							)
+							// On a framework mismatch, fall through to the normal rebuild at
+							// the bottom rather than `continue` — the file is still a real
+							// source file, so skipping it would leave the graph stale until
+							// its next save. (The match check logs its own warning.)
+							const isScaffoldableComponent =
+								!!componentBranch &&
+								checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
+							// Only `isScaffoldableComponent` — it already includes the
+							// branch-matched check. A framework mismatch deliberately falls
+							// through to the rebuild below rather than `continue`ing, so the
+							// graph doesn't go stale for a real source file we declined.
+							if (isScaffoldableComponent) {
+								await componentBranch.handle(abs, relPath)
+								continue
+							}
+						}
+
+						// ANGULAR .component.html CREATE
+						// A mismatch here falls through to the normal rebuild below, same
+						// reasoning as the component branches above. The match check logs
+						// its own warning, so keep it out of an inline `&&` chain where
+						// that would be easy to miss.
+						// `ev.type` first, so the path check (a conversion plus regex work)
+						// is skipped for the update events that dominate while editing —
+						// same treatment the table branches above get.
+						const isAngularHtmlCreate =
+							ev.type === 'create' && isComponentsAngularHtml(relPath)
+						const isScaffoldableAngularHtml =
+							isAngularHtmlCreate &&
+							checkDoesFileFrameworkMatchProject('angular', abs)
+						if (isScaffoldableAngularHtml) {
+							const tsPath = angularComponentTsPath(abs)
+							if (!isEmptyOrWhitespace(tsPath)) {
+								// .ts already exists — scaffold HTML from it (migrate inline template if present)
+								if (isEmptyOrWhitespace(abs)) {
+									scaffoldAngularHtmlFromTs(abs, tsPath)
+								}
+								console.log('Angular component creation detected:', rel(abs))
+								const createdStory = ensureStoryFor('angular', tsPath)
+								if (createdStory) {
+									kick('create:story', createdStory)
+								}
+							} else {
+								// .ts doesn't exist yet — existing behavior: scaffold both with external templateUrl
+								await handleAngularComponentCreation(
+									tsPath,
+									rel(tsPath),
+									'external',
+								)
+							}
+							continue
+						}
+
+						// normal rebuild
+						kick(ev.type, abs)
 					} catch (e) {
+						// `toProjectRelativePath`, not `rel()` — same casing-drift
+						// reasoning as the comment at the top of this loop.
 						error(
-							`failed handling ${ev.type} for ${rel(ev.path)} — skipping it: ${(e as Error)?.message ?? e}`,
+							`failed handling ${ev.type} for ${toProjectRelativePath(ev.path)} — skipping it: ${(e as Error)?.message ?? e}`,
 						)
+						// Only the scaffolding is skipped. The file the event reported
+						// is still real and on disk, so without this the graph would
+						// stay stale until the file's next save — the same reasoning as
+						// the framework-mismatch fall-through above. `buildOnce` catches
+						// its own errors in watch mode, so this can't rethrow.
+						kick(ev.type, ev.path)
 					}
 				}
 			},
