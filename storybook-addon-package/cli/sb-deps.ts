@@ -342,6 +342,16 @@ function isEmptyOrWhitespace(absPath: string) {
 		return !txt.trim()
 	} catch (e) {
 		const isMissing = (e as NodeJS.ErrnoException)?.code === 'ENOENT'
+		// Say so when the fail-safe kicks in: an existing-but-unreadable file
+		// counts as non-empty, which silently suppresses whatever scaffold asked —
+		// and since only create events trigger scaffolding, no later save retries.
+		// Without this line the file stays empty with nothing in the log
+		// explaining why.
+		if (!isMissing) {
+			warn(
+				`couldn't read "${rel(absPath)}" (${(e as Error)?.message ?? e}) — treating it as having content, so nothing will be scaffolded over it.`,
+			)
+		}
 		return isMissing
 	}
 }
@@ -1133,9 +1143,10 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	// try/catch because a file can be present-but-unreadable (an editor save,
 	// antivirus, or cloud-sync lock) — `isEmptyOrWhitespace` deliberately reports
 	// that as non-empty so we never overwrite unseen content, which means the
-	// read below can throw. This runs inside the watcher's async handler, where
-	// an uncaught error would take the whole sb-deps process down (and Storybook
-	// with it under --run-storybook), so degrade to the default template instead.
+	// read below can throw. The watcher's own per-event try/catch would contain
+	// an escape (it logs `failed handling …` and still kicks a rebuild), but it
+	// would abandon the rest of this event — degrading to the default template
+	// keeps the scaffold going instead.
 	if (!isEmptyOrWhitespace(absTsPath)) {
 		try {
 			const tsContent = readFileSync(absTsPath, 'utf8')
@@ -1398,11 +1409,17 @@ function resolveTsStoryComponent(
 		// Name the sibling, not the story. The story file itself isn't the
 		// mismatched one — its sibling is — so the shared warning would point at
 		// the wrong file and hide the actual fix (remove or convert the sibling).
+		// That advice only holds when the project has a family, though: with none
+		// (unknown/unsupported framework) the fallback below returns null too, so
+		// removing the sibling gains nothing — promise nothing then, like the
+		// shared mismatch warning.
+		const siblingAdvice = projectFamily
+			? ' Remove or convert the sibling if the story should be scaffolded.'
+			: ''
 		warn(
 			`ignoring "${rel(absStoryPath)}" — its sibling "${rel(sibling.compPath)}" ` +
 				`is a ${sibling.framework} component, but this project's framework is ` +
-				`${getProjectFramework()}. Remove or convert the sibling if the story ` +
-				`should be scaffolded.`,
+				`${getProjectFramework()}.${siblingAdvice}`,
 		)
 		return null
 	}
@@ -1418,9 +1435,12 @@ function resolveTsStoryComponent(
 }
 
 /**
- * Families a `.ts` story can name via a sibling component, in probe order.
- * Svelte is absent on purpose: its story template is `.svelte`-specific, so a
- * `.ts` story can't be scaffolded from a Svelte component.
+ * Families a `.ts` story can name via a sibling component, in default probe
+ * order — `getSiblingProbeOrder` moves the project's own family to the front,
+ * so this literal order is only the real probe order when the project has no
+ * detected family. Svelte is absent on purpose: its story template is
+ * `.svelte`-specific, so a `.ts` story can't be scaffolded from a Svelte
+ * component.
  */
 const TS_STORY_SIBLING_FAMILIES: Array<StoryFramework> = [
 	'react',
@@ -1592,7 +1612,6 @@ function startWatcher() {
 
 	let pending = false
 	let timer: NodeJS.Timeout | null = null
-	let isDeletingFile = false
 
 	function kick(reason: string, absPath: string) {
 		if (pending) return
@@ -1676,7 +1695,6 @@ function startWatcher() {
 
 						if (ev.type === 'delete') {
 							console.log('Deleted:', relPath)
-							isDeletingFile = true
 							kick('unlink', abs)
 							continue
 						}
@@ -1701,14 +1719,12 @@ function startWatcher() {
 							// On a framework mismatch, fall through to the normal rebuild at
 							// the bottom rather than `continue` — the file is still a real
 							// source file, so skipping it would leave the graph stale until
-							// its next save. (The match check logs its own warning.)
+							// its next save. (The match check logs its own warning.) The `if`
+							// below tests only `isScaffoldableComponent`, which already
+							// includes the branch-matched check.
 							const isScaffoldableComponent =
 								!!componentBranch &&
 								checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
-							// Only `isScaffoldableComponent` — it already includes the
-							// branch-matched check. A framework mismatch deliberately falls
-							// through to the rebuild below rather than `continue`ing, so the
-							// graph doesn't go stale for a real source file we declined.
 							if (isScaffoldableComponent) {
 								await componentBranch.handle(abs, relPath)
 								continue
