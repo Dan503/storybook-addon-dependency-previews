@@ -7,15 +7,29 @@ import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import {
 	existsSync,
 	mkdirSync,
+	readdirSync,
 	readFileSync,
 	realpathSync,
 	statSync,
 	writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
-import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path'
+import {
+	basename,
+	dirname,
+	extname,
+	join,
+	posix,
+	resolve,
+	sep,
+} from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
+import {
+	IS_CASE_INSENSITIVE_PATH_FS,
+	escapeForRegex,
+	escapeForRegexIgnoringCase,
+} from './scripts/shared.js'
 import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
 
@@ -127,7 +141,9 @@ let SRC_DIR = 'src'
 // Which extension the scaffolder emits for generated story files —
 // `Foo.stories.tsx` vs `Foo.story.tsx`. Config-driven (default `'stories'`,
 // Storybook's convention), so all four `storyPathFor*` helpers stay in sync.
-type StorybookFileExtension = NonNullable<SbDepsConfig['storybookFileExtension']>
+type StorybookFileExtension = NonNullable<
+	SbDepsConfig['storybookFileExtension']
+>
 let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 
 // Framework of the project the CLI is running in — needed to disambiguate a
@@ -256,29 +272,6 @@ function postprocessOnce() {
 }
 
 /**
- * Like `escapeForRegex`, but every letter becomes a pair matching both of its
- * cases (`s` → `[sS]`). For a pattern that has to ignore case in a place we
- * can't hand the compiled regex an `i` flag — dependency-cruiser builds its
- * `--include-only` regex itself, with no flags.
- */
-function escapeForRegexIgnoringCase(text: string): string {
-	return text
-		.split('')
-		.map((char) => {
-			const isLetter = /[a-z]/i.test(char)
-			return isLetter
-				? `[${char.toLowerCase()}${char.toUpperCase()}]`
-				: escapeForRegex(char)
-		})
-		.join('')
-}
-
-/** Backslash-escape every character that has a special meaning in a regex, so the text only matches itself. */
-function escapeForRegex(text: string): string {
-	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/**
  * Escape an argument so that it survives `cmd.exe` parsing when `execFileSync`
  * is invoked with `shell: true` on Windows. `^` is the cmd.exe escape character,
  * even inside double quotes — doubling it makes cmd.exe pass through a literal
@@ -356,14 +349,6 @@ function isEmptyOrWhitespace(absPath: string) {
 	}
 }
 
-/**
- * Do this platform's file system (FS) paths ignore case? Windows and macOS
- * treat them as case-insensitive, and comparisons here have to match that, or a
- * casing difference between `process.cwd()` and the paths the watcher reports
- * (drive-letter casing being the usual culprit) reads as a different path.
- */
-const IS_CASE_INSENSITIVE_PATH_FS = IS_WIN || process.platform === 'darwin'
-
 /** Lower-case a path on platforms whose file paths ignore case, so two spellings of the same file compare equal. */
 function toComparablePath(path: string): string {
 	return IS_CASE_INSENSITIVE_PATH_FS ? path.toLowerCase() : path
@@ -407,7 +392,9 @@ function toProjectRelativePath(absPath: string): string {
 	const normAbs = absPath.replace(/\\/g, '/')
 	const comparableAbs = toComparablePath(normAbs)
 	if (comparableAbs === COMPARABLE_PROJECT_ROOT) return ''
-	const doesStartAtRoot = comparableAbs.startsWith(COMPARABLE_PROJECT_ROOT_PREFIX)
+	const doesStartAtRoot = comparableAbs.startsWith(
+		COMPARABLE_PROJECT_ROOT_PREFIX,
+	)
 	if (doesStartAtRoot) return normAbs.slice(PROJECT_ROOT_PREFIX.length)
 	// Not under the project root — shouldn't happen, since the watcher only
 	// reports paths beneath it. Warn rather than degrade silently: with a
@@ -527,13 +514,16 @@ function isStoryFileUnderSrc(relPath: string) {
 
 /** Is this `<srcDir>/**​/Thing.tsx` (and not a story file)? */
 function isComponentsTsx(relPath: string) {
-	return srcSubpathRegex('\\.tsx$').test(relPath) && !STORY_FILE_REGEX.test(relPath)
+	return (
+		srcSubpathRegex('\\.tsx$').test(relPath) && !STORY_FILE_REGEX.test(relPath)
+	)
 }
 
 /** Is this `<srcDir>/**​/Thing.svelte` (and not a story file)? */
 function isComponentsSvelte(relPath: string) {
 	return (
-		srcSubpathRegex('\\.svelte$').test(relPath) && !STORY_FILE_REGEX.test(relPath)
+		srcSubpathRegex('\\.svelte$').test(relPath) &&
+		!STORY_FILE_REGEX.test(relPath)
 	)
 }
 
@@ -544,7 +534,9 @@ function isDecoratorSvelte(relPath: string) {
 
 /** Is this `<srcDir>/**​/Thing.vue` (and not a story file)? */
 function isComponentsVue(relPath: string) {
-	return srcSubpathRegex('\\.vue$').test(relPath) && !STORY_FILE_REGEX.test(relPath)
+	return (
+		srcSubpathRegex('\\.vue$').test(relPath) && !STORY_FILE_REGEX.test(relPath)
+	)
 }
 
 /** Is this `<srcDir>/**​/Thing.component.ts`? */
@@ -688,7 +680,10 @@ export function ${componentName}({ children }: ${propsName}) {
 	info(`scaffolded component → ${rel(absCompPath)}`)
 }
 
-function scaffoldStoryForComponent(absCompPath: string, targetStoryPath: string) {
+function scaffoldStoryForComponent(
+	absCompPath: string,
+	targetStoryPath: string,
+) {
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
@@ -1068,6 +1063,17 @@ function defaultAngularHtmlTemplate(componentName: string) {
 	)
 }
 
+/**
+ * Write an Angular `.component.html` file and log the shared
+ * "scaffolded angular template" line. One owner for the write and the log
+ * wording, so the three template-writing sites (external scaffold, inline
+ * migration, migration fallback) can't drift apart.
+ */
+function writeAngularTemplate(absHtmlPath: string, html: string) {
+	writeFileSync(absHtmlPath, html, 'utf8')
+	info(`scaffolded angular template → ${rel(absHtmlPath)}`)
+}
+
 function scaffoldAngularComponent(
 	absCompPath: string,
 	templateLocation: 'internal' | 'external',
@@ -1128,8 +1134,7 @@ export class ${className} {
 	const shouldScaffoldExternalHtml =
 		templateLocation === 'external' && isEmptyOrWhitespace(htmlPath)
 	if (shouldScaffoldExternalHtml) {
-		writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
-		info(`scaffolded angular template → ${rel(htmlPath)}`)
+		writeAngularTemplate(htmlPath, defaultAngularHtmlTemplate(componentName))
 	}
 }
 
@@ -1157,9 +1162,8 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				// so a failed write at either step still leaves the template in at
 				// least one of the two files. The reverse order would strip it out
 				// of the `.ts` and then lose it entirely if the `.html` write threw.
-				writeFileSync(absHtmlPath, extractedHtml, 'utf8')
+				writeAngularTemplate(absHtmlPath, extractedHtml)
 				isHtmlWritten = true
-				info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 				// Swap template: `...` → templateUrl in the .ts file
 				const updated = tsContent.replace(
 					/template:\s*`[\s\S]*?`/,
@@ -1188,8 +1192,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	// No inline template migrated (none found, or the read/write failed before
 	// the `.html` was written) — fall back to the default scaffold.
 	if (!isHtmlWritten) {
-		writeFileSync(absHtmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
-		info(`scaffolded angular template → ${rel(absHtmlPath)}`)
+		writeAngularTemplate(absHtmlPath, defaultAngularHtmlTemplate(componentName))
 	}
 }
 
@@ -1204,6 +1207,13 @@ function scaffoldStoryForAngularComponent(
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
+	// Import the component by its on-disk file name (minus the `.ts` extension),
+	// keeping its exact casing. Angular builds with webpack's case-sensitive
+	// path check, which rejects a story that imports `./Test.component` when the
+	// file on disk is `Test.Component.ts`. Rebuilding the specifier from `base`
+	// plus a lower-case `.component` literal would produce exactly that mismatch,
+	// so read the real name instead — the watcher admits either casing.
+	const componentModuleSpecifier = stripExtension(absCompPath, '.ts')
 
 	const storyTpl =
 		SCAFFOLD_CONFIG?.angular?.story?.({
@@ -1215,7 +1225,7 @@ function scaffoldStoryForAngularComponent(
 		}) ??
 		`import type { Meta, StoryObj } from '@storybook/angular'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { ${className} } from './${base}.component'
+import { ${className} } from './${componentModuleSpecifier}'
 
 const meta: Meta<${className}> = {
 	title: '${title}',
@@ -1349,7 +1359,15 @@ function ensureStoryFor(
 ): string | null {
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
 	const canonicalStoryPath = storyPath(absCompPath)
-	if (findExistingStory(canonicalStoryPath, framework)) return null
+	const existingStory = findExistingStory(canonicalStoryPath, framework)
+	if (existingStory) {
+		// The story that made this decline may itself be invisible to Storybook —
+		// on a case-insensitive file system the probe finds a `Button.STORIES.tsx`
+		// too, and declining over it silently would leave the user with a
+		// component, no visible story, and no explanation.
+		warnWhenStoryFileCasingHidesItFromStorybook(existingStory)
+		return null
+	}
 	return story(absCompPath, canonicalStoryPath)
 }
 
@@ -1519,7 +1537,9 @@ function getComponentPathForFamily(
  * (the story already exists). Returns the filled story path, or `null` if
  * nothing was scaffolded.
  */
-function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null {
+function scaffoldStoryFromCreatedStoryFile(
+	absStoryPath: string,
+): string | null {
 	if (!isEmptyOrWhitespace(absStoryPath)) return null
 	const resolved = resolveComponentForStory(absStoryPath)
 	if (!resolved) return null
@@ -1543,27 +1563,36 @@ function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null 
 		warn(
 			`left "${rel(absStoryPath)}" empty — "${rel(existingStory)}" is already the story for this component. Delete whichever one you don't want.`,
 		)
+		// The story that suppressed the fill may itself be odd-cased and so
+		// invisible to Storybook — worth saying here too, or the decline above
+		// points at a story that never shows up.
+		warnWhenStoryFileCasingHidesItFromStorybook(existingStory)
 		return null
 	}
-	const isComponentMissing =
-		isEmptyOrWhitespace(compPath)
+	const isComponentMissing = isEmptyOrWhitespace(compPath)
 	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
 	if (isComponentMissing) scaffoldFrameworkComponent(compPath)
-	warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath)
 	return createdStory
 }
 
 /**
  * Storybook's own stories globs (`../src/**​/*.stories.@(ts|tsx|…)`) match
  * case-SENSITIVELY even on file systems that ignore case — unlike this
- * watcher's checks, which admit a trigger file like `Button.STORIES.TSX`. Such
- * a story is real on disk but never appears in Storybook, and the fill's two
- * success log lines would suggest everything worked. The fill still happens
- * (the file is the user's, so renaming it is their call) — this just says,
- * right after those success lines, why the story won't show up.
+ * watcher's checks, which admit a story file like `Button.STORIES.TSX`. Such
+ * a story is real on disk but never appears in Storybook, and nothing else
+ * says why. The hazard is a property of the file NAME alone — not of whether
+ * anything was scaffolded — so this runs for every created story file
+ * (whether the fill ran or the file arrived with content) and for the on-disk
+ * story behind an existing-story decline. The file is the user's, so renaming
+ * it is their call — this just says why the story won't show up.
+ *
+ * Checks the file's on-disk spelling, not the spelling in `absStoryPath`: the
+ * existing-story probes are built from the canonical lower-case name, and on a
+ * case-insensitive file system they find an odd-cased file under that probe
+ * spelling.
  */
 function warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath: string) {
-	const storyFileName = basename(absStoryPath)
+	const storyFileName = getOnDiskFileName(absStoryPath)
 	const storySuffix = storyFileName.match(STORY_FILE_REGEX)?.[0]
 	if (!storySuffix) return
 	const lowerCaseSuffix = storySuffix.toLowerCase()
@@ -1571,9 +1600,33 @@ function warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath: string) {
 	const expectedFileName =
 		storyFileName.slice(0, storyFileName.length - storySuffix.length) +
 		lowerCaseSuffix
+	const onDiskPath = join(dirname(absStoryPath), storyFileName)
 	warn(
-		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook — rename "${rel(absStoryPath)}" to "${expectedFileName}".`,
+		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook — rename "${rel(onDiskPath)}" to "${expectedFileName}".`,
 	)
+}
+
+/**
+ * The file's name as it is actually spelled on disk. On a case-insensitive
+ * file system a probe path like `Button.stories.tsx` can find a file the user
+ * saved as `Button.STORIES.tsx`, so the spelling in the probed path says
+ * nothing about the spelling Storybook's globs will see — read the directory
+ * and report the matching entry's own name. Falls back to the name from
+ * `absPath` when the directory can't be read.
+ */
+function getOnDiskFileName(absPath: string): string {
+	const nameFromPath = basename(absPath)
+	if (!IS_CASE_INSENSITIVE_PATH_FS) return nameFromPath
+	try {
+		const entries = readdirSync(dirname(absPath))
+		const comparableName = nameFromPath.toLowerCase()
+		return (
+			entries.find((entry) => entry.toLowerCase() === comparableName) ??
+			nameFromPath
+		)
+	} catch {
+		return nameFromPath
+	}
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1794,6 +1847,11 @@ function startWatcher() {
 
 	function handleStoryCreation(abs: string): boolean {
 		const createdStory = scaffoldStoryFromCreatedStoryFile(abs)
+		// For every created story file, not just the ones the fill ran on — a
+		// story created WITH content (copy-paste, save-as, git checkout) skips
+		// the fill entirely but is hidden from Storybook just the same when its
+		// name is odd-cased. After the fill so it lands under the success lines.
+		warnWhenStoryFileCasingHidesItFromStorybook(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 			return true

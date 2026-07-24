@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
+import { IS_CASE_INSENSITIVE_PATH_FS, escapeForRegex } from './shared.js'
 
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
@@ -30,17 +31,14 @@ const rawSrcDir: string =
 // do — dependency-cruiser reports module paths with their on-disk spelling, so
 // with srcDir `src` in the config but `Src` on disk, a case-sensitive filter
 // would drop every module and the graph would come out empty. Mirrors the
-// case-tolerant `--include-only` pattern `sb-deps.ts` hands dependency-cruiser.
-const isCaseInsensitivePathFs =
-	process.platform === 'win32' || process.platform === 'darwin'
-const srcDirRegexFlags = isCaseInsensitivePathFs ? 'i' : ''
+// case-tolerant `--include-only` pattern `sb-deps.ts` hands dependency-cruiser;
+// the platform rule and the escape both come from the shared module so this
+// process can't drift from the watcher's.
+const srcDirRegexFlags = IS_CASE_INSENSITIVE_PATH_FS ? 'i' : ''
 const srcDirRegex =
 	rawSrcDir === ''
 		? /^(?!(?:[^/]*\/)*node_modules\/)/
-		: new RegExp(
-				`^${rawSrcDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\/`,
-				srcDirRegexFlags,
-			)
+		: new RegExp(`^${escapeForRegex(rawSrcDir)}\\/`, srcDirRegexFlags)
 
 if (!existsSync(dirname(outPath)))
 	mkdirSync(dirname(outPath), { recursive: true })
@@ -67,8 +65,10 @@ const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
 const isComponent = (p: string) => {
 	return (
 		srcDirRegex.test(p) &&
-		// Ignore css and html template files
-		!/\.(css|scss|sass|less|html)$/.test(p)
+		// Ignore css and html template files, whatever their extension's casing —
+		// dependency-cruiser reports the on-disk spelling, so a `styles.CSS`
+		// would otherwise slip through as a bogus component node.
+		!/\.(css|scss|sass|less|html)$/i.test(p)
 	)
 }
 
@@ -207,7 +207,10 @@ function getRawStoryFileData(componentPath: string) {
 
 	// Angular: strip the `.component` suffix so e.g. `Button.component.ts`
 	// looks for `Button.stories.ts` rather than `Button.component.stories.ts`.
-	const angularBase = base.replace(/\.component$/, '')
+	// Case-insensitive to match the `.component` checks in `sb-deps.ts` — the
+	// watcher admits (and scaffolds a story for) a `Button.Component.ts`, so a
+	// case-sensitive strip here would miss that story and drop the graph link.
+	const angularBase = base.replace(/\.component$/i, '')
 	const isAngular = angularBase !== base
 
 	const componentExt = extname(componentPath)
