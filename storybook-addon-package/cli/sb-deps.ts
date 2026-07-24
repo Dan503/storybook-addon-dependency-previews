@@ -314,6 +314,13 @@ function toComparablePath(path: string): string {
 }
 
 /**
+ * Options for the watcher's glob matching. `micromatch` matches case-sensitively
+ * by default, which would disagree with every other path check here — those all
+ * ignore case on the platforms whose file systems do.
+ */
+const MICROMATCH_OPTIONS = { nocase: IS_CASE_INSENSITIVE_PATH_FS }
+
+/**
  * The project root, normalised once. `projectRoot` is fixed for the life of the
  * run, and the watcher converts paths for every file event, so deriving these
  * per call would repeat the same string work constantly.
@@ -528,7 +535,16 @@ function storyPathForVueComponent(absCompPath: string) {
 	return join(dir, `${base}.${STORYBOOK_FILE_EXTENSION}.ts`)
 }
 
-function makeTitleFromComponent(absCompPath: string) {
+/**
+ * The Storybook title for a component — its folders under the source root, then
+ * its own name, title-cased and joined with ` / ` (e.g. `Atoms / Badge`).
+ *
+ * Takes `base` (the component's name without its extension) rather than working
+ * it out, because each framework strips a different extension and every caller
+ * already has it to hand. That parameter is the *only* thing that differed
+ * between the four per-framework builders this replaces.
+ */
+function makeTitleFromComponent(absCompPath: string, base: string) {
 	const relFromSrc = getPathRelativeToSrcRoot(absCompPath)
 
 	const dir = posix.dirname(relFromSrc)
@@ -537,8 +553,7 @@ function makeTitleFromComponent(absCompPath: string) {
 		segments = segments.slice(1)
 
 	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
-	const compName = componentBaseFromComponent(absCompPath)
-	const compTitle = toTitleCase(toWords(compName))
+	const compTitle = toTitleCase(toWords(base))
 
 	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
 
@@ -581,7 +596,7 @@ function scaffoldStoryForComponent(absCompPath: string, targetStoryPath: string)
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
-	const title = makeTitleFromComponent(absCompPath)
+	const title = makeTitleFromComponent(absCompPath, base)
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
@@ -623,7 +638,8 @@ export const Primary: Story = {
 /**
  * Return the on-disk story file for `canonicalStoryPath` if one already exists —
  * under either `.story.` / `.stories.` naming AND, for React, either extension
- * (canonical `.tsx`, or a JSX-free `.ts`). The canonical path is built from
+ * (canonical `.tsx`, or a JSX-free `.ts`), AND, for Angular, the
+ * `.component`-carrying spelling as well. The canonical path is built from
  * `STORYBOOK_FILE_EXTENSION` and the component's own extension, so it may not
  * match the exact file the user authored; checking every variant is what stops
  * `ensureStoryFor` emitting a duplicate story when the sibling was created under
@@ -749,33 +765,13 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	info(`scaffolded svelte decorator → ${rel(absDecoratorPath)}`)
 }
 
-function makeTitleFromSvelteComponent(absCompPath: string) {
-	const relFromSrc = getPathRelativeToSrcRoot(absCompPath)
-
-	const dir = posix.dirname(relFromSrc)
-	let segments = dir.split('/').filter(Boolean)
-	if (segments[0] && /^components?$/i.test(segments[0]))
-		segments = segments.slice(1)
-
-	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
-	const compName = componentBaseFromSvelteComponent(absCompPath)
-	const compTitle = toTitleCase(toWords(compName))
-
-	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
-
-	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
-	const dedupedStoryPath = [...new Set(fullStoryPath)]
-
-	return dedupedStoryPath.join(' / ')
-}
-
 function scaffoldStoryForSvelteComponent(
 	absCompPath: string,
 	targetStoryPath: string,
 ) {
 	const base = componentBaseFromSvelteComponent(absCompPath)
 	const componentName = toPascalCase(base)
-	const title = makeTitleFromSvelteComponent(absCompPath)
+	const title = makeTitleFromComponent(absCompPath, base)
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
@@ -833,33 +829,13 @@ const {  } = defineProps<PropsFor${componentName}>()
 	info(`scaffolded vue component → ${rel(absCompPath)}`)
 }
 
-function makeTitleFromVueComponent(absCompPath: string) {
-	const relFromSrc = getPathRelativeToSrcRoot(absCompPath)
-
-	const dir = posix.dirname(relFromSrc)
-	let segments = dir.split('/').filter(Boolean)
-	if (segments[0] && /^components?$/i.test(segments[0]))
-		segments = segments.slice(1)
-
-	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
-	const compName = componentBaseFromVueComponent(absCompPath)
-	const compTitle = toTitleCase(toWords(compName))
-
-	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
-
-	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
-	const dedupedStoryPath = [...new Set(fullStoryPath)]
-
-	return dedupedStoryPath.join(' / ')
-}
-
 function scaffoldStoryForVueComponent(
 	absCompPath: string,
 	targetStoryPath: string,
 ) {
 	const base = componentBaseFromVueComponent(absCompPath)
 	const componentName = toPascalCase(base)
-	const title = makeTitleFromVueComponent(absCompPath)
+	const title = makeTitleFromComponent(absCompPath, base)
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
@@ -909,26 +885,6 @@ function storyPathForAngularComponent(absCompPath: string) {
 	const dir = dirname(absCompPath)
 	const base = componentBaseFromAngularComponent(absCompPath)
 	return join(dir, `${base}.${STORYBOOK_FILE_EXTENSION}.ts`)
-}
-
-function makeTitleFromAngularComponent(absCompPath: string) {
-	const relFromSrc = getPathRelativeToSrcRoot(absCompPath)
-
-	const dir = posix.dirname(relFromSrc)
-	let segments = dir.split('/').filter(Boolean)
-	if (segments[0] && /^components?$/i.test(segments[0]))
-		segments = segments.slice(1)
-
-	const titledFolders = segments.map((s) => toTitleCase(toWords(s)))
-	const compName = componentBaseFromAngularComponent(absCompPath)
-	const compTitle = toTitleCase(toWords(compName))
-
-	const fullStoryPath = [...titledFolders, compTitle].filter(Boolean)
-
-	// remove duplicates (e.g. Folder/Thing/Thing => Folder/Thing)
-	const dedupedStoryPath = [...new Set(fullStoryPath)]
-
-	return dedupedStoryPath.join(' / ')
 }
 
 function gcd(a: number, b: number): number {
@@ -1132,7 +1088,7 @@ function scaffoldStoryForAngularComponent(
 	const base = componentBaseFromAngularComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const className = `${componentName}Component`
-	const title = makeTitleFromAngularComponent(absCompPath)
+	const title = makeTitleFromComponent(absCompPath, base)
 	const atomic = detectAtomicTag(absCompPath)
 	const tags = ['autodocs']
 	if (atomic) tags.push(atomic)
@@ -1331,11 +1287,18 @@ function resolveTsStoryComponent(
 	// sitting in a React project would scaffold an Angular story into it.
 	const sibling = findSiblingComponent(storyBase)
 	if (sibling) {
-		const doesSiblingMatchProject = checkDoesFileFrameworkMatchProject(
-			sibling.framework,
-			absStoryPath,
+		const projectFamily = getProjectFrameworkFamily()
+		if (sibling.framework === projectFamily) return sibling
+		// Name the sibling, not the story. The story file itself isn't the
+		// mismatched one — its sibling is — so the shared warning would point at
+		// the wrong file and hide the actual fix (remove or convert the sibling).
+		warn(
+			`ignoring "${rel(absStoryPath)}" — its sibling "${rel(sibling.compPath)}" ` +
+				`is a ${sibling.framework} component, but this project's framework is ` +
+				`${getProjectFramework()}. Remove or convert the sibling if the story ` +
+				`should be scaffolded.`,
 		)
-		return doesSiblingMatchProject ? sibling : null
+		return null
 	}
 	// No sibling component — fall back to the project's detected framework,
 	// which by definition can't mismatch. A `.ts` story can't scaffold Svelte
@@ -1359,7 +1322,7 @@ const TS_STORY_SIBLING_FAMILIES: Array<StoryFramework> = [
 	'angular',
 ]
 
-/** The existing sibling component for a `.ts` story base, or `null` when none of the candidate spellings is on disk. */
+/** The existing sibling component for a `.ts` story base, or `null` when no candidate spelling is on disk *with content* (an empty file doesn't count — see below). */
 function findSiblingComponent(
 	storyBase: string,
 ): { compPath: string; framework: StoryFramework } | null {
@@ -1421,8 +1384,9 @@ function getComponentPathForFamily(
 
 /**
  * Fill a directly-created story file (the mirror of component creation). Skips
- * non-empty files (an existing story is never clobbered) and stories whose
- * framework/extension we don't scaffold. When the sibling component is missing,
+ * non-empty files (an existing story is never clobbered), stories whose
+ * framework/extension we don't scaffold, and stories whose component already
+ * has one under another naming (warned, so the duplicate isn't silent). When the sibling component is missing,
  * the story is filled first and the component backfilled after — the story
  * scaffolder needs the component's path, never its contents — so the
  * component's own watcher event then no-ops on its `ensureStoryFor` guard
@@ -1557,7 +1521,14 @@ function startWatcher() {
 					// component globs would stop matching, and component creates
 					// would go silently dead while story globs still matched.
 					const relPath = toProjectRelativePath(abs)
-					if (!micromatch.isMatch(relPath, includeGlobs)) continue
+					// `nocase` for the same reason: the globs embed the configured
+					// source folder, so if its spelling differs from the folder on
+					// disk (config `src`, folder `Src` — the same folder to the OS)
+					// a case-sensitive match drops component creates here while the
+					// source-independent story globs still match. Every check behind
+					// this one already ignores case.
+					if (!micromatch.isMatch(relPath, includeGlobs, MICROMATCH_OPTIONS))
+						continue
 
 					if (ev.type === 'delete') {
 						console.log('Deleted:', relPath)
