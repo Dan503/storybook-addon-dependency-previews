@@ -22,10 +22,12 @@ export const IS_CASE_INSENSITIVE_PATH_FS =
  * because `src` and `Src` are the same folder there; elsewhere it matches the
  * name exactly, because there they really are two different folders.
  *
- * Every place that builds a path pattern goes through this one function, so a
- * later call site can't quietly reach for the plain escape below and bring
- * back the bug where a capitalisation difference made the pattern match
- * nothing at all.
+ * Use this wherever the pattern is compiled without an ignore-case flag and so
+ * has to carry the case rule in the pattern itself — the `--include-only`
+ * argument handed to dependency-cruiser, and the rule matchers in the bundled
+ * dependency-cruiser config. Somewhere that compiles its own regex can ask for
+ * the ignore-case flag instead and uses the plain escape below; those places
+ * still have to make the matching choice, they just express it differently.
  */
 export function escapeForPathRegex(text: string): string {
 	return IS_CASE_INSENSITIVE_PATH_FS

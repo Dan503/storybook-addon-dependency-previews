@@ -232,8 +232,21 @@ export function ${componentName}({}: ${propsName}) {
 			}) => '...',
 			/** Customize the generated .component.html file (external templates only) */
 			componentHtml: ({ componentName }) => '...',
-			/** Customize the generated .stories.ts file */
-			story: ({ componentName, className, base, title, tags }) => '...',
+			/**
+			 * Customize the generated .stories.ts file.
+			 * Import the component from `componentModuleSpecifier` rather than
+			 * building the path yourself — it is spelled the way the file is
+			 * spelled on disk, and Angular rejects an import whose capitals
+			 * don't match.
+			 */
+			story: ({
+				componentName,
+				className,
+				base,
+				componentModuleSpecifier,
+				title,
+				tags,
+			}) => '...',
 		},
 	},
 })

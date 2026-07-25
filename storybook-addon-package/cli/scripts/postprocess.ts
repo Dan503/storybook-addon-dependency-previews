@@ -30,10 +30,12 @@ const rawSrcDir: string =
 // Match the srcDir prefix ignoring case on the platforms whose file systems
 // do — dependency-cruiser reports module paths with their on-disk spelling, so
 // with srcDir `src` in the config but `Src` on disk, a case-sensitive filter
-// would drop every module and the graph would come out empty. Mirrors the
-// case-tolerant `--include-only` pattern `sb-deps.ts` hands dependency-cruiser;
-// the platform rule and the escape both come from the shared module so this
-// process can't drift from the watcher's.
+// would drop every module and the graph would come out empty. Reaches the same
+// outcome as the `--include-only` pattern `sb-deps.ts` hands dependency-cruiser
+// by a different route: this regex is compiled here, so it can take the
+// ignore-case flag, while that one is compiled by dependency-cruiser with no
+// flags and has to spell both cases out. Only the platform rule itself is
+// shared, so the two still have to be changed together.
 const srcDirRegexFlags = IS_CASE_INSENSITIVE_PATH_FS ? 'i' : ''
 const srcDirRegex =
 	rawSrcDir === ''
