@@ -672,16 +672,25 @@ function findOnDiskFileName(
  * `Test.component.ts` is genuinely missing, and the scaffolder would answer by
  * writing a fresh component *and* a fresh template, leaving the template the
  * user actually created empty and orphaned.
+ *
+ * Where capitals distinguish files, the template's own spelling is as far as
+ * this reaches — see the comment on the resolve below for why going further
+ * would be destructive here specifically.
  */
 function angularComponentTsPath(absHtmlPath: string) {
 	const onDiskFileName = getOnDiskFileName(absHtmlPath)
 	const nameWithoutExtension = stripExtension(onDiskFileName, '.html')
 	const builtTsPath = join(dirname(absHtmlPath), `${nameWithoutExtension}.ts`)
-	// Naming the `.ts` after the template covers a pair the template half of
-	// which carries the odd capitals. Resolving covers the other half — a
-	// `Test.component.ts` beside a `Test.Component.html` — which taking the
-	// template's spelling on its own would miss, trading one mismatch for the
-	// other instead of closing both.
+	// Resolve only where capitals don't distinguish files. There, two spellings
+	// name the same file, so this just recovers what it is really called.
+	//
+	// Where capitals DO distinguish, they are different files, and this is the
+	// one path in the sweep whose consumer WRITES: `scaffoldAngularHtmlFromTs`
+	// moves a component's inline template out into the `.html` and rewrites the
+	// component to point at it. Reaching across that boundary would edit a
+	// source file the user never touched — so on those platforms the template's
+	// own spelling stands, and an unmatched name scaffolds a fresh pair instead.
+	if (!IS_CASE_INSENSITIVE_PATH_FS) return builtTsPath
 	return resolveToExistingPathIgnoringCase(builtTsPath)
 }
 
@@ -866,10 +875,15 @@ function findExistingStory(
 	// component probes are: an existing story spelled with different capitals is
 	// still this component's story, and missing it scaffolds a second one.
 	// No `existsSync` needed beyond that — a missing file already reports as empty.
-	const resolvedVariants = allVariants.map((path) =>
-		resolveToExistingPathIgnoringCase(path),
-	)
-	return resolvedVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
+	//
+	// A `for` loop rather than `map` then `find`, so resolving stops at the first
+	// hit: each resolve lists the folder, the first variant is the usual answer,
+	// and this runs once per created component.
+	for (const variantPath of allVariants) {
+		const resolvedPath = resolveToExistingPathIgnoringCase(variantPath)
+		if (!isEmptyOrWhitespace(resolvedPath)) return resolvedPath
+	}
+	return null
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1221,8 +1235,7 @@ function scaffoldAngularComponent(
 	// distinguish files, rebuilding names a different file than the one the
 	// watcher reported: the template the user created is left untouched and a
 	// second, lower-case component and template are written beside it.
-	const onDiskComponentFileName = getOnDiskFileName(absCompPath)
-	const componentFileBase = stripExtension(onDiskComponentFileName, '.ts')
+	const componentFileBase = getOnDiskBaseName(absCompPath, '.ts')
 	const tsPath = join(dir, `${componentFileBase}.ts`)
 	// The template can carry different capitals from the component beside it, so
 	// resolve rather than assume the two names match.
@@ -1231,11 +1244,9 @@ function scaffoldAngularComponent(
 	const isExternalTemplate = templateLocation === 'external'
 
 	if (isEmptyOrWhitespace(tsPath)) {
-		// Name the template by its on-disk capitals, so `templateUrl` doesn't fail
-		// Angular's case-sensitive path check when an odd-cased template already
-		// sits beside the component. Reading it costs a directory read, so only
-		// the branch that uses it pays for one.
-		const htmlImportName = isExternalTemplate ? getOnDiskBaseName(htmlPath) : ''
+		// `htmlPath` is already the folder's spelling, so its own base name is what
+		// `templateUrl` needs — and no second folder read to find that out.
+		const htmlImportName = isExternalTemplate ? basename(htmlPath) : ''
 		const defaultTsTpl = isExternalTemplate
 			? `import { Component, input } from '@angular/core';
 
@@ -1765,17 +1776,24 @@ function scaffoldStoryFromCreatedStoryFile(
 		// returns the spelling it probed for, which on a file system that ignores
 		// capitals can differ from the name in the folder — and telling someone to
 		// delete a file they can't find is worse than saying nothing.
-		const existingStoryOnDiskPath = getOnDiskPath(existingStory)
+		// `findExistingStory` already returns the folder's spelling.
+		const existingStoryOnDiskPath = existingStory
 		// The advice ends by offering to keep either file, so if the one left
 		// empty is itself spelled in a way Storybook won't index, say so in the
 		// same breath — keeping it would otherwise lead to a story that never
-		// appears, with nothing having explained why.
+		// appears, with nothing having explained why. Stay quiet when the
+		// corrected name is the other file's name, though: the two can coexist
+		// where a volume tells capitals apart despite the platform saying
+		// otherwise, and renaming onto it would overwrite the real story.
 		const declinedReadyFileName = getStorybookReadyFileName(
 			basename(absStoryPath),
 		)
-		const declinedCasingNote = declinedReadyFileName
-			? ` If you keep "${rel(absStoryPath)}", rename it to "${declinedReadyFileName}" — Storybook only picks up the lower-case spelling.`
-			: ''
+		const doesRenameCollide =
+			declinedReadyFileName === basename(existingStoryOnDiskPath)
+		const declinedCasingNote =
+			declinedReadyFileName && !doesRenameCollide
+				? ` If you keep "${rel(absStoryPath)}", rename it to "${declinedReadyFileName}" — Storybook only picks up the lower-case spelling.`
+				: ''
 		warn(
 			`left "${rel(absStoryPath)}" empty — "${rel(existingStoryOnDiskPath)}" is already the story for this component. Delete whichever one you don't want.${declinedCasingNote}`,
 		)
@@ -1783,7 +1801,7 @@ function scaffoldStoryFromCreatedStoryFile(
 		// invisible to Storybook — worth saying here too, or the decline above
 		// points at a story that never shows up. The on-disk spelling is already
 		// resolved above, so pass that and skip a second folder read.
-		warnWhenStoryFileCasingHidesItFromStorybook(existingStoryOnDiskPath, true)
+		warnWhenStoryFileCasingHidesItFromStorybook(existingStoryOnDiskPath)
 		return { createdStory: null, isDeclinedAsDuplicate: true }
 	}
 	const isComponentMissing = isEmptyOrWhitespace(compPath)
@@ -1835,12 +1853,10 @@ function getStorybookReadyFileName(fileName: string): string | null {
  * story behind an existing-story decline. The file is the user's, so renaming
  * it is their call — this just says why the story won't show up.
  *
- * Which spelling gets checked depends on where the path came from, which is
- * what `doesPathCarryOnDiskSpelling` says. A watcher create event reports the
- * name the file really has, so that name settles it. The existing-story probes
- * don't: they are built from the canonical lower-case name and, on a file
- * system that ignores capitals, find an odd-cased file under that spelling — so
- * for those the folder is read to recover the real name.
+ * Every caller hands over a path already spelled the way the folder spells it —
+ * a watcher create event reports the real name, and `findExistingStory`
+ * resolves each variant before returning it — so the name can be read straight
+ * off the path with no folder listing here.
  *
  * `.mdx` still gets warned about, but hedged. Some Storybook configs match
  * `*.mdx` on its own, in which case the file is picked up whatever its
@@ -1849,24 +1865,13 @@ function getStorybookReadyFileName(fileName: string): string | null {
  * own example sites and the CLI can't see which one the user has, so the
  * message names the condition instead of guessing.
  */
-function warnWhenStoryFileCasingHidesItFromStorybook(
-	absStoryPath: string,
-	doesPathCarryOnDiskSpelling = false,
-) {
+function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 	// One story file reaches this check from two separate watcher events — its
 	// own creation, and the creation of the component that then looks for an
 	// existing story — and the same sentence twice reads like two problems.
-	// Keyed off the passed-in path, which folds to the same key as the on-disk
-	// spelling on every platform where the two can differ.
-	const comparablePath = toComparablePath(absStoryPath)
+	const comparablePath = toComparablePath(onDiskStoryPath)
 	if (storyPathsAlreadyWarnedAboutCasing.has(comparablePath)) return
-	// Only a probe path needs the folder read: a create event already carries the
-	// real capitals, so a correctly-named story is dismissed below without a
-	// directory read — worth it on a branch checkout landing hundreds of files.
-	const onDiskPath = doesPathCarryOnDiskSpelling
-		? absStoryPath
-		: getOnDiskPath(absStoryPath)
-	const storyFileName = basename(onDiskPath)
+	const storyFileName = basename(onDiskStoryPath)
 	const storySuffix = getOddlyCasedStorySuffix(storyFileName)
 	if (!storySuffix) return
 	const lowerCaseSuffix = storySuffix.toLowerCase()
@@ -1879,7 +1884,7 @@ function warnWhenStoryFileCasingHidesItFromStorybook(
 		: ''
 	storyPathsAlreadyWarnedAboutCasing.add(comparablePath)
 	warn(
-		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook${markdownCaveat} — rename "${rel(onDiskPath)}" to "${expectedFileName}".`,
+		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook${markdownCaveat} — rename "${rel(onDiskStoryPath)}" to "${expectedFileName}".`,
 	)
 }
 
@@ -2111,8 +2116,7 @@ function startWatcher() {
 		// would be advising two different things about the same file.
 		// `abs` comes straight from the create event, so it carries the file's
 		// real capitals and the check can skip the folder read.
-		if (!isDeclinedAsDuplicate)
-			warnWhenStoryFileCasingHidesItFromStorybook(abs, true)
+		if (!isDeclinedAsDuplicate) warnWhenStoryFileCasingHidesItFromStorybook(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 			return true
