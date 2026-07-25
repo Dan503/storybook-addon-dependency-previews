@@ -215,8 +215,14 @@ export function ${componentName}({}: ${propsName}) {
 		svelte: {
 			/** Customize the generated .svelte component file */
 			component: ({ componentName }) => '...',
-			/** Customize the generated .decorator.svelte file */
-			decorator: ({ componentName }) => '...',
+			/**
+			 * Customize the generated .decorator.svelte file.
+			 * Import the wrapped component from `componentModuleSpecifier` — it is
+			 * that component's own file name, which can differ from the
+			 * `componentName` binding (`card-listing.svelte` binds as
+			 * `CardListing`).
+			 */
+			decorator: ({ componentName, componentModuleSpecifier }) => '...',
 			/**
 			 * Customize the generated .stories.svelte file.
 			 * Import from `componentModuleSpecifier` rather than assembling the

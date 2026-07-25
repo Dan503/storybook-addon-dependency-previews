@@ -62,6 +62,14 @@ export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
 
 export interface SvelteDecoratorScaffoldContext {
 	/**
+	 * What to import the wrapped component from, relative to the decorator file
+	 * and without a leading `./` — e.g. `"card-listing.svelte"`. This is the
+	 * wrapped component's own file name; don't build the path from
+	 * `componentName`, which is the PascalCase binding and can differ from the
+	 * file (`card-listing.svelte` binds as `CardListing`).
+	 */
+	componentModuleSpecifier: string
+	/**
 	 * PascalCase name of the **wrapped** component (the segment of the
 	 * decorator filename before the first `.`, then PascalCased).
 	 *

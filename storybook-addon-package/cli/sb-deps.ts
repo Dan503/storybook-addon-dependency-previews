@@ -560,61 +560,50 @@ const stripExtensionRegexCache = new Map<string, RegExp>()
  * globs and detectors all ignore case), so stripping case-sensitively would
  * leave the extension embedded in the name and scaffold from it.
  */
-function stripExtension(absPath: string, extension: string) {
+function stripExtension(pathOrFileName: string, extension: string) {
 	let extensionRegex = stripExtensionRegexCache.get(extension)
 	if (!extensionRegex) {
 		const escapedExtension = escapeForRegex(extension)
 		extensionRegex = new RegExp(`${escapedExtension}$`, 'i')
 		stripExtensionRegexCache.set(extension, extensionRegex)
 	}
-	return basename(absPath).replace(extensionRegex, '')
-}
-
-// The four helpers below all read the component's name off disk rather than
-// taking it from `absCompPath`. Everything a scaffolded story says about the
-// component is built from this one string — the import path, the exported name,
-// the props type, the story title — and only a component-created event carries
-// the spelling the watcher saw. A story-created event rebuilds the component
-// path from the story's own name, so `cardlisting.stories.tsx` beside an
-// on-disk `CardListing.tsx` would otherwise import a `Cardlisting` that the
-// component never exported. Capitals can't be recovered once dropped:
-// `toPascalCase` splits on capitals that are already there.
-
-function componentBaseFromComponent(absCompPath: string) {
-	const onDiskFileName = getOnDiskFileName(absCompPath)
-	return stripExtension(onDiskFileName, '.tsx')
-}
-
-function componentBaseFromSvelteComponent(absCompPath: string) {
-	const onDiskFileName = getOnDiskFileName(absCompPath)
-	return stripExtension(onDiskFileName, '.svelte')
-}
-
-function componentBaseFromVueComponent(absCompPath: string) {
-	const onDiskFileName = getOnDiskFileName(absCompPath)
-	return stripExtension(onDiskFileName, '.vue')
-}
-
-function componentBaseFromAngularComponent(absCompPath: string) {
-	const onDiskFileName = getOnDiskFileName(absCompPath)
-	return onDiskFileName.replace(/\.component\.(ts|html)$/i, '')
+	return basename(pathOrFileName).replace(extensionRegex, '')
 }
 
 /**
- * The name an Angular file should be referred to by from a sibling file: its
- * own name exactly as spelled on disk. Pass the extension to leave off when the
- * reference omits it (a story's component import), and leave it out when the
- * reference keeps it (a component's `templateUrl`).
+ * A file's name as spelled on disk, with `extensionToDrop` removed when one is
+ * given.
  *
- * Read from disk rather than taken from the passed path, because only a
- * created-file event carries the spelling the watcher saw. The other flows
- * rebuild the path with a lower-case `.component` literal, and a reference that
- * doesn't match the file's capitals fails Angular's build.
+ * Everything a scaffolded story says about its component is built from this one
+ * string — the import path, the exported name, the props type, the title — and
+ * only a created-file event carries the spelling the watcher saw. The other
+ * flows rebuild the path from the story's own name, so `cardlisting.stories.tsx`
+ * beside an on-disk `CardListing.tsx` would otherwise import a `Cardlisting`
+ * the component never exported. Capitals can't be recovered after the fact:
+ * `toPascalCase` splits on capitals that are already there.
  */
-function getComponentImportName(absCompPath: string, extensionToDrop?: string) {
-	const onDiskFileName = getOnDiskFileName(absCompPath)
+function getOnDiskBaseName(absPath: string, extensionToDrop?: string) {
+	const onDiskFileName = getOnDiskFileName(absPath)
 	if (!extensionToDrop) return onDiskFileName
 	return stripExtension(onDiskFileName, extensionToDrop)
+}
+
+function componentBaseFromComponent(absCompPath: string) {
+	return getOnDiskBaseName(absCompPath, '.tsx')
+}
+
+function componentBaseFromSvelteComponent(absCompPath: string) {
+	return getOnDiskBaseName(absCompPath, '.svelte')
+}
+
+function componentBaseFromVueComponent(absCompPath: string) {
+	return getOnDiskBaseName(absCompPath, '.vue')
+}
+
+/** Angular's is the odd one: `.component` is part of the file name, not of the component's name. */
+function componentBaseFromAngularComponent(absCompPath: string) {
+	const onDiskFileName = getOnDiskFileName(absCompPath)
+	return onDiskFileName.replace(/\.component\.(ts|html)$/i, '')
 }
 
 /**
@@ -625,12 +614,19 @@ function getComponentImportName(absCompPath: string, extensionToDrop?: string) {
  * entry's own name. Falls back to the name in `absPath` when the folder can't
  * be read, and skips the lookup entirely where capitals already distinguish
  * files.
+ *
+ * An exact match always wins over one found by ignoring capitals. The platform
+ * check is only a good guess — a case-sensitive volume still reports itself as
+ * macOS — so a folder really can hold both `Button.tsx` and `button.tsx`, and
+ * preferring the exact name keeps that harmless instead of picking whichever
+ * the folder listed first.
  */
 function getOnDiskFileName(absPath: string): string {
 	const nameFromPath = basename(absPath)
 	if (!IS_CASE_INSENSITIVE_PATH_FS) return nameFromPath
 	try {
 		const entries = readdirSync(dirname(absPath))
+		if (entries.includes(nameFromPath)) return nameFromPath
 		const comparableName = nameFromPath.toLowerCase()
 		return (
 			entries.find((entry) => entry.toLowerCase() === comparableName) ??
@@ -906,11 +902,19 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	const fullBase = componentBaseFromSvelteComponent(absDecoratorPath)
 	const wrappedBase = fullBase.split('.')[0] ?? fullBase
 	const componentName = toPascalCase(wrappedBase)
+	// The wrapped component is imported by its own file name, not by the
+	// PascalCase binding above. `card-listing.decorator.svelte` sits beside
+	// `card-listing.svelte`, so importing `./CardListing.svelte` would name a
+	// file that exists on no platform.
+	const componentModuleSpecifier = `${wrappedBase}.svelte`
 
 	const tpl =
-		SCAFFOLD_CONFIG?.svelte?.decorator?.({ componentName }) ??
+		SCAFFOLD_CONFIG?.svelte?.decorator?.({
+			componentName,
+			componentModuleSpecifier,
+		}) ??
 		`<script lang="ts">
-	import ${componentName} from "./${componentName}.svelte";
+	import ${componentName} from "./${componentModuleSpecifier}";
 
 	interface DecoratorProps {
 	}
@@ -1189,9 +1193,7 @@ function scaffoldAngularComponent(
 		// Angular's case-sensitive path check when an odd-cased template already
 		// sits beside the component. Reading it costs a directory read, so only
 		// the branch that uses it pays for one.
-		const htmlImportName = isExternalTemplate
-			? getComponentImportName(htmlPath)
-			: ''
+		const htmlImportName = isExternalTemplate ? getOnDiskBaseName(htmlPath) : ''
 		const defaultTsTpl = isExternalTemplate
 			? `import { Component, input } from '@angular/core';
 
@@ -1249,7 +1251,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	// The template is named by its on-disk capitals for the same reason the
 	// story import is: Angular's build rejects a `templateUrl` whose spelling
 	// doesn't match the file.
-	const htmlImportName = getComponentImportName(absHtmlPath)
+	const htmlImportName = getOnDiskBaseName(absHtmlPath)
 
 	let isHtmlWritten = false
 
@@ -1319,7 +1321,7 @@ function scaffoldStoryForAngularComponent(
 	// Angular builds with webpack's case-sensitive path check, which rejects a
 	// story importing `./Test.component` when the file on disk is spelled
 	// `Test.Component.ts`, so the import has to carry the on-disk capitals.
-	const componentModuleSpecifier = getComponentImportName(absCompPath, '.ts')
+	const componentModuleSpecifier = getOnDiskBaseName(absCompPath, '.ts')
 
 	const storyTpl =
 		SCAFFOLD_CONFIG?.angular?.story?.({
@@ -1624,6 +1626,15 @@ function getComponentPathForFamily(
 	storyBase: string,
 	family: StoryFramework,
 ): string | null {
+	const builtPath = buildComponentPathForFamily(storyBase, family)
+	if (!builtPath) return null
+	return resolveToExistingPathIgnoringCase(builtPath)
+}
+
+function buildComponentPathForFamily(
+	storyBase: string,
+	family: StoryFramework,
+): string | null {
 	if (family === 'react') return `${storyBase}.tsx`
 	if (family === 'vue') return `${storyBase}.vue`
 	if (family !== 'angular') return null
@@ -1631,6 +1642,33 @@ function getComponentPathForFamily(
 	return doesStoryBaseIncludeComponent
 		? `${storyBase}.ts`
 		: `${storyBase}.component.ts`
+}
+
+/**
+ * The real path of a component that may be spelled with different capitals than
+ * the one built from the story's name, or the built path unchanged when no such
+ * file is there.
+ *
+ * Unlike `getOnDiskFileName`, this looks in the folder on **every** platform.
+ * The watcher admits a component whatever its capitals, so the probe that pairs
+ * a story with it has to reach just as far: where capitals distinguish files, a
+ * story created beside `Test.Component.ts` would otherwise find nothing under
+ * the rebuilt lower-case name, and answer by writing a second component and
+ * leaving the real one storyless.
+ */
+function resolveToExistingPathIgnoringCase(absPath: string): string {
+	if (existsSync(absPath)) return absPath
+	const directory = dirname(absPath)
+	const comparableName = basename(absPath).toLowerCase()
+	try {
+		const entries = readdirSync(directory)
+		const match = entries.find(
+			(entry) => entry.toLowerCase() === comparableName,
+		)
+		return match ? join(directory, match) : absPath
+	} catch {
+		return absPath
+	}
 }
 
 /** What became of a directly-created story file. */
@@ -1696,8 +1734,9 @@ function scaffoldStoryFromCreatedStoryFile(
 		)
 		// The story that suppressed the fill may itself be odd-cased and so
 		// invisible to Storybook — worth saying here too, or the decline above
-		// points at a story that never shows up.
-		warnWhenStoryFileCasingHidesItFromStorybook(existingStory)
+		// points at a story that never shows up. The on-disk spelling is already
+		// resolved above, so pass that and skip a second folder read.
+		warnWhenStoryFileCasingHidesItFromStorybook(existingStoryOnDiskPath, true)
 		return { createdStory: null, isDeclinedAsDuplicate: true }
 	}
 	const isComponentMissing = isEmptyOrWhitespace(compPath)
@@ -1735,10 +1774,12 @@ function getOddlyCasedStorySuffix(fileName: string): string | null {
  * story behind an existing-story decline. The file is the user's, so renaming
  * it is their call — this just says why the story won't show up.
  *
- * Checks the file's on-disk spelling, not the spelling in `absStoryPath`: the
- * existing-story probes are built from the canonical lower-case name, and on a
- * case-insensitive file system they find an odd-cased file under that probe
- * spelling.
+ * Which spelling gets checked depends on where the path came from, which is
+ * what `doesPathCarryOnDiskSpelling` says. A watcher create event reports the
+ * name the file really has, so that name settles it. The existing-story probes
+ * don't: they are built from the canonical lower-case name and, on a file
+ * system that ignores capitals, find an odd-cased file under that spelling — so
+ * for those the folder is read to recover the real name.
  *
  * `.mdx` still gets warned about, but hedged. Some Storybook configs match
  * `*.mdx` on its own, in which case the file is picked up whatever its
@@ -1758,15 +1799,9 @@ function warnWhenStoryFileCasingHidesItFromStorybook(
 	// spelling on every platform where the two can differ.
 	const comparablePath = toComparablePath(absStoryPath)
 	if (storyPathsAlreadyWarnedAboutCasing.has(comparablePath)) return
-	// A watcher create event reports the name the file really has, so its
-	// capitals settle the question and a correctly-named story is dismissed
-	// without touching the disk — worth it on a branch checkout landing hundreds
-	// of files at once. The callers that pass a probe path can't do that: their
-	// name is the canonical lower-case one, which says nothing about the folder.
-	if (doesPathCarryOnDiskSpelling) {
-		const suffixFromPath = getOddlyCasedStorySuffix(basename(absStoryPath))
-		if (!suffixFromPath) return
-	}
+	// Only a probe path needs the folder read: a create event already carries the
+	// real capitals, so a correctly-named story is dismissed below without a
+	// syscall — worth it on a branch checkout landing hundreds of files at once.
 	const onDiskPath = doesPathCarryOnDiskSpelling
 		? absStoryPath
 		: getOnDiskPath(absStoryPath)
