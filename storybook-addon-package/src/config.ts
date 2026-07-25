@@ -33,7 +33,7 @@ export interface SvelteStoryScaffoldContext extends SvelteComponentScaffoldConte
 	 * the file system and Vite's Svelte plugin need. Use this rather than
 	 * assembling the path yourself.
 	 */
-	componentModuleSpecifier: string
+	componentImportPath: string
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
@@ -53,7 +53,7 @@ export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
 	 * the file system and Vite's Vue plugin need. Use this rather than
 	 * assembling the path yourself.
 	 */
-	componentModuleSpecifier: string
+	componentImportPath: string
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
@@ -68,7 +68,7 @@ export interface SvelteDecoratorScaffoldContext {
 	 * `componentName`, which is the PascalCase binding and can differ from the
 	 * file (`card-listing.svelte` binds as `CardListing`).
 	 */
-	componentModuleSpecifier: string
+	componentImportPath: string
 	/**
 	 * PascalCase name of the **wrapped** component (the segment of the
 	 * decorator filename before the first `.`, then PascalCased).
@@ -119,7 +119,7 @@ export interface AngularStoryScaffoldContext extends AngularBaseScaffoldContext 
 	 * plus your own `.component`: Angular's build rejects an import whose
 	 * capitalisation doesn't match the file.
 	 */
-	componentModuleSpecifier: string
+	componentImportPath: string
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */

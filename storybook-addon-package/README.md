@@ -217,30 +217,28 @@ export function ${componentName}({}: ${propsName}) {
 			component: ({ componentName }) => '...',
 			/**
 			 * Customize the generated .decorator.svelte file.
-			 * Import the wrapped component from `componentModuleSpecifier` — it is
+			 * Import the wrapped component from `componentImportPath` — it is
 			 * that component's own file name, which can differ from the
 			 * `componentName` binding (`card-listing.svelte` binds as
 			 * `CardListing`).
 			 */
-			decorator: ({ componentName, componentModuleSpecifier }) => '...',
+			decorator: ({ componentName, componentImportPath }) => '...',
 			/**
 			 * Customize the generated .stories.svelte file.
-			 * Import from `componentModuleSpecifier` rather than assembling the
+			 * Import from `componentImportPath` rather than assembling the
 			 * path yourself — it carries the file's on-disk capitals.
 			 */
-			story: ({ componentName, componentModuleSpecifier, title, tags }) =>
-				'...',
+			story: ({ componentName, componentImportPath, title, tags }) => '...',
 		},
 		vue: {
 			/** Customize the generated .vue component file */
 			component: ({ componentName }) => '...',
 			/**
 			 * Customize the generated .stories.ts file.
-			 * Import from `componentModuleSpecifier` rather than assembling the
+			 * Import from `componentImportPath` rather than assembling the
 			 * path yourself — it carries the file's on-disk capitals.
 			 */
-			story: ({ componentName, componentModuleSpecifier, title, tags }) =>
-				'...',
+			story: ({ componentName, componentImportPath, title, tags }) => '...',
 		},
 		angular: {
 			/**
@@ -261,7 +259,7 @@ export function ${componentName}({}: ${propsName}) {
 			componentHtml: ({ componentName }) => '...',
 			/**
 			 * Customize the generated .stories.ts file.
-			 * Import the component from `componentModuleSpecifier` rather than
+			 * Import the component from `componentImportPath` rather than
 			 * building the path yourself — it is spelled the way the file is
 			 * spelled on disk, and Angular rejects an import whose capitals
 			 * don't match.
@@ -270,7 +268,7 @@ export function ${componentName}({}: ${propsName}) {
 				componentName,
 				className,
 				base,
-				componentModuleSpecifier,
+				componentImportPath,
 				title,
 				tags,
 			}) => '...',
