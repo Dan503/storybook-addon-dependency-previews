@@ -204,7 +204,12 @@ export function ${componentName}({}: ${propsName}) {
 	return <div>${componentName}</div>
 }
 `,
-			/** Customize the generated .stories.tsx file */
+			/**
+			 * Customize the generated .stories.tsx file.
+			 * Import from `base` as-is — it is spelled the way the component file
+			 * is spelled on disk. Re-casing it gives an import that works locally
+			 * and fails on a case-sensitive file system (typically CI).
+			 */
 			story: ({ componentName, propsName, title, tags, base }) => '...',
 		},
 		svelte: {
@@ -212,22 +217,38 @@ export function ${componentName}({}: ${propsName}) {
 			component: ({ componentName }) => '...',
 			/** Customize the generated .decorator.svelte file */
 			decorator: ({ componentName }) => '...',
-			/** Customize the generated .stories.svelte file */
-			story: ({ componentName, title, tags }) => '...',
+			/**
+			 * Customize the generated .stories.svelte file.
+			 * Import from `componentModuleSpecifier` rather than assembling the
+			 * path yourself — it carries the file's on-disk capitals.
+			 */
+			story: ({ componentName, componentModuleSpecifier, title, tags }) =>
+				'...',
 		},
 		vue: {
 			/** Customize the generated .vue component file */
 			component: ({ componentName }) => '...',
-			/** Customize the generated .stories.ts file */
-			story: ({ componentName, title, tags }) => '...',
+			/**
+			 * Customize the generated .stories.ts file.
+			 * Import from `componentModuleSpecifier` rather than assembling the
+			 * path yourself — it carries the file's on-disk capitals.
+			 */
+			story: ({ componentName, componentModuleSpecifier, title, tags }) =>
+				'...',
 		},
 		angular: {
-			/** Customize the generated .component.ts file */
+			/**
+			 * Customize the generated .component.ts file.
+			 * Point `templateUrl` at `templateFileName` rather than building the
+			 * name from `base` — Angular rejects a template path whose capitals
+			 * don't match the file.
+			 */
 			component: ({
 				componentName,
 				className,
 				selector,
 				base,
+				templateFileName,
 				templateLocation,
 			}) => '...',
 			/** Customize the generated .component.html file (external templates only) */

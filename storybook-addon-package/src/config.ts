@@ -10,7 +10,13 @@ export interface ReactStoryScaffoldContext extends ReactComponentScaffoldContext
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
 	tags: string[]
-	/** Base file name without extension, e.g. `"ButtonAtom"` */
+	/**
+	 * Base file name without extension, e.g. `"ButtonAtom"` — spelled the way
+	 * the component file is spelled on disk, so it is safe to import from
+	 * (`./${base}`). Don't re-case it: an import whose capitals don't match the
+	 * file resolves on Windows and macOS but fails on a case-sensitive file
+	 * system, which is what continuous integration usually runs on.
+	 */
 	base: string
 }
 
@@ -20,6 +26,14 @@ export interface SvelteComponentScaffoldContext {
 }
 
 export interface SvelteStoryScaffoldContext extends SvelteComponentScaffoldContext {
+	/**
+	 * What to import the component from, relative to the story file and without
+	 * a leading `./` — e.g. `"ButtonAtom.svelte"`. The name carries the file's
+	 * on-disk capitals while the extension stays lower case, which is what both
+	 * the file system and Vite's Svelte plugin need. Use this rather than
+	 * assembling the path yourself.
+	 */
+	componentModuleSpecifier: string
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
@@ -32,6 +46,14 @@ export interface VueComponentScaffoldContext {
 }
 
 export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
+	/**
+	 * What to import the component from, relative to the story file and without
+	 * a leading `./` — e.g. `"ButtonAtom.vue"`. The name carries the file's
+	 * on-disk capitals while the extension stays lower case, which is what both
+	 * the file system and Vite's Vue plugin need. Use this rather than
+	 * assembling the path yourself.
+	 */
+	componentModuleSpecifier: string
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
@@ -61,6 +83,15 @@ export interface AngularBaseScaffoldContext {
 }
 
 export interface AngularComponentScaffoldContext extends AngularBaseScaffoldContext {
+	/**
+	 * File name to point `templateUrl` at, without a leading `./` — e.g.
+	 * `"button-atom.component.html"`. Spelled the way the template file is
+	 * spelled on disk. Only meaningful when `templateLocation` is `"external"`;
+	 * it is an empty string otherwise. Use this rather than building the name
+	 * from `base`, since Angular rejects a `templateUrl` whose capitals don't
+	 * match the file.
+	 */
+	templateFileName: string
 	/** Angular element selector, e.g. `"app-button-atom"` */
 	selector: string
 	/** Whether the component places the HTML template inside the component TS file (`"internal"`) or uses an external HTML file (`"external"`) */
