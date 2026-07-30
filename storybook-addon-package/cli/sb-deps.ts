@@ -666,30 +666,16 @@ function findOnDiskFileName(
  * The `.component.ts` beside an Angular template, named the way the template
  * itself is named on disk — `Test.Component.html` gives `Test.Component.ts`.
  *
- * Rebuilding the name from a lower-case `.component` literal instead would name
- * a different file wherever the file system tells capitals apart: the watcher
- * admits `Test.Component.html` on every platform, so on Linux the lower-case
- * `Test.component.ts` is genuinely missing, and the scaffolder would answer by
- * writing a fresh component *and* a fresh template, leaving the template the
- * user actually created empty and orphaned.
- *
- * Where capitals distinguish files, the template's own spelling is as far as
- * this reaches — see the comment on the resolve below for why going further
- * would be destructive here specifically.
+ * Where capitals distinguish files, that name is used as built. Elsewhere it is
+ * resolved against the folder, which there only recovers the same file's real
+ * spelling.
  */
 function angularComponentTsPath(absHtmlPath: string) {
 	const onDiskFileName = getOnDiskFileName(absHtmlPath)
 	const nameWithoutExtension = stripExtension(onDiskFileName, '.html')
 	const builtTsPath = join(dirname(absHtmlPath), `${nameWithoutExtension}.ts`)
-	// Resolve only where capitals don't distinguish files. There, two spellings
-	// name the same file, so this just recovers what it is really called.
-	//
-	// Where capitals DO distinguish, they are different files, and this is the
-	// one path in the sweep whose consumer WRITES: `scaffoldAngularHtmlFromTs`
-	// moves a component's inline template out into the `.html` and rewrites the
-	// component to point at it. Reaching across that boundary would edit a
-	// source file the user never touched — so on those platforms the template's
-	// own spelling stands, and an unmatched name scaffolds a fresh pair instead.
+	// `scaffoldAngularHtmlFromTs` rewrites whatever this returns, so where two
+	// spellings are two files it must not reach past the one it was given.
 	if (!IS_CASE_INSENSITIVE_PATH_FS) return builtTsPath
 	return resolveToExistingPathIgnoringCase(builtTsPath)
 }
