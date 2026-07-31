@@ -7,11 +7,11 @@
 // the same path.
 
 /**
- * Does this platform treat two spellings of the same name as the same file?
- * Windows and macOS do; Linux does not. Each of the three programs applies it
- * differently — one picks a regular-expression flag, another writes a pattern
- * matching both capitalisations — so the rule itself lives here and only the
- * rule is shared.
+ * Does this platform's file system (FS) treat two spellings of the same name as
+ * the same file? Windows and macOS do; Linux does not. Each of the three
+ * programs applies it differently — one picks a regular-expression flag, another
+ * writes a pattern matching both capitalisations — so the rule itself lives here
+ * and only the rule is shared.
  */
 export const IS_CASE_INSENSITIVE_PATH_FS =
 	process.platform === 'win32' || process.platform === 'darwin'

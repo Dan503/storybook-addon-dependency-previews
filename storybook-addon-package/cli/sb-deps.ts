@@ -1540,7 +1540,15 @@ function ensureStoryFor(
 		warnWhenStoryFileCasingHidesItFromStorybook(existingStory)
 		return null
 	}
-	return story(absCompPath, canonicalStoryPath)
+	// An empty odd-cased story already on disk isn't returned above — it is empty,
+	// so it isn't an existing story — but the write lands in it all the same where
+	// capitals don't distinguish files. Resolve first so the file is written, and
+	// logged, under the name the folder actually uses, then say why Storybook
+	// still won't index it.
+	const targetStoryPath = resolveToExistingPathIgnoringCase(canonicalStoryPath)
+	const createdStory = story(absCompPath, targetStoryPath)
+	warnWhenStoryFileCasingHidesItFromStorybook(targetStoryPath)
+	return createdStory
 }
 
 /**
@@ -1801,10 +1809,8 @@ function warnStoryDeclinedAsDuplicate(
 	absStoryPath: string,
 	existingStoryPath: string,
 ) {
-	const casingFix = getStoryCasingFix(basename(absStoryPath))
-	const declinedCasingNote = casingFix
-		? ` Note that "${rel(absStoryPath)}" is spelled in a way Storybook won't pick up${getRenameAdvice(absStoryPath, casingFix.readyFileName)}.`
-		: ''
+	const casingSentence = getStoryCasingSentence(absStoryPath)
+	const declinedCasingNote = casingSentence ? ` ${casingSentence}` : ''
 	warn(
 		`left "${rel(absStoryPath)}" empty — "${rel(existingStoryPath)}" is already the story for this component. Delete whichever one you don't want.${declinedCasingNote}`,
 	)
@@ -1818,10 +1824,42 @@ function warnStoryDeclinedAsDuplicate(
  * Renaming onto a file that has content would destroy it, so the advice is only
  * given when the target is free.
  */
-function getRenameAdvice(absStoryPath: string, readyFileName: string): string {
-	const readyNamePath = join(dirname(absStoryPath), readyFileName)
-	if (checkDoesFileHoldContent(readyNamePath)) return ''
+function getRenameAdvice(
+	onDiskStoryPath: string,
+	readyFileName: string,
+): string {
+	const readyNamePath = join(dirname(onDiskStoryPath), readyFileName)
+	// Where capitals don't distinguish files that path opens the very file being
+	// warned about, which is nothing in the way — the rename is then a pure
+	// change of spelling. Only something else holding the name blocks the advice.
+	const isSameFile =
+		toComparablePath(readyNamePath) === toComparablePath(onDiskStoryPath)
+	if (!isSameFile && checkDoesFileHoldContent(readyNamePath)) return ''
 	return ` — rename it to "${readyFileName}"`
+}
+
+/**
+ * The sentence saying a story file's capitals keep Storybook from indexing it,
+ * or `''` when the name is already fine. Both places that say this build it
+ * here: written twice they drifted three ways, each missing a guard or a caveat
+ * the other had.
+ *
+ * Takes a path already spelled the way the folder spells it, since that is the
+ * spelling Storybook's globs will see.
+ */
+function getStoryCasingSentence(onDiskStoryPath: string): string {
+	const storyFileName = basename(onDiskStoryPath)
+	const casingFix = getStoryCasingFix(storyFileName)
+	if (!casingFix) return ''
+	// Exact match, not a lower-cased one: a bare `*.mdx` glob is matched
+	// case-sensitively too, so it misses `.MDX` as surely as the `.stories.` globs
+	// do. The caveat holds only while the extension is already lower case.
+	const isMarkdownStory = extname(storyFileName) === '.mdx'
+	const markdownCaveat = isMarkdownStory
+		? ' — unless your Storybook config also matches "*.mdx" on its own, in which case it is already picked up'
+		: ''
+	const renameAdvice = getRenameAdvice(onDiskStoryPath, casingFix.readyFileName)
+	return `Storybook only picks up the lower-case "${casingFix.lowerCaseSuffix}" spelling, so "${rel(onDiskStoryPath)}" won't appear in Storybook${markdownCaveat}${renameAdvice}.`
 }
 
 /**
@@ -1878,20 +1916,10 @@ function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 	// existing story — and the same sentence twice reads like two problems.
 	const comparablePath = toComparablePath(onDiskStoryPath)
 	if (storyPathsAlreadyWarnedAboutCasing.has(comparablePath)) return
-	const storyFileName = basename(onDiskStoryPath)
-	const casingFix = getStoryCasingFix(storyFileName)
-	if (!casingFix) return
-	// Exact match, not a lower-cased one: a bare `*.mdx` glob is matched
-	// case-sensitively too, so it misses `.MDX` as surely as the `.stories.` globs
-	// do. The caveat holds only while the extension is already lower case.
-	const isMarkdownStory = extname(storyFileName) === '.mdx'
-	const markdownCaveat = isMarkdownStory
-		? ' — unless your Storybook config also matches "*.mdx" on its own, in which case it is already picked up'
-		: ''
+	const casingSentence = getStoryCasingSentence(onDiskStoryPath)
+	if (!casingSentence) return
 	storyPathsAlreadyWarnedAboutCasing.add(comparablePath)
-	warn(
-		`Storybook only picks up the lower-case "${casingFix.lowerCaseSuffix}" spelling, so this story won't appear in Storybook${markdownCaveat} — rename "${rel(onDiskStoryPath)}" to "${casingFix.readyFileName}".`,
-	)
+	warn(casingSentence)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
