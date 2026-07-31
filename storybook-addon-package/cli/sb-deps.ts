@@ -625,12 +625,6 @@ function getOnDiskFileName(absPath: string): string {
 	return findOnDiskFileName(absPath, false)
 }
 
-/** The file's full path with its name spelled the way the folder spells it. */
-function getOnDiskPath(absPath: string): string {
-	const onDiskFileName = getOnDiskFileName(absPath)
-	return join(dirname(absPath), onDiskFileName)
-}
-
 /**
  * The single folder scan behind every "what is this file really called?"
  * question here. `shouldAlwaysReadFolder` is the one thing that differs between
@@ -863,8 +857,8 @@ function findExistingStory(
 	// No `existsSync` needed beyond that — a missing file already reports as empty.
 	//
 	// A `for` loop rather than `map` then `find`, so resolving stops at the first
-	// hit: each resolve lists the folder, the first variant is the usual answer,
-	// and this runs once per created component.
+	// hit: each resolve lists the folder and the first variant is the usual
+	// answer.
 	for (const variantPath of allVariants) {
 		const resolvedPath = resolveToExistingPathIgnoringCase(variantPath)
 		if (!isEmptyOrWhitespace(resolvedPath)) return resolvedPath
@@ -945,7 +939,11 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	)
 	const wrappedComponentPath =
 		resolveToExistingPathIgnoringCase(builtWrappedPath)
-	const componentImportPath = basename(wrappedComponentPath)
+	// On-disk capitals in the name, lower-case extension — the same split the
+	// Svelte and Vue story scaffolders make, and for the same reason: Vite's
+	// plugin picks the files it transforms by a case-sensitive pattern.
+	const wrappedComponentBase = stripExtension(wrappedComponentPath, '.svelte')
+	const componentImportPath = `${wrappedComponentBase}.svelte`
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({
@@ -1754,46 +1752,47 @@ function scaffoldStoryFromCreatedStoryFile(
 	const canonicalStoryPath = storyPath(compPath)
 	const existingStory = findExistingStory(canonicalStoryPath, framework)
 	if (existingStory) {
-		// Say why. The empty trigger file stays on disk and still matches the
-		// Storybook globs, so Storybook will report a file with no exports —
-		// which is baffling without a line explaining what suppressed the fill.
-		//
-		// Name the existing story by its on-disk spelling: `findExistingStory`
-		// returns the spelling it probed for, which on a file system that ignores
-		// capitals can differ from the name in the folder — and telling someone to
-		// delete a file they can't find is worse than saying nothing.
-		// `findExistingStory` already returns the folder's spelling.
-		const existingStoryOnDiskPath = existingStory
-		// The advice ends by offering to keep either file, so if the one left
-		// empty is itself spelled in a way Storybook won't index, say so in the
-		// same breath — keeping it would otherwise lead to a story that never
-		// appears, with nothing having explained why. Stay quiet when the
-		// corrected name is the other file's name, though: the two can coexist
-		// where a volume tells capitals apart despite the platform saying
-		// otherwise, and renaming onto it would overwrite the real story.
-		const declinedReadyFileName = getStorybookReadyFileName(
-			basename(absStoryPath),
-		)
-		const doesRenameCollide =
-			declinedReadyFileName === basename(existingStoryOnDiskPath)
-		const declinedCasingNote =
-			declinedReadyFileName && !doesRenameCollide
-				? ` If you keep "${rel(absStoryPath)}", rename it to "${declinedReadyFileName}" — Storybook only picks up the lower-case spelling.`
-				: ''
-		warn(
-			`left "${rel(absStoryPath)}" empty — "${rel(existingStoryOnDiskPath)}" is already the story for this component. Delete whichever one you don't want.${declinedCasingNote}`,
-		)
-		// The story that suppressed the fill may itself be odd-cased and so
-		// invisible to Storybook — worth saying here too, or the decline above
-		// points at a story that never shows up. The on-disk spelling is already
-		// resolved above, so pass that and skip a second folder read.
-		warnWhenStoryFileCasingHidesItFromStorybook(existingStoryOnDiskPath)
+		warnStoryDeclinedAsDuplicate(absStoryPath, existingStory)
 		return { createdStory: null, isDeclinedAsDuplicate: true }
 	}
 	const isComponentMissing = isEmptyOrWhitespace(compPath)
 	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
 	if (isComponentMissing) scaffoldFrameworkComponent(compPath)
 	return { createdStory, isDeclinedAsDuplicate: false }
+}
+
+/**
+ * Explain why a just-created story file was left empty: the component it belongs
+ * to already has a story under another naming. The empty file stays on disk and
+ * still matches Storybook's globs, so Storybook reports a file with no exports —
+ * baffling without a line saying what suppressed the fill.
+ *
+ * The advice offers to keep either file, so it adds what to rename the empty one
+ * to when its own name is spelled in a way Storybook won't index — but only when
+ * nothing already holds that name, since renaming onto a file with content would
+ * destroy it.
+ */
+function warnStoryDeclinedAsDuplicate(
+	absStoryPath: string,
+	existingStoryPath: string,
+) {
+	const declinedReadyFileName = getStorybookReadyFileName(
+		basename(absStoryPath),
+	)
+	const readyNamePath = declinedReadyFileName
+		? join(dirname(absStoryPath), declinedReadyFileName)
+		: ''
+	const isRenameTargetFree =
+		!!readyNamePath && isEmptyOrWhitespace(readyNamePath)
+	const declinedCasingNote = isRenameTargetFree
+		? ` If you keep "${rel(absStoryPath)}", rename it to "${declinedReadyFileName}" — Storybook only picks up the lower-case spelling.`
+		: ''
+	warn(
+		`left "${rel(absStoryPath)}" empty — "${rel(existingStoryPath)}" is already the story for this component. Delete whichever one you don't want.${declinedCasingNote}`,
+	)
+	// The story that suppressed the fill may itself be odd-cased, so say that too
+	// rather than pointing at a story that never shows up.
+	warnWhenStoryFileCasingHidesItFromStorybook(existingStoryPath)
 }
 
 /**
@@ -1814,6 +1813,19 @@ function getOddlyCasedStorySuffix(fileName: string): string | null {
 	return storySuffix
 }
 
+/** Swap one story-naming suffix for another in a file name. */
+function replaceStorySuffix(
+	fileName: string,
+	storySuffix: string,
+	replacement: string,
+): string {
+	const nameWithoutSuffix = fileName.slice(
+		0,
+		fileName.length - storySuffix.length,
+	)
+	return nameWithoutSuffix + replacement
+}
+
 /**
  * The name this story file would need for Storybook to index it, or `null` when
  * the name it already has is fine.
@@ -1821,11 +1833,7 @@ function getOddlyCasedStorySuffix(fileName: string): string | null {
 function getStorybookReadyFileName(fileName: string): string | null {
 	const storySuffix = getOddlyCasedStorySuffix(fileName)
 	if (!storySuffix) return null
-	const nameWithoutSuffix = fileName.slice(
-		0,
-		fileName.length - storySuffix.length,
-	)
-	return nameWithoutSuffix + storySuffix.toLowerCase()
+	return replaceStorySuffix(fileName, storySuffix, storySuffix.toLowerCase())
 }
 
 /**
@@ -1833,16 +1841,13 @@ function getStorybookReadyFileName(fileName: string): string | null {
  * case-SENSITIVELY even on file systems that ignore case — unlike this
  * watcher's checks, which admit a story file like `Button.STORIES.TSX`. Such
  * a story is real on disk but never appears in Storybook, and nothing else
- * says why. The hazard is a property of the file NAME alone — not of whether
- * anything was scaffolded — so this runs for every created story file
- * (whether the fill ran or the file arrived with content) and for the on-disk
- * story behind an existing-story decline. The file is the user's, so renaming
- * it is their call — this just says why the story won't show up.
+ * says why. Runs for a created story file and for the story behind an
+ * existing-story decline; a file declined as a duplicate is covered by that
+ * decline's own message instead. The file is the user's, so renaming it is
+ * their call — this just says why the story won't show up.
  *
- * Every caller hands over a path already spelled the way the folder spells it —
- * a watcher create event reports the real name, and `findExistingStory`
- * resolves each variant before returning it — so the name can be read straight
- * off the path with no folder listing here.
+ * Takes a path already spelled the way the folder spells it, so the name is
+ * read straight off it with no folder listing here.
  *
  * `.mdx` still gets warned about, but hedged. Some Storybook configs match
  * `*.mdx` on its own, in which case the file is picked up whatever its
@@ -1861,10 +1866,16 @@ function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 	const storySuffix = getOddlyCasedStorySuffix(storyFileName)
 	if (!storySuffix) return
 	const lowerCaseSuffix = storySuffix.toLowerCase()
-	const expectedFileName = getStorybookReadyFileName(storyFileName)
-	// A `.mdx` story is reached by two different config shapes and only one of
-	// them hides it, so say which one rather than claiming it outright.
-	const isMarkdownStory = extname(storyFileName).toLowerCase() === '.mdx'
+	const expectedFileName = replaceStorySuffix(
+		storyFileName,
+		storySuffix,
+		lowerCaseSuffix,
+	)
+	// A bare `*.mdx` glob picks the file up whatever its story word, so the
+	// caveat only holds while the extension itself is lower case — `.MDX` is
+	// missed by that glob too, and claiming otherwise sends the reader away
+	// from the rename that would actually fix it.
+	const isMarkdownStory = extname(storyFileName) === '.mdx'
 	const markdownCaveat = isMarkdownStory
 		? ' — unless your Storybook config also matches "*.mdx" on its own, in which case it is already picked up'
 		: ''

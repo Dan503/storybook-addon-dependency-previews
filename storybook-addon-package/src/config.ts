@@ -63,10 +63,11 @@ export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
 export interface SvelteDecoratorScaffoldContext {
 	/**
 	 * What to import the wrapped component from, relative to the decorator file
-	 * and without a leading `./` — e.g. `"card-listing.svelte"`. This is the
-	 * wrapped component's own file name; don't build the path from
-	 * `componentName`, which is the PascalCase binding and can differ from the
-	 * file (`card-listing.svelte` binds as `CardListing`).
+	 * and without a leading `./` — e.g. `"card-listing.svelte"`. The name carries
+	 * the file's on-disk capitals while the extension stays lower case, which is
+	 * what both the file system and Vite's Svelte plugin need. Don't build the
+	 * path from `componentName`, which is the PascalCase binding and can differ
+	 * from the file (`card-listing.svelte` binds as `CardListing`).
 	 */
 	componentImportPath: string
 	/**
