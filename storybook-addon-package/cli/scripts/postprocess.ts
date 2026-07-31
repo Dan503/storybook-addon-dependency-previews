@@ -1,4 +1,10 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import {
+	readFileSync,
+	writeFileSync,
+	mkdirSync,
+	existsSync,
+	readdirSync,
+} from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
@@ -215,7 +221,12 @@ function getRawStoryFileData(componentPath: string) {
 	const angularBase = base.replace(/\.component$/i, '')
 	const isAngular = angularBase !== base
 
-	const componentExt = extname(componentPath)
+	// Lower-cased, like the watcher's own `extname(...).toLowerCase()`: it admits
+	// a component whose extension carries capitals, so `Button.TSX` must still
+	// probe `.tsx` candidates. Left as-is, the odd-cased spelling is probed first
+	// and — where capitals don't distinguish files — matches, writing a
+	// `storyFilePath` no case-sensitive lookup in the addon can find.
+	const componentExt = extname(componentPath).toLowerCase()
 	// Search the component's own extension first so matching pairs win when
 	// both ambiguous siblings exist.
 	const orderedExts = [
@@ -234,8 +245,15 @@ function getRawStoryFileData(componentPath: string) {
 	}
 
 	for (const path of candidates) {
-		const data = getRawFileData(path)
-		if (data) return { storyFileData: data, storyFilePath: path }
+		// Report the spelling the folder uses, not the one probed. Where capitals
+		// don't distinguish files a probe for `Button.stories.tsx` reads a
+		// `Button.STORIES.tsx` quite happily, and writing the probed name into the
+		// graph gives the addon a `storyFilePath` its case-sensitive lookup can
+		// never match — the component then shows a missing-story error even though
+		// Storybook indexed the story.
+		const onDiskPath = toOnDiskPath(path)
+		const data = getRawFileData(onDiskPath)
+		if (data) return { storyFileData: data, storyFilePath: onDiskPath }
 	}
 
 	return { storyFileData: null, storyFilePath: null }
@@ -243,4 +261,31 @@ function getRawStoryFileData(componentPath: string) {
 
 function getRawFileData(path: string) {
 	return existsSync(path) && readFileSync(path, 'utf8')
+}
+
+/**
+ * The path with its file name spelled the way the folder spells it, on the
+ * platforms where two spellings name one file. Elsewhere the path is returned
+ * unchanged, because there a differently-capitalised entry is a different file
+ * and must not be substituted for the one asked about.
+ *
+ * Graph keys and `storyFilePath` are read back by the addon with case-sensitive
+ * lookups, so a spelling that only the file system would forgive is of no use
+ * to it.
+ */
+function toOnDiskPath(path: string) {
+	if (!IS_CASE_INSENSITIVE_PATH_FS) return path
+	const directory = dirname(path)
+	const nameFromPath = basename(path)
+	try {
+		const entries = readdirSync(directory)
+		if (entries.includes(nameFromPath)) return path
+		const comparableName = nameFromPath.toLowerCase()
+		const match = entries.find(
+			(entry) => entry.toLowerCase() === comparableName,
+		)
+		return match ? posix.join(directory, match) : path
+	} catch {
+		return path
+	}
 }

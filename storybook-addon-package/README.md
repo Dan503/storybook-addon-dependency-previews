@@ -208,7 +208,8 @@ export function ${componentName}({}: ${propsName}) {
 			 * Customize the generated .stories.tsx file.
 			 * Import from `base` as-is — it is spelled the way the component file
 			 * is spelled on disk. Re-casing it gives an import that works locally
-			 * and fails on a case-sensitive file system (typically CI).
+			 * and fails on a case-sensitive file system, which is what continuous
+			 * integration usually runs on.
 			 */
 			story: ({ componentName, propsName, title, tags, base }) => '...',
 		},

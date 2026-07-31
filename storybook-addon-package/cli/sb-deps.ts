@@ -851,7 +851,7 @@ export const Primary: Story = {
 function findExistingStory(
 	canonicalStoryPath: string,
 	framework: StoryFramework,
-): string | null {
+): { existingStory: string | null; resolvedCanonicalPath: string } {
 	const namingVariants = [canonicalStoryPath]
 	const alternateStoryPath = getAlternateStoryNaming(canonicalStoryPath)
 	if (alternateStoryPath) namingVariants.push(alternateStoryPath)
@@ -885,11 +885,17 @@ function findExistingStory(
 	// A `for` loop rather than `map` then `find`, so resolving stops at the first
 	// hit: each resolve lists the folder and the first variant is the usual
 	// answer.
-	for (const variantPath of allVariants) {
+	let resolvedCanonicalPath = canonicalStoryPath
+	for (const [index, variantPath] of allVariants.entries()) {
 		const resolvedPath = resolveToExistingPathIgnoringCase(variantPath)
-		if (!isEmptyOrWhitespace(resolvedPath)) return resolvedPath
+		// Variant 0 is the canonical path. Hand its resolution back so the caller
+		// writes to the file this check cleared, rather than listing the folder a
+		// second time for the same answer.
+		if (index === 0) resolvedCanonicalPath = resolvedPath
+		if (!isEmptyOrWhitespace(resolvedPath))
+			return { existingStory: resolvedPath, resolvedCanonicalPath }
 	}
-	return null
+	return { existingStory: null, resolvedCanonicalPath }
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1531,7 +1537,10 @@ function ensureStoryFor(
 ): string | null {
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
 	const canonicalStoryPath = storyPath(absCompPath)
-	const existingStory = findExistingStory(canonicalStoryPath, framework)
+	const { existingStory, resolvedCanonicalPath } = findExistingStory(
+		canonicalStoryPath,
+		framework,
+	)
 	if (existingStory) {
 		// The story that made this decline may itself be invisible to Storybook —
 		// on a case-insensitive file system the probe finds a `Button.STORIES.tsx`
@@ -1541,11 +1550,17 @@ function ensureStoryFor(
 		return null
 	}
 	// An empty odd-cased story already on disk isn't returned above — it is empty,
-	// so it isn't an existing story — but the write lands in it all the same where
-	// capitals don't distinguish files. Resolve first so the file is written, and
-	// logged, under the name the folder actually uses, then say why Storybook
-	// still won't index it.
-	const targetStoryPath = resolveToExistingPathIgnoringCase(canonicalStoryPath)
+	// so it isn't an existing story — but where capitals don't distinguish files
+	// the write lands in it anyway, so target it by name and say why Storybook
+	// won't index it.
+	//
+	// Where capitals DO distinguish, that resolved name is a different file, and
+	// writing there would fill a story Storybook can never index while leaving the
+	// one name that works uncreated. Same rule as `angularComponentTsPath`: resolve
+	// for a probe, never for a write that could land somewhere else.
+	const targetStoryPath = IS_CASE_INSENSITIVE_PATH_FS
+		? resolvedCanonicalPath
+		: canonicalStoryPath
 	const createdStory = story(absCompPath, targetStoryPath)
 	warnWhenStoryFileCasingHidesItFromStorybook(targetStoryPath)
 	return createdStory
@@ -1783,7 +1798,7 @@ function scaffoldStoryFromCreatedStoryFile(
 	// just-created trigger file can't be mistaken for a pre-existing story: it
 	// is empty, and only non-empty files count as an existing story.
 	const canonicalStoryPath = storyPath(compPath)
-	const existingStory = findExistingStory(canonicalStoryPath, framework)
+	const { existingStory } = findExistingStory(canonicalStoryPath, framework)
 	if (existingStory) {
 		warnStoryDeclinedAsDuplicate(absStoryPath, existingStory)
 		return { createdStory: null, isDeclinedAsDuplicate: true }
@@ -1802,8 +1817,8 @@ function scaffoldStoryFromCreatedStoryFile(
  *
  * The advice offers to keep either file, so when the empty one is itself spelled
  * in a way Storybook won't index it says so. Naming what to rename it to is the
- * conditional half: only when nothing already holds that name, since renaming
- * onto a file with content would destroy it.
+ * conditional half: withheld when some *other* file already holds that name with
+ * content in it, since renaming onto that would destroy it.
  */
 function warnStoryDeclinedAsDuplicate(
 	absStoryPath: string,
@@ -1817,25 +1832,6 @@ function warnStoryDeclinedAsDuplicate(
 	// The story that suppressed the fill may itself be odd-cased, so say that too
 	// rather than pointing at a story that never shows up.
 	warnWhenStoryFileCasingHidesItFromStorybook(existingStoryPath)
-}
-
-/**
- * ` — rename it to "X"` when nothing holds that name, else the empty string.
- * Renaming onto a file that has content would destroy it, so the advice is only
- * given when the target is free.
- */
-function getRenameAdvice(
-	onDiskStoryPath: string,
-	readyFileName: string,
-): string {
-	const readyNamePath = join(dirname(onDiskStoryPath), readyFileName)
-	// Where capitals don't distinguish files that path opens the very file being
-	// warned about, which is nothing in the way — the rename is then a pure
-	// change of spelling. Only something else holding the name blocks the advice.
-	const isSameFile =
-		toComparablePath(readyNamePath) === toComparablePath(onDiskStoryPath)
-	if (!isSameFile && checkDoesFileHoldContent(readyNamePath)) return ''
-	return ` — rename it to "${readyFileName}"`
 }
 
 /**
@@ -1863,8 +1859,11 @@ function getStoryCasingSentence(onDiskStoryPath: string): string {
 }
 
 /**
- * Story files already named in a capitalisation warning, so the same file is
- * only ever flagged once however many watcher events reach the check.
+ * Story files already named in a standalone capitalisation warning, so the same
+ * file isn't flagged twice however many watcher events reach the check. The
+ * duplicate-decline message carries the same sentence without consulting this —
+ * a declined file is empty by definition, so it can't also arrive by the
+ * existing-story route.
  */
 const storyPathsAlreadyWarnedAboutCasing = new Set<string>()
 
@@ -1891,14 +1890,48 @@ function getStoryCasingFix(
 }
 
 /**
- * Storybook's own stories globs (`../src/**​/*.stories.@(ts|tsx|…)`) match
+ * Storybook's own stories globs (`../src/**
+ * ` — rename it to "X"`, or the empty string when some other file already holds
+ * that name with content in it, since renaming onto that would destroy it. The
+ * file being warned about doesn't count as holding its own corrected name: there
+ * the rename is a pure change of spelling.
+ */
+function getRenameAdvice(
+	onDiskStoryPath: string,
+	readyFileName: string,
+): string {
+	// Ask the folder, not the platform. `readyFileName` differs from this file's
+	// own name only in the suffix's capitals, so a platform-based comparison
+	// answers "same file" on every call on Windows and macOS — and those are
+	// exactly the platforms where a volume that tells capitals apart can still
+	// hold both names. A directory entry equal to `readyFileName` that is not
+	// this file's own entry is a real file in the way; anything else means the
+	// rename is a pure change of spelling.
+	const directory = dirname(onDiskStoryPath)
+	const ownFileName = basename(onDiskStoryPath)
+	let doesOtherFileHoldName = false
+	try {
+		const entries = readdirSync(directory)
+		doesOtherFileHoldName =
+			readyFileName !== ownFileName && entries.includes(readyFileName)
+	} catch {
+		doesOtherFileHoldName = false
+	}
+	const readyNamePath = join(directory, readyFileName)
+	if (doesOtherFileHoldName && checkDoesFileHoldContent(readyNamePath))
+		return ''
+	return ` — rename it to "${readyFileName}"`
+}
+
+/**​/*.stories.@(ts|tsx|…)`) match
  * case-SENSITIVELY even on file systems that ignore case — unlike this
  * watcher's checks, which admit a story file like `Button.STORIES.TSX`. Such
  * a story is real on disk but never appears in Storybook, and nothing else
- * says why. Runs for a created story file and for the story behind an
- * existing-story decline; a file declined as a duplicate is spoken for by that
- * decline's own message instead. The file is the user's, so renaming it is
- * their call — this just says why the story won't show up.
+ * says why. Reached from four places: a created story file, the story a
+ * component-create declined over, the story a scaffold has just written, and the
+ * story behind a duplicate decline. A file declined as a duplicate is spoken for
+ * by that decline's own message instead. The file is the user's, so renaming it
+ * is their call — this just says why the story won't show up.
  *
  * Takes a path already spelled the way the folder spells it, so the name is
  * read straight off it with no folder listing here.
