@@ -27,8 +27,7 @@ export const IS_CASE_INSENSITIVE_PATH_FS =
  * has to carry the case rule in the pattern itself — the `--include-only`
  * argument handed to dependency-cruiser, and the rule matchers in the bundled
  * dependency-cruiser config. Somewhere that compiles its own regex can ask for
- * the ignore-case flag instead and uses the plain escape below; those places
- * still have to make the matching choice, they just express it differently.
+ * the ignore-case flag instead and uses the plain escape below.
  */
 export function escapeForPathRegex(text: string): string {
 	return IS_CASE_INSENSITIVE_PATH_FS

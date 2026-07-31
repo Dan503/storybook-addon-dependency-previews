@@ -366,7 +366,11 @@ function readFileContentState(absPath: string): {
 	} catch (e) {
 		const isMissing = (e as NodeJS.ErrnoException)?.code === 'ENOENT'
 		if (isMissing) return { doesHoldContent: false, unreadableError: null }
-		return { doesHoldContent: true, unreadableError: e as Error }
+		// Always a real Error, so a throw that is falsy or carries no message can't
+		// turn "unreadable" into a silent pass — the caller's warning is guarded on
+		// this being set.
+		const unreadableError = e instanceof Error ? e : new Error(String(e))
+		return { doesHoldContent: true, unreadableError }
 	}
 }
 
@@ -606,9 +610,8 @@ function stripExtension(pathOrFileName: string, extension: string) {
  * the component never exported. Capitals can't be recovered after the fact:
  * `toPascalCase` splits on capitals that are already there.
  */
-function getOnDiskBaseName(absPath: string, extensionToDrop?: string) {
+function getOnDiskBaseName(absPath: string, extensionToDrop: string) {
 	const onDiskFileName = getOnDiskFileName(absPath)
-	if (!extensionToDrop) return onDiskFileName
 	return stripExtension(onDiskFileName, extensionToDrop)
 }
 
@@ -689,8 +692,7 @@ function findOnDiskFileName(
  * spelling.
  */
 function angularComponentTsPath(absHtmlPath: string) {
-	const onDiskFileName = getOnDiskFileName(absHtmlPath)
-	const nameWithoutExtension = stripExtension(onDiskFileName, '.html')
+	const nameWithoutExtension = getOnDiskBaseName(absHtmlPath, '.html')
 	const builtTsPath = join(dirname(absHtmlPath), `${nameWithoutExtension}.ts`)
 	// `scaffoldAngularHtmlFromTs` rewrites whatever this returns, so where two
 	// spellings are two files it must not reach past the one it was given.
@@ -1734,7 +1736,7 @@ type CreatedStoryFileOutcome = {
 	/**
 	 * True when the fill was skipped because the component already has a story
 	 * under another naming. The caller uses this to leave the file's own
-	 * capitalisation to the decline's message, which covers it there.
+	 * capitalisation to the decline's message, which speaks for that file.
 	 */
 	isDeclinedAsDuplicate: boolean
 }
@@ -1790,25 +1792,19 @@ function scaffoldStoryFromCreatedStoryFile(
  * still matches Storybook's globs, so Storybook reports a file with no exports —
  * baffling without a line saying what suppressed the fill.
  *
- * The advice offers to keep either file, so it adds what to rename the empty one
- * to when its own name is spelled in a way Storybook won't index — but only when
- * nothing already holds that name, since renaming onto a file with content would
- * destroy it.
+ * The advice offers to keep either file, so when the empty one is itself spelled
+ * in a way Storybook won't index it says so. Naming what to rename it to is the
+ * conditional half: only when nothing already holds that name, since renaming
+ * onto a file with content would destroy it.
  */
 function warnStoryDeclinedAsDuplicate(
 	absStoryPath: string,
 	existingStoryPath: string,
 ) {
 	const casingFix = getStoryCasingFix(basename(absStoryPath))
-	const readyNamePath = casingFix
-		? join(dirname(absStoryPath), casingFix.readyFileName)
+	const declinedCasingNote = casingFix
+		? ` Note that "${rel(absStoryPath)}" is spelled in a way Storybook won't pick up${getRenameAdvice(absStoryPath, casingFix.readyFileName)}.`
 		: ''
-	const isRenameTargetFree =
-		!!readyNamePath && !checkDoesFileHoldContent(readyNamePath)
-	const declinedCasingNote =
-		casingFix && isRenameTargetFree
-			? ` If you keep "${rel(absStoryPath)}", rename it to "${casingFix.readyFileName}" — Storybook only picks up the lower-case spelling.`
-			: ''
 	warn(
 		`left "${rel(absStoryPath)}" empty — "${rel(existingStoryPath)}" is already the story for this component. Delete whichever one you don't want.${declinedCasingNote}`,
 	)
@@ -1818,20 +1814,30 @@ function warnStoryDeclinedAsDuplicate(
 }
 
 /**
+ * ` — rename it to "X"` when nothing holds that name, else the empty string.
+ * Renaming onto a file that has content would destroy it, so the advice is only
+ * given when the target is free.
+ */
+function getRenameAdvice(absStoryPath: string, readyFileName: string): string {
+	const readyNamePath = join(dirname(absStoryPath), readyFileName)
+	if (checkDoesFileHoldContent(readyNamePath)) return ''
+	return ` — rename it to "${readyFileName}"`
+}
+
+/**
  * Story files already named in a capitalisation warning, so the same file is
  * only ever flagged once however many watcher events reach the check.
  */
 const storyPathsAlreadyWarnedAboutCasing = new Set<string>()
 
 /**
- * The `.stories.tsx` / `.story.ts` part of a file name that carries capitals
- * Storybook's own globs won't match, together with the name the file would need
- * instead. `null` when the name is not a story at all, or is already spelled the
- * way Storybook expects.
+ * The spelling Storybook's globs do match — the lower-cased `.stories.tsx` /
+ * `.story.ts` suffix, and the name the file would need instead. `null` when the
+ * name is not a story at all, or is already spelled the way Storybook expects.
  */
 function getStoryCasingFix(
 	fileName: string,
-): { oddlyCasedSuffix: string; readyFileName: string } | null {
+): { lowerCaseSuffix: string; readyFileName: string } | null {
 	const oddlyCasedSuffix = fileName.match(STORY_FILE_REGEX)?.[0]
 	if (!oddlyCasedSuffix) return null
 	const lowerCaseSuffix = oddlyCasedSuffix.toLowerCase()
@@ -1841,7 +1847,7 @@ function getStoryCasingFix(
 		fileName.length - oddlyCasedSuffix.length,
 	)
 	return {
-		oddlyCasedSuffix,
+		lowerCaseSuffix,
 		readyFileName: nameWithoutSuffix + lowerCaseSuffix,
 	}
 }
@@ -1852,7 +1858,7 @@ function getStoryCasingFix(
  * watcher's checks, which admit a story file like `Button.STORIES.TSX`. Such
  * a story is real on disk but never appears in Storybook, and nothing else
  * says why. Runs for a created story file and for the story behind an
- * existing-story decline; a file declined as a duplicate is covered by that
+ * existing-story decline; a file declined as a duplicate is spoken for by that
  * decline's own message instead. The file is the user's, so renaming it is
  * their call — this just says why the story won't show up.
  *
@@ -1875,8 +1881,6 @@ function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 	const storyFileName = basename(onDiskStoryPath)
 	const casingFix = getStoryCasingFix(storyFileName)
 	if (!casingFix) return
-	const lowerCaseSuffix = casingFix.oddlyCasedSuffix.toLowerCase()
-	const expectedFileName = casingFix.readyFileName
 	// Exact match, not a lower-cased one: a bare `*.mdx` glob is matched
 	// case-sensitively too, so it misses `.MDX` as surely as the `.stories.` globs
 	// do. The caveat holds only while the extension is already lower case.
@@ -1886,7 +1890,7 @@ function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 		: ''
 	storyPathsAlreadyWarnedAboutCasing.add(comparablePath)
 	warn(
-		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook${markdownCaveat} — rename "${rel(onDiskStoryPath)}" to "${expectedFileName}".`,
+		`Storybook only picks up the lower-case "${casingFix.lowerCaseSuffix}" spelling, so this story won't appear in Storybook${markdownCaveat} — rename "${rel(onDiskStoryPath)}" to "${casingFix.readyFileName}".`,
 	)
 }
 
@@ -2113,7 +2117,7 @@ function startWatcher() {
 		// story created WITH content (copy-paste, save-as, git checkout) skips
 		// the fill entirely but is hidden from Storybook just the same when its
 		// name is odd-cased. After the fill so it lands under the success lines.
-		// A file declined as a duplicate is covered by the decline's own message
+		// A file declined as a duplicate is spoken for by the decline's own message
 		// instead. `abs` comes from the create event, so it already carries the
 		// file's real capitals.
 		if (!isDeclinedAsDuplicate) warnWhenStoryFileCasingHidesItFromStorybook(abs)
