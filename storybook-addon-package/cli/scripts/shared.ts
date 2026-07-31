@@ -1,3 +1,6 @@
+import { existsSync, readdirSync } from 'node:fs'
+import { basename, dirname } from 'node:path'
+
 // Helpers shared by the three processes of the sb-deps pipeline — the watcher
 // (`sb-deps.ts`), the graph filter (`postprocess.ts`, run as its own `node`
 // process), and the bundled dependency-cruiser config (`depcruise.config.ts`,
@@ -15,6 +18,49 @@
  */
 export const IS_CASE_INSENSITIVE_PATH_FS =
 	process.platform === 'win32' || process.platform === 'darwin'
+
+/**
+ * The name the folder actually uses for `absPath`, or the name in `absPath` when
+ * the folder holds no entry matching it under any capitalisation — or can't be
+ * read at all.
+ *
+ * `shouldAlwaysReadFolder` separates the two questions asked of this:
+ *
+ * - Reading an existing file's real name can skip the folder where capitals
+ *   already distinguish files, because there the path *is* the name. It also
+ *   skips it when nothing is there at all, which is the common case for a probe
+ *   over many candidate names.
+ * - Probing for a file that may be spelled differently cannot skip either check
+ *   on any platform, because the watcher admits a component whatever its
+ *   capitals, so the probe has to reach as far.
+ *
+ * An exact entry always wins over one matched by ignoring capitals: the platform
+ * constant above is only a good guess, since a volume that does tell capitals
+ * apart still reports itself as macOS, and such a folder can hold both spellings.
+ */
+export function findOnDiskFileName(
+	absPath: string,
+	shouldAlwaysReadFolder: boolean,
+): string {
+	const nameFromPath = basename(absPath)
+	if (!shouldAlwaysReadFolder) {
+		if (!IS_CASE_INSENSITIVE_PATH_FS) return nameFromPath
+		// Nothing by that name in any capitalisation, so there is no real spelling
+		// to recover — and this is the answer most candidate probes get.
+		if (!existsSync(absPath)) return nameFromPath
+	}
+	try {
+		const entries = readdirSync(dirname(absPath))
+		if (entries.includes(nameFromPath)) return nameFromPath
+		const comparableName = nameFromPath.toLowerCase()
+		return (
+			entries.find((entry) => entry.toLowerCase() === comparableName) ??
+			nameFromPath
+		)
+	} catch {
+		return nameFromPath
+	}
+}
 
 /**
  * Escape a folder name for a pattern that has to match a path on disk, and

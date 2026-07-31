@@ -1,14 +1,12 @@
-import {
-	readFileSync,
-	writeFileSync,
-	mkdirSync,
-	existsSync,
-	readdirSync,
-} from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
-import { IS_CASE_INSENSITIVE_PATH_FS, escapeForRegex } from './shared.js'
+import {
+	IS_CASE_INSENSITIVE_PATH_FS,
+	escapeForRegex,
+	findOnDiskFileName,
+} from './shared.js'
 
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
@@ -259,10 +257,6 @@ function getRawStoryFileData(componentPath: string) {
 	return { storyFileData: null, storyFilePath: null }
 }
 
-function getRawFileData(path: string) {
-	return existsSync(path) && readFileSync(path, 'utf8')
-}
-
 /**
  * The path with its file name spelled the way the folder spells it, on the
  * platforms where two spellings name one file. Elsewhere the path is returned
@@ -274,18 +268,10 @@ function getRawFileData(path: string) {
  * to it.
  */
 function toOnDiskPath(path: string) {
-	if (!IS_CASE_INSENSITIVE_PATH_FS) return path
-	const directory = dirname(path)
-	const nameFromPath = basename(path)
-	try {
-		const entries = readdirSync(directory)
-		if (entries.includes(nameFromPath)) return path
-		const comparableName = nameFromPath.toLowerCase()
-		const match = entries.find(
-			(entry) => entry.toLowerCase() === comparableName,
-		)
-		return match ? posix.join(directory, match) : path
-	} catch {
-		return path
-	}
+	const onDiskFileName = findOnDiskFileName(path, false)
+	return posix.join(dirname(path), onDiskFileName)
+}
+
+function getRawFileData(path: string) {
+	return existsSync(path) && readFileSync(path, 'utf8')
 }

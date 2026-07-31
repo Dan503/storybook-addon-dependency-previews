@@ -29,6 +29,7 @@ import {
 	IS_CASE_INSENSITIVE_PATH_FS,
 	escapeForPathRegex,
 	escapeForRegex,
+	findOnDiskFileName,
 } from './scripts/shared.js'
 import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
@@ -653,37 +654,6 @@ function getOnDiskFileName(absPath: string): string {
 }
 
 /**
- * The single folder scan behind every "what is this file really called?"
- * question here. `shouldAlwaysReadFolder` is the one thing that differs between
- * the two kinds of question:
- *
- * - Reading an existing file's real name can skip the folder where capitals
- *   already distinguish files, because there the path *is* the name.
- * - Probing for a file that may be spelled differently cannot skip it on any
- *   platform, because the watcher admits a component whatever its capitals, so
- *   the probe has to reach just as far or it writes a duplicate.
- */
-function findOnDiskFileName(
-	absPath: string,
-	shouldAlwaysReadFolder: boolean,
-): string {
-	const nameFromPath = basename(absPath)
-	if (!shouldAlwaysReadFolder && !IS_CASE_INSENSITIVE_PATH_FS)
-		return nameFromPath
-	try {
-		const entries = readdirSync(dirname(absPath))
-		if (entries.includes(nameFromPath)) return nameFromPath
-		const comparableName = nameFromPath.toLowerCase()
-		return (
-			entries.find((entry) => entry.toLowerCase() === comparableName) ??
-			nameFromPath
-		)
-	} catch {
-		return nameFromPath
-	}
-}
-
-/**
  * The `.component.ts` beside an Angular template, named the way the template
  * itself is named on disk — `Test.Component.html` gives `Test.Component.ts`.
  *
@@ -847,6 +817,14 @@ export const Primary: Story = {
  * a freshly-created story and leave two empty files blaming each other. It also
  * means the story-first caller needs no "ignore the file I'm about to fill"
  * argument: that file is empty by definition, so it can never match here.
+ *
+ * Also hands back `resolvedCanonicalPath` — what `canonicalStoryPath` resolved
+ * to — so a caller that goes on to scaffold doesn't list the folder again for
+ * the same answer. **It is safe to write to only where two spellings are one
+ * file.** The resolve reads the folder on every platform, as a probe must, so
+ * where capitals distinguish files it can name a different file from the one
+ * passed in; writing there fills a story Storybook can never index and leaves
+ * the name that would have worked uncreated.
  */
 function findExistingStory(
 	canonicalStoryPath: string,
@@ -1890,7 +1868,6 @@ function getStoryCasingFix(
 }
 
 /**
- * Storybook's own stories globs (`../src/**
  * ` — rename it to "X"`, or the empty string when some other file already holds
  * that name with content in it, since renaming onto that would destroy it. The
  * file being warned about doesn't count as holding its own corrected name: there
@@ -1915,7 +1892,10 @@ function getRenameAdvice(
 		doesOtherFileHoldName =
 			readyFileName !== ownFileName && entries.includes(readyFileName)
 	} catch {
-		doesOtherFileHoldName = false
+		// Fail safe, like every other read here: an unlistable folder might hold a
+		// real file under that name, so hand the decision to the content check
+		// below rather than advising a rename that could land on one.
+		doesOtherFileHoldName = true
 	}
 	const readyNamePath = join(directory, readyFileName)
 	if (doesOtherFileHoldName && checkDoesFileHoldContent(readyNamePath))
@@ -1923,7 +1903,8 @@ function getRenameAdvice(
 	return ` — rename it to "${readyFileName}"`
 }
 
-/**​/*.stories.@(ts|tsx|…)`) match
+/**
+ * Storybook's own stories globs (`../src/**​/*.stories.@(ts|tsx|…)`) match
  * case-SENSITIVELY even on file systems that ignore case — unlike this
  * watcher's checks, which admit a story file like `Button.STORIES.TSX`. Such
  * a story is real on disk but never appears in Storybook, and nothing else
