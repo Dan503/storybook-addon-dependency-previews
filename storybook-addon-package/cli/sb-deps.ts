@@ -321,28 +321,52 @@ function toKebabCase(input: string) {
  * genuinely missing file counts as empty.
  */
 function isEmptyOrWhitespace(absPath: string) {
+	const { doesHoldContent, unreadableError } = readFileContentState(absPath)
+	// Say so when the fail-safe kicks in: an existing-but-unreadable file counts
+	// as non-empty, which silently suppresses whatever scaffold asked — and since
+	// only create events trigger scaffolding, no later save retries. Without this
+	// line the file stays empty with nothing in the log explaining why.
+	if (unreadableError) {
+		warn(
+			`couldn't read "${rel(absPath)}" (${unreadableError.message}) — treating it as having content, so nothing will be scaffolded over it.`,
+		)
+	}
+	return !doesHoldContent
+}
+
+/**
+ * Does this file hold anything worth keeping? The same fail-safe reading as
+ * `isEmptyOrWhitespace` — an unreadable file counts as holding content — for
+ * callers that are not about to scaffold, and so should not draw a line about
+ * scaffolding when the read fails.
+ */
+function checkDoesFileHoldContent(absPath: string): boolean {
+	return readFileContentState(absPath).doesHoldContent
+}
+
+/**
+ * Whether a file holds content, and the error if it exists but could not be
+ * read. An unreadable file reports as holding content, so nothing is ever
+ * written over content the caller could not see; only a genuinely missing file
+ * reports as empty.
+ */
+function readFileContentState(absPath: string): {
+	doesHoldContent: boolean
+	unreadableError: Error | null
+} {
 	try {
 		// `throwIfNoEntry: false` returns undefined for a missing file instead of
 		// throwing — these probes run per story-name variant, so the common
 		// "not there" case shouldn't cost an exception.
 		const stats = statSync(absPath, { throwIfNoEntry: false })
-		if (!stats) return true
-		if (stats.size === 0) return true
+		if (!stats || stats.size === 0)
+			return { doesHoldContent: false, unreadableError: null }
 		const txt = readFileSync(absPath, 'utf8')
-		return !txt.trim()
+		return { doesHoldContent: !!txt.trim(), unreadableError: null }
 	} catch (e) {
 		const isMissing = (e as NodeJS.ErrnoException)?.code === 'ENOENT'
-		// Say so when the fail-safe kicks in: an existing-but-unreadable file
-		// counts as non-empty, which silently suppresses whatever scaffold asked —
-		// and since only create events trigger scaffolding, no later save retries.
-		// Without this line the file stays empty with nothing in the log
-		// explaining why.
-		if (!isMissing) {
-			warn(
-				`couldn't read "${rel(absPath)}" (${(e as Error)?.message ?? e}) — treating it as having content, so nothing will be scaffolded over it.`,
-			)
-		}
-		return isMissing
+		if (isMissing) return { doesHoldContent: false, unreadableError: null }
+		return { doesHoldContent: true, unreadableError: e as Error }
 	}
 }
 
@@ -1230,14 +1254,14 @@ function scaffoldAngularComponent(
 	if (isEmptyOrWhitespace(tsPath)) {
 		// `htmlPath` is already the folder's spelling, so its own base name is what
 		// `templateUrl` needs — and no second folder read to find that out.
-		const htmlImportName = isExternalTemplate ? basename(htmlPath) : ''
+		const htmlFileName = isExternalTemplate ? basename(htmlPath) : ''
 		const defaultTsTpl = isExternalTemplate
 			? `import { Component, input } from '@angular/core';
 
 @Component({
 	selector: '${selector}',
 	host: { '[class]': '["${componentName}", class()].join(" ")' },
-	templateUrl: './${htmlImportName}',
+	templateUrl: './${htmlFileName}',
 	standalone: true,
 	imports: [],
 })
@@ -1267,7 +1291,7 @@ export class ${className} {
 				className,
 				selector,
 				base,
-				templateFileName: htmlImportName,
+				templateFileName: htmlFileName,
 				templateLocation,
 			}) ?? defaultTsTpl
 		writeFileSync(tsPath, tsTpl, 'utf8')
@@ -1287,8 +1311,8 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	const componentName = toPascalCase(base)
 	// The template is named by its on-disk capitals for the same reason the
 	// story import is: Angular's build rejects a `templateUrl` whose spelling
-	// doesn't match the file.
-	const htmlImportName = getOnDiskBaseName(absHtmlPath)
+	// doesn't match the file. Extension included — `templateUrl` names the file.
+	const htmlFileName = getOnDiskFileName(absHtmlPath)
 
 	let isHtmlWritten = false
 
@@ -1315,7 +1339,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				// Swap template: `...` → templateUrl in the .ts file
 				const updated = tsContent.replace(
 					/template:\s*`[\s\S]*?`/,
-					`templateUrl: './${htmlImportName}'`,
+					`templateUrl: './${htmlFileName}'`,
 				)
 				writeFileSync(absTsPath, updated, 'utf8')
 				info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
@@ -1709,9 +1733,8 @@ type CreatedStoryFileOutcome = {
 	createdStory: string | null
 	/**
 	 * True when the fill was skipped because the component already has a story
-	 * under another naming. The caller uses this to stay quiet about the file's
-	 * own capitalisation: it has just been told to delete the file, and renaming
-	 * it would only collide with the story that suppressed it.
+	 * under another naming. The caller uses this to leave the file's own
+	 * capitalisation to the decline's message, which covers it there.
 	 */
 	isDeclinedAsDuplicate: boolean
 }
@@ -1776,17 +1799,16 @@ function warnStoryDeclinedAsDuplicate(
 	absStoryPath: string,
 	existingStoryPath: string,
 ) {
-	const declinedReadyFileName = getStorybookReadyFileName(
-		basename(absStoryPath),
-	)
-	const readyNamePath = declinedReadyFileName
-		? join(dirname(absStoryPath), declinedReadyFileName)
+	const casingFix = getStoryCasingFix(basename(absStoryPath))
+	const readyNamePath = casingFix
+		? join(dirname(absStoryPath), casingFix.readyFileName)
 		: ''
 	const isRenameTargetFree =
-		!!readyNamePath && isEmptyOrWhitespace(readyNamePath)
-	const declinedCasingNote = isRenameTargetFree
-		? ` If you keep "${rel(absStoryPath)}", rename it to "${declinedReadyFileName}" — Storybook only picks up the lower-case spelling.`
-		: ''
+		!!readyNamePath && !checkDoesFileHoldContent(readyNamePath)
+	const declinedCasingNote =
+		casingFix && isRenameTargetFree
+			? ` If you keep "${rel(absStoryPath)}", rename it to "${casingFix.readyFileName}" — Storybook only picks up the lower-case spelling.`
+			: ''
 	warn(
 		`left "${rel(absStoryPath)}" empty — "${rel(existingStoryPath)}" is already the story for this component. Delete whichever one you don't want.${declinedCasingNote}`,
 	)
@@ -1802,38 +1824,26 @@ function warnStoryDeclinedAsDuplicate(
 const storyPathsAlreadyWarnedAboutCasing = new Set<string>()
 
 /**
- * The `.stories.tsx` / `.story.ts` part of a file name when it carries capitals
- * Storybook's own globs won't match, or `null` when the name is either not a
- * story at all or already spelled the way Storybook expects.
+ * The `.stories.tsx` / `.story.ts` part of a file name that carries capitals
+ * Storybook's own globs won't match, together with the name the file would need
+ * instead. `null` when the name is not a story at all, or is already spelled the
+ * way Storybook expects.
  */
-function getOddlyCasedStorySuffix(fileName: string): string | null {
-	const storySuffix = fileName.match(STORY_FILE_REGEX)?.[0]
-	if (!storySuffix) return null
-	if (storySuffix === storySuffix.toLowerCase()) return null
-	return storySuffix
-}
-
-/** Swap one story-naming suffix for another in a file name. */
-function replaceStorySuffix(
+function getStoryCasingFix(
 	fileName: string,
-	storySuffix: string,
-	replacement: string,
-): string {
+): { oddlyCasedSuffix: string; readyFileName: string } | null {
+	const oddlyCasedSuffix = fileName.match(STORY_FILE_REGEX)?.[0]
+	if (!oddlyCasedSuffix) return null
+	const lowerCaseSuffix = oddlyCasedSuffix.toLowerCase()
+	if (oddlyCasedSuffix === lowerCaseSuffix) return null
 	const nameWithoutSuffix = fileName.slice(
 		0,
-		fileName.length - storySuffix.length,
+		fileName.length - oddlyCasedSuffix.length,
 	)
-	return nameWithoutSuffix + replacement
-}
-
-/**
- * The name this story file would need for Storybook to index it, or `null` when
- * the name it already has is fine.
- */
-function getStorybookReadyFileName(fileName: string): string | null {
-	const storySuffix = getOddlyCasedStorySuffix(fileName)
-	if (!storySuffix) return null
-	return replaceStorySuffix(fileName, storySuffix, storySuffix.toLowerCase())
+	return {
+		oddlyCasedSuffix,
+		readyFileName: nameWithoutSuffix + lowerCaseSuffix,
+	}
 }
 
 /**
@@ -1849,12 +1859,12 @@ function getStorybookReadyFileName(fileName: string): string | null {
  * Takes a path already spelled the way the folder spells it, so the name is
  * read straight off it with no folder listing here.
  *
- * `.mdx` still gets warned about, but hedged. Some Storybook configs match
- * `*.mdx` on its own, in which case the file is picked up whatever its
- * capitals; others reach `.mdx` only through the `.stories.` segment, where it
- * is hidden exactly like any other story. Both shapes appear among this repo's
- * own example sites and the CLI can't see which one the user has, so the
- * message names the condition instead of guessing.
+ * `.mdx` still gets warned about, but hedged when only the story word carries
+ * the odd capitals. Some Storybook configs match `*.mdx` on its own, which picks
+ * such a file up; others reach `.mdx` only through the `.stories.` segment,
+ * where it is hidden like any other story. Both shapes appear among this repo's
+ * own example sites and the CLI can't see which one the user has, so the message
+ * names the condition instead of guessing.
  */
 function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 	// One story file reaches this check from two separate watcher events — its
@@ -1863,18 +1873,13 @@ function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 	const comparablePath = toComparablePath(onDiskStoryPath)
 	if (storyPathsAlreadyWarnedAboutCasing.has(comparablePath)) return
 	const storyFileName = basename(onDiskStoryPath)
-	const storySuffix = getOddlyCasedStorySuffix(storyFileName)
-	if (!storySuffix) return
-	const lowerCaseSuffix = storySuffix.toLowerCase()
-	const expectedFileName = replaceStorySuffix(
-		storyFileName,
-		storySuffix,
-		lowerCaseSuffix,
-	)
-	// A bare `*.mdx` glob picks the file up whatever its story word, so the
-	// caveat only holds while the extension itself is lower case — `.MDX` is
-	// missed by that glob too, and claiming otherwise sends the reader away
-	// from the rename that would actually fix it.
+	const casingFix = getStoryCasingFix(storyFileName)
+	if (!casingFix) return
+	const lowerCaseSuffix = casingFix.oddlyCasedSuffix.toLowerCase()
+	const expectedFileName = casingFix.readyFileName
+	// Exact match, not a lower-cased one: a bare `*.mdx` glob is matched
+	// case-sensitively too, so it misses `.MDX` as surely as the `.stories.` globs
+	// do. The caveat holds only while the extension is already lower case.
 	const isMarkdownStory = extname(storyFileName) === '.mdx'
 	const markdownCaveat = isMarkdownStory
 		? ' — unless your Storybook config also matches "*.mdx" on its own, in which case it is already picked up'
@@ -2108,11 +2113,9 @@ function startWatcher() {
 		// story created WITH content (copy-paste, save-as, git checkout) skips
 		// the fill entirely but is hidden from Storybook just the same when its
 		// name is odd-cased. After the fill so it lands under the success lines.
-		// The one exception is a file declined as a duplicate: the decline has
-		// already said to delete it, so telling the user to rename it as well
-		// would be advising two different things about the same file.
-		// `abs` comes straight from the create event, so it carries the file's
-		// real capitals and the check can skip the folder read.
+		// A file declined as a duplicate is covered by the decline's own message
+		// instead. `abs` comes from the create event, so it already carries the
+		// file's real capitals.
 		if (!isDeclinedAsDuplicate) warnWhenStoryFileCasingHidesItFromStorybook(abs)
 		if (createdStory) {
 			kick('create:story', createdStory)

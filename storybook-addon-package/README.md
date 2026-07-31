@@ -217,10 +217,10 @@ export function ${componentName}({}: ${propsName}) {
 			component: ({ componentName }) => '...',
 			/**
 			 * Customize the generated .decorator.svelte file.
-			 * Import the wrapped component from `componentImportPath` — it is
-			 * that component's own file name, which can differ from the
-			 * `componentName` binding (`card-listing.svelte` binds as
-			 * `CardListing`).
+			 * Import the wrapped component from `componentImportPath` — it carries
+			 * that component's on-disk capitals with a lower-case extension, and
+			 * can differ from the `componentName` binding (`card-listing.svelte`
+			 * binds as `CardListing`).
 			 */
 			decorator: ({ componentName, componentImportPath }) => '...',
 			/**
