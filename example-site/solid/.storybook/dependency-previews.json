@@ -4,6 +4,43 @@
     "builtWith": [],
     "usedIn": []
   },
+  "src/components/01-atoms/icons/ExternalLinkIcon.tsx": {
+    "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/Svg.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/icons/iconTypes.ts": {
+    "componentPath": "src/components/01-atoms/icons/iconTypes.ts",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/Svg.tsx"
+      }
+    ]
+  },
+  "src/components/01-atoms/icons/Svg.tsx": {
+    "componentPath": "src/components/01-atoms/icons/Svg.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx"
+      }
+    ]
+  },
   "src/components/Counter.tsx": {
     "componentPath": "src/components/Counter.tsx",
     "builtWith": [],
