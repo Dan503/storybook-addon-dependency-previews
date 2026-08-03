@@ -17,26 +17,28 @@
 		"@solidjs/meta": "^0.29.4",
 		"@solidjs/router": "^0.15.0",
 		"@solidjs/start": "2.0.0-alpha.2",
+		"@solidjs/vite-plugin-nitro-2": "^0.1.0",
+		"@tailwindcss/vite": "^4.3.3",
 		"solid-js": "^1.9.5",
-		"vite": "^7.0.0",
-		"@solidjs/vite-plugin-nitro-2": "^0.1.0"
+		"tailwindcss": "^4.3.3",
+		"vite": "^7.0.0"
 	},
 	"engines": {
 		"node": ">=22"
 	},
 	"devDependencies": {
-		"storybook": "^10.4.6",
-		"storybook-solidjs-vite": "^10.6.0",
 		"@chromatic-com/storybook": "^5.2.1",
-		"@storybook/addon-vitest": "^10.4.6",
 		"@storybook/addon-a11y": "^10.4.6",
 		"@storybook/addon-docs": "^10.4.6",
 		"@storybook/addon-links": "^10.4.6",
-		"dependency-cruiser": "^17.3.6",
-		"storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
-		"vitest": "^4.1.10",
-		"playwright": "^1.61.1",
+		"@storybook/addon-vitest": "^10.4.6",
 		"@vitest/browser-playwright": "^4.1.10",
-		"@vitest/coverage-v8": "^4.1.10"
+		"@vitest/coverage-v8": "^4.1.10",
+		"dependency-cruiser": "^17.3.6",
+		"playwright": "^1.61.1",
+		"storybook": "^10.4.6",
+		"storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
+		"storybook-solidjs-vite": "^10.6.0",
+		"vitest": "^4.1.10"
 	}
 }
