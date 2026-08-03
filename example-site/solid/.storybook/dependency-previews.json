@@ -55,6 +55,12 @@
         "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
       },
       {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/PhoneIcon.tsx"
+      },
+      {
         "componentPath": "src/components/01-atoms/icons/Svg.tsx"
       }
     ]
@@ -73,8 +79,38 @@
         "storyTitle": "External Link Icon",
         "storyTitlePath": "01 Atoms / Icons / External Link Icon",
         "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/PhoneIcon.tsx"
       }
     ]
+  },
+  "src/components/01-atoms/icons/MapPinIcon.tsx": {
+    "componentPath": "src/components/01-atoms/icons/MapPinIcon.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/Svg.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/icons/PhoneIcon.tsx": {
+    "componentPath": "src/components/01-atoms/icons/PhoneIcon.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/Svg.tsx"
+      }
+    ],
+    "usedIn": []
   },
   "src/components/Counter.tsx": {
     "componentPath": "src/components/Counter.tsx",
