@@ -14,6 +14,24 @@
     "builtWith": [],
     "usedIn": []
   },
+  "src/components/01-atoms/ContentRestraintAtom.tsx": {
+    "componentPath": "src/components/01-atoms/ContentRestraintAtom.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx"
+      }
+    ],
+    "usedIn": []
+  },
+  "src/components/01-atoms/ScreenPaddingAtom.tsx": {
+    "componentPath": "src/components/01-atoms/ScreenPaddingAtom.tsx",
+    "builtWith": [],
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/ContentRestraintAtom.tsx"
+      }
+    ]
+  },
   "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx": {
     "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
     "builtWith": [
