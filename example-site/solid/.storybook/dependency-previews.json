@@ -4,8 +4,28 @@
     "builtWith": [],
     "usedIn": []
   },
+  "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx": {
+    "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
+    "builtWith": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
+      }
+    ],
+    "usedIn": []
+  },
   "src/components/01-atoms/icons/ExternalLinkIcon.tsx": {
     "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+    "storyId": "01-atoms-icons-external-link-icon--docs",
+    "storyTitle": "External Link Icon",
+    "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+    "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
     "builtWith": [
       {
         "componentPath": "src/components/01-atoms/icons/iconTypes.ts"
@@ -14,14 +34,25 @@
         "componentPath": "src/components/01-atoms/icons/Svg.tsx"
       }
     ],
-    "usedIn": []
+    "usedIn": [
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      }
+    ]
   },
   "src/components/01-atoms/icons/iconTypes.ts": {
     "componentPath": "src/components/01-atoms/icons/iconTypes.ts",
     "builtWith": [],
     "usedIn": [
       {
-        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx"
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
+      },
+      {
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
       },
       {
         "componentPath": "src/components/01-atoms/icons/Svg.tsx"
@@ -37,7 +68,11 @@
     ],
     "usedIn": [
       {
-        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx"
+        "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.tsx",
+        "storyId": "01-atoms-icons-external-link-icon--docs",
+        "storyTitle": "External Link Icon",
+        "storyTitlePath": "01 Atoms / Icons / External Link Icon",
+        "storyFilePath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx"
       }
     ]
   },
