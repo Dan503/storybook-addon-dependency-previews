@@ -4,6 +4,11 @@
     "builtWith": [],
     "usedIn": []
   },
+  "src/components/01-atoms/ButtonAtom.tsx": {
+    "componentPath": "src/components/01-atoms/ButtonAtom.tsx",
+    "builtWith": [],
+    "usedIn": []
+  },
   "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx": {
     "componentPath": "src/components/01-atoms/icons/ExternalLinkIcon.stories.tsx",
     "builtWith": [
