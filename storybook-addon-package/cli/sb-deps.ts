@@ -7,7 +7,6 @@ import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import {
 	existsSync,
 	mkdirSync,
-	readdirSync,
 	readFileSync,
 	realpathSync,
 	statSync,
@@ -635,19 +634,8 @@ function componentBaseFromAngularComponent(absCompPath: string) {
 }
 
 /**
- * The file's name as it is actually spelled on disk. On a file system that
- * ignores capitals, a probe path like `Button.stories.tsx` happily finds a file
- * saved as `Button.STORIES.tsx`, so the spelling in the path says nothing about
- * the spelling other tools will see — read the folder and report the matching
- * entry's own name. Falls back to the name in `absPath` when the folder can't
- * be read, and skips the lookup entirely where capitals already distinguish
- * files.
- *
- * An exact match always wins over one found by ignoring capitals. The platform
- * check is only a good guess — a case-sensitive volume still reports itself as
- * macOS — so a folder really can hold both `Button.tsx` and `button.tsx`, and
- * preferring the exact name keeps that harmless instead of picking whichever
- * the folder listed first.
+ * The file's name as spelled on disk, reading the folder only where capitals
+ * don't already distinguish files. See `findOnDiskFileName` for the rest.
  */
 function getOnDiskFileName(absPath: string): string {
 	return findOnDiskFileName(absPath, false)
@@ -1520,10 +1508,23 @@ function ensureStoryFor(
 		framework,
 	)
 	if (existingStory) {
-		// The story that made this decline may itself be invisible to Storybook —
-		// on a case-insensitive file system the probe finds a `Button.STORIES.tsx`
-		// too, and declining over it silently would leave the user with a
-		// component, no visible story, and no explanation.
+		// The probe matches ignoring capitals on every platform, so where capitals
+		// DO distinguish files it can answer with a genuinely different file — and
+		// the user is then left with a component, no story written, and nothing
+		// said about why. Elsewhere a differing name is the same file under another
+		// spelling, which the casing warning below already covers, so saying it
+		// here too would report one file as two problems.
+		const isDifferentFileEntirely =
+			!IS_CASE_INSENSITIVE_PATH_FS &&
+			basename(existingStory) !== basename(canonicalStoryPath)
+		if (isDifferentFileEntirely) {
+			info(
+				`no story written for ${rel(absCompPath)} — "${rel(existingStory)}" already covers it, though its name differs from "${basename(canonicalStoryPath)}".`,
+			)
+		}
+		// That story may itself be invisible to Storybook — the probe finds a
+		// `Button.STORIES.tsx` too, and declining over it silently would leave the
+		// user with a component, no visible story, and no explanation.
 		warnWhenStoryFileCasingHidesItFromStorybook(existingStory)
 		return null
 	}
@@ -1877,30 +1878,32 @@ function getRenameAdvice(
 	onDiskStoryPath: string,
 	readyFileName: string,
 ): string {
-	// Ask the folder, not the platform. `readyFileName` differs from this file's
-	// own name only in the suffix's capitals, so a platform-based comparison
-	// answers "same file" on every call on Windows and macOS — and those are
-	// exactly the platforms where a volume that tells capitals apart can still
-	// hold both names. A directory entry equal to `readyFileName` that is not
-	// this file's own entry is a real file in the way; anything else means the
-	// rename is a pure change of spelling.
-	const directory = dirname(onDiskStoryPath)
-	const ownFileName = basename(onDiskStoryPath)
-	let doesOtherFileHoldName = false
-	try {
-		const entries = readdirSync(directory)
-		doesOtherFileHoldName =
-			readyFileName !== ownFileName && entries.includes(readyFileName)
-	} catch {
-		// Fail safe, like every other read here: an unlistable folder might hold a
-		// real file under that name, so hand the decision to the content check
-		// below rather than advising a rename that could land on one.
-		doesOtherFileHoldName = true
+	const advice = ` — rename it to "${readyFileName}"`
+	const readyNamePath = join(dirname(onDiskStoryPath), readyFileName)
+	// Compare what the two names open, rather than how they are spelled:
+	// `realpathSync.native` reports the canonical on-disk path, so two spellings
+	// of one file come back equal and two genuine files don't. It also answers
+	// when the folder can't be listed, which the previous directory-listing
+	// version could not.
+	const targetRealPath = getRealPathOrNull(readyNamePath)
+	if (targetRealPath) {
+		const ownRealPath = getRealPathOrNull(onDiskStoryPath)
+		// The corrected name opens this same file: a pure change of spelling.
+		if (targetRealPath === ownRealPath) return advice
 	}
-	const readyNamePath = join(directory, readyFileName)
-	if (doesOtherFileHoldName && checkDoesFileHoldContent(readyNamePath))
-		return ''
-	return ` — rename it to "${readyFileName}"`
+	// Either nothing is there or it couldn't be resolved. The content check reads
+	// both safely — a missing file is empty, an unreadable one counts as holding
+	// content — so it decides on its own.
+	return checkDoesFileHoldContent(readyNamePath) ? '' : advice
+}
+
+/** The file's canonical on-disk path, or `null` when it can't be resolved. */
+function getRealPathOrNull(absPath: string): string | null {
+	try {
+		return realpathSync.native(absPath)
+	} catch {
+		return null
+	}
 }
 
 /**

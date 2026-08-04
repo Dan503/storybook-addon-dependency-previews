@@ -243,15 +243,19 @@ function getRawStoryFileData(componentPath: string) {
 	}
 
 	for (const path of candidates) {
+		// Read first, resolve the spelling only for the one candidate that hits.
+		// Most candidates miss, and resolving lists the folder — doing it up front
+		// would list the same directory once per candidate, and a lookup builds a
+		// candidate per story word per extension (twice that again for Angular).
+		const data = getRawFileData(path)
+		if (!data) continue
 		// Report the spelling the folder uses, not the one probed. Where capitals
 		// don't distinguish files a probe for `Button.stories.tsx` reads a
 		// `Button.STORIES.tsx` quite happily, and writing the probed name into the
 		// graph gives the addon a `storyFilePath` its case-sensitive lookup can
 		// never match — the component then shows a missing-story error even though
 		// Storybook indexed the story.
-		const onDiskPath = toOnDiskPath(path)
-		const data = getRawFileData(onDiskPath)
-		if (data) return { storyFileData: data, storyFilePath: onDiskPath }
+		return { storyFileData: data, storyFilePath: toOnDiskPath(path) }
 	}
 
 	return { storyFileData: null, storyFilePath: null }
