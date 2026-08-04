@@ -14,6 +14,7 @@
 		"sb:build": "sb-deps && storybook build"
 	},
 	"dependencies": {
+		"@formisch/solid": "1.0.0-rc.0",
 		"@solidjs/meta": "^0.29.4",
 		"@solidjs/router": "^0.15.0",
 		"@solidjs/start": "2.0.0-alpha.2",
@@ -21,6 +22,7 @@
 		"@tailwindcss/vite": "^4.3.3",
 		"solid-js": "^1.9.14",
 		"tailwindcss": "^4.3.3",
+		"valibot": "^1.4.2",
 		"vite": "^7.0.0"
 	},
 	"engines": {
