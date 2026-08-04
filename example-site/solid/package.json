@@ -20,6 +20,7 @@
 		"@solidjs/start": "2.0.0-alpha.2",
 		"@solidjs/vite-plugin-nitro-2": "^0.1.0",
 		"@tailwindcss/vite": "^4.3.3",
+		"example-site-shared": "workspace:*",
 		"solid-js": "^1.9.14",
 		"tailwindcss": "^4.3.3",
 		"valibot": "^1.4.2",
