@@ -58,6 +58,13 @@ export function stripComponentEnding(
 ): string {
 	const ending = getNameEnding(baseName, extension.toLowerCase(), context)
 	if (ending !== '.component') return baseName
+	// Only an ending already spelled in lower case. `getNameEnding` ignores
+	// capitals because its other caller exists to FIND a wrong spelling in order
+	// to report it — but here the question is whether to act on the ending, and
+	// a `Chart.Component.ts` is a name the watcher refuses. Stripping it would
+	// have the graph pair a file the rest of the tool does not recognise, which
+	// is the disagreement this whole change exists to remove.
+	if (!baseName.endsWith(ending)) return baseName
 	return baseName.slice(0, -ending.length)
 }
 

@@ -187,8 +187,10 @@ function runDepCruiseOnce() {
 	// slash `^src` would also match `src2/`, `srcabc/`, etc.
 	//
 	// dependency-cruiser compiles the pattern with a plain case-SENSITIVE
-	// `new RegExp(...)` — unlike the path checks in this file, which all ignore
-	// case on the file systems that do. So on those platforms every letter is
+	// `new RegExp(...)`, and it cannot be handed a flag. The FOLDER half of a
+	// path still has to ignore case on the file systems that do — file endings
+	// are matched exactly now, but folder names are not, for the reason
+	// `escapeForFolderRegex` gives. So on those platforms every letter is
 	// written as a pair matching both of its cases (`s` → `[sS]`): with srcDir
 	// spelled `src` in the config but `Src` on disk, a case-sensitive `^src/`
 	// would reject every module dependency-cruiser finds and the graph would
@@ -395,8 +397,11 @@ function toComparablePath(path: string): string {
 
 /**
  * Options for the watcher's glob matching. `micromatch` matches case-sensitively
- * by default, which would disagree with every other path check here — those all
- * ignore case on the platforms whose file systems do.
+ * by default, which would disagree with how a path's FOLDER half is matched
+ * everywhere else here — that still ignores case on the platforms whose file
+ * systems do. File endings are matched exactly, but these globs have to admit
+ * an oddly-spelled one so the name check below can see it and say so; matching
+ * exactly here would turn that error into silence.
  */
 const MICROMATCH_OPTIONS = { nocase: IS_CASE_INSENSITIVE_PATH_FS }
 
