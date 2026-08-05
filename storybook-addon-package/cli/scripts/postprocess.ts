@@ -2,11 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
-import {
-	checkIsNameWronglyCased,
-	getNameWithLowerCasedEndings,
-	readFolderEntriesOrNull,
-} from './fileNames.js'
+import { readFolderEntriesOrNull } from './fileNames.js'
 
 const [, , inPathArg, outPathArg, srcDirArg, projectFamilyArg] = process.argv
 // Only `.component` needs this, and only to tell an Angular component file from
@@ -92,46 +88,6 @@ const isComponent = (p: string) => {
 	)
 }
 
-/**
- * Extensions that take part in pairing a component with its story. Everything
- * else in the graph — an imported `logo.SVG`, a `.json` of copy — is here only
- * because something imported it, and how it is spelled is the project's own
- * business.
- */
-const PAIRABLE_EXTENSIONS = [
-	'.ts',
-	'.tsx',
-	'.js',
-	'.jsx',
-	'.mts',
-	'.cts',
-	'.svelte',
-	'.vue',
-	'.mdx',
-]
-
-/**
- * Is this a file whose spelling is worth telling the reader about?
- *
- * Only when correcting it would change something. That means the name is
- * wrongly cased AND the file is one this tool pairs with a story: an asset it
- * merely saw imported gains nothing from being renamed, and saying otherwise is
- * worse than saying nothing — following that advice on a `logo.SVG` breaks the
- * import that named it, on the very systems that tell capitals apart.
- *
- * Svelte decorators are out for the milder version of the same reason: a
- * decorator has no story under either spelling, and nothing outside the
- * watcher's create path reads the `.decorator` ending, so a rename buys the
- * reader nothing.
- */
-function checkIsWorthRenaming(path: string): boolean {
-	const fileName = basename(path)
-	if (!checkIsNameWronglyCased(fileName, nameEndingContext)) return false
-	const comparableName = fileName.toLowerCase()
-	if (comparableName.endsWith('.decorator.svelte')) return false
-	return PAIRABLE_EXTENSIONS.includes(extname(comparableName))
-}
-
 /** Simple keyed-push to avoid duplicates */
 function pushUnique(list: Array<StoryInfo>, item: StoryInfo) {
 	if (!list.some((x) => x.componentPath === item.componentPath)) {
@@ -140,21 +96,6 @@ function pushUnique(list: Array<StoryInfo>, item: StoryInfo) {
 }
 
 const graph: Graph = {}
-// Files worth telling the reader to rename: wrongly cased, and of a kind this
-// tool pairs with a story. The watcher only ever sees creations, so a name that
-// arrived by any other route — a branch checkout, a copy, a file written before
-// the addon was installed — has never been reported.
-//
-// Not every wrongly-cased file it sees: see `checkIsWorthRenaming` for which
-// are left out, and why saying nothing about those beats saying something
-// untrue. Collected in the loop below rather than in a pass of its own.
-//
-// Collected AFTER the is-this-a-component check, so a `styles.CSS` is left out.
-// Capitals in a stylesheet's extension genuinely cost nothing: the check that
-// drops stylesheets ignores them on purpose, and the watcher never watches
-// stylesheets, so telling the user to rename one would be advice with no
-// benefit behind it.
-const wrongCasedPaths: Array<string> = []
 
 /**
  * Story answers already worked out, keyed by component path.
@@ -176,7 +117,6 @@ const storyIdCache = new Map<string, ReturnType<typeof findStoryId>>()
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
 	if (!isComponent(from)) continue
-	if (checkIsWorthRenaming(from)) wrongCasedPaths.push(from)
 
 	const deps = (m.dependencies || [])
 		.map((d: any) => d.resolved && norm(d.resolved))
@@ -247,29 +187,6 @@ for (const k of Object.keys(graph)) {
 
 writeFileSync(outPath, JSON.stringify(graph, null, 2))
 
-if (wrongCasedPaths.length > 0) {
-	// Each rename is shown as a whole path, not a bare file name — several
-	// folders can hold the same name, and a bare one reads as though the file
-	// should be renamed into the folder the build was run from.
-	const renames = wrongCasedPaths.map((path) => {
-		const correctedPath = posix.join(
-			posix.dirname(path),
-			getNameWithLowerCasedEndings(basename(path), nameEndingContext),
-		)
-		return `"${path}" → "${correctedPath}"`
-	})
-	// Worded for a story file, because that is most of what reaches this list — a
-	// capitalised *extension* is never scanned at all, so what lands here is
-	// nearly always a `Button.Stories.tsx`. Saying "not paired with their
-	// stories" reads back to front when the file being named IS the story.
-	//
-	// It carries the Storybook half too, which is the part that decides what the
-	// reader does next: an oddly-spelled story is invisible in Storybook itself,
-	// not merely unlinked here. The watcher's own refusal says the same thing.
-	console.warn(
-		`[sb-deps] these endings are matched exactly, so these files aren't recognised as the stories or components they look like — and Storybook matches its own stories setting exactly too, so an oddly-spelled story file never shows up there either. Rename each one: ${renames.join(', ')}`,
-	)
-}
 
 function getStoryId(componentPath: string) {
 	const cached = storyIdCache.get(componentPath)

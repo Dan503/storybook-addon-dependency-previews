@@ -112,11 +112,13 @@ Either way you end up with a working component + story pair. Only empty files ar
 
 Two more endings are read, but only where they mean anything. `.decorator` is read on `.svelte` files, since only Svelte writes those. `.component` is read on `.ts` and `.html` files **in an Angular project only** — every framework writes `.ts`, so the extension alone can't tell an Angular component from an ordinary dotted name. Anywhere else the two mean nothing here: a NestJS `Roles.Decorator.ts`, or an `Auth.Component.ts` in a React project, is left alone.
 
-Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. Since it can only check files as they are created, it also names ones already in your project at the end of each graph build — but only where renaming would change something, which means components and story files. A Svelte decorator is left out, because it has no story under either spelling, and so is anything with an extension this tool doesn't pair, such as an imported `logo.SVG`: renaming that would break the import that named it.
+Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it.
+
+It only checks files as they are created, so one that arrived some other way — a branch checkout, a copy, a file written before you installed the addon — is not reported. Nothing breaks: it simply won't be paired with its story until you rename it.
 
 Some wrongly-spelled files go unreported rather than being refused. Nothing breaks that renaming won't fix — there is just nothing telling you to rename them:
 
-**None of these four are ever named by the end-of-build report**, on any system — dependency-cruiser only scans a fixed set of lower-case extensions, and only inside your source folder. On Windows and macOS the watcher still catches them the moment they are created; on Linux and other systems that tell capitals apart, nothing catches them at all:
+On Windows and macOS the watcher catches these the moment they are created. On Linux and other systems that tell capitals apart, it doesn't see them at all — the patterns it listens on match exactly there, and these four match none of them:
 
 - **Angular templates** — `Button.Component.html`.
 - **A capitalised extension** — `Gadget.TSX`.

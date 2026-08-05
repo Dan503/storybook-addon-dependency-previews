@@ -41,14 +41,6 @@ const NAME_ENDINGS: ReadonlyArray<{
 /** What the caller knows about the project, for the endings that need it. */
 export type NameEndingContext = { isAngularProject: boolean }
 
-/** Is this file name spelled in a way the rest of the tool can't match exactly? */
-export function checkIsNameWronglyCased(
-	fileName: string,
-	context: NameEndingContext,
-): boolean {
-	return getNameWithLowerCasedEndings(fileName, context) !== fileName
-}
-
 /**
  * A folder's entries, or `null` when it can't be read.
  *
