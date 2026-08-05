@@ -2121,7 +2121,10 @@ function startWatcher() {
 							checkDoesFileFrameworkMatchProject('angular', abs)
 						if (isScaffoldableAngularHtml) {
 							// Named after the template, so it goes through the capitals
-							// check like every other name this tool works out for itself.
+							// check. This is the component direction; the template
+							// direction — a template name rebuilt from a component's — is
+							// the one derived name deliberately left unchecked, for the
+							// reason given where the external template is scaffolded.
 							const tsPath = angularComponentTsPath(abs)
 							if (!checkDoesFolderAgreeWithName(tsPath)) {
 								// Say what became of the file they created, the way the

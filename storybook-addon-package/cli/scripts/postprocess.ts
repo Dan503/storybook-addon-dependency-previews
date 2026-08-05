@@ -295,9 +295,9 @@ function getRawStoryFileData(componentPath: string) {
 
 	// Read once, not once per candidate: every candidate is built from
 	// `componentPath` with only its ending changed, so they all sit in the
-	// component's own folder. There are 14 of them for a plain component and 28
-	// for an Angular one, and this runs for every module and every edge on every
-	// rebuild.
+	// component's own folder. There are a dozen or more of them — twice that for
+	// an Angular component, which has a second base to try — and this runs for
+	// every module and every edge on every rebuild.
 	const folderEntries = readFolderEntriesOrNull(dirname(componentPath))
 	if (!folderEntries) return { storyFileData: null, storyFilePath: null }
 
