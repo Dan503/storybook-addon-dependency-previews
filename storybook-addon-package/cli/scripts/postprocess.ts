@@ -67,8 +67,16 @@ const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
 const isComponent = (p: string) => {
 	return (
 		srcDirRegex.test(p) &&
-		// Ignore css and html template files
-		!/\.(css|scss|sass|less|html)$/.test(p)
+		// Ignore css and html template files, whatever capitals the extension
+		// carries. Every other name check in the pipeline spells one name and
+		// means one file, because `getWrongCasedNameError` in `sb-deps.ts` turns
+		// an oddly-capitalised name away. This one can't rely on that: it reads
+		// files dependency-cruiser found, not files the watcher saw created, so a
+		// `styles.CSS` written before the addon was installed still reaches it.
+		// Getting it wrong here puts a stylesheet in the graph as a component that
+		// isn't one — wrong data rather than a missing link, which is why this is
+		// the one place that still ignores capitals.
+		!/\.(css|scss|sass|less|html)$/i.test(p)
 	)
 }
 
