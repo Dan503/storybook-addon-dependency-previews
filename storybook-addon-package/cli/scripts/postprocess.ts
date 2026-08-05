@@ -244,7 +244,7 @@ function getRawStoryFileData(componentPath: string) {
 	}
 
 	// Each candidate has its spelling resolved *before* it is read. Reading first
-	// would be cheaper, but `existsSync` inside the read is exactly the gate the
+	// would be cheaper, but `existsSync` inside the read is exactly the check the
 	// resolve exists to get past: on a volume that tells capitals apart while the
 	// platform says otherwise, the probed spelling misses and the
 	// differently-capitalised story beside it is never found.

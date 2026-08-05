@@ -29,6 +29,7 @@ import {
 	escapeForPathRegex,
 	escapeForRegex,
 	findOnDiskFileName,
+	readFolderEntriesOrNull,
 } from './scripts/shared.js'
 import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
@@ -86,15 +87,44 @@ function tryResolvePath(
 }
 
 /**
- * Are these two names the same file? `null` when either can't be resolved, so a
- * caller that must not act on a guess can tell "don't know" from a definite no.
+ * Do these two names open the same file? `null` when either can't be resolved,
+ * so a caller that must not act on a guess can tell "don't know" from a definite
+ * no.
+ *
+ * Named `get…` rather than `check…` because the answer is three-way: a caller
+ * that wrote `if (getSameFileAnswer(a, b))` would read "don't know" as "no",
+ * which is the very case the third answer exists to keep separate.
  */
-function checkAreSameFile(pathA: string, pathB: string): boolean | null {
+function getSameFileAnswer(pathA: string, pathB: string): boolean | null {
 	const canonicalA = getCanonicalPathOrNull(pathA)
 	if (!canonicalA) return null
 	const canonicalB = getCanonicalPathOrNull(pathB)
 	if (!canonicalB) return null
 	return canonicalA === canonicalB
+}
+
+/**
+ * The folder's own spelling of a name when that spelling opens the same file,
+ * and the name as built otherwise. For picking a path that is about to be
+ * written to.
+ *
+ * Resolving a name against the folder is right for a probe and wrong for a
+ * write. Where two spellings really are two files, the resolved name belongs to
+ * someone else's file: writing there fills a story Storybook can never index
+ * while leaving the one name that works uncreated, or rewrites an Angular
+ * component the user never touched.
+ *
+ * The platform constant can't make this call — a volume that does tell capitals
+ * apart still reports itself as Windows or macOS (a case-sensitive disk image, a
+ * Windows folder with case sensitivity switched on, which is routine for
+ * repositories shared with WSL). So ask the file system instead, and where it
+ * can't say, keep the name as built: an unresolvable built name means no file is
+ * there yet, which is exactly when it should be created under that name.
+ */
+function getWriteSafePath(builtPath: string, resolvedPath: string): string {
+	if (resolvedPath === builtPath) return builtPath
+	const sameFileAnswer = getSameFileAnswer(builtPath, resolvedPath)
+	return sameFileAnswer === true ? resolvedPath : builtPath
 }
 
 // Resolved through any symlinks, because the watcher reports paths under the
@@ -680,17 +710,16 @@ function getOnDiskFileName(absPath: string): string {
  * The `.component.ts` beside an Angular template, named the way the template
  * itself is named on disk — `Test.Component.html` gives `Test.Component.ts`.
  *
- * Where capitals distinguish files, that name is used as built. Elsewhere it is
- * resolved against the folder, which there only recovers the same file's real
- * spelling.
+ * The folder's spelling is used only where it opens the same file; otherwise the
+ * name is used as built.
  */
 function angularComponentTsPath(absHtmlPath: string) {
 	const nameWithoutExtension = getOnDiskBaseName(absHtmlPath, '.html')
 	const builtTsPath = join(dirname(absHtmlPath), `${nameWithoutExtension}.ts`)
 	// `scaffoldAngularHtmlFromTs` rewrites whatever this returns, so where two
 	// spellings are two files it must not reach past the one it was given.
-	if (!IS_CASE_INSENSITIVE_PATH_FS) return builtTsPath
-	return resolveToExistingPathIgnoringCase(builtTsPath)
+	const resolvedTsPath = resolveToExistingPathIgnoringCase(builtTsPath)
+	return getWriteSafePath(builtTsPath, resolvedTsPath)
 }
 
 function detectAtomicTag(absPath: string) {
@@ -884,11 +913,22 @@ function findExistingStory(
 	// No `existsSync` needed beyond that — a missing file already reports as empty.
 	//
 	// A `for` loop rather than `map` then `find`, so resolving stops at the first
-	// hit: each resolve lists the folder and the first variant is the usual
-	// answer.
+	// hit: the first variant is the usual answer.
+	//
+	// Every variant names a file in the story's own folder — the naming swaps
+	// rewrite only the name and the `.tsx` stand-in only the extension — so one
+	// listing serves them all. Without it the common case, a component with no
+	// story yet, runs the whole list and reads that one folder up to four times
+	// over for an answer that cannot differ between them.
+	const variantFolderEntries = readFolderEntriesOrNull(
+		dirname(canonicalStoryPath),
+	)
 	let resolvedCanonicalPath = canonicalStoryPath
 	for (const [index, variantPath] of allVariants.entries()) {
-		const resolvedPath = resolveToExistingPathIgnoringCase(variantPath)
+		const resolvedPath = resolveToExistingPathIgnoringCase(
+			variantPath,
+			variantFolderEntries,
+		)
 		// Variant 0 is the canonical path. Hand its resolution back so the caller
 		// writes to the file this check cleared, rather than listing the folder a
 		// second time for the same answer.
@@ -1255,9 +1295,13 @@ function scaffoldAngularComponent(
 	const componentFileBase = getOnDiskBaseName(absCompPath, '.ts')
 	const tsPath = join(dir, `${componentFileBase}.ts`)
 	// The template can carry different capitals from the component beside it, so
-	// resolve rather than assume the two names match.
+	// resolve rather than assume the two names match — but this path is both the
+	// `templateUrl` written into the component and a write target further down, so
+	// it takes the same guard as the other two places a resolved name is written
+	// to: use the folder's spelling only where it opens the same file.
 	const builtHtmlPath = join(dir, `${componentFileBase}.html`)
-	const htmlPath = resolveToExistingPathIgnoringCase(builtHtmlPath)
+	const resolvedHtmlPath = resolveToExistingPathIgnoringCase(builtHtmlPath)
+	const htmlPath = getWriteSafePath(builtHtmlPath, resolvedHtmlPath)
 	const isExternalTemplate = templateLocation === 'external'
 
 	if (isEmptyOrWhitespace(tsPath)) {
@@ -1554,8 +1598,8 @@ function ensureStoryFor(
 		// and no platform constant can tell the two cases apart. An unresolvable
 		// canonical name means it isn't there at all, which is a different file by
 		// definition.
-		const isSameFile = checkAreSameFile(existingStory, canonicalStoryPath)
-		if (isSameFile !== true) {
+		const sameFileAnswer = getSameFileAnswer(existingStory, canonicalStoryPath)
+		if (sameFileAnswer !== true) {
 			info(
 				`no story written for ${rel(absCompPath)} — "${rel(existingStory)}" already covers it, though its name differs from "${basename(canonicalStoryPath)}".`,
 			)
@@ -1567,17 +1611,18 @@ function ensureStoryFor(
 		return null
 	}
 	// An empty odd-cased story already on disk isn't returned above — it is empty,
-	// so it isn't an existing story — but where capitals don't distinguish files
-	// the write lands in it anyway, so target it by name and say why Storybook
-	// won't index it.
+	// so it isn't an existing story — but where that name opens the same file the
+	// write lands in it anyway, so target it by name and say why Storybook won't
+	// index it.
 	//
-	// Where capitals DO distinguish, that resolved name is a different file, and
-	// writing there would fill a story Storybook can never index while leaving the
-	// one name that works uncreated. Same rule as `angularComponentTsPath`: resolve
-	// for a probe, never for a write that could land somewhere else.
-	const targetStoryPath = IS_CASE_INSENSITIVE_PATH_FS
-		? resolvedCanonicalPath
-		: canonicalStoryPath
+	// Where the resolved name is a different file, writing there would fill a
+	// story Storybook can never index while leaving the one name that works
+	// uncreated. Same rule as `angularComponentTsPath`: resolve for a probe, never
+	// for a write that could land somewhere else.
+	const targetStoryPath = getWriteSafePath(
+		canonicalStoryPath,
+		resolvedCanonicalPath,
+	)
 	const createdStory = story(absCompPath, targetStoryPath)
 	warnWhenStoryFileCasingHidesItFromStorybook(targetStoryPath)
 	return createdStory
@@ -1764,8 +1809,11 @@ function buildComponentPathForFamily(
  * the rebuilt lower-case name, and answer by writing a second component and
  * leaving the real one storyless.
  */
-function resolveToExistingPathIgnoringCase(absPath: string): string {
-	const onDiskFileName = findOnDiskFileName(absPath, true)
+function resolveToExistingPathIgnoringCase(
+	absPath: string,
+	preReadEntries?: ReadonlyArray<string> | null,
+): string {
+	const onDiskFileName = findOnDiskFileName(absPath, true, preReadEntries)
 	return join(dirname(absPath), onDiskFileName)
 }
 
@@ -1834,8 +1882,8 @@ function scaffoldStoryFromCreatedStoryFile(
  *
  * The advice offers to keep either file, so when the empty one is itself spelled
  * in a way Storybook won't index it says so. Naming what to rename it to is the
- * conditional half: withheld when some *other* file already holds that name with
- * content in it, since renaming onto that would destroy it.
+ * conditional half: withheld when some *other* file already holds that name and
+ * renaming onto it could destroy something — see `getRenameAdvice`.
  */
 function warnStoryDeclinedAsDuplicate(
 	absStoryPath: string,
@@ -1907,10 +1955,11 @@ function getStoryCasingFix(
 }
 
 /**
- * ` — rename it to "X"`, or the empty string when some other file already holds
- * that name with content in it, since renaming onto that would destroy it. The
- * file being warned about doesn't count as holding its own corrected name: there
- * the rename is a pure change of spelling.
+ * ` — rename it to "X"`, or the empty string when another file already holds
+ * that name and renaming onto it could destroy something: either it has content,
+ * or it couldn't be read, so its content can't be ruled out. The file being
+ * warned about doesn't count as holding its own corrected name — there the
+ * rename is a pure change of spelling.
  */
 function getRenameAdvice(
 	onDiskStoryPath: string,
@@ -1918,18 +1967,17 @@ function getRenameAdvice(
 ): string {
 	const advice = ` — rename it to "${readyFileName}"`
 	const readyNamePath = join(dirname(onDiskStoryPath), readyFileName)
-	// Nothing by that name, so the rename lands on empty ground. Asked first
-	// because the check below can't tell that apart from a failure: a name with
-	// no file behind it can't be canonicalised, and reading its absence as
-	// "couldn't tell" would withhold advice in the very case it is safest.
-	if (!existsSync(readyNamePath)) return advice
-	const isSameFile = checkAreSameFile(readyNamePath, onDiskStoryPath)
-	// The corrected name opens this same file: a pure change of spelling.
-	if (isSameFile === true) return advice
-	// Couldn't tell. Withhold the rename rather than risk naming a target that
-	// turns out to be someone else's file — the sentence still says the story
-	// won't be indexed.
-	if (isSameFile === null) return ''
+	const sameFileAnswer = getSameFileAnswer(readyNamePath, onDiskStoryPath)
+	// The corrected name opens this same file: a pure change of spelling, and the
+	// only case that must not fall through to the content check below — which
+	// would then be reading this very file and calling its content someone else's.
+	if (sameFileAnswer === true) return advice
+	// Another file holds that name, or nothing does, or it couldn't be resolved.
+	// The content check answers all three safely and decides on its own: a missing
+	// or empty name is free to rename onto, while one that can't be read counts as
+	// holding content, so the advice is withheld rather than aimed at what might
+	// be the user's real story. Deliberately not `existsSync`, which reports a
+	// file it lacks permission to see as simply absent and would offer the rename.
 	return checkDoesFileHoldContent(readyNamePath) ? '' : advice
 }
 
@@ -1958,11 +2006,18 @@ function warnWhenStoryFileCasingHidesItFromStorybook(onDiskStoryPath: string) {
 	// One story file reaches this check from two separate watcher events — its
 	// own creation, and the creation of the component that then looks for an
 	// existing story — and the same sentence twice reads like two problems.
-	const comparablePath = toComparablePath(onDiskStoryPath)
-	if (storyPathsAlreadyWarnedAboutCasing.has(comparablePath)) return
+	//
+	// Keyed on what the file system says the file is, so two spellings of one file
+	// share a key while two genuinely different files keep their own. Lower-casing
+	// alone would merge the second pair on a volume that tells capitals apart, and
+	// swallow the warning for one of them. Falls back to lower-casing when the
+	// file can't be resolved, which is no worse than it was.
+	const canonicalPath = getCanonicalPathOrNull(onDiskStoryPath)
+	const warnedKey = canonicalPath ?? toComparablePath(onDiskStoryPath)
+	if (storyPathsAlreadyWarnedAboutCasing.has(warnedKey)) return
 	const casingSentence = getStoryCasingSentence(onDiskStoryPath)
 	if (!casingSentence) return
-	storyPathsAlreadyWarnedAboutCasing.add(comparablePath)
+	storyPathsAlreadyWarnedAboutCasing.add(warnedKey)
 	warn(casingSentence)
 }
 

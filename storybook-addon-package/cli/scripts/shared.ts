@@ -48,7 +48,14 @@ export function findOnDiskFileName(
 	const nameFromPath = basename(absPath)
 	if (!shouldAlwaysReadFolder && !IS_CASE_INSENSITIVE_PATH_FS)
 		return nameFromPath
-	const entries = preReadEntries ?? readFolderEntriesOrNull(dirname(absPath))
+	// `undefined` means the caller has no listing to offer, so read one. `null`
+	// means the caller already tried and the folder couldn't be read — reading it
+	// again here would fail again, once per name, which is exactly the repetition
+	// `preReadEntries` exists to remove.
+	const wasEntriesSupplied = preReadEntries !== undefined
+	const entries = wasEntriesSupplied
+		? preReadEntries
+		: readFolderEntriesOrNull(dirname(absPath))
 	if (!entries) return nameFromPath
 	if (entries.includes(nameFromPath)) return nameFromPath
 	const comparableName = nameFromPath.toLowerCase()
