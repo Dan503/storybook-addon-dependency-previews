@@ -17,6 +17,7 @@ import { createRequire } from 'node:module'
 import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
+import { getLowerCasedEndings } from './scripts/fileNames.js'
 import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
 
@@ -560,13 +561,6 @@ function isComponentsAngularHtml(relPath: string) {
 }
 
 /**
- * The name endings this tool reads meaning into, on top of a file's extension.
- * Longest first, so `.stories` is recognised before `.story` can claim part of
- * it.
- */
-const KNOWN_NAME_ENDINGS = ['.stories', '.story', '.component', '.decorator']
-
-/**
  * The message to print when a file's name spells its extension or one of the
  * endings above with capitals, or `null` when the name is fine.
  *
@@ -578,36 +572,6 @@ function getWrongCasedNameError(absPath: string): string | null {
 	const readyFileName = getLowerCasedEndings(fileName)
 	if (readyFileName === fileName) return null
 	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. sb-deps only recognises these endings spelled in lower case, and Storybook only lists stories from files ending ".stories.".`
-}
-
-/**
- * The file name with its extension and any known endings lower-cased, and the
- * rest of the name left exactly as it was — so a component whose own name
- * carries a dot, like `Table.Row.tsx`, is returned untouched.
- *
- * Endings are peeled off one at a time because they stack: Angular's
- * `Button.Component.Stories.ts` has two, and fixing only the last one would
- * hand back a name still wrong in the middle.
- */
-function getLowerCasedEndings(fileName: string): string {
-	const extension = extname(fileName)
-	let remainingName = fileName.slice(0, fileName.length - extension.length)
-	let endings = ''
-	let ending = getKnownNameEnding(remainingName)
-	while (ending) {
-		endings = ending + endings
-		remainingName = remainingName.slice(0, -ending.length)
-		ending = getKnownNameEnding(remainingName)
-	}
-	return remainingName + endings + extension.toLowerCase()
-}
-
-/** Which of `KNOWN_NAME_ENDINGS` this name ends with however it is capitalised, or `null` for none. */
-function getKnownNameEnding(name: string): string | null {
-	const comparableName = name.toLowerCase()
-	return (
-		KNOWN_NAME_ENDINGS.find((ending) => comparableName.endsWith(ending)) ?? null
-	)
 }
 
 /**
