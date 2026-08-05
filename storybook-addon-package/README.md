@@ -112,7 +112,12 @@ Either way you end up with a working component + story pair. Only empty files ar
 
 Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. It also names any such files it finds already in your project at the end of each graph build, since it can only check the rest as they are created.
 
-On Linux and other systems that tell capitals apart, one case slips through the watcher: a file whose **extension** carries capitals, like `Gadget.TSX`, matches none of the patterns the watcher listens on, so it is never seen and never reported. The end-of-build report doesn't catch it either, because dependency-cruiser resolves files by its own extension list. Rename such a file and everything works; there is just nothing to tell you to.
+Some wrongly-spelled files go unreported rather than being refused. Nothing breaks that renaming won't fix — there is just nothing telling you to rename them:
+
+- **Angular templates, on every system.** A `Button.Component.html` that arrives by checkout or copy rather than by being created while the watcher runs is caught by neither check, because dependency-cruiser reports no `.html` files at all and so the end-of-build report never sees it.
+- **On Linux and other systems that tell capitals apart**, three more: a file whose **extension** carries capitals (`Gadget.TSX`); a story outside your source folder (`stories/Foo.Stories.tsx`); and `Foo.Stories.mdx`. Each matches none of the patterns the watcher listens on, so it is never seen. The last two have perfectly ordinary extensions — it is the `.Stories` part carrying the capitals.
+
+The watcher's patterns can't simply be widened to catch these: on those same systems, matching loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
 
 Only the endings are checked, so a component whose own name carries a dot is left alone — as long as none of its dotted parts is one of the four. `Table.Row.tsx` is fine; `My.Story.tsx` is read as a story file and refused.
 

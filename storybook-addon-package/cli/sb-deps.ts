@@ -8,7 +8,6 @@ import {
 	existsSync,
 	mkdirSync,
 	readFileSync,
-	readdirSync,
 	realpathSync,
 	statSync,
 	writeFileSync,
@@ -18,8 +17,8 @@ import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
 import {
-	checkIsNameWronglyCased,
-	getLowerCasedEndings,
+	getNameWithLowerCasedEndings,
+	readFolderEntriesOrNull,
 } from './scripts/fileNames.js'
 import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
@@ -527,9 +526,9 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  * `.js`, `.jsx`, `.mdx`, …). Used by the scaffolding-trigger helpers to make
  * sure they don't try to auto-scaffold a story file for an existing story.
  *
- * Capitals are not allowed for: `getWrongCasedNameError` turns a
- * `Button.Stories.tsx` away before this pattern sees it, so it can spell one
- * name and mean one file.
+ * Matched exactly, with no ignore-case flag, because `getWrongCasedNameError`
+ * turns a `Button.Stories.tsx` away before this pattern ever sees it — so it
+ * can spell one name and mean one file.
  */
 const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`)
 
@@ -585,17 +584,27 @@ function isComponentsAngularHtml(relPath: string) {
 }
 
 /**
- * The message to print when a file's name spells its extension or one of the
- * endings above with capitals, or `null` when the name is fine.
+ * The message to print when a file's name spells its extension, or one of
+ * `KNOWN_NAME_ENDINGS` in `scripts/fileNames.ts`, with capitals — or `null`
+ * when the name is fine.
  *
- * Every other name check in this file spells one name and means one file, which
- * is only safe because this one turns the odd spellings away first.
+ * The patterns in this file each spell one name and mean one file, which is
+ * only safe because this check turns the odd spellings away first.
+ *
+ * The Storybook half of the message is only added for a story file. It fires on
+ * any created file that clears the watcher's globs, so a plain `Badge.VUE`
+ * would otherwise send its author off to read their Storybook stories setting
+ * about a file that was never going to appear there.
  */
 function getWrongCasedNameError(absPath: string): string | null {
 	const fileName = basename(absPath)
-	if (!checkIsNameWronglyCased(fileName)) return null
-	const readyFileName = getLowerCasedEndings(fileName)
-	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. sb-deps matches these endings exactly, and so does Storybook's own stories setting, so a story file spelled with capitals never shows up there either.`
+	const readyFileName = getNameWithLowerCasedEndings(fileName)
+	if (readyFileName === fileName) return null
+	const isStoryFile = STORY_FILE_REGEX.test(readyFileName)
+	const storybookNote = isStoryFile
+		? " Storybook matches its own stories setting exactly too, so a story file spelled with capitals never shows up there either."
+		: ''
+	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. These endings are matched exactly.${storybookNote}`
 }
 
 /**
@@ -632,14 +641,6 @@ function checkDoesFolderAgreeWithName(builtPath: string): boolean {
 	return false
 }
 
-/** A folder's entries, or `null` when it can't be read. */
-function readFolderEntriesOrNull(directory: string): Array<string> | null {
-	try {
-		return readdirSync(directory)
-	} catch {
-		return null
-	}
-}
 
 /**
  * Strip a known extension from a file name — `Button.tsx` gives `Button`. The
@@ -756,6 +757,20 @@ function writeScaffoldedFile(absPath: string, content: string) {
 }
 
 /**
+ * Write back a file the **user** wrote, after changing part of it — as against
+ * `writeScaffoldedFile` above, which writes content this tool authored.
+ *
+ * Deliberately not recorded for the import report. The rest of such a file is
+ * the user's own code, written against their own build setup, and judging its
+ * imports by what this tool knows how to resolve turns their working code into
+ * a warning. Only content this tool wrote is worth checking, because only that
+ * content is this tool's mistake to make.
+ */
+function updateUserFile(absPath: string, content: string) {
+	writeFileSync(absPath, content, 'utf8')
+}
+
+/**
  * Say so when a file this tool has just written names a file that isn't there.
  *
  * The files are read back rather than the writers being trusted, because a
@@ -853,7 +868,26 @@ const IMPORTABLE_EXTENSIONS = [
 	'.vue',
 	'.svelte',
 	'.json',
+	'.css',
+	'.scss',
+	'.sass',
+	'.less',
+	'.svg',
+	'.mdx',
+	'.html',
 ]
+
+/**
+ * What a written extension may actually be on disk. TypeScript's own advice for
+ * projects using ES modules is to import `./foo.js` and let it resolve to
+ * `foo.ts` — this package's own CLI sources do it — so an import naming a
+ * JavaScript file that isn't there is not necessarily an import naming nothing.
+ */
+const SOURCE_EXTENSION_STANDINS: Record<string, Array<string>> = {
+	'.js': ['.ts', '.tsx'],
+	'.mjs': ['.mts'],
+	'.cjs': ['.cts'],
+}
 
 /**
  * Does this relative import lead to a file that is there?
@@ -865,10 +899,15 @@ const IMPORTABLE_EXTENSIONS = [
  * to catch — one built from the name a component binds to instead of the name
  * of its file.
  *
- * A name with no match is tried again with each extension above appended, since
- * an import may leave its extension off. That fallback runs whether or not the
- * import already ended in something extension-shaped, because plenty do not
- * mean it: `./Table.Row` ends in `.Row`.
+ * The name is tried as written, then with each extension above appended (an
+ * import may leave its extension off), then with the stand-ins above swapped in
+ * for a written `.js`. The appending runs whether or not the import already
+ * ended in something extension-shaped, because plenty do not mean it:
+ * `./Table.Row` ends in `.Row`.
+ *
+ * **Every** match is considered, not just the first — a folder named `Button`
+ * sitting beside `Button.tsx` would otherwise shadow it and have `./Button`
+ * reported as missing.
  *
  * A match that turns out to be a folder only counts when the folder holds an
  * `index` file, so `./models.v2` naming a directory with nothing in it is still
@@ -881,22 +920,38 @@ function checkDoesImportLeadToAFile(
 	folder: string,
 	importedPath: string,
 ): boolean {
-	const absImportPath = resolve(folder, importedPath)
+	// A bundler query names the same file — `./icon.svg?raw`, `./x.css?url`.
+	const pathWithoutQuery = importedPath.split('?')[0] ?? importedPath
+	const absImportPath = resolve(folder, pathWithoutQuery)
 	const importFolder = dirname(absImportPath)
 	const entries = readFolderEntriesOrNull(importFolder)
 	if (!entries) return true
 	const wantedName = basename(absImportPath)
-	const namesToTry = [
+	const matchedNames = getNamesToTry(wantedName).filter((name) =>
+		entries.includes(name),
+	)
+	return matchedNames.some((name) =>
+		checkCanImportLandHere(join(importFolder, name)),
+	)
+}
+
+/** Every name on disk that an import written as `wantedName` could be asking for. */
+function getNamesToTry(wantedName: string): Array<string> {
+	const writtenExtension = extname(wantedName)
+	const standIns = SOURCE_EXTENSION_STANDINS[writtenExtension] ?? []
+	const nameWithoutExtension = wantedName.slice(
+		0,
+		wantedName.length - writtenExtension.length,
+	)
+	return [
 		wantedName,
 		...IMPORTABLE_EXTENSIONS.map((extension) => `${wantedName}${extension}`),
+		...standIns.map((extension) => `${nameWithoutExtension}${extension}`),
 	]
-	const matchedName = namesToTry.find((name) => entries.includes(name))
-	if (!matchedName) return false
-	return checkIsFileOrFilledFolder(join(importFolder, matchedName))
 }
 
 /** Is this a file, or a folder holding an `index` file an import could land on? */
-function checkIsFileOrFilledFolder(absPath: string): boolean {
+function checkCanImportLandHere(absPath: string): boolean {
 	const folderEntries = readFolderEntriesOrNull(absPath)
 	// Not a readable folder, so it is the file the caller matched by name.
 	if (!folderEntries) return true
@@ -1382,15 +1437,18 @@ export class ${className} {
 		info(`scaffolded angular component → ${rel(tsPath)}`)
 	}
 
-	// Only scaffold the HTML file when using an external template. Its name is
-	// worked out from the component's, so it clears the capitals check first —
-	// otherwise a `Button.Component.html` already sitting beside the component
-	// would be joined by a second template the component never points at.
+	// Only scaffold the HTML file when using an external template.
+	//
+	// No capitals check here, unlike the other names this tool works out: the
+	// only path that reaches an external template starts from a just-created
+	// `.component.html`, and this rebuilds that same name from that same file,
+	// so the folder always holds it under this exact spelling and the check
+	// could never say no. A `Button.Component.html` arriving some other way —
+	// a branch checkout, a copy — is not covered here or anywhere; see the
+	// naming section of the README.
 	if (templateLocation === 'external') {
 		const htmlPath = join(dir, `${base}.component.html`)
-		const isHtmlPathFree =
-			checkDoesFolderAgreeWithName(htmlPath) && isEmptyOrWhitespace(htmlPath)
-		if (isHtmlPathFree) {
+		if (isEmptyOrWhitespace(htmlPath)) {
 			writeScaffoldedFile(htmlPath, defaultAngularHtmlTemplate(componentName))
 			info(`scaffolded angular template → ${rel(htmlPath)}`)
 		}
@@ -1429,7 +1487,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 					/template:\s*`[\s\S]*?`/,
 					`templateUrl: './${base}.component.html'`,
 				)
-				writeScaffoldedFile(absTsPath, updated)
+				updateUserFile(absTsPath, updated)
 				info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
 			}
 		} catch (e) {

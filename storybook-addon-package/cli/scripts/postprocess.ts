@@ -2,7 +2,10 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
-import { checkIsNameWronglyCased } from './fileNames.js'
+import {
+	checkIsNameWronglyCased,
+	readFolderEntriesOrNull,
+} from './fileNames.js'
 
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
@@ -181,7 +184,7 @@ if (wrongCasedPaths.length > 0) {
 	// it with a story would be false twice over, since a stylesheet has no story
 	// and the check that drops it ignores capitals on purpose.
 	console.warn(
-		`[sb-deps] sb-deps matches these endings exactly, so it doesn't recognise these files — rename each one to its lower-case spelling: ${wrongCasedPaths.join(', ')}`,
+		`[sb-deps] these endings are matched exactly, so these files aren't recognised — rename each one to its lower-case spelling: ${wrongCasedPaths.join(', ')}`,
 	)
 }
 
@@ -266,6 +269,19 @@ function getRawStoryFileData(componentPath: string) {
 	return { storyFileData: null, storyFilePath: null }
 }
 
+/**
+ * A candidate story file's contents, or `false` when the folder holds no file
+ * under that exact name.
+ *
+ * Matched against the folder's own listing rather than asked of `existsSync`,
+ * which on Windows and macOS opens `Button.Stories.tsx` when asked for
+ * `Button.stories.tsx`. Reading that file would write a story id into the graph
+ * for a story Storybook's own exact matching never indexes, so the addon would
+ * show a link to a story that isn't there — and the same build would be naming
+ * that file as unrecognised in the report at the end.
+ */
 function getRawFileData(path: string) {
-	return existsSync(path) && readFileSync(path, 'utf8')
+	const entries = readFolderEntriesOrNull(dirname(path))
+	if (!entries?.includes(basename(path))) return false
+	return readFileSync(path, 'utf8')
 }
