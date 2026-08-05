@@ -87,6 +87,46 @@ const isComponent = (p: string) => {
 	)
 }
 
+/**
+ * Extensions that take part in pairing a component with its story. Everything
+ * else in the graph — an imported `logo.SVG`, a `.json` of copy — is here only
+ * because something imported it, and how it is spelled is the project's own
+ * business.
+ */
+const PAIRABLE_EXTENSIONS = [
+	'.ts',
+	'.tsx',
+	'.js',
+	'.jsx',
+	'.mts',
+	'.cts',
+	'.svelte',
+	'.vue',
+	'.mdx',
+]
+
+/**
+ * Is this a file whose spelling is worth telling the reader about?
+ *
+ * Only when correcting it would change something. That means the name is
+ * wrongly cased AND the file is one this tool pairs with a story: an asset it
+ * merely saw imported gains nothing from being renamed, and saying otherwise is
+ * worse than saying nothing — following that advice on a `logo.SVG` breaks the
+ * import that named it, on the very systems that tell capitals apart.
+ *
+ * Svelte decorators are out for the milder version of the same reason: a
+ * decorator has no story under either spelling, and nothing outside the
+ * watcher's create path reads the `.decorator` ending, so a rename buys the
+ * reader nothing.
+ */
+function checkIsWorthRenaming(path: string): boolean {
+	const fileName = basename(path)
+	if (!checkIsNameWronglyCased(fileName)) return false
+	const comparableName = fileName.toLowerCase()
+	if (comparableName.endsWith('.decorator.svelte')) return false
+	return PAIRABLE_EXTENSIONS.includes(extname(comparableName))
+}
+
 /** Simple keyed-push to avoid duplicates */
 function pushUnique(list: Array<StoryInfo>, item: StoryInfo) {
 	if (!list.some((x) => x.componentPath === item.componentPath)) {
@@ -128,7 +168,7 @@ const storyIdCache = new Map<string, ReturnType<typeof findStoryId>>()
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
 	if (!isComponent(from)) continue
-	if (checkIsNameWronglyCased(basename(from))) wrongCasedPaths.push(from)
+	if (checkIsWorthRenaming(from)) wrongCasedPaths.push(from)
 
 	const deps = (m.dependencies || [])
 		.map((d: any) => d.resolved && norm(d.resolved))

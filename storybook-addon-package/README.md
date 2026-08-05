@@ -114,16 +114,24 @@ Create a file with a capitalised ending and `sb-deps` says so, names the spellin
 
 Some wrongly-spelled files go unreported rather than being refused. Nothing breaks that renaming won't fix — there is just nothing telling you to rename them:
 
-- **Angular templates.** A `Button.Component.html` is never named by the end-of-build report on any system, because dependency-cruiser reports no `.html` files at all. On Windows and macOS the watcher still catches it as it is created; on Linux nothing catches it.
-- **On Linux and other systems that tell capitals apart**, three more go unseen even when created while the watcher runs: a file whose **extension** carries capitals (`Gadget.TSX`); a story outside your source folder (`stories/Foo.Stories.tsx`); and `Foo.Stories.mdx`. The last two have perfectly ordinary extensions — it is the `.Stories` part carrying the capitals.
+**None of these four are ever named by the end-of-build report**, on any system — dependency-cruiser only scans a fixed set of lower-case extensions, and only inside your source folder. On Windows and macOS the watcher still catches them the moment they are created; on Linux and other systems that tell capitals apart, nothing catches them at all:
 
-The watcher's patterns can't simply be widened to catch these: on those same systems, matching loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
+- **Angular templates** — `Button.Component.html`.
+- **A capitalised extension** — `Gadget.TSX`.
+- **A story outside your source folder** — `stories/Foo.Stories.tsx`.
+- **A capitalised story ending on `.mdx`** — `Foo.Stories.mdx`.
+
+The last two have perfectly ordinary extensions; it is the `.Stories` part carrying the capitals.
+
+The watcher's patterns can't be widened *across the board* to catch these: on those same systems, matching every pattern loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
 
 Only the endings are checked, so a component whose own name carries a dot is left alone — as long as none of its dotted parts is one of the four. `Table.Row.tsx` is fine; `My.Story.tsx` is read as a story file and refused.
 
 A story and its component also have to agree on capitals. Creating `cardlisting.stories.tsx` next to an existing `CardListing.tsx` is reported rather than guessed at: on Windows and macOS the two names open the same file and elsewhere they don't, so there is no reading of it that works everywhere.
 
-A Svelte decorator is the one exception — it is reported but still written. Creating `cardlisting.decorator.svelte` next to `CardListing.svelte` writes the decorator with an import that works on Windows and macOS and fails elsewhere, and says so. Refusing would leave you an empty file that only re-creating could ever fill, since a decorator is scaffolded on creation and not on save.
+A Svelte decorator is the one exception — it is reported but still written. Creating `cardlisting.decorator.svelte` next to `CardListing.svelte` writes the decorator with an import that works on Windows and macOS and fails elsewhere, and says so.
+
+The difference is that a refused decorator would be stuck, while a refused story isn't. An empty story file gets filled later — once you fix the clash, creating the component writes into the empty story that is already there. A decorator has no second file whose creation comes back for it, so refusing would leave you one that only deleting and re-creating could ever fill.
 
 **Tip — if a brand-new story shows `importers[path] is not a function` in Storybook**, just reload the browser tab. This is an occasional Storybook dev-server timing quirk when a story file is added while the dev server is running (the preview's internal module map briefly lags behind); a refresh clears it and the scaffolded files themselves are correct. Creating the **component** first (and letting the story auto-generate) avoids the hiccup entirely.
 

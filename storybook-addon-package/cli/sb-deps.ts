@@ -626,19 +626,31 @@ function getWrongCasedNameError(absPath: string): string | null {
  * A folder that can't be read says nothing either way, so it counts as agreeing.
  */
 function checkDoesFolderAgreeWithName(builtPath: string): boolean {
-	const folder = dirname(builtPath)
-	const builtFileName = basename(builtPath)
-	const entries = readFolderEntriesOrNull(folder)
-	if (!entries || entries.includes(builtFileName)) return true
-	const comparableFileName = builtFileName.toLowerCase()
-	const differentlyCasedName = entries.find(
-		(entry) => entry.toLowerCase() === comparableFileName,
-	)
+	const differentlyCasedName = getDifferentlyCasedName(builtPath)
 	if (!differentlyCasedName) return true
 	error(
-		`looked for "${builtFileName}" and found "${differentlyCasedName}" in ${rel(folder)} — the two names differ only in capitals, so rename one of them to match the other.`,
+		`looked for "${basename(builtPath)}" and found "${differentlyCasedName}" in ${rel(dirname(builtPath))} — the two names differ only in capitals, so rename one of them to match the other.`,
 	)
 	return false
+}
+
+/**
+ * The folder's own spelling of this name when it holds one differing only in
+ * capitals, or `null` when it agrees, holds nothing like it, or can't be read.
+ *
+ * Separate from the check above so the one caller that carries on anyway — the
+ * Svelte decorator — can write its own message instead of borrowing wording
+ * meant for the callers that stop.
+ */
+function getDifferentlyCasedName(builtPath: string): string | null {
+	const entries = readFolderEntriesOrNull(dirname(builtPath))
+	if (!entries) return null
+	const builtFileName = basename(builtPath)
+	if (entries.includes(builtFileName)) return null
+	const comparableFileName = builtFileName.toLowerCase()
+	return (
+		entries.find((entry) => entry.toLowerCase() === comparableFileName) ?? null
+	)
 }
 
 
@@ -936,19 +948,26 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// `card-listing.svelte`, so importing `./CardListing.svelte` would name a
 	// file that exists on no platform.
 	//
-	// This is the one derived name that is reported but not refused. Refusing
-	// would leave the decorator empty, and only a file's creation scaffolds one
-	// — so once the user had fixed the clash, saving the decorator would never
-	// fill it and the only way out would be to delete and re-create the file.
-	// Writing it and saying so leaves them a file they can edit either way.
+	// This is the one derived name that is reported but not refused, and the
+	// reason is recoverability rather than when scaffolding runs. Nothing here
+	// is scaffolded on save — every branch of the watcher fires on creation —
+	// but an empty *story* still gets filled later, because `findExistingStory`
+	// counts only a non-empty file, so creating the component once the clash is
+	// fixed writes into it. A decorator has no second file whose creation comes
+	// back for it, so refusing would leave one that only deleting and
+	// re-creating could ever fill.
 	const componentImportPath = `${wrappedBase}.svelte`
 	const wrappedComponentPath = join(
 		dirname(absDecoratorPath),
 		componentImportPath,
 	)
-	if (!checkDoesFolderAgreeWithName(wrappedComponentPath)) {
+	// Its own message, not the shared clash line: that one is written for the
+	// callers that abort, so it would tell the reader to rename a file that
+	// isn't there and imply nothing was written.
+	const differentlyCasedName = getDifferentlyCasedName(wrappedComponentPath)
+	if (differentlyCasedName) {
 		warn(
-			`wrote "${rel(absDecoratorPath)}" anyway, importing "./${componentImportPath}" — that import works on Windows and macOS and fails everywhere else until the two names match.`,
+			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}", but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`,
 		)
 	}
 
@@ -1822,15 +1841,16 @@ function startWatcher() {
 						// file at all — but only on the platforms where it is on.
 						// `MICROMATCH_OPTIONS` is `nocase` only where the file system
 						// ignores capitals, so on Linux these globs match exactly and
-						// several odd spellings match none of them: a capitalised
-						// extension (`Gadget.TSX`), an Angular template
-						// (`Button.Component.html`), a story outside the source folder,
-						// and a `.Stories.mdx`. Those files are dropped here, before the
-						// check, and nothing reports them. The README's naming section
-						// carries the same list; keep the two together. Widening the
-						// globs unconditionally is not the answer: it would also make
-						// `Src/` match a `srcDir` of `src` on a file system where those
-						// really are two folders.
+						// four odd spellings match none of them: a capitalised extension
+						// (`Gadget.TSX`), an Angular template (`Button.Component.html`),
+						// a story outside the source folder, and a `.Stories.mdx`. Those
+						// are dropped here, before the check, and nothing reports them —
+						// the graph filter can't either, since dependency-cruiser scans a
+						// fixed lower-case extension list inside the source folder only.
+						// The README's naming section carries the same four; keep the
+						// two together. Widening every glob unconditionally is not the
+						// answer: it would also make `Src/` match a `srcDir` of `src` on
+						// a file system where those really are two folders.
 						if (!includeMatchers.some((isMatch) => isMatch(relPath))) continue
 
 						if (ev.type === 'delete') {
@@ -1910,6 +1930,12 @@ function startWatcher() {
 							// check like every other name this tool works out for itself.
 							const tsPath = angularComponentTsPath(abs)
 							if (!checkDoesFolderAgreeWithName(tsPath)) {
+								// Say what became of the file they created, the way the
+								// other two decline paths do. The clash line above names
+								// the component, which is a file they never touched.
+								warn(
+									`left "${rel(abs)}" empty — nothing was written until the two names agree.`,
+								)
 								kick(ev.type, abs)
 								continue
 							}
