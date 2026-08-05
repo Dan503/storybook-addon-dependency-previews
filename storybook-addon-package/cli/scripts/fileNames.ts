@@ -8,14 +8,16 @@ import { readdirSync } from 'node:fs'
 // about the same file.
 
 /**
- * The name endings this tool reads meaning into, and the extensions each one
- * means anything on. `null` means any extension.
+ * The name endings this tool reads meaning into, with what has to be true for
+ * each to mean anything. `extensions: null` means any extension.
  *
- * Tied to an extension because an ending only earns attention where this tool
- * would act on it. `.decorator` is a Svelte idea, so a NestJS
- * `Roles.Decorator.ts` is none of our business — reading it as a decorator
- * would refuse a perfectly good file on creation and go on naming it in every
- * build afterwards. `.component` is the same for Angular.
+ * An ending only earns attention where this tool would act on it, and what
+ * establishes that differs by ending. `.decorator` is settled by the extension
+ * alone, since only Svelte writes `.svelte` — so a NestJS `Roles.Decorator.ts`
+ * is none of our business. `.component` is not: every framework here writes
+ * `.ts`, so an `Auth.Component.ts` in a React project would be refused on
+ * creation and named in every build afterwards for an Angular convention it
+ * has nothing to do with. That one needs the project itself to be Angular.
  *
  * Order does not matter: no entry is the ending of another, and they are
  * matched with `endsWith`, so `.story` can never claim part of a `.stories`
@@ -24,16 +26,27 @@ import { readdirSync } from 'node:fs'
 const NAME_ENDINGS: ReadonlyArray<{
 	ending: string
 	extensions: ReadonlyArray<string> | null
+	needsAngularProject?: boolean
 }> = [
 	{ ending: '.stories', extensions: null },
 	{ ending: '.story', extensions: null },
-	{ ending: '.component', extensions: ['.ts', '.html'] },
+	{
+		ending: '.component',
+		extensions: ['.ts', '.html'],
+		needsAngularProject: true,
+	},
 	{ ending: '.decorator', extensions: ['.svelte'] },
 ]
 
+/** What the caller knows about the project, for the endings that need it. */
+export type NameEndingContext = { isAngularProject: boolean }
+
 /** Is this file name spelled in a way the rest of the tool can't match exactly? */
-export function checkIsNameWronglyCased(fileName: string): boolean {
-	return getNameWithLowerCasedEndings(fileName) !== fileName
+export function checkIsNameWronglyCased(
+	fileName: string,
+	context: NameEndingContext,
+): boolean {
+	return getNameWithLowerCasedEndings(fileName, context) !== fileName
 }
 
 /**
@@ -72,30 +85,35 @@ export function readFolderEntriesOrNull(
  * A name this returns unchanged is one the rest of the tool can match exactly,
  * which is what lets its patterns spell one name and mean one file.
  */
-export function getNameWithLowerCasedEndings(fileName: string): string {
+export function getNameWithLowerCasedEndings(
+	fileName: string,
+	context: NameEndingContext,
+): string {
 	const lastDotIndex = fileName.lastIndexOf('.')
 	const hasExtension = lastDotIndex > 0
 	const extension = hasExtension ? fileName.slice(lastDotIndex) : ''
 	const comparableExtension = extension.toLowerCase()
 	let remainingName = hasExtension ? fileName.slice(0, lastDotIndex) : fileName
 	let endings = ''
-	let ending = getNameEnding(remainingName, comparableExtension)
+	let ending = getNameEnding(remainingName, comparableExtension, context)
 	while (ending) {
 		endings = ending + endings
 		remainingName = remainingName.slice(0, -ending.length)
-		ending = getNameEnding(remainingName, comparableExtension)
+		ending = getNameEnding(remainingName, comparableExtension, context)
 	}
 	return remainingName + endings + comparableExtension
 }
 
-/** Which ending this name carries that means something on `comparableExtension`, however it is capitalised, or `null` for none. */
+/** Which ending this name carries that means something here, however it is capitalised, or `null` for none. */
 function getNameEnding(
 	name: string,
 	comparableExtension: string,
+	context: NameEndingContext,
 ): string | null {
 	const comparableName = name.toLowerCase()
 	const match = NAME_ENDINGS.find((candidate) => {
 		if (!comparableName.endsWith(candidate.ending)) return false
+		if (candidate.needsAngularProject && !context.isAngularProject) return false
 		return candidate.extensions?.includes(comparableExtension) ?? true
 	})
 	return match?.ending ?? null

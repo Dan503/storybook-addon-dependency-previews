@@ -8,7 +8,12 @@ import {
 	readFolderEntriesOrNull,
 } from './fileNames.js'
 
-const [, , inPathArg, outPathArg, srcDirArg] = process.argv
+const [, , inPathArg, outPathArg, srcDirArg, projectFamilyArg] = process.argv
+// Only `.component` needs this, and only to tell an Angular component file from
+// an ordinary dotted `.ts` name. Absent on a direct invocation, which reads as
+// "not Angular" — the safe way round, since it means saying nothing rather than
+// telling someone to rename a file for a convention their project doesn't use.
+const nameEndingContext = { isAngularProject: projectFamilyArg === 'angular' }
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
 // `srcDirArg` can take three meaningfully-different shapes:
@@ -121,7 +126,7 @@ const PAIRABLE_EXTENSIONS = [
  */
 function checkIsWorthRenaming(path: string): boolean {
 	const fileName = basename(path)
-	if (!checkIsNameWronglyCased(fileName)) return false
+	if (!checkIsNameWronglyCased(fileName, nameEndingContext)) return false
 	const comparableName = fileName.toLowerCase()
 	if (comparableName.endsWith('.decorator.svelte')) return false
 	return PAIRABLE_EXTENSIONS.includes(extname(comparableName))
@@ -158,8 +163,8 @@ const wrongCasedPaths: Array<string> = []
  * changes during a build, so one answer per component is enough.
  *
  * Declared HERE, above the loop, not down beside `getStoryId` where it reads
- * more naturally — the loop is top-level code, so a `const` below it is still
- * in its temporal dead zone when the loop calls into it, and the build throws
+ * more naturally. The loop is top-level code, so a `const` written below it has
+ * not been created yet when the loop calls into it, and the build throws
  * `Cannot access 'storyIdCache' before initialization`. Same hazard the note on
  * `getRawStoryFileData` describes.
  */
@@ -246,12 +251,20 @@ if (wrongCasedPaths.length > 0) {
 	const renames = wrongCasedPaths.map((path) => {
 		const correctedPath = posix.join(
 			posix.dirname(path),
-			getNameWithLowerCasedEndings(basename(path)),
+			getNameWithLowerCasedEndings(basename(path), nameEndingContext),
 		)
 		return `"${path}" → "${correctedPath}"`
 	})
+	// Worded for a story file, because that is most of what reaches this list — a
+	// capitalised *extension* is never scanned at all, so what lands here is
+	// nearly always a `Button.Stories.tsx`. Saying "not paired with their
+	// stories" reads back to front when the file being named IS the story.
+	//
+	// It carries the Storybook half too, which is the part that decides what the
+	// reader does next: an oddly-spelled story is invisible in Storybook itself,
+	// not merely unlinked here. The watcher's own refusal says the same thing.
 	console.warn(
-		`[sb-deps] these endings are matched exactly, so these files aren't paired with their stories — rename each one: ${renames.join(', ')}`,
+		`[sb-deps] these endings are matched exactly, so these files aren't recognised as the stories or components they look like — and Storybook matches its own stories setting exactly too, so an oddly-spelled story file never shows up there either. Rename each one: ${renames.join(', ')}`,
 	)
 }
 

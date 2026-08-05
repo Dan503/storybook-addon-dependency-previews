@@ -250,7 +250,13 @@ function postprocessOnce() {
 	// `node` is a real executable on every platform (no `.cmd` shim), so we
 	// don't need shell:true here — args pass through directly with no quoting
 	// or escape concerns.
-	execFileSync('node', [post, rawPath, cookedPath, SRC_DIR], {
+	// The framework goes with it because `.component` only means anything in an
+	// Angular project — every framework here writes `.ts` files, so the
+	// extension alone can't tell an Angular component from an ordinary dotted
+	// name. The graph filter runs as its own process and has no other way to
+	// know.
+	const projectFamily = getProjectFrameworkFamily() ?? ''
+	execFileSync('node', [post, rawPath, cookedPath, SRC_DIR, projectFamily], {
 		cwd: projectRoot,
 		stdio: 'inherit',
 	})
@@ -262,11 +268,11 @@ function postprocessOnce() {
  * either capitalisation where the file system treats the two as one folder and
  * exactly where it doesn't.
  *
- * The case rule has to live in the pattern rather than in an ignore-case flag,
- * because both callers build a pattern whose *other* half must stay exact: the
- * `--include-only` argument is compiled by dependency-cruiser with no flags at
- * all, and `buildSrcSubpathRegex` pairs this folder prefix with a file ending
- * that is deliberately case-sensitive. A flag would loosen both halves.
+ * Neither caller can reach for an ignore-case flag, for its own reason. The
+ * `--include-only` argument is a string dependency-cruiser compiles itself, so
+ * there is nowhere to put a flag. `buildSrcSubpathRegex` compiles its own
+ * pattern but pairs this folder prefix with a file ending that is deliberately
+ * exact, so a flag would loosen the half that must not loosen.
  */
 function escapeForFolderRegex(folderName: string): string {
 	return IS_CASE_INSENSITIVE_PATH_FS
@@ -600,7 +606,9 @@ function isComponentsAngularHtml(relPath: string) {
  */
 function getWrongCasedNameError(absPath: string): string | null {
 	const fileName = basename(absPath)
-	const readyFileName = getNameWithLowerCasedEndings(fileName)
+	const readyFileName = getNameWithLowerCasedEndings(fileName, {
+		isAngularProject: getProjectFrameworkFamily() === 'angular',
+	})
 	if (readyFileName === fileName) return null
 	const isStoryFile = STORY_FILE_REGEX.test(readyFileName)
 	const storybookNote = isStoryFile
@@ -644,6 +652,20 @@ function checkDoesFolderAgreeWithName(builtPath: string): boolean {
  * Svelte decorator — can write its own message instead of borrowing wording
  * meant for the callers that stop.
  */
+/**
+ * Tell the user their just-created file was left alone because of a name clash.
+ *
+ * Written once because two paths reach it — a created story file and a created
+ * Angular template — and rewording this sentence has been most of the work in
+ * several review rounds. A reword landing at one site and not the other would
+ * tell two different stories about the same outcome.
+ */
+function warnFileLeftEmptyOverNameClash(absPath: string) {
+	warn(
+		`left "${rel(absPath)}" empty — nothing was written until the two names agree.`,
+	)
+}
+
 function getDifferentlyCasedName(builtPath: string): string | null {
 	const entries = readFolderEntriesOrNull(dirname(builtPath))
 	if (!entries) return null
@@ -878,10 +900,43 @@ function findExistingStory(
 	// `isEmptyOrWhitespace` reports a file it cannot read as NOT empty.
 	if (!folderEntries)
 		return allVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
+	// A variant the folder holds under different capitals is a story the user
+	// plainly has and this tool can't use. Reporting it and treating it as
+	// existing is what stops a second story being written beside it — matching
+	// exactly, on its own, would find nothing and write one silently. Checked
+	// across every variant, not just the canonical name, because the clash is
+	// just as real under the `.story` spelling or Angular's `.component` one.
+	const clashingPath = getFirstPathWithCapitalsClash(allVariants, folderEntries)
+	if (clashingPath) return clashingPath
 	const spelledVariants = allVariants.filter((path) =>
 		folderEntries.includes(basename(path)),
 	)
 	return spelledVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
+}
+
+/**
+ * The first of these story names the folder holds under different capitals,
+ * spelled the way the folder spells it — or `null` when it holds none of them
+ * that way. Says which two names clash before returning.
+ */
+function getFirstPathWithCapitalsClash(
+	variants: ReadonlyArray<string>,
+	folderEntries: ReadonlyArray<string>,
+): string | null {
+	for (const path of variants) {
+		const fileName = basename(path)
+		if (folderEntries.includes(fileName)) continue
+		const comparableFileName = fileName.toLowerCase()
+		const clashingName = folderEntries.find(
+			(entry) => entry.toLowerCase() === comparableFileName,
+		)
+		if (!clashingName) continue
+		error(
+			`looked for "${fileName}" and found "${clashingName}" in ${rel(dirname(path))} — the two names differ only in capitals, so rename one of them to match the other.`,
+		)
+		return join(dirname(path), clashingName)
+	}
+	return null
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1492,11 +1547,11 @@ function ensureStoryFor(
 	absCompPath: string,
 ): string | null {
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
-	// The story's name is built from the component's, so a story already on disk
-	// under the same name with different capitals has to be reported rather than
-	// written over — or, where capitals do tell files apart, doubled up on.
+	// No separate capitals check on the canonical name: `findExistingStory`
+	// covers it along with every other naming it considers, and reports a clash
+	// itself. Checking here as well would list the same folder twice and still
+	// miss the alternate spellings.
 	const canonicalStoryPath = storyPath(absCompPath)
-	if (!checkDoesFolderAgreeWithName(canonicalStoryPath)) return null
 	if (findExistingStory(canonicalStoryPath, framework)) return null
 	return story(absCompPath, canonicalStoryPath)
 }
@@ -1522,9 +1577,7 @@ function resolveComponentForStory(
 		// exports. Say so here, the same way the duplicate-story decline does —
 		// the name-clash line on its own explains the clash but not what
 		// happened to the file in front of them.
-		warn(
-			`left "${rel(absStoryPath)}" empty — nothing was written until the two names agree.`,
-		)
+		warnFileLeftEmptyOverNameClash(absStoryPath)
 		return null
 	}
 	return byExtension
@@ -1942,9 +1995,7 @@ function startWatcher() {
 								// entered on any created template, and a user who pasted
 								// one in still has everything they wrote.
 								if (isEmptyOrWhitespace(abs)) {
-									warn(
-										`left "${rel(abs)}" empty — nothing was written until the two names agree.`,
-									)
+									warnFileLeftEmptyOverNameClash(abs)
 								}
 								kick(ev.type, abs)
 								continue
