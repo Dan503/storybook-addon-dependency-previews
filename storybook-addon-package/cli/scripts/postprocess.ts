@@ -140,11 +140,14 @@ function pushUnique(list: Array<StoryInfo>, item: StoryInfo) {
 }
 
 const graph: Graph = {}
-// Files whose names the watcher would have turned away had it seen them being
-// created. It only ever sees creations, so a name that arrived by any other
-// route — a branch checkout, a copy, a file written before the addon was
-// installed — has never been reported. Collected in the loop below rather than
-// in a pass of its own.
+// Files worth telling the reader to rename: wrongly cased, and of a kind this
+// tool pairs with a story. The watcher only ever sees creations, so a name that
+// arrived by any other route — a branch checkout, a copy, a file written before
+// the addon was installed — has never been reported.
+//
+// Not every wrongly-cased file it sees: see `checkIsWorthRenaming` for which
+// are left out, and why saying nothing about those beats saying something
+// untrue. Collected in the loop below rather than in a pass of its own.
 //
 // Collected AFTER the is-this-a-component check, so a `styles.CSS` is left out.
 // Capitals in a stylesheet's extension genuinely cost nothing: the check that
@@ -331,7 +334,16 @@ function getRawStoryFileData(componentPath: string) {
 
 	// Angular: strip the `.component` suffix so e.g. `Button.component.ts`
 	// looks for `Button.stories.ts` rather than `Button.component.stories.ts`.
-	const angularBase = base.replace(/\.component$/, '')
+	//
+	// Only in an Angular project, for the reason `NAME_ENDINGS` gives: every
+	// framework writes `.ts`, so an `Auth.Component.ts` in a React project is an
+	// ordinary dotted name. Reading it as Angular here would pair it with an
+	// `Auth.stories.ts` that the watcher — which does check the framework —
+	// would never have written for it, so the two halves of this tool would
+	// disagree about the same file.
+	const angularBase = nameEndingContext.isAngularProject
+		? base.replace(/\.component$/, '')
+		: base
 	const isAngular = angularBase !== base
 
 	const componentExt = extname(componentPath)

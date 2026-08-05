@@ -1040,10 +1040,28 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 		dirname(absDecoratorPath),
 		componentImportPath,
 	)
-	// Looked up before the write, said after it — the sentence claims the file
-	// was written, so it must not be printed by a run that then fails to write
-	// one.
-	const differentlyCasedName = getDifferentlyCasedName(wrappedComponentPath)
+	// Looked up before the write, said after it — the sentences below claim the
+	// file was written, so they must not be printed by a run that then fails to
+	// write one.
+	const folderEntries = readFolderEntriesOrNull(dirname(absDecoratorPath))
+	const differentlyCasedName = getDifferentlyCasedName(
+		wrappedComponentPath,
+		folderEntries ?? undefined,
+	)
+	// `wrappedBase` is the part of the name before the FIRST dot, because a
+	// middle segment names a variant of the wrapped component by design —
+	// `Button.Primary.decorator.svelte` decorates `Button`. A component whose
+	// own name carries a dot reads the same way, so `Table.Row.decorator.svelte`
+	// is taken to decorate `Table` and imports a file that may not exist.
+	//
+	// That ambiguity is inherent in the naming convention, so this says what it
+	// did rather than trying to guess which reading was meant. One derived name,
+	// checked against the folder listing already read above — not a general
+	// check of what a written file imports.
+	const isWrappedComponentMissing =
+		!!folderEntries &&
+		!differentlyCasedName &&
+		!folderEntries.includes(componentImportPath)
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({
@@ -1071,6 +1089,11 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	if (differentlyCasedName) {
 		warn(
 			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}", but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`,
+		)
+	}
+	if (isWrappedComponentMissing) {
+		warn(
+			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}", and there is no such file beside it. A decorator wraps the component named before the first dot, so "Button.Primary.decorator.svelte" wraps "Button.svelte" — rename it, or create the file it names.`,
 		)
 	}
 }
