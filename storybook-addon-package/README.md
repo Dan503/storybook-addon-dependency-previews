@@ -112,7 +112,9 @@ Either way you end up with a working component + story pair. Only empty files ar
 
 Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. It also names any such files it finds already in your project at the end of each graph build, since it can only check the rest as they are created.
 
-Only the ending is checked, so a component whose own name carries a dot — `Table.Row.tsx` — is left alone.
+On Linux and other systems that tell capitals apart, one case slips through the watcher: a file whose **extension** carries capitals, like `Gadget.TSX`, matches none of the patterns the watcher listens on, so it is never seen and never reported. The end-of-build report doesn't catch it either, because dependency-cruiser resolves files by its own extension list. Rename such a file and everything works; there is just nothing to tell you to.
+
+Only the endings are checked, so a component whose own name carries a dot is left alone — as long as none of its dotted parts is one of the four. `Table.Row.tsx` is fine; `My.Story.tsx` is read as a story file and refused.
 
 A story and its component also have to agree on capitals. Creating `cardlisting.stories.tsx` next to an existing `CardListing.tsx` is reported rather than guessed at: on Windows and macOS the two names open the same file and elsewhere they don't, so there is no reading of it that works everywhere.
 

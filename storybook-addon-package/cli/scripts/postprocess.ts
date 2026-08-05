@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
-import { getLowerCasedEndings } from './fileNames.js'
+import { checkIsNameWronglyCased } from './fileNames.js'
 
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
@@ -101,8 +101,7 @@ const wrongCasedPaths: Array<string> = []
 
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
-	const fileName = basename(from)
-	if (getLowerCasedEndings(fileName) !== fileName) wrongCasedPaths.push(from)
+	if (checkIsNameWronglyCased(basename(from))) wrongCasedPaths.push(from)
 	if (!isComponent(from)) continue
 
 	const deps = (m.dependencies || [])
@@ -176,8 +175,13 @@ for (const k of Object.keys(graph)) {
 writeFileSync(outPath, JSON.stringify(graph, null, 2))
 
 if (wrongCasedPaths.length > 0) {
+	// Says what is true of the whole set rather than of the source files in it.
+	// The collection point sits before the is-this-a-component check, so a
+	// stylesheet can be in here too — and telling the user renaming it will pair
+	// it with a story would be false twice over, since a stylesheet has no story
+	// and the check that drops it ignores capitals on purpose.
 	console.warn(
-		`[sb-deps] these files have capitals in an ending sb-deps matches exactly, so nothing pairs them with a story — rename each one to its lower-case spelling: ${wrongCasedPaths.join(', ')}`,
+		`[sb-deps] sb-deps matches these endings exactly, so it doesn't recognise these files — rename each one to its lower-case spelling: ${wrongCasedPaths.join(', ')}`,
 	)
 }
 

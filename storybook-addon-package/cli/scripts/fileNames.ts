@@ -7,8 +7,9 @@
 
 /**
  * The name endings this tool reads meaning into, on top of a file's extension.
- * Longest first, so `.stories` is recognised before `.story` can claim part of
- * it.
+ * Order does not matter: no entry is the ending of another, and they are
+ * matched with `endsWith`, so `.story` can never claim part of a `.stories`
+ * name.
  */
 export const KNOWN_NAME_ENDINGS = [
 	'.stories',
@@ -17,17 +18,25 @@ export const KNOWN_NAME_ENDINGS = [
 	'.decorator',
 ]
 
+/** Is this file name spelled in a way the rest of the tool can't match exactly? */
+export function checkIsNameWronglyCased(fileName: string): boolean {
+	return getLowerCasedEndings(fileName) !== fileName
+}
+
 /**
  * The file name with its extension and any known endings lower-cased, and the
- * rest of the name left exactly as it was — so a component whose own name
- * carries a dot, like `Table.Row.tsx`, is returned untouched.
+ * rest of the name left exactly as it was.
+ *
+ * That leaves a dotted name alone only when none of its dotted parts is one of
+ * the endings above: `Table.Row.tsx` comes back untouched, while `My.Story.tsx`
+ * becomes `My.story.tsx`.
  *
  * Endings are peeled off one at a time because they stack: Angular's
  * `Button.Component.Stories.ts` has two, and fixing only the last one would
  * hand back a name still wrong in the middle.
  *
  * A name this returns unchanged is one the rest of the tool can match exactly,
- * which is what lets every other pattern spell one name and mean one file.
+ * which is what lets its patterns spell one name and mean one file.
  */
 export function getLowerCasedEndings(fileName: string): string {
 	const lastDotIndex = fileName.lastIndexOf('.')
