@@ -857,7 +857,13 @@ function findExistingStory(
 	// hit would decline to write a story on the strength of a file Storybook's
 	// own exact matching never indexes, and say nothing about why.
 	const folderEntries = readFolderEntriesOrNull(dirname(canonicalStoryPath))
-	if (!folderEntries) return null
+	// A folder that can't be listed must not read as "no story here": both
+	// callers take that as leave to write, and the scaffolders write without
+	// asking again, so a story already on disk would be replaced by a template.
+	// Fall back to the plain probes, which fail the other way —
+	// `isEmptyOrWhitespace` reports a file it cannot read as NOT empty.
+	if (!folderEntries)
+		return allVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
 	const spelledVariants = allVariants.filter((path) =>
 		folderEntries.includes(basename(path)),
 	)
@@ -930,14 +936,21 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// `card-listing.svelte`, so importing `./CardListing.svelte` would name a
 	// file that exists on no platform.
 	//
-	// Deliberately NOT put through `checkDoesFolderAgreeWithName`, unlike the
-	// other names this tool works out for itself. Refusing here would leave the
-	// decorator empty, and only a file's creation scaffolds it — so after the
-	// user fixed the clash, saving the decorator would never fill it and the
-	// only way out would be to delete and re-create the file. The import report
-	// covers the same ground without that trap: it reads the folder exactly, so
-	// a wrapped component sitting there under different capitals is named.
+	// This is the one derived name that is reported but not refused. Refusing
+	// would leave the decorator empty, and only a file's creation scaffolds one
+	// — so once the user had fixed the clash, saving the decorator would never
+	// fill it and the only way out would be to delete and re-create the file.
+	// Writing it and saying so leaves them a file they can edit either way.
 	const componentImportPath = `${wrappedBase}.svelte`
+	const wrappedComponentPath = join(
+		dirname(absDecoratorPath),
+		componentImportPath,
+	)
+	if (!checkDoesFolderAgreeWithName(wrappedComponentPath)) {
+		warn(
+			`wrote "${rel(absDecoratorPath)}" anyway, importing "./${componentImportPath}" — that import works on Windows and macOS and fails everywhere else until the two names match.`,
+		)
+	}
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({

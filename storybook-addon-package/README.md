@@ -123,6 +123,8 @@ Only the endings are checked, so a component whose own name carries a dot is lef
 
 A story and its component also have to agree on capitals. Creating `cardlisting.stories.tsx` next to an existing `CardListing.tsx` is reported rather than guessed at: on Windows and macOS the two names open the same file and elsewhere they don't, so there is no reading of it that works everywhere.
 
+A Svelte decorator is the one exception — it is reported but still written. Creating `cardlisting.decorator.svelte` next to `CardListing.svelte` writes the decorator with an import that works on Windows and macOS and fails elsewhere, and says so. Refusing would leave you an empty file that only re-creating could ever fill, since a decorator is scaffolded on creation and not on save.
+
 **Tip — if a brand-new story shows `importers[path] is not a function` in Storybook**, just reload the browser tab. This is an occasional Storybook dev-server timing quirk when a story file is added while the dev server is running (the preview's internal module map briefly lags behind); a refresh clears it and the scaffolded files themselves are correct. Creating the **component** first (and letting the story auto-generate) avoids the hiccup entirely.
 
 ## Configuration file (optional)

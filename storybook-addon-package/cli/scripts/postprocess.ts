@@ -99,14 +99,36 @@ const graph: Graph = {}
 // created. It only ever sees creations, so a name that arrived by any other
 // route — a branch checkout, a copy, a file written before the addon was
 // installed — has never been reported. Collected in the loop below rather than
-// in a pass of its own, and before the `isComponent` check, so a stylesheet
-// with a capitalised extension is named too.
+// in a pass of its own.
+//
+// Collected AFTER the is-this-a-component check, so a `styles.CSS` is left out.
+// Capitals in a stylesheet's extension genuinely cost nothing: the check that
+// drops stylesheets ignores them on purpose, and the watcher never watches
+// stylesheets, so telling the user to rename one would be advice with no
+// benefit behind it.
 const wrongCasedPaths: Array<string> = []
+
+/**
+ * Story answers already worked out, keyed by component path.
+ *
+ * The loop below asks about the same component once for itself and again for
+ * every edge it sits on, and each answer costs a directory listing plus a read
+ * of the story file. On this repo's own React example that is 192 questions
+ * about 77 components, and the watcher rebuilds on every save. Nothing on disk
+ * changes during a build, so one answer per component is enough.
+ *
+ * Declared HERE, above the loop, not down beside `getStoryId` where it reads
+ * more naturally — the loop is top-level code, so a `const` below it is still
+ * in its temporal dead zone when the loop calls into it, and the build throws
+ * `Cannot access 'storyIdCache' before initialization`. Same hazard the note on
+ * `getRawStoryFileData` describes.
+ */
+const storyIdCache = new Map<string, ReturnType<typeof findStoryId>>()
 
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
-	if (checkIsNameWronglyCased(basename(from))) wrongCasedPaths.push(from)
 	if (!isComponent(from)) continue
+	if (checkIsNameWronglyCased(basename(from))) wrongCasedPaths.push(from)
 
 	const deps = (m.dependencies || [])
 		.map((d: any) => d.resolved && norm(d.resolved))
@@ -153,16 +175,13 @@ for (const m of raw.modules || []) {
 		pushUnique(graph[from].builtWith, builtWithEntry)
 
 		// ---- usedIn: to ← from
-		// `topLevelFromStory` above is this same lookup on this same path, so it
-		// is reused rather than asked again once per edge.
-		const fromStory = topLevelFromStory
 		const usedInEntry: StoryInfo = {
 			componentPath: from,
-			...(fromStory && {
-				storyId: fromStory.id,
-				storyTitle: fromStory.title,
-				storyTitlePath: fromStory.titlePath,
-				storyFilePath: fromStory.filePath,
+			...(topLevelFromStory && {
+				storyId: topLevelFromStory.id,
+				storyTitle: topLevelFromStory.title,
+				storyTitlePath: topLevelFromStory.titlePath,
+				storyFilePath: topLevelFromStory.filePath,
 			}),
 		}
 		pushUnique(graph[to].usedIn, usedInEntry)
@@ -181,19 +200,33 @@ for (const k of Object.keys(graph)) {
 writeFileSync(outPath, JSON.stringify(graph, null, 2))
 
 if (wrongCasedPaths.length > 0) {
-	// Says what is true of the whole set rather than of the source files in it.
-	// The collection point sits before the is-this-a-component check, so a
-	// stylesheet can be in here too — and for one of those, "not recognised" is
-	// wrong twice over: the check that drops stylesheets ignores capitals on
-	// purpose, so a `styles.CSS` IS recognised and correctly dropped, and
-	// renaming it changes nothing. What holds for every file in the list is
-	// only that its name is read as spelled.
+	// Each rename is shown as a whole path, not a bare file name — several
+	// folders can hold the same name, and a bare one reads as though the file
+	// should be renamed into the folder the build was run from.
+	const renames = wrongCasedPaths.map((path) => {
+		const correctedPath = posix.join(
+			posix.dirname(path),
+			getNameWithLowerCasedEndings(basename(path)),
+		)
+		return `"${path}" → "${correctedPath}"`
+	})
 	console.warn(
-		`[sb-deps] these endings are matched exactly, so these names don't mean what they look like they mean — rename each one: ${wrongCasedPaths.map((path) => `"${path}" → "${getNameWithLowerCasedEndings(basename(path))}"`).join(', ')}`,
+		`[sb-deps] these endings are matched exactly, so these files aren't paired with their stories — rename each one: ${renames.join(', ')}`,
 	)
 }
 
 function getStoryId(componentPath: string) {
+	const cached = storyIdCache.get(componentPath)
+	// Only `undefined` means unasked. `null` is a real stored answer — "this
+	// component has no story" — and it is the answer for most of them, so it has
+	// to count as a hit or the cache would miss on exactly the common case.
+	if (cached !== undefined) return cached
+	const storyId = findStoryId(componentPath)
+	storyIdCache.set(componentPath, storyId)
+	return storyId
+}
+
+function findStoryId(componentPath: string) {
 	const rawFileData = getRawStoryFileData(componentPath)
 	if (!rawFileData.storyFileData) return null
 
