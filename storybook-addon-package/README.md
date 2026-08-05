@@ -112,7 +112,7 @@ Either way you end up with a working component + story pair. Only empty files ar
 
 Two more endings are read, but only where they mean anything. `.decorator` is read on `.svelte` files, since only Svelte writes those. `.component` is read on `.ts` and `.html` files **in an Angular project only** — every framework writes `.ts`, so the extension alone can't tell an Angular component from an ordinary dotted name. Anywhere else the two mean nothing here: a NestJS `Roles.Decorator.ts`, or an `Auth.Component.ts` in a React project, is left alone.
 
-Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. It also names any such files it finds already in your project at the end of each graph build, since it can only check the rest as they are created.
+Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. Since it can only check files as they are created, it also names ones already in your project at the end of each graph build — but only where renaming would change something, which means components and story files. A Svelte decorator is left out, because it has no story under either spelling, and so is anything with an extension this tool doesn't pair, such as an imported `logo.SVG`: renaming that would break the import that named it.
 
 Some wrongly-spelled files go unreported rather than being refused. Nothing breaks that renaming won't fix — there is just nothing telling you to rename them:
 

@@ -1040,15 +1040,10 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 		dirname(absDecoratorPath),
 		componentImportPath,
 	)
-	// Its own message, not the shared clash line: that one is written for the
-	// callers that abort, so it would tell the reader to rename a file that
-	// isn't there and imply nothing was written.
+	// Looked up before the write, said after it — the sentence claims the file
+	// was written, so it must not be printed by a run that then fails to write
+	// one.
 	const differentlyCasedName = getDifferentlyCasedName(wrappedComponentPath)
-	if (differentlyCasedName) {
-		warn(
-			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}", but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`,
-		)
-	}
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({
@@ -1070,6 +1065,14 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 `
 	writeFileSync(absDecoratorPath, tpl, 'utf8')
 	info(`scaffolded svelte decorator → ${rel(absDecoratorPath)}`)
+	// Its own message, not the shared clash line: that one is written for the
+	// callers that abort, so it would tell the reader to rename a file that
+	// isn't there and imply nothing was written.
+	if (differentlyCasedName) {
+		warn(
+			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}", but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`,
+		)
+	}
 }
 
 function scaffoldStoryForSvelteComponent(
