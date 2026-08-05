@@ -110,7 +110,7 @@ Either way you end up with a working component + story pair. Only empty files ar
 
 `sb-deps` matches file endings exactly, so an extension has to be spelled in lower case, and so do the `.stories` and `.story` parts. `Button.stories.tsx` works; `Button.Stories.tsx` and `Button.TSX` do not. Storybook matches its own `stories` setting exactly too, so a story file spelled with capitals would never show up there whatever this tool did with it.
 
-Two more endings are read, but only on the files whose frameworks use them: `.component` on `.ts` and `.html`, and `.decorator` on `.svelte`. Anywhere else they mean nothing here — a NestJS `Roles.Decorator.ts` is left alone.
+Two more endings are read, but only where they mean anything. `.decorator` is read on `.svelte` files, since only Svelte writes those. `.component` is read on `.ts` and `.html` files **in an Angular project only** — every framework writes `.ts`, so the extension alone can't tell an Angular component from an ordinary dotted name. Anywhere else the two mean nothing here: a NestJS `Roles.Decorator.ts`, or an `Auth.Component.ts` in a React project, is left alone.
 
 Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. It also names any such files it finds already in your project at the end of each graph build, since it can only check the rest as they are created.
 
@@ -127,7 +127,7 @@ The last two have perfectly ordinary extensions; it is the `.Stories` part carry
 
 The watcher's patterns can't be widened *across the board* to catch these: on those same systems, matching every pattern loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
 
-Only the endings are checked, so a component whose own name carries a dot is left alone — as long as none of its dotted parts is an ending that means something on that extension. `Table.Row.tsx` is fine; `My.Story.tsx` is read as a story file and refused.
+Only the endings are checked, so a component whose own name carries a dot is left alone — as long as none of its dotted parts is an ending that means something here, on that extension and in that framework. `Table.Row.tsx` is fine; `My.Story.tsx` is read as a story file and refused.
 
 A story and its component also have to agree on capitals. Creating `cardlisting.stories.tsx` next to an existing `CardListing.tsx` is reported rather than guessed at: on Windows and macOS the two names open the same file and elsewhere they don't, so there is no reading of it that works everywhere.
 

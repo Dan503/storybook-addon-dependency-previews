@@ -73,10 +73,11 @@ export function readFolderEntriesOrNull(
  * rest of the name left exactly as it was.
  *
  * That leaves a dotted name alone only when none of its dotted parts is an
- * ending that means something on this extension: `Table.Row.tsx` comes back
- * untouched, `My.Story.tsx` becomes `My.story.tsx`, and a NestJS
- * `Roles.Decorator.ts` is untouched because `.decorator` is only read on
- * `.svelte`.
+ * ending that means something here — on this extension, and for this project's
+ * framework. `Table.Row.tsx` comes back untouched, `My.Story.tsx` becomes
+ * `My.story.tsx`, a NestJS `Roles.Decorator.ts` is untouched because
+ * `.decorator` is only read on `.svelte`, and an `Auth.Component.ts` is
+ * untouched outside an Angular project.
  *
  * Endings are peeled off one at a time because they stack: Angular's
  * `Button.Component.Stories.ts` has two, and fixing only the last one would

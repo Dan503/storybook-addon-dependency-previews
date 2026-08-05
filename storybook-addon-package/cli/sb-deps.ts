@@ -591,10 +591,11 @@ function isComponentsAngularHtml(relPath: string) {
 
 /**
  * The message to print when a file's name spells its extension, or one of
- * the endings in `scripts/fileNames.ts` that mean something on that extension,
- * with capitals — or `null` when the name is fine. `.stories` and `.story`
- * count on any extension; `.component` and `.decorator` only on the ones their
- * framework uses, so a NestJS `Roles.Decorator.ts` is left alone.
+ * the endings in `scripts/fileNames.ts` that mean something here, with capitals
+ * — or `null` when the name is fine. `.stories` and `.story` count on any
+ * extension; `.decorator` only on `.svelte`; `.component` only on `.ts` and
+ * `.html`, and only in an Angular project, which is why the project's framework
+ * is passed in.
  *
  * The patterns in this file each spell one name and mean one file, which is
  * only safe because this check turns the odd spellings away first.
@@ -666,8 +667,31 @@ function warnFileLeftEmptyOverNameClash(absPath: string) {
 	)
 }
 
-function getDifferentlyCasedName(builtPath: string): string | null {
-	const entries = readFolderEntriesOrNull(dirname(builtPath))
+/**
+ * Say which two names clash. Written once because three paths reach it — the
+ * checks on a derived component, template and story name — and it is the
+ * sentence a reader acts on.
+ */
+function reportNamesClash(builtPath: string, onDiskName: string) {
+	error(
+		`looked for "${basename(builtPath)}" and found "${onDiskName}" in ${rel(dirname(builtPath))} — the two names differ only in capitals, so rename one of them to match the other.`,
+	)
+}
+
+/**
+ * The folder's own spelling of this name when it holds one differing only in
+ * capitals, or `null` when it agrees, holds nothing like it, or can't be read.
+ *
+ * Separate from `checkDoesFolderAgreeWithName` so the callers that carry on
+ * anyway — the Svelte decorator, and the story lookup, which only reports a
+ * clash once it knows it is going to act on it — can decide for themselves what
+ * to say.
+ */
+function getDifferentlyCasedName(
+	builtPath: string,
+	preReadEntries?: ReadonlyArray<string>,
+): string | null {
+	const entries = preReadEntries ?? readFolderEntriesOrNull(dirname(builtPath))
 	if (!entries) return null
 	const builtFileName = basename(builtPath)
 	if (entries.includes(builtFileName)) return null
@@ -857,10 +881,13 @@ export const Primary: Story = {
  * means the story-first caller needs no "ignore the file I'm about to fill"
  * argument: that file is empty by definition, so it can never match here.
  */
+/** A story already on disk: where it is, and whether it was found only by ignoring capitals. */
+type ExistingStory = { path: string; isNamesClash: boolean }
+
 function findExistingStory(
 	canonicalStoryPath: string,
 	framework: StoryFramework,
-): string | null {
+): ExistingStory | null {
 	const namingVariants = [canonicalStoryPath]
 	const alternateStoryPath = getAlternateStoryNaming(canonicalStoryPath)
 	if (alternateStoryPath) namingVariants.push(alternateStoryPath)
@@ -898,45 +925,47 @@ function findExistingStory(
 	// asking again, so a story already on disk would be replaced by a template.
 	// Fall back to the plain probes, which fail the other way —
 	// `isEmptyOrWhitespace` reports a file it cannot read as NOT empty.
-	if (!folderEntries)
-		return allVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
-	// A variant the folder holds under different capitals is a story the user
-	// plainly has and this tool can't use. Reporting it and treating it as
-	// existing is what stops a second story being written beside it — matching
-	// exactly, on its own, would find nothing and write one silently. Checked
-	// across every variant, not just the canonical name, because the clash is
-	// just as real under the `.story` spelling or Angular's `.component` one.
-	const clashingPath = getFirstPathWithCapitalsClash(allVariants, folderEntries)
-	if (clashingPath) return clashingPath
-	const spelledVariants = allVariants.filter((path) =>
-		folderEntries.includes(basename(path)),
+	if (!folderEntries) {
+		const foundPath = allVariants.find((path) => !isEmptyOrWhitespace(path))
+		return foundPath ? { path: foundPath, isNamesClash: false } : null
+	}
+	// A variant the folder holds under different capitals is the same story to
+	// the user, so it is considered alongside the ones spelled exactly. Matching
+	// exactly on its own would find nothing and write a second story beside it.
+	// Every variant, not just the canonical name, because the clash is just as
+	// real under the `.story` spelling or Angular's `.component` one.
+	const onDiskVariants = allVariants
+		.map((builtPath) => ({
+			builtPath,
+			onDiskPath: getOnDiskVariantPath(builtPath, folderEntries),
+		}))
+		.filter((variant) => variant.onDiskPath !== null)
+	// The emptiness rule applies to a clashing name like any other: an empty
+	// file is not a story whatever it is called, so it must not suppress the
+	// write — and the clash is only worth reporting once it is going to.
+	const found = onDiskVariants.find(
+		(variant) => !isEmptyOrWhitespace(variant.onDiskPath as string),
 	)
-	return spelledVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
+	if (!found) return null
+	const onDiskPath = found.onDiskPath as string
+	const isNamesClash = onDiskPath !== found.builtPath
+	if (isNamesClash) reportNamesClash(found.builtPath, basename(onDiskPath))
+	return { path: onDiskPath, isNamesClash }
 }
 
 /**
- * The first of these story names the folder holds under different capitals,
- * spelled the way the folder spells it — or `null` when it holds none of them
- * that way. Says which two names clash before returning.
+ * Where this story name actually is on disk — the name itself when the folder
+ * spells it that way, the folder's own spelling when it differs only in
+ * capitals, or `null` when the folder holds neither.
  */
-function getFirstPathWithCapitalsClash(
-	variants: ReadonlyArray<string>,
+function getOnDiskVariantPath(
+	builtPath: string,
 	folderEntries: ReadonlyArray<string>,
 ): string | null {
-	for (const path of variants) {
-		const fileName = basename(path)
-		if (folderEntries.includes(fileName)) continue
-		const comparableFileName = fileName.toLowerCase()
-		const clashingName = folderEntries.find(
-			(entry) => entry.toLowerCase() === comparableFileName,
-		)
-		if (!clashingName) continue
-		error(
-			`looked for "${fileName}" and found "${clashingName}" in ${rel(dirname(path))} — the two names differ only in capitals, so rename one of them to match the other.`,
-		)
-		return join(dirname(path), clashingName)
-	}
-	return null
+	if (folderEntries.includes(basename(builtPath))) return builtPath
+	const differentlyCasedName = getDifferentlyCasedName(builtPath, folderEntries)
+	if (!differentlyCasedName) return null
+	return join(dirname(builtPath), differentlyCasedName)
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1765,9 +1794,20 @@ function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null 
 		// Say why. The empty trigger file stays on disk and still matches the
 		// Storybook globs, so Storybook will report a file with no exports —
 		// which is baffling without a line explaining what suppressed the fill.
-		warn(
-			`left "${rel(absStoryPath)}" empty — "${rel(existingStory)}" is already the story for this component. Delete whichever one you don't want.`,
-		)
+		//
+		// Which "why" depends on what was found. A story under a genuinely
+		// different naming is a duplicate, and deleting one of the pair is the
+		// fix. One found only by ignoring capitals is not a duplicate — the
+		// clash line already printed says to make the two names agree, and
+		// telling them to delete a file as well would be a second, contrary
+		// instruction about the same pair.
+		if (existingStory.isNamesClash) {
+			warnFileLeftEmptyOverNameClash(absStoryPath)
+		} else {
+			warn(
+				`left "${rel(absStoryPath)}" empty — "${rel(existingStory.path)}" is already the story for this component. Delete whichever one you don't want.`,
+			)
+		}
 		return null
 	}
 	const isComponentMissing =
