@@ -639,20 +639,10 @@ function getWrongCasedNameError(absPath: string): string | null {
 function checkDoesFolderAgreeWithName(builtPath: string): boolean {
 	const differentlyCasedName = getDifferentlyCasedName(builtPath)
 	if (!differentlyCasedName) return true
-	error(
-		`looked for "${basename(builtPath)}" and found "${differentlyCasedName}" in ${rel(dirname(builtPath))} — the two names differ only in capitals, so rename one of them to match the other.`,
-	)
+	reportNamesClash(builtPath, differentlyCasedName)
 	return false
 }
 
-/**
- * The folder's own spelling of this name when it holds one differing only in
- * capitals, or `null` when it agrees, holds nothing like it, or can't be read.
- *
- * Separate from the check above so the one caller that carries on anyway — the
- * Svelte decorator — can write its own message instead of borrowing wording
- * meant for the callers that stop.
- */
 /**
  * Tell the user their just-created file was left alone because of a name clash.
  *
@@ -865,6 +855,9 @@ export const Primary: Story = {
 	return targetStoryPath
 }
 
+/** A story already on disk: where it is, and whether it was found only by ignoring capitals. */
+type ExistingStory = { path: string; isNamesClash: boolean }
+
 /**
  * Return the on-disk story file for `canonicalStoryPath` if one already exists —
  * under either `.story.` / `.stories.` naming AND, for React, either extension
@@ -881,9 +874,6 @@ export const Primary: Story = {
  * means the story-first caller needs no "ignore the file I'm about to fill"
  * argument: that file is empty by definition, so it can never match here.
  */
-/** A story already on disk: where it is, and whether it was found only by ignoring capitals. */
-type ExistingStory = { path: string; isNamesClash: boolean }
-
 function findExistingStory(
 	canonicalStoryPath: string,
 	framework: StoryFramework,
@@ -934,38 +924,35 @@ function findExistingStory(
 	// exactly on its own would find nothing and write a second story beside it.
 	// Every variant, not just the canonical name, because the clash is just as
 	// real under the `.story` spelling or Angular's `.component` one.
-	const onDiskVariants = allVariants
-		.map((builtPath) => ({
-			builtPath,
-			onDiskPath: getOnDiskVariantPath(builtPath, folderEntries),
-		}))
-		.filter((variant) => variant.onDiskPath !== null)
-	// The emptiness rule applies to a clashing name like any other: an empty
-	// file is not a story whatever it is called, so it must not suppress the
-	// write — and the clash is only worth reporting once it is going to.
-	const found = onDiskVariants.find(
-		(variant) => !isEmptyOrWhitespace(variant.onDiskPath as string),
+	//
+	// A name the folder spells exactly wins over one it only spells with
+	// different capitals, wherever each sits in the variant order. Otherwise a
+	// user with a real duplicate — an exactly-spelled `Foo.story.ts` beside the
+	// `Foo.stories.ts` being built — could be sent to fix a capitals clash on
+	// some other variant instead of the duplicate actually in front of them.
+	//
+	// The emptiness rule applies to both alike: an empty file is not a story
+	// whatever it is called, so it must not suppress the write.
+	const spelledExactly = allVariants.filter((path) =>
+		folderEntries.includes(basename(path)),
 	)
-	if (!found) return null
-	const onDiskPath = found.onDiskPath as string
-	const isNamesClash = onDiskPath !== found.builtPath
-	if (isNamesClash) reportNamesClash(found.builtPath, basename(onDiskPath))
-	return { path: onDiskPath, isNamesClash }
-}
+	const foundExactly = spelledExactly.find(
+		(path) => !isEmptyOrWhitespace(path),
+	)
+	if (foundExactly) return { path: foundExactly, isNamesClash: false }
 
-/**
- * Where this story name actually is on disk — the name itself when the folder
- * spells it that way, the folder's own spelling when it differs only in
- * capitals, or `null` when the folder holds neither.
- */
-function getOnDiskVariantPath(
-	builtPath: string,
-	folderEntries: ReadonlyArray<string>,
-): string | null {
-	if (folderEntries.includes(basename(builtPath))) return builtPath
-	const differentlyCasedName = getDifferentlyCasedName(builtPath, folderEntries)
-	if (!differentlyCasedName) return null
-	return join(dirname(builtPath), differentlyCasedName)
+	const clashingVariants = allVariants.flatMap((builtPath) => {
+		const onDiskName = getDifferentlyCasedName(builtPath, folderEntries)
+		if (!onDiskName) return []
+		return [{ builtPath, onDiskName, path: join(dirname(builtPath), onDiskName) }]
+	})
+	// Reported only here, once it is settled that this is the story being used.
+	const foundClashing = clashingVariants.find(
+		(variant) => !isEmptyOrWhitespace(variant.path),
+	)
+	if (!foundClashing) return null
+	reportNamesClash(foundClashing.builtPath, foundClashing.onDiskName)
+	return { path: foundClashing.path, isNamesClash: true }
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1576,12 +1563,15 @@ function ensureStoryFor(
 	absCompPath: string,
 ): string | null {
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
-	// No separate capitals check on the canonical name: `findExistingStory`
-	// covers it along with every other naming it considers, and reports a clash
-	// itself. Checking here as well would list the same folder twice and still
-	// miss the alternate spellings.
 	const canonicalStoryPath = storyPath(absCompPath)
 	if (findExistingStory(canonicalStoryPath, framework)) return null
+	// Nothing above was worth reusing, so this name is about to be written to.
+	// That is a narrower question than the one just asked, and it needs asking
+	// separately: an EMPTY file under this name with different capitals is
+	// correctly not a story, so it doesn't stop the lookup — but it is still a
+	// file this write would land on or beside, and the two names still have to
+	// agree before anything is written.
+	if (!checkDoesFolderAgreeWithName(canonicalStoryPath)) return null
 	return story(absCompPath, canonicalStoryPath)
 }
 
