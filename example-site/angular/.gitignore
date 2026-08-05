@@ -8,7 +8,6 @@
 
 # generated files
 documentation.json
-.storybook/dependency-previews*.json
 
 # Node
 /node_modules
