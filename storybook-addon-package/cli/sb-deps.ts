@@ -53,13 +53,48 @@ const SB_PORT =
 // ───────────────────────────────────────────────────────────────────────────────
 // Paths
 // ───────────────────────────────────────────────────────────────────────────────
-/** A path with any symlinks resolved, or the path unchanged if it can't be resolved. */
+/**
+ * A path with any symlinks resolved, or the path unchanged if it can't be
+ * resolved. Keeps whatever capitals it was handed — for the question of *which
+ * file* a name opens, use `getCanonicalPathOrNull`.
+ */
 function resolveRealPath(path: string): string {
+	return tryResolvePath(path, realpathSync) ?? path
+}
+
+/**
+ * The path as the file system itself spells it — symlinks resolved and capitals
+ * canonicalised — or `null` when it can't be resolved.
+ *
+ * The `.native` variant is what makes this answer "which file is this?": plain
+ * `realpathSync` hands back the capitals it was given, so one file reached by
+ * two spellings would come back as two different strings.
+ */
+function getCanonicalPathOrNull(path: string): string | null {
+	return tryResolvePath(path, realpathSync.native)
+}
+
+function tryResolvePath(
+	path: string,
+	resolver: (p: string) => string,
+): string | null {
 	try {
-		return realpathSync(path)
+		return resolver(path)
 	} catch {
-		return path
+		return null
 	}
+}
+
+/**
+ * Are these two names the same file? `null` when either can't be resolved, so a
+ * caller that must not act on a guess can tell "don't know" from a definite no.
+ */
+function checkAreSameFile(pathA: string, pathB: string): boolean | null {
+	const canonicalA = getCanonicalPathOrNull(pathA)
+	if (!canonicalA) return null
+	const canonicalB = getCanonicalPathOrNull(pathB)
+	if (!canonicalB) return null
+	return canonicalA === canonicalB
 }
 
 // Resolved through any symlinks, because the watcher reports paths under the
@@ -1508,16 +1543,19 @@ function ensureStoryFor(
 		framework,
 	)
 	if (existingStory) {
-		// The probe matches ignoring capitals on every platform, so where capitals
-		// DO distinguish files it can answer with a genuinely different file — and
-		// the user is then left with a component, no story written, and nothing
-		// said about why. Elsewhere a differing name is the same file under another
-		// spelling, which the casing warning below already covers, so saying it
-		// here too would report one file as two problems.
-		const isDifferentFileEntirely =
-			!IS_CASE_INSENSITIVE_PATH_FS &&
-			basename(existingStory) !== basename(canonicalStoryPath)
-		if (isDifferentFileEntirely) {
+		// The probe answers with any naming variant — a different story word, an
+		// Angular `.component.` spelling, `.ts` for `.tsx`, or different capitals —
+		// so the story it found is often not the file this component's story would
+		// have been. Say so when it is genuinely another file, or the user is left
+		// with a component, no story written, and nothing said about why.
+		//
+		// Asked of the file system rather than the name: one file reached by two
+		// spellings needs no message, since the casing warning below covers that,
+		// and no platform constant can tell the two cases apart. An unresolvable
+		// canonical name means it isn't there at all, which is a different file by
+		// definition.
+		const isSameFile = checkAreSameFile(existingStory, canonicalStoryPath)
+		if (isSameFile !== true) {
 			info(
 				`no story written for ${rel(absCompPath)} — "${rel(existingStory)}" already covers it, though its name differs from "${basename(canonicalStoryPath)}".`,
 			)
@@ -1880,30 +1918,19 @@ function getRenameAdvice(
 ): string {
 	const advice = ` — rename it to "${readyFileName}"`
 	const readyNamePath = join(dirname(onDiskStoryPath), readyFileName)
-	// Compare what the two names open, rather than how they are spelled:
-	// `realpathSync.native` reports the canonical on-disk path, so two spellings
-	// of one file come back equal and two genuine files don't. It also answers
-	// when the folder can't be listed, which the previous directory-listing
-	// version could not.
-	const targetRealPath = getRealPathOrNull(readyNamePath)
-	if (targetRealPath) {
-		const ownRealPath = getRealPathOrNull(onDiskStoryPath)
-		// The corrected name opens this same file: a pure change of spelling.
-		if (targetRealPath === ownRealPath) return advice
-	}
-	// Either nothing is there or it couldn't be resolved. The content check reads
-	// both safely — a missing file is empty, an unreadable one counts as holding
-	// content — so it decides on its own.
+	// Nothing by that name, so the rename lands on empty ground. Asked first
+	// because the check below can't tell that apart from a failure: a name with
+	// no file behind it can't be canonicalised, and reading its absence as
+	// "couldn't tell" would withhold advice in the very case it is safest.
+	if (!existsSync(readyNamePath)) return advice
+	const isSameFile = checkAreSameFile(readyNamePath, onDiskStoryPath)
+	// The corrected name opens this same file: a pure change of spelling.
+	if (isSameFile === true) return advice
+	// Couldn't tell. Withhold the rename rather than risk naming a target that
+	// turns out to be someone else's file — the sentence still says the story
+	// won't be indexed.
+	if (isSameFile === null) return ''
 	return checkDoesFileHoldContent(readyNamePath) ? '' : advice
-}
-
-/** The file's canonical on-disk path, or `null` when it can't be resolved. */
-function getRealPathOrNull(absPath: string): string | null {
-	try {
-		return realpathSync.native(absPath)
-	} catch {
-		return null
-	}
 }
 
 /**

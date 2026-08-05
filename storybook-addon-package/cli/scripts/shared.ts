@@ -43,20 +43,33 @@ export const IS_CASE_INSENSITIVE_PATH_FS =
 export function findOnDiskFileName(
 	absPath: string,
 	shouldAlwaysReadFolder: boolean,
+	preReadEntries?: ReadonlyArray<string> | null,
 ): string {
 	const nameFromPath = basename(absPath)
 	if (!shouldAlwaysReadFolder && !IS_CASE_INSENSITIVE_PATH_FS)
 		return nameFromPath
+	const entries = preReadEntries ?? readFolderEntriesOrNull(dirname(absPath))
+	if (!entries) return nameFromPath
+	if (entries.includes(nameFromPath)) return nameFromPath
+	const comparableName = nameFromPath.toLowerCase()
+	return (
+		entries.find((entry) => entry.toLowerCase() === comparableName) ??
+		nameFromPath
+	)
+}
+
+/**
+ * A folder's entries, or `null` when it can't be read. Hand the result to
+ * `findOnDiskFileName` when resolving several names in one folder, so the
+ * listing is paid for once rather than once per name.
+ */
+export function readFolderEntriesOrNull(
+	directory: string,
+): ReadonlyArray<string> | null {
 	try {
-		const entries = readdirSync(dirname(absPath))
-		if (entries.includes(nameFromPath)) return nameFromPath
-		const comparableName = nameFromPath.toLowerCase()
-		return (
-			entries.find((entry) => entry.toLowerCase() === comparableName) ??
-			nameFromPath
-		)
+		return readdirSync(directory)
 	} catch {
-		return nameFromPath
+		return null
 	}
 }
 

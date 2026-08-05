@@ -6,6 +6,7 @@ import {
 	IS_CASE_INSENSITIVE_PATH_FS,
 	escapeForRegex,
 	findOnDiskFileName,
+	readFolderEntriesOrNull,
 } from './shared.js'
 
 const [, , inPathArg, outPathArg, srcDirArg] = process.argv
@@ -242,20 +243,30 @@ function getRawStoryFileData(componentPath: string) {
 		}
 	}
 
+	// Each candidate has its spelling resolved *before* it is read. Reading first
+	// would be cheaper, but `existsSync` inside the read is exactly the gate the
+	// resolve exists to get past: on a volume that tells capitals apart while the
+	// platform says otherwise, the probed spelling misses and the
+	// differently-capitalised story beside it is never found.
+	//
+	// Every candidate sits in the component's own folder, so one listing serves
+	// them all and the resolve costs a single read rather than one per candidate.
+	// Only worth reading where two spellings can name one file — elsewhere
+	// `toOnDiskPath` hands back the path untouched and never looks at the list.
+	const folderEntries = IS_CASE_INSENSITIVE_PATH_FS
+		? readFolderEntriesOrNull(dirname(componentPath))
+		: null
+
 	for (const path of candidates) {
-		// Read first, resolve the spelling only for the one candidate that hits.
-		// Most candidates miss, and resolving lists the folder — doing it up front
-		// would list the same directory once per candidate, and a lookup builds a
-		// candidate per story word per extension (twice that again for Angular).
-		const data = getRawFileData(path)
-		if (!data) continue
 		// Report the spelling the folder uses, not the one probed. Where capitals
 		// don't distinguish files a probe for `Button.stories.tsx` reads a
 		// `Button.STORIES.tsx` quite happily, and writing the probed name into the
 		// graph gives the addon a `storyFilePath` its case-sensitive lookup can
 		// never match — the component then shows a missing-story error even though
 		// Storybook indexed the story.
-		return { storyFileData: data, storyFilePath: toOnDiskPath(path) }
+		const onDiskPath = toOnDiskPath(path, folderEntries)
+		const data = getRawFileData(onDiskPath)
+		if (data) return { storyFileData: data, storyFilePath: onDiskPath }
 	}
 
 	return { storyFileData: null, storyFilePath: null }
@@ -271,8 +282,11 @@ function getRawStoryFileData(componentPath: string) {
  * lookups, so a spelling that only the file system would forgive is of no use
  * to it.
  */
-function toOnDiskPath(path: string) {
-	const onDiskFileName = findOnDiskFileName(path, false)
+function toOnDiskPath(
+	path: string,
+	folderEntries: ReadonlyArray<string> | null,
+) {
+	const onDiskFileName = findOnDiskFileName(path, false, folderEntries)
 	return posix.join(dirname(path), onDiskFileName)
 }
 
