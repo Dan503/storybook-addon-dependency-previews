@@ -368,5 +368,13 @@ function getRawStoryFileData(componentPath: string) {
  */
 function getRawFileData(path: string, folderEntries: ReadonlyArray<string>) {
 	if (!folderEntries.includes(basename(path))) return false
-	return readFileSync(path, 'utf8')
+	try {
+		return readFileSync(path, 'utf8')
+	} catch {
+		// The listing is taken once for every candidate, so a file can be renamed
+		// or deleted in the gap before this read — routine while the watcher is
+		// rebuilding on a save. One missing story is a missing link; letting the
+		// read throw would end the whole build.
+		return false
+	}
 }
