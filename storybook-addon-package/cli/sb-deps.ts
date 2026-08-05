@@ -1062,6 +1062,11 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 		!!folderEntries &&
 		!differentlyCasedName &&
 		!folderEntries.includes(componentImportPath)
+	// Whether the decorator's own name is what made the wrapped name ambiguous.
+	// `Button.decorator.svelte` names `Button` and nothing else could be meant;
+	// `Table.Row.decorator.svelte` and `Button.Primary.decorator.svelte` are
+	// indistinguishable, so only those get told about the dot.
+	const isWrappedNameAmbiguous = fullBase.split('.').length > 2
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({
@@ -1093,6 +1098,7 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	const wrappedComponentNote = getWrappedComponentNote(
 		differentlyCasedName,
 		isWrappedComponentMissing,
+		isWrappedNameAmbiguous,
 	)
 	if (wrappedComponentNote) {
 		warn(
@@ -1105,25 +1111,31 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
  * What to add about the component a decorator was written to import, or `''`
  * when the folder holds it under exactly that name and there is nothing to say.
  *
- * The missing case describes rather than instructs. A decorator wraps whatever
- * is named before the first dot, because a middle segment names a variant —
- * `Button.Primary.decorator.svelte` decorates `Button`. A component whose own
- * name carries a dot reads the same way, so for a `Table.Row.decorator.svelte`
- * beside a real `Table.Row.svelte` neither obvious remedy exists: no decorator
- * name can produce `Table.Row.svelte`, and creating the `Table.svelte` it asks
- * for would not be the component they meant to wrap. Saying what happened
- * leaves the reader to decide; telling them to rename it would be advice that
- * cannot be followed.
+ * The missing case has two shapes and they want different things said. Most of
+ * the time the decorator simply arrived first — `Button.decorator.svelte` with
+ * no `Button.svelte` yet — and the useful line is the actionable one: create it
+ * or point the decorator elsewhere.
+ *
+ * The other shape only arises when the decorator's own name has a middle
+ * segment, because a decorator wraps whatever is named before the first dot and
+ * a middle segment names a variant. `Button.Primary.decorator.svelte` decorates
+ * `Button` by design, and `Table.Row.decorator.svelte` reads identically — so
+ * beside a real `Table.Row.svelte` neither remedy exists: no decorator name can
+ * produce it, and the `Table.svelte` being asked for is not the component they
+ * meant. Only that shape is told about the dot; saying it to someone who simply
+ * has not written their component yet is a non-sequitur.
  */
 function getWrappedComponentNote(
 	differentlyCasedName: string | null,
 	isWrappedComponentMissing: boolean,
+	isWrappedNameAmbiguous: boolean,
 ): string {
 	if (differentlyCasedName)
 		return `, but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`
-	if (isWrappedComponentMissing)
-		return `, and there is no such file beside it. A decorator wraps whatever is named before its first dot, so a component whose own name carries a dot cannot be wrapped this way.`
-	return ''
+	if (!isWrappedComponentMissing) return ''
+	if (!isWrappedNameAmbiguous)
+		return `, and there is no such file beside it — create it, or rename the decorator after a component that is.`
+	return `, and there is no such file beside it. A decorator wraps whatever is named before its first dot, so this is the only component it can ask for — one whose own name carries a dot cannot be wrapped this way.`
 }
 
 function scaffoldStoryForSvelteComponent(

@@ -13,14 +13,15 @@ const [, , inPathArg, outPathArg, srcDirArg, projectFamilyArg] = process.argv
 // an empty string when it could not detect one; a direct manual invocation
 // passes nothing at all.
 //
-// Both of those unknowns read as "might be Angular", which is the safe way
-// round HERE even though it is the opposite of what the watcher assumes. The
-// only thing this decides is whether `Button.stories.ts` joins the candidate
-// story names for a `Button.component.ts`, and candidates are additive: a wrong
-// guess costs one probe that finds nothing, while a missing one costs the
-// pairing itself and shows the component as having no story.
+// Anything but `angular` reads as not-Angular, including both unknowns. An
+// extra candidate story name is not free: it is matched against the folder like
+// any other, so it can hit a real file. In a project this tool does not
+// recognise, an `auth.stories.ts` belonging to `auth.ts` would be taken as the
+// story for an `auth.component.ts` sitting beside it — the graph would then
+// show one component's story on another. A missing pairing is a gap; a wrong
+// one is wrong data, so the guess falls that way.
 const nameEndingContext = {
-	isAngularProject: !projectFamilyArg || projectFamilyArg === 'angular',
+	isAngularProject: projectFamilyArg === 'angular',
 }
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
@@ -313,8 +314,7 @@ function getRawStoryFileData(componentPath: string) {
  * which on Windows and macOS opens `Button.Stories.tsx` when asked for
  * `Button.stories.tsx`. Reading that file would write a story id into the graph
  * for a story Storybook's own exact matching never indexes, so the addon would
- * show a link to a story that isn't there — and the same build would be naming
- * that file as unrecognised in the report at the end.
+ * show a link to a story that isn't there.
  */
 function getRawFileData(path: string, folderEntries: ReadonlyArray<string>) {
 	if (!folderEntries.includes(basename(path))) return false

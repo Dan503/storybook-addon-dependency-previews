@@ -1,11 +1,11 @@
 import { readdirSync } from 'node:fs'
 
 // Shared by the watcher (`sb-deps.ts`) and the graph filter
-// (`postprocess.ts`), which run as separate processes. The watcher checks a
-// file's name as it is created; the graph filter checks the names it finds
-// already on disk. Both have to agree on what a correctly-spelled name looks
-// like, and a re-spelled second copy is how two processes end up disagreeing
-// about the same file.
+// (`postprocess.ts`), which run as separate processes. The watcher turns away a
+// wrongly-spelled name as the file is created; the graph filter reads the same
+// endings to pair a component with its story. Both have to agree on what those
+// endings mean, and a re-spelled second copy of the rule is how two processes
+// end up disagreeing about the same file.
 
 /**
  * The name endings this tool reads meaning into, with what has to be true for

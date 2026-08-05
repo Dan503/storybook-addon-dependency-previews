@@ -116,9 +116,7 @@ Create a file with a capitalised ending and `sb-deps` says so, names the spellin
 
 It only checks files as they are created, so one that arrived some other way — a branch checkout, a copy, a file written before you installed the addon — is not reported. Nothing breaks: it simply won't be paired with its story until you rename it.
 
-Some wrongly-spelled files go unreported rather than being refused. Nothing breaks that renaming won't fix — there is just nothing telling you to rename them:
-
-On Windows and macOS the watcher catches these the moment they are created. On Linux and other systems that tell capitals apart, it doesn't see them at all — the patterns it listens on match exactly there, and these four match none of them:
+On Linux and other systems that tell capitals apart, four spellings go unnoticed entirely — the patterns the watcher listens on match exactly there, and these match none of them, so they are neither refused nor mentioned. Nothing breaks that renaming won't fix; there is just nothing telling you to rename them. On Windows and macOS all four are caught as usual:
 
 - **Angular templates** — `Button.Component.html`.
 - **A capitalised extension** — `Gadget.TSX`.
