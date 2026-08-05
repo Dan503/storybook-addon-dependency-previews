@@ -679,15 +679,6 @@ function reportNamesClash(builtPath: string, onDiskName: string) {
 	)
 }
 
-/**
- * The folder's own spelling of this name when it holds one differing only in
- * capitals, or `null` when it agrees, holds nothing like it, or can't be read.
- *
- * Separate from `checkDoesFolderAgreeWithName` so the callers that carry on
- * anyway — the Svelte decorator, and the story lookup, which only reports a
- * clash once it knows it is going to act on it — can decide for themselves what
- * to say.
- */
 /** Does the folder hold this file name, whatever capitals it spells it with? */
 function checkDoesFolderHoldName(
 	fileName: string,
@@ -697,6 +688,15 @@ function checkDoesFolderHoldName(
 	return folderEntries.some((entry) => entry.toLowerCase() === comparableName)
 }
 
+/**
+ * The folder's own spelling of this name when it holds one differing only in
+ * capitals, or `null` when it agrees, holds nothing like it, or can't be read.
+ *
+ * Separate from `checkDoesFolderAgreeWithName` so the callers that carry on
+ * anyway — the Svelte decorator, and the story lookup, which only reports a
+ * clash once it knows it is going to act on it — can decide for themselves what
+ * to say.
+ */
 function getDifferentlyCasedName(
 	builtPath: string,
 	preReadEntries?: ReadonlyArray<string>,
