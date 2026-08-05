@@ -504,8 +504,8 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  * sure they don't try to auto-scaffold a story file for an existing story.
  *
  * Capitals are not allowed for: `getWrongCasedNameError` turns a
- * `Button.Stories.tsx` away before any of these checks see it, so every pattern
- * here can spell one name and mean one file.
+ * `Button.Stories.tsx` away before this pattern sees it, so it can spell one
+ * name and mean one file.
  */
 const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`)
 
@@ -571,7 +571,7 @@ function getWrongCasedNameError(absPath: string): string | null {
 	const fileName = basename(absPath)
 	const readyFileName = getLowerCasedEndings(fileName)
 	if (readyFileName === fileName) return null
-	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. sb-deps only recognises these endings spelled in lower case, and Storybook only lists stories from files ending ".stories.".`
+	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. sb-deps matches these endings exactly, and so does Storybook's own stories setting, so a story file spelled with capitals never shows up there either.`
 }
 
 /**
@@ -602,7 +602,7 @@ function getSiblingPathOrRefuse(builtPath: string): string | null {
 	)
 	if (!differentlyCasedName) return builtPath
 	error(
-		`looked for "${builtFileName}" and found "${differentlyCasedName}" in ${rel(dirname(builtPath))} — the two names differ only in capitals, so rename one of them to match the other. Nothing was written.`,
+		`looked for "${builtFileName}" and found "${differentlyCasedName}" in ${rel(dirname(builtPath))} — the two names differ only in capitals, so rename one of them to match the other.`,
 	)
 	return null
 }
@@ -721,8 +721,8 @@ const scaffoldedPaths: Array<string> = []
  * Write a scaffolded file, and remember it was written so its imports can be
  * checked once the event that produced it has finished.
  *
- * The remembering lives in here rather than beside each call because there are
- * a dozen writers, and one added later would otherwise have to know to record
+ * The remembering lives in here rather than beside each call because the
+ * writers are many, and one added later would otherwise have to know to record
  * itself.
  */
 function writeScaffoldedFile(absPath: string, content: string) {
@@ -1015,7 +1015,18 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// binds to above. `card-listing.decorator.svelte` sits beside
 	// `card-listing.svelte`, so importing `./CardListing.svelte` would name a
 	// file that exists on no platform.
+	//
+	// Worked out from the decorator's own name, so it goes through the capitals
+	// check like every other name this tool works out rather than reads. A
+	// wrapped component that isn't there yet is fine and left to the
+	// import report; one there under different capitals is not, since the
+	// import would then be written against a spelling the file doesn't have.
 	const componentImportPath = `${wrappedBase}.svelte`
+	const wrappedComponentPath = join(
+		dirname(absDecoratorPath),
+		componentImportPath,
+	)
+	if (!getSiblingPathOrRefuse(wrappedComponentPath)) return
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({

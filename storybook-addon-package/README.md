@@ -108,7 +108,7 @@ Either way you end up with a working component + story pair. Only empty files ar
 
 ### File names must end in lower case
 
-`sb-deps` matches file endings exactly, so the extension — and the `.stories`, `.story`, `.component` and `.decorator` parts — have to be spelled in lower case. `Button.stories.tsx` works; `Button.Stories.tsx` and `Button.TSX` do not. Storybook has the same requirement of its own: it only lists stories from files ending `.stories.`, so an oddly-spelled story file would never appear there whatever this tool did with it.
+`sb-deps` matches file endings exactly, so the extension — and the `.stories`, `.story`, `.component` and `.decorator` parts — have to be spelled in lower case. `Button.stories.tsx` works; `Button.Stories.tsx` and `Button.TSX` do not. Storybook matches its own `stories` setting exactly too, so a story file spelled with capitals would never show up there whatever this tool did with it.
 
 Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. It also names any such files it finds already in your project at the end of each graph build, since it can only check the rest as they are created.
 

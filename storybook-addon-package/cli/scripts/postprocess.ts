@@ -75,8 +75,10 @@ const isComponent = (p: string) => {
 		// files dependency-cruiser found, not files the watcher saw created, so a
 		// `styles.CSS` written before the addon was installed still reaches it.
 		// Getting it wrong here puts a stylesheet in the graph as a component that
-		// isn't one — wrong data rather than a missing link, which is why this is
-		// the one place that still ignores capitals.
+		// isn't one — wrong data rather than a missing link, which is why this
+		// check reads a name loosely where the rest read it exactly. (The srcDir
+		// prefix above ignores capitals too, but for the separate folder-name
+		// reason given there.)
 		!/\.(css|scss|sass|less|html)$/i.test(p)
 	)
 }
