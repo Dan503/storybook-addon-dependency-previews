@@ -106,6 +106,16 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 
 Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
 
+### File names must end in lower case
+
+`sb-deps` matches file endings exactly, so the extension — and the `.stories`, `.story`, `.component` and `.decorator` parts — have to be spelled in lower case. `Button.stories.tsx` works; `Button.Stories.tsx` and `Button.TSX` do not. Storybook has the same requirement of its own: it only lists stories from files ending `.stories.`, so an oddly-spelled story file would never appear there whatever this tool did with it.
+
+Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it. It also names any such files it finds already in your project at the end of each graph build, since it can only check the rest as they are created.
+
+Only the ending is checked, so a component whose own name carries a dot — `Table.Row.tsx` — is left alone.
+
+A story and its component also have to agree on capitals. Creating `cardlisting.stories.tsx` next to an existing `CardListing.tsx` is reported rather than guessed at: on Windows and macOS the two names open the same file and elsewhere they don't, so there is no reading of it that works everywhere.
+
 **Tip — if a brand-new story shows `importers[path] is not a function` in Storybook**, just reload the browser tab. This is an occasional Storybook dev-server timing quirk when a story file is added while the dev server is running (the preview's internal module map briefly lags behind); a refresh clears it and the scaffolded files themselves are correct. Creating the **component** first (and letting the story auto-generate) avoids the hiccup entirely.
 
 ## Configuration file (optional)
@@ -210,8 +220,14 @@ export function ${componentName}({}: ${propsName}) {
 		svelte: {
 			/** Customize the generated .svelte component file */
 			component: ({ componentName }) => '...',
-			/** Customize the generated .decorator.svelte file */
-			decorator: ({ componentName }) => '...',
+			/**
+			 * Customize the generated .decorator.svelte file.
+			 * Import the wrapped component from `componentImportPath` rather than
+			 * building the path out of `componentName` — that is the name the
+			 * import binds to, and it can differ from the file
+			 * (`card-listing.svelte` binds as `CardListing`).
+			 */
+			decorator: ({ componentName, componentImportPath }) => '...',
 			/** Customize the generated .stories.svelte file */
 			story: ({ componentName, title, tags }) => '...',
 		},
