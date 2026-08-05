@@ -114,7 +114,7 @@ Two more endings are read, but only where they mean anything. `.decorator` is re
 
 Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it.
 
-It only checks files as they are created, so one that arrived some other way — a branch checkout, a copy, a file written before you installed the addon — is not reported. Nothing breaks: it simply won't be paired with its story until you rename it.
+It checks files as they are created, which includes ones a branch checkout or a copy brings in while it is running — those arrive as creations like any other and are turned away the same way. What it cannot see is a file that appeared while it was not running, or one already in your project before you installed the addon. Nothing breaks: such a file simply won't be paired with its story until you rename it.
 
 On Linux and other systems that tell capitals apart, four spellings go unnoticed entirely — the patterns the watcher listens on match exactly there, and these match none of them, so they are neither refused nor mentioned. Nothing breaks that renaming won't fix; there is just nothing telling you to rename them. On Windows and macOS all four are caught as usual:
 

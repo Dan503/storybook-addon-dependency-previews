@@ -662,8 +662,13 @@ function warnFileLeftEmptyOverNameClash(absPath: string) {
 /**
  * Say which two names clash. It is the sentence a reader acts on, so it is
  * written once and reached from everywhere that needs it: the checks on a
- * derived component, template and story name, and the story lookup when it
- * settles on a name the folder spells differently.
+ * component name derived from a story's and on one derived from a template's,
+ * the check on a story name derived from a component's, and the story lookup
+ * when it settles on a name the folder spells differently.
+ *
+ * Note there is no check on a derived *template* name — that direction is
+ * deliberately unchecked, for the reason given where the external template is
+ * scaffolded.
  *
  * Deliberately not phrased as a count of those callers — that sentence has gone
  * stale here once already.
@@ -1062,11 +1067,21 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 		!!folderEntries &&
 		!differentlyCasedName &&
 		!folderEntries.includes(componentImportPath)
-	// Whether the decorator's own name is what made the wrapped name ambiguous.
-	// `Button.decorator.svelte` names `Button` and nothing else could be meant;
+	// Whether the dot is what actually stands in the way, decided by what is on
+	// disk rather than by the shape of the name.
+	//
 	// `Table.Row.decorator.svelte` and `Button.Primary.decorator.svelte` are
-	// indistinguishable, so only those get told about the dot.
-	const isWrappedNameAmbiguous = fullBase.split('.').length > 2
+	// indistinguishable as names — both wrap whatever precedes the first dot.
+	// But the dot only blocks a remedy when the component the fuller name spells
+	// is sitting right there: for a real `Table.Row.svelte` there is nothing the
+	// user can rename to reach it, while `Button.Primary.decorator.svelte` with
+	// no `Button.Primary.svelte` is just a decorator written before its
+	// component, and creating `Button.svelte` is a perfectly good answer.
+	const fullBaseWithoutDecorator = fullBase.replace(/\.decorator$/i, '')
+	const isWrappedNameAmbiguous =
+		!!folderEntries &&
+		fullBaseWithoutDecorator !== wrappedBase &&
+		folderEntries.includes(`${fullBaseWithoutDecorator}.svelte`)
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({
@@ -1406,9 +1421,12 @@ export class ${className} {
 	// only path that reaches an external template starts from a just-created
 	// `.component.html`, and this rebuilds that same name from that same file,
 	// so the folder always holds it under this exact spelling and the check
-	// could never say no. A `Button.Component.html` arriving some other way —
-	// a branch checkout, a copy — is not covered here or anywhere; see the
-	// naming section of the README.
+	// could never say no. A `Button.Component.html` that appears while the
+	// watcher is NOT running is not covered here or anywhere — while it is
+	// running, a checkout or a copy arrives as a creation like any other and is
+	// turned away by the name check, except on a file system that tells
+	// capitals apart, where the glob never matches it. See the naming section
+	// of the README.
 	if (templateLocation === 'external') {
 		const htmlPath = join(dir, `${base}.component.html`)
 		if (isEmptyOrWhitespace(htmlPath)) {
