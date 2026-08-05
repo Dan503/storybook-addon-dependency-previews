@@ -646,10 +646,12 @@ function checkDoesFolderAgreeWithName(builtPath: string): boolean {
 /**
  * Tell the user their just-created file was left alone because of a name clash.
  *
- * Written once because two paths reach it — a created story file and a created
- * Angular template — and rewording this sentence has been most of the work in
- * several review rounds. A reword landing at one site and not the other would
- * tell two different stories about the same outcome.
+ * Written once and reached from every decline that leaves the user's own file
+ * untouched — a created story file, whether the clash was found on its
+ * component or on another story naming, and a created Angular template.
+ * Rewording this sentence has been most of the work in several review rounds,
+ * and a reword landing at one site and not the others would tell different
+ * stories about the same outcome.
  */
 function warnFileLeftEmptyOverNameClash(absPath: string) {
 	warn(
@@ -658,9 +660,13 @@ function warnFileLeftEmptyOverNameClash(absPath: string) {
 }
 
 /**
- * Say which two names clash. Written once because three paths reach it — the
- * checks on a derived component, template and story name — and it is the
- * sentence a reader acts on.
+ * Say which two names clash. It is the sentence a reader acts on, so it is
+ * written once and reached from everywhere that needs it: the checks on a
+ * derived component, template and story name, and the story lookup when it
+ * settles on a name the folder spells differently.
+ *
+ * Deliberately not phrased as a count of those callers — that sentence has gone
+ * stale here once already.
  */
 function reportNamesClash(builtPath: string, onDiskName: string) {
 	error(
