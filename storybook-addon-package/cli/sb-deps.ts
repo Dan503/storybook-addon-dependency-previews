@@ -585,8 +585,10 @@ function isComponentsAngularHtml(relPath: string) {
 
 /**
  * The message to print when a file's name spells its extension, or one of
- * `KNOWN_NAME_ENDINGS` in `scripts/fileNames.ts`, with capitals — or `null`
- * when the name is fine.
+ * the endings in `scripts/fileNames.ts` that mean something on that extension,
+ * with capitals — or `null` when the name is fine. `.stories` and `.story`
+ * count on any extension; `.component` and `.decorator` only on the ones their
+ * framework uses, so a NestJS `Roles.Decorator.ts` is left alone.
  *
  * The patterns in this file each spell one name and mean one file, which is
  * only safe because this check turns the odd spellings away first.
@@ -1933,9 +1935,17 @@ function startWatcher() {
 								// Say what became of the file they created, the way the
 								// other two decline paths do. The clash line above names
 								// the component, which is a file they never touched.
-								warn(
-									`left "${rel(abs)}" empty — nothing was written until the two names agree.`,
-								)
+								//
+								// Only when it really is empty. The other two reach their
+								// decline through a caller that has already returned on a
+								// non-empty file, so they can assert it; this branch is
+								// entered on any created template, and a user who pasted
+								// one in still has everything they wrote.
+								if (isEmptyOrWhitespace(abs)) {
+									warn(
+										`left "${rel(abs)}" empty — nothing was written until the two names agree.`,
+									)
+								}
 								kick(ev.type, abs)
 								continue
 							}
