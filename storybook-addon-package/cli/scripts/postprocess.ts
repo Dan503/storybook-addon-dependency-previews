@@ -4,6 +4,7 @@ import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
 import {
 	checkIsNameWronglyCased,
+	getNameWithLowerCasedEndings,
 	readFolderEntriesOrNull,
 } from './fileNames.js'
 
@@ -152,7 +153,9 @@ for (const m of raw.modules || []) {
 		pushUnique(graph[from].builtWith, builtWithEntry)
 
 		// ---- usedIn: to ← from
-		const fromStory = getStoryId(from)
+		// `topLevelFromStory` above is this same lookup on this same path, so it
+		// is reused rather than asked again once per edge.
+		const fromStory = topLevelFromStory
 		const usedInEntry: StoryInfo = {
 			componentPath: from,
 			...(fromStory && {
@@ -180,11 +183,13 @@ writeFileSync(outPath, JSON.stringify(graph, null, 2))
 if (wrongCasedPaths.length > 0) {
 	// Says what is true of the whole set rather than of the source files in it.
 	// The collection point sits before the is-this-a-component check, so a
-	// stylesheet can be in here too — and telling the user renaming it will pair
-	// it with a story would be false twice over, since a stylesheet has no story
-	// and the check that drops it ignores capitals on purpose.
+	// stylesheet can be in here too — and for one of those, "not recognised" is
+	// wrong twice over: the check that drops stylesheets ignores capitals on
+	// purpose, so a `styles.CSS` IS recognised and correctly dropped, and
+	// renaming it changes nothing. What holds for every file in the list is
+	// only that its name is read as spelled.
 	console.warn(
-		`[sb-deps] these endings are matched exactly, so these files aren't recognised — rename each one to its lower-case spelling: ${wrongCasedPaths.join(', ')}`,
+		`[sb-deps] these endings are matched exactly, so these names don't mean what they look like they mean — rename each one: ${wrongCasedPaths.map((path) => `"${path}" → "${getNameWithLowerCasedEndings(basename(path))}"`).join(', ')}`,
 	)
 }
 
@@ -261,8 +266,16 @@ function getRawStoryFileData(componentPath: string) {
 		}
 	}
 
+	// Read once, not once per candidate: every candidate is built from
+	// `componentPath` with only its ending changed, so they all sit in the
+	// component's own folder. There are 14 of them for a plain component and 28
+	// for an Angular one, and this runs for every module and every edge on every
+	// rebuild.
+	const folderEntries = readFolderEntriesOrNull(dirname(componentPath))
+	if (!folderEntries) return { storyFileData: null, storyFilePath: null }
+
 	for (const path of candidates) {
-		const data = getRawFileData(path)
+		const data = getRawFileData(path, folderEntries)
 		if (data) return { storyFileData: data, storyFilePath: path }
 	}
 
@@ -280,8 +293,7 @@ function getRawStoryFileData(componentPath: string) {
  * show a link to a story that isn't there — and the same build would be naming
  * that file as unrecognised in the report at the end.
  */
-function getRawFileData(path: string) {
-	const entries = readFolderEntriesOrNull(dirname(path))
-	if (!entries?.includes(basename(path))) return false
+function getRawFileData(path: string, folderEntries: ReadonlyArray<string>) {
+	if (!folderEntries.includes(basename(path))) return false
 	return readFileSync(path, 'utf8')
 }

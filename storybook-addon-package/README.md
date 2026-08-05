@@ -114,8 +114,8 @@ Create a file with a capitalised ending and `sb-deps` says so, names the spellin
 
 Some wrongly-spelled files go unreported rather than being refused. Nothing breaks that renaming won't fix — there is just nothing telling you to rename them:
 
-- **Angular templates, on every system.** A `Button.Component.html` that arrives by checkout or copy rather than by being created while the watcher runs is caught by neither check, because dependency-cruiser reports no `.html` files at all and so the end-of-build report never sees it.
-- **On Linux and other systems that tell capitals apart**, three more: a file whose **extension** carries capitals (`Gadget.TSX`); a story outside your source folder (`stories/Foo.Stories.tsx`); and `Foo.Stories.mdx`. Each matches none of the patterns the watcher listens on, so it is never seen. The last two have perfectly ordinary extensions — it is the `.Stories` part carrying the capitals.
+- **Angular templates.** A `Button.Component.html` is never named by the end-of-build report on any system, because dependency-cruiser reports no `.html` files at all. On Windows and macOS the watcher still catches it as it is created; on Linux nothing catches it.
+- **On Linux and other systems that tell capitals apart**, three more go unseen even when created while the watcher runs: a file whose **extension** carries capitals (`Gadget.TSX`); a story outside your source folder (`stories/Foo.Stories.tsx`); and `Foo.Stories.mdx`. The last two have perfectly ordinary extensions — it is the `.Stories` part carrying the capitals.
 
 The watcher's patterns can't simply be widened to catch these: on those same systems, matching loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
 

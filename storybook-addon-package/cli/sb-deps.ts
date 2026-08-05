@@ -736,230 +736,6 @@ function makeTitleFromComponent(absCompPath: string, base: string) {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story & component scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
-/**
- * Files scaffolded since the list was last emptied. `reportImportsThatLeadNowhere`
- * empties it once per watcher event, so it only ever holds what a single event
- * produced.
- */
-const scaffoldedPaths: Array<string> = []
-
-/**
- * Write a scaffolded file, and remember it was written so its imports can be
- * checked once the event that produced it has finished.
- *
- * The remembering lives in here rather than beside each call because the
- * writers are many, and one added later would otherwise have to know to record
- * itself.
- */
-function writeScaffoldedFile(absPath: string, content: string) {
-	writeFileSync(absPath, content, 'utf8')
-	scaffoldedPaths.push(absPath)
-}
-
-/**
- * Write back a file the **user** wrote, after changing part of it — as against
- * `writeScaffoldedFile` above, which writes content this tool authored.
- *
- * Deliberately not recorded for the import report. The rest of such a file is
- * the user's own code, written against their own build setup, and judging its
- * imports by what this tool knows how to resolve turns their working code into
- * a warning. Only content this tool wrote is worth checking, because only that
- * content is this tool's mistake to make.
- */
-function updateUserFile(absPath: string, content: string) {
-	writeFileSync(absPath, content, 'utf8')
-}
-
-/**
- * Say so when a file this tool has just written names a file that isn't there.
- *
- * The files are read back rather than the writers being trusted, because a
- * project can replace any template through `SCAFFOLD_CONFIG`, and a replacement
- * template's imports are exactly the ones nobody has checked.
- *
- * Called once the watcher event that wrote them has finished rather than as
- * each file is written: one event can write two files that name each other, so
- * an Angular component would otherwise be reported for pointing at a template
- * written a moment later.
- */
-function reportImportsThatLeadNowhere() {
-	const writtenPaths = scaffoldedPaths.splice(0)
-	writtenPaths.forEach((absPath) => {
-		const missingPaths = getImportsThatLeadNowhere(absPath)
-		if (missingPaths.length === 0) return
-		const quotedPaths = missingPaths.map((path) => `"${path}"`).join(', ')
-		const isSingle = missingPaths.length === 1
-		warn(
-			`"${rel(absPath)}" imports ${quotedPaths}, which ${isSingle ? "isn't" : "aren't"} there. Either the file is yet to be written, or the name doesn't match the file it meant.`,
-		)
-	})
-}
-
-/** The relative paths a scaffolded file names that lead to no file on disk. */
-function getImportsThatLeadNowhere(absPath: string): Array<string> {
-	const content = readFileOrNull(absPath)
-	if (!content) return []
-	const folder = dirname(absPath)
-	return getRelativeImportPaths(content).filter(
-		(importedPath) => !checkDoesImportLeadToAFile(folder, importedPath),
-	)
-}
-
-function readFileOrNull(absPath: string): string | null {
-	try {
-		return readFileSync(absPath, 'utf8')
-	} catch {
-		return null
-	}
-}
-
-/**
- * The ways a scaffolded template names another file: `import … from "…"`, a
- * bare `import "…"`, and Angular's `templateUrl: "…"`. Each captures the quoted
- * path.
- */
-const IMPORT_PATH_PATTERNS = [
-	/\bfrom\s*['"]([^'"]+)['"]/g,
-	/\bimport\s*['"]([^'"]+)['"]/g,
-	/\btemplateUrl\s*:\s*['"]([^'"]+)['"]/g,
-]
-
-/**
- * Every relative path a scaffolded file names, listed once each. Installed
- * packages are left out: only a path starting `./` or `../` names a file this
- * check could go looking for.
- */
-function getRelativeImportPaths(content: string): Array<string> {
-	const importedPaths = new Set<string>()
-	IMPORT_PATH_PATTERNS.forEach((pattern) => {
-		// `matchAll` hands back an iterator rather than an array, which is what
-		// `for…of` is for.
-		for (const match of content.matchAll(pattern)) {
-			const importedPath = match[1]
-			if (!importedPath) continue
-			const isRelative =
-				importedPath.startsWith('./') || importedPath.startsWith('../')
-			if (isRelative) importedPaths.add(importedPath)
-		}
-	})
-	return [...importedPaths]
-}
-
-/**
- * Extensions an import is allowed to leave off, tried in turn. A story
- * importing `./Button` means `Button.tsx` in a React project and `Button.vue`
- * in a Vue one, and this check has no reason to care which.
- *
- * Wider than the set this tool writes, because it also reads back a file the
- * user wrote — `scaffoldAngularHtmlFromTs` rewrites an existing component's
- * template line — and reporting their `./button.types` as missing when
- * `button.types.d.ts` is right there would be a false alarm in their own code.
- */
-const IMPORTABLE_EXTENSIONS = [
-	'.ts',
-	'.tsx',
-	'.d.ts',
-	'.mts',
-	'.cts',
-	'.js',
-	'.jsx',
-	'.mjs',
-	'.cjs',
-	'.vue',
-	'.svelte',
-	'.json',
-	'.css',
-	'.scss',
-	'.sass',
-	'.less',
-	'.svg',
-	'.mdx',
-	'.html',
-]
-
-/**
- * What a written extension may actually be on disk. TypeScript's own advice for
- * projects using ES modules is to import `./foo.js` and let it resolve to
- * `foo.ts` — this package's own CLI sources do it — so an import naming a
- * JavaScript file that isn't there is not necessarily an import naming nothing.
- */
-const SOURCE_EXTENSION_STANDINS: Record<string, Array<string>> = {
-	'.js': ['.ts', '.tsx'],
-	'.mjs': ['.mts'],
-	'.cjs': ['.cts'],
-}
-
-/**
- * Does this relative import lead to a file that is there?
- *
- * The name is looked up in the folder's own listing rather than through an
- * existence check, for the reason `checkDoesFolderAgreeWithName` gives: on
- * Windows and macOS `existsSync` opens `CardListing.svelte` when asked for
- * `card-listing.svelte`, so it would pass exactly the import this report exists
- * to catch — one built from the name a component binds to instead of the name
- * of its file.
- *
- * The name is tried as written, then with each extension above appended (an
- * import may leave its extension off), then with the stand-ins above swapped in
- * for a written `.js`. The appending runs whether or not the import already
- * ended in something extension-shaped, because plenty do not mean it:
- * `./Table.Row` ends in `.Row`.
- *
- * **Every** match is considered, not just the first — a folder named `Button`
- * sitting beside `Button.tsx` would otherwise shadow it and have `./Button`
- * reported as missing.
- *
- * A match that turns out to be a folder only counts when the folder holds an
- * `index` file, so `./models.v2` naming a directory with nothing in it is still
- * reported.
- *
- * An unreadable folder returns true — nothing can be said about what is in it,
- * and silence beats calling a file missing on no evidence.
- */
-function checkDoesImportLeadToAFile(
-	folder: string,
-	importedPath: string,
-): boolean {
-	// A bundler query names the same file — `./icon.svg?raw`, `./x.css?url`.
-	const pathWithoutQuery = importedPath.split('?')[0] ?? importedPath
-	const absImportPath = resolve(folder, pathWithoutQuery)
-	const importFolder = dirname(absImportPath)
-	const entries = readFolderEntriesOrNull(importFolder)
-	if (!entries) return true
-	const wantedName = basename(absImportPath)
-	const matchedNames = getNamesToTry(wantedName).filter((name) =>
-		entries.includes(name),
-	)
-	return matchedNames.some((name) =>
-		checkCanImportLandHere(join(importFolder, name)),
-	)
-}
-
-/** Every name on disk that an import written as `wantedName` could be asking for. */
-function getNamesToTry(wantedName: string): Array<string> {
-	const writtenExtension = extname(wantedName)
-	const standIns = SOURCE_EXTENSION_STANDINS[writtenExtension] ?? []
-	const nameWithoutExtension = wantedName.slice(
-		0,
-		wantedName.length - writtenExtension.length,
-	)
-	return [
-		wantedName,
-		...IMPORTABLE_EXTENSIONS.map((extension) => `${wantedName}${extension}`),
-		...standIns.map((extension) => `${nameWithoutExtension}${extension}`),
-	]
-}
-
-/** Is this a file, or a folder holding an `index` file an import could land on? */
-function checkCanImportLandHere(absPath: string): boolean {
-	const folderEntries = readFolderEntriesOrNull(absPath)
-	// Not a readable folder, so it is the file the caller matched by name.
-	if (!folderEntries) return true
-	return IMPORTABLE_EXTENSIONS.some((extension) =>
-		folderEntries.includes(`index${extension}`),
-	)
-}
-
 function scaffoldComponent(absCompPath: string) {
 	const base = componentBaseFromComponent(absCompPath)
 	const componentName = toPascalCase(base)
@@ -982,7 +758,7 @@ export function ${componentName}({ children }: ${propsName}) {
   )
 }
 `
-	writeScaffoldedFile(absCompPath, tpl)
+	writeFileSync(absCompPath, tpl, 'utf8')
 	info(`scaffolded component → ${rel(absCompPath)}`)
 }
 
@@ -1024,7 +800,7 @@ export const Primary: Story = {
   args: {} satisfies ${propsName},
 }
 `
-	writeScaffoldedFile(targetStoryPath, storyTpl)
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
 	info(`scaffolded story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
 }
@@ -1074,8 +850,18 @@ function findExistingStory(
 		path.endsWith('.tsx') ? [path, path.replace(/\.tsx$/, '.ts')] : [path],
 	)
 
-	// No `existsSync` needed — a missing file already reports as empty.
-	return allVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
+	// Every variant here is a name this tool worked out, so each has to be read
+	// off the folder rather than probed with `isEmptyOrWhitespace` alone — that
+	// asks the file system, which on Windows and macOS answers for
+	// `Button.Story.tsx` when asked about `Button.story.tsx`. Taking that as a
+	// hit would decline to write a story on the strength of a file Storybook's
+	// own exact matching never indexes, and say nothing about why.
+	const folderEntries = readFolderEntriesOrNull(dirname(canonicalStoryPath))
+	if (!folderEntries) return null
+	const spelledVariants = allVariants.filter((path) =>
+		folderEntries.includes(basename(path)),
+	)
+	return spelledVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
@@ -1131,7 +917,7 @@ function scaffoldSvelteComponent(absCompPath: string) {
 	}
 </style>
 `
-	writeScaffoldedFile(absCompPath, tpl)
+	writeFileSync(absCompPath, tpl, 'utf8')
 	info(`scaffolded svelte component → ${rel(absCompPath)}`)
 }
 
@@ -1171,7 +957,7 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	<${componentName} />
 </div>
 `
-	writeScaffoldedFile(absDecoratorPath, tpl)
+	writeFileSync(absDecoratorPath, tpl, 'utf8')
 	info(`scaffolded svelte decorator → ${rel(absDecoratorPath)}`)
 }
 
@@ -1208,7 +994,7 @@ function scaffoldStoryForSvelteComponent(
 	<p>${title}</p>
 </Story>
 `
-	writeScaffoldedFile(targetStoryPath, storyTpl)
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
 	info(`scaffolded svelte story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
 }
@@ -1235,7 +1021,7 @@ const {  } = defineProps<PropsFor${componentName}>()
 	</div>
 </template>
 `
-	writeScaffoldedFile(absCompPath, tpl)
+	writeFileSync(absCompPath, tpl, 'utf8')
 	info(`scaffolded vue component → ${rel(absCompPath)}`)
 }
 
@@ -1283,7 +1069,7 @@ export const Primary: Story = {
 	}),
 }
 `
-	writeScaffoldedFile(targetStoryPath, storyTpl)
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
 	info(`scaffolded vue story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
 }
@@ -1433,7 +1219,7 @@ export class ${className} {
 				base,
 				templateLocation,
 			}) ?? defaultTsTpl
-		writeScaffoldedFile(tsPath, tsTpl)
+		writeFileSync(tsPath, tsTpl, 'utf8')
 		info(`scaffolded angular component → ${rel(tsPath)}`)
 	}
 
@@ -1449,7 +1235,7 @@ export class ${className} {
 	if (templateLocation === 'external') {
 		const htmlPath = join(dir, `${base}.component.html`)
 		if (isEmptyOrWhitespace(htmlPath)) {
-			writeScaffoldedFile(htmlPath, defaultAngularHtmlTemplate(componentName))
+			writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
 			info(`scaffolded angular template → ${rel(htmlPath)}`)
 		}
 	}
@@ -1479,7 +1265,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 				// so a failed write at either step still leaves the template in at
 				// least one of the two files. The reverse order would strip it out
 				// of the `.ts` and then lose it entirely if the `.html` write threw.
-				writeScaffoldedFile(absHtmlPath, extractedHtml)
+				writeFileSync(absHtmlPath, extractedHtml, 'utf8')
 				isHtmlWritten = true
 				info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 				// Swap template: `...` → templateUrl in the .ts file
@@ -1487,7 +1273,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 					/template:\s*`[\s\S]*?`/,
 					`templateUrl: './${base}.component.html'`,
 				)
-				updateUserFile(absTsPath, updated)
+				writeFileSync(absTsPath, updated, 'utf8')
 				info(`updated angular component to use templateUrl → ${rel(absTsPath)}`)
 			}
 		} catch (e) {
@@ -1510,7 +1296,7 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	// No inline template migrated (none found, or the read/write failed before
 	// the `.html` was written) — fall back to the default scaffold.
 	if (!isHtmlWritten) {
-		writeScaffoldedFile(absHtmlPath, defaultAngularHtmlTemplate(componentName))
+		writeFileSync(absHtmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
 		info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 	}
 }
@@ -1556,7 +1342,7 @@ export const Primary: Story = {
 	args: {},
 }
 `
-	writeScaffoldedFile(targetStoryPath, storyTpl)
+	writeFileSync(targetStoryPath, storyTpl, 'utf8')
 	info(`scaffolded angular story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
 }
@@ -1696,7 +1482,17 @@ function resolveComponentForStory(
 	// capitals check before anything is done with it. A story named with
 	// different capitals to its component pairs with it silently on Windows and
 	// macOS, and scaffolds a second component beside it everywhere else.
-	if (!checkDoesFolderAgreeWithName(byExtension.compPath)) return null
+	if (!checkDoesFolderAgreeWithName(byExtension.compPath)) {
+		// The story file the user just created stays on disk and empty, and it
+		// still matches Storybook's globs, so Storybook reports a file with no
+		// exports. Say so here, the same way the duplicate-story decline does —
+		// the name-clash line on its own explains the clash but not what
+		// happened to the file in front of them.
+		warn(
+			`left "${rel(absStoryPath)}" empty — nothing was written until the two names agree.`,
+		)
+		return null
+	}
 	return byExtension
 }
 
@@ -2012,12 +1808,16 @@ function startWatcher() {
 						// It is also what lets the name check below see an oddly-spelled
 						// file at all — but only on the platforms where it is on.
 						// `MICROMATCH_OPTIONS` is `nocase` only where the file system
-						// ignores capitals, so on Linux these globs match exactly and a
-						// name whose *extension* carries capitals (`Gadget.TSX`) matches
-						// none of them. That file is dropped here, before the check, and
-						// nothing reports it. Widening the globs unconditionally is not
-						// the answer: it would also make `Src/` match a `srcDir` of
-						// `src` on a file system where those really are two folders.
+						// ignores capitals, so on Linux these globs match exactly and
+						// several odd spellings match none of them: a capitalised
+						// extension (`Gadget.TSX`), an Angular template
+						// (`Button.Component.html`), a story outside the source folder,
+						// and a `.Stories.mdx`. Those files are dropped here, before the
+						// check, and nothing reports them. The README's naming section
+						// carries the same list; keep the two together. Widening the
+						// globs unconditionally is not the answer: it would also make
+						// `Src/` match a `srcDir` of `src` on a file system where those
+						// really are two folders.
 						if (!includeMatchers.some((isMatch) => isMatch(relPath))) continue
 
 						if (ev.type === 'delete') {
@@ -2118,6 +1918,12 @@ function startWatcher() {
 									'external',
 								)
 							}
+							// Same reasoning as the component branch above, and it matters
+							// more here: this arm may already have written the template and
+							// rewritten the component to point at it, so with a story
+							// already on disk nothing else would rebuild and the graph
+							// would show the state from before that change.
+							kick(ev.type, abs)
 							continue
 						}
 
@@ -2135,13 +1941,6 @@ function startWatcher() {
 						// the framework-mismatch fall-through above. `buildOnce` catches
 						// its own errors in watch mode, so this can't rethrow.
 						kick(ev.type, ev.path)
-					} finally {
-						// After the event rather than after each write, so two files
-						// written by one event can name each other. In a `finally` so
-						// every `continue` above reaches it, so a half-written set is
-						// still reported, and so the list is emptied either way rather
-						// than leaking into the next event.
-						reportImportsThatLeadNowhere()
 					}
 				}
 			},
