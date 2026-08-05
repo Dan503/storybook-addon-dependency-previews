@@ -1086,16 +1086,44 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// Its own message, not the shared clash line: that one is written for the
 	// callers that abort, so it would tell the reader to rename a file that
 	// isn't there and imply nothing was written.
-	if (differentlyCasedName) {
+	//
+	// The two endings hang off one opening because they describe one thing —
+	// what the decorator now imports — differing only in what the folder turned
+	// out to hold. Written separately, the shared half drifts.
+	const wrappedComponentNote = getWrappedComponentNote(
+		differentlyCasedName,
+		isWrappedComponentMissing,
+	)
+	if (wrappedComponentNote) {
 		warn(
-			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}", but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`,
+			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}"${wrappedComponentNote}`,
 		)
 	}
-	if (isWrappedComponentMissing) {
-		warn(
-			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}", and there is no such file beside it. A decorator wraps the component named before the first dot, so "Button.Primary.decorator.svelte" wraps "Button.svelte" — rename it, or create the file it names.`,
-		)
-	}
+}
+
+/**
+ * What to add about the component a decorator was written to import, or `''`
+ * when the folder holds it under exactly that name and there is nothing to say.
+ *
+ * The missing case describes rather than instructs. A decorator wraps whatever
+ * is named before the first dot, because a middle segment names a variant —
+ * `Button.Primary.decorator.svelte` decorates `Button`. A component whose own
+ * name carries a dot reads the same way, so for a `Table.Row.decorator.svelte`
+ * beside a real `Table.Row.svelte` neither obvious remedy exists: no decorator
+ * name can produce `Table.Row.svelte`, and creating the `Table.svelte` it asks
+ * for would not be the component they meant to wrap. Saying what happened
+ * leaves the reader to decide; telling them to rename it would be advice that
+ * cannot be followed.
+ */
+function getWrappedComponentNote(
+	differentlyCasedName: string | null,
+	isWrappedComponentMissing: boolean,
+): string {
+	if (differentlyCasedName)
+		return `, but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`
+	if (isWrappedComponentMissing)
+		return `, and there is no such file beside it. A decorator wraps whatever is named before its first dot, so a component whose own name carries a dot cannot be wrapped this way.`
+	return ''
 }
 
 function scaffoldStoryForSvelteComponent(

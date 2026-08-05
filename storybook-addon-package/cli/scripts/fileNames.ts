@@ -42,6 +42,26 @@ const NAME_ENDINGS: ReadonlyArray<{
 export type NameEndingContext = { isAngularProject: boolean }
 
 /**
+ * `Button.component` → `Button`, for a name that carries a `.component` ending
+ * meaning something here. Returned unchanged otherwise.
+ *
+ * Exported so the graph filter asks the same question the watcher does. It used
+ * to strip with an inline `/\.component$/`, which carried neither of the two
+ * conditions above — so the rule crossed over one half at a time, and an
+ * AngularJS-era `Chart.component.js` in an Angular project was still read as a
+ * component file.
+ */
+export function stripComponentEnding(
+	baseName: string,
+	extension: string,
+	context: NameEndingContext,
+): string {
+	const ending = getNameEnding(baseName, extension.toLowerCase(), context)
+	if (ending !== '.component') return baseName
+	return baseName.slice(0, -ending.length)
+}
+
+/**
  * A folder's entries, or `null` when it can't be read.
  *
  * Shared for the same reason as the naming rule above: both processes have to

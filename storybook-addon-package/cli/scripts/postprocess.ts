@@ -2,14 +2,26 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
-import { readFolderEntriesOrNull } from './fileNames.js'
+import {
+	readFolderEntriesOrNull,
+	stripComponentEnding,
+} from './fileNames.js'
 
 const [, , inPathArg, outPathArg, srcDirArg, projectFamilyArg] = process.argv
 // Only `.component` needs this, and only to tell an Angular component file from
-// an ordinary dotted `.ts` name. Absent on a direct invocation, which reads as
-// "not Angular" — the safe way round, since it means saying nothing rather than
-// telling someone to rename a file for a convention their project doesn't use.
-const nameEndingContext = { isAngularProject: projectFamilyArg === 'angular' }
+// an ordinary dotted `.ts` name. `sb-deps.ts` passes the family it detected, or
+// an empty string when it could not detect one; a direct manual invocation
+// passes nothing at all.
+//
+// Both of those unknowns read as "might be Angular", which is the safe way
+// round HERE even though it is the opposite of what the watcher assumes. The
+// only thing this decides is whether `Button.stories.ts` joins the candidate
+// story names for a `Button.component.ts`, and candidates are additive: a wrong
+// guess costs one probe that finds nothing, while a missing one costs the
+// pairing itself and shows the component as having no story.
+const nameEndingContext = {
+	isAngularProject: !projectFamilyArg || projectFamilyArg === 'angular',
+}
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
 // `srcDirArg` can take three meaningfully-different shapes:
@@ -248,22 +260,18 @@ function getRawStoryFileData(componentPath: string) {
 	] as const
 
 	const base = componentPath.replace(/\.\w+$/, '')
+	const componentExt = extname(componentPath)
 
 	// Angular: strip the `.component` suffix so e.g. `Button.component.ts`
 	// looks for `Button.stories.ts` rather than `Button.component.stories.ts`.
 	//
-	// Only in an Angular project, for the reason `NAME_ENDINGS` gives: every
-	// framework writes `.ts`, so an `Auth.Component.ts` in a React project is an
-	// ordinary dotted name. Reading it as Angular here would pair it with an
-	// `Auth.stories.ts` that the watcher — which does check the framework —
-	// would never have written for it, so the two halves of this tool would
-	// disagree about the same file.
-	const angularBase = nameEndingContext.isAngularProject
-		? base.replace(/\.component$/, '')
-		: base
+	// Through the shared rule rather than an inline pattern, so both conditions
+	// on that ending travel with it — an Angular project, and a `.ts` or
+	// `.html` file. Spelling it here is what let the project half arrive
+	// without the extension half.
+	const angularBase = stripComponentEnding(base, componentExt, nameEndingContext)
 	const isAngular = angularBase !== base
 
-	const componentExt = extname(componentPath)
 	// Search the component's own extension first so matching pairs win when
 	// both ambiguous siblings exist.
 	const orderedExts = [
