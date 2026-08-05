@@ -1092,8 +1092,9 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// user can rename to reach it, while `Button.Primary.decorator.svelte` with
 	// no `Button.Primary.svelte` is just a decorator written before its
 	// component, and creating `Button.svelte` is a perfectly good answer.
-	// Matched however the folder capitalises it, like the lookup six lines up —
-	// a `table.row.svelte` beside this decorator is the same clash to the user.
+	// Matched however the folder capitalises it, the same way
+	// `getDifferentlyCasedName` matches for the wrapped component above — a
+	// `table.row.svelte` beside this decorator is the same clash to the user.
 	// The ending itself is matched exactly: `getWrongCasedNameError` has already
 	// turned away anything but a lower-case `.decorator`.
 	const fullBaseWithoutDecorator = fullBase.replace(/\.decorator$/, '')

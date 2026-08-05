@@ -115,9 +115,10 @@ const graph: Graph = {}
  *
  * The loop below asks about the same component once for itself and again for
  * every edge it sits on, and each answer costs a directory listing plus a read
- * of the story file. On this repo's own React example that is 192 questions
- * about 77 components, and the watcher rebuilds on every save. Nothing on disk
- * changes during a build, so one answer per component is enough.
+ * of the story file. On this repo's own React example that is well over twice
+ * as many questions as there are components, and the watcher rebuilds on every
+ * save. Nothing on disk changes during a build, so one answer per component is
+ * enough.
  *
  * Declared HERE, above the loop, not down beside `getStoryId` where it reads
  * more naturally. The loop is top-level code, so a `const` written below it has
