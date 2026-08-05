@@ -122,8 +122,8 @@ const graph: Graph = {}
  * Declared HERE, above the loop, not down beside `getStoryId` where it reads
  * more naturally. The loop is top-level code, so a `const` written below it has
  * not been created yet when the loop calls into it, and the build throws
- * `Cannot access 'storyIdCache' before initialization`. Same hazard the note on
- * `getRawStoryFileData` describes.
+ * `Cannot access 'storyIdCache' before initialization`. The note on
+ * `getRawStoryFileData` describes the same hazard from the other side.
  */
 const storyIdCache = new Map<string, ReturnType<typeof findStoryId>>()
 
@@ -238,12 +238,15 @@ function findStoryId(componentPath: string) {
  * extension misses valid pairings and produces graph entries with no
  * `storyId` — which breaks the autodocs lookup in `useDependencyGraph`.
  *
- * The extension list is declared inside this function (rather than as a
- * top-level `const`) because the bundler reorders the module so the
- * top-level graph-build loop runs before any top-level `const` is
- * initialised. A `const` referenced from inside the loop's call chain
- * would hit the temporal-dead-zone; `function` declarations are hoisted
- * so the function itself is fine.
+ * The extension list is declared inside this function rather than as a
+ * top-level `const`, which sidesteps a hazard worth knowing about: the
+ * graph-build loop is itself top-level code, so a `const` written BELOW it has
+ * not been created yet when the loop calls down into a function that reads it,
+ * and the build throws `Cannot access '...' before initialization`. A `const`
+ * written above the loop is fine — `storyIdCache` is one — and the build
+ * preserves source order, so this is the ordinary rule rather than anything the
+ * bundler does. `function` declarations are hoisted, so the functions
+ * themselves can sit anywhere.
  */
 function getRawStoryFileData(componentPath: string) {
 	// Searched in order — first hit wins. Putting the component's own

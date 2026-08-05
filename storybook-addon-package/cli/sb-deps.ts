@@ -688,6 +688,15 @@ function reportNamesClash(builtPath: string, onDiskName: string) {
  * clash once it knows it is going to act on it — can decide for themselves what
  * to say.
  */
+/** Does the folder hold this file name, whatever capitals it spells it with? */
+function checkDoesFolderHoldName(
+	fileName: string,
+	folderEntries: ReadonlyArray<string>,
+): boolean {
+	const comparableName = fileName.toLowerCase()
+	return folderEntries.some((entry) => entry.toLowerCase() === comparableName)
+}
+
 function getDifferentlyCasedName(
 	builtPath: string,
 	preReadEntries?: ReadonlyArray<string>,
@@ -1060,9 +1069,10 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// is taken to decorate `Table` and imports a file that may not exist.
 	//
 	// That ambiguity is inherent in the naming convention, so this says what it
-	// did rather than trying to guess which reading was meant. One derived name,
-	// checked against the folder listing already read above — not a general
-	// check of what a written file imports.
+	// did rather than trying to guess which reading was meant. Two names derived
+	// from the decorator's own — the one it imports, and the fuller one just
+	// below — both looked up in the folder listing already read above. Neither
+	// is a general check of what a written file imports.
 	const isWrappedComponentMissing =
 		!!folderEntries &&
 		!differentlyCasedName &&
@@ -1077,11 +1087,15 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// user can rename to reach it, while `Button.Primary.decorator.svelte` with
 	// no `Button.Primary.svelte` is just a decorator written before its
 	// component, and creating `Button.svelte` is a perfectly good answer.
-	const fullBaseWithoutDecorator = fullBase.replace(/\.decorator$/i, '')
+	// Matched however the folder capitalises it, like the lookup six lines up —
+	// a `table.row.svelte` beside this decorator is the same clash to the user.
+	// The ending itself is matched exactly: `getWrongCasedNameError` has already
+	// turned away anything but a lower-case `.decorator`.
+	const fullBaseWithoutDecorator = fullBase.replace(/\.decorator$/, '')
 	const isWrappedNameAmbiguous =
 		!!folderEntries &&
 		fullBaseWithoutDecorator !== wrappedBase &&
-		folderEntries.includes(`${fullBaseWithoutDecorator}.svelte`)
+		checkDoesFolderHoldName(`${fullBaseWithoutDecorator}.svelte`, folderEntries)
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({
