@@ -2,8 +2,27 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, posix, dirname, extname, basename } from 'node:path'
 import { toId } from '@storybook/csf'
 import type { Deps, Graph, StoryInfo } from '../../src/types.js'
+import {
+	readFolderEntriesOrNull,
+	stripComponentEnding,
+} from './fileNames.js'
 
-const [, , inPathArg, outPathArg, srcDirArg] = process.argv
+const [, , inPathArg, outPathArg, srcDirArg, projectFamilyArg] = process.argv
+// Only `.component` needs this, and only to tell an Angular component file from
+// an ordinary dotted `.ts` name. `sb-deps.ts` passes the family it detected, or
+// an empty string when it could not detect one; a direct manual invocation
+// passes nothing at all.
+//
+// Anything but `angular` reads as not-Angular, including both unknowns. An
+// extra candidate story name is not free: it is matched against the folder like
+// any other, so it can hit a real file. In a project this tool does not
+// recognise, an `auth.stories.ts` belonging to `auth.ts` would be taken as the
+// story for an `auth.component.ts` sitting beside it — the graph would then
+// show one component's story on another. A missing pairing is a gap; a wrong
+// one is wrong data, so the guess falls that way.
+const nameEndingContext = {
+	isAngularProject: projectFamilyArg === 'angular',
+}
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
 // `srcDirArg` can take three meaningfully-different shapes:
@@ -67,8 +86,18 @@ const norm = (p: string) => posix.normalize(p.replaceAll('\\', '/'))
 const isComponent = (p: string) => {
 	return (
 		srcDirRegex.test(p) &&
-		// Ignore css and html template files
-		!/\.(css|scss|sass|less|html)$/.test(p)
+		// Ignore css and html template files, whatever capitals the extension
+		// carries. Every other name check in the pipeline spells one name and
+		// means one file, because `getWrongCasedNameError` in `sb-deps.ts` turns
+		// an oddly-capitalised name away. This one can't rely on that: it reads
+		// files dependency-cruiser found, not files the watcher saw created, so a
+		// `styles.CSS` written before the addon was installed still reaches it.
+		// Getting it wrong here puts a stylesheet in the graph as a component that
+		// isn't one — wrong data rather than a missing link, which is why this
+		// check reads a name loosely where the rest read it exactly. (The srcDir
+		// prefix above ignores capitals too, but for the separate folder-name
+		// reason given there.)
+		!/\.(css|scss|sass|less|html)$/i.test(p)
 	)
 }
 
@@ -80,6 +109,24 @@ function pushUnique(list: Array<StoryInfo>, item: StoryInfo) {
 }
 
 const graph: Graph = {}
+
+/**
+ * Story answers already worked out, keyed by component path.
+ *
+ * The loop below asks about the same component once for itself and again for
+ * every edge it sits on, and each answer costs a directory listing plus a read
+ * of the story file. On this repo's own React example that is well over twice
+ * as many questions as there are components, and the watcher rebuilds on every
+ * save. Nothing on disk changes during a build, so one answer per component is
+ * enough.
+ *
+ * Declared HERE, above the loop, not down beside `getStoryId` where it reads
+ * more naturally. The loop is top-level code, so a `const` written below it has
+ * not been created yet when the loop calls into it, and the build throws
+ * `Cannot access 'storyIdCache' before initialization`. The note on
+ * `getRawStoryFileData` describes the same hazard from the other side.
+ */
+const storyIdCache = new Map<string, ReturnType<typeof findStoryId>>()
 
 for (const m of raw.modules || []) {
 	const from = norm(m.source)
@@ -130,14 +177,13 @@ for (const m of raw.modules || []) {
 		pushUnique(graph[from].builtWith, builtWithEntry)
 
 		// ---- usedIn: to ← from
-		const fromStory = getStoryId(from)
 		const usedInEntry: StoryInfo = {
 			componentPath: from,
-			...(fromStory && {
-				storyId: fromStory.id,
-				storyTitle: fromStory.title,
-				storyTitlePath: fromStory.titlePath,
-				storyFilePath: fromStory.filePath,
+			...(topLevelFromStory && {
+				storyId: topLevelFromStory.id,
+				storyTitle: topLevelFromStory.title,
+				storyTitlePath: topLevelFromStory.titlePath,
+				storyFilePath: topLevelFromStory.filePath,
 			}),
 		}
 		pushUnique(graph[to].usedIn, usedInEntry)
@@ -155,7 +201,19 @@ for (const k of Object.keys(graph)) {
 
 writeFileSync(outPath, JSON.stringify(graph, null, 2))
 
+
 function getStoryId(componentPath: string) {
+	const cached = storyIdCache.get(componentPath)
+	// Only `undefined` means unasked. `null` is a real stored answer — "this
+	// component has no story" — and it is the answer for most of them, so it has
+	// to count as a hit or the cache would miss on exactly the common case.
+	if (cached !== undefined) return cached
+	const storyId = findStoryId(componentPath)
+	storyIdCache.set(componentPath, storyId)
+	return storyId
+}
+
+function findStoryId(componentPath: string) {
 	const rawFileData = getRawStoryFileData(componentPath)
 	if (!rawFileData.storyFileData) return null
 
@@ -181,12 +239,15 @@ function getStoryId(componentPath: string) {
  * extension misses valid pairings and produces graph entries with no
  * `storyId` — which breaks the autodocs lookup in `useDependencyGraph`.
  *
- * The extension list is declared inside this function (rather than as a
- * top-level `const`) because the bundler reorders the module so the
- * top-level graph-build loop runs before any top-level `const` is
- * initialised. A `const` referenced from inside the loop's call chain
- * would hit the temporal-dead-zone; `function` declarations are hoisted
- * so the function itself is fine.
+ * The extension list is declared inside this function rather than as a
+ * top-level `const`, which sidesteps a hazard worth knowing about: the
+ * graph-build loop is itself top-level code, so a `const` written BELOW it has
+ * not been created yet when the loop calls down into a function that reads it,
+ * and the build throws `Cannot access '...' before initialization`. A `const`
+ * written above the loop is fine — `storyIdCache` is one — and the build
+ * preserves source order, so this is the ordinary rule rather than anything the
+ * bundler does. `function` declarations are hoisted, so the functions
+ * themselves can sit anywhere.
  */
 function getRawStoryFileData(componentPath: string) {
 	// Searched in order — first hit wins. Putting the component's own
@@ -204,13 +265,18 @@ function getRawStoryFileData(componentPath: string) {
 	] as const
 
 	const base = componentPath.replace(/\.\w+$/, '')
+	const componentExt = extname(componentPath)
 
 	// Angular: strip the `.component` suffix so e.g. `Button.component.ts`
 	// looks for `Button.stories.ts` rather than `Button.component.stories.ts`.
-	const angularBase = base.replace(/\.component$/, '')
+	//
+	// Through the shared rule rather than an inline pattern, so both conditions
+	// on that ending travel with it — an Angular project, and a `.ts` or
+	// `.html` file. Spelling it here is what let the project half arrive
+	// without the extension half.
+	const angularBase = stripComponentEnding(base, componentExt, nameEndingContext)
 	const isAngular = angularBase !== base
 
-	const componentExt = extname(componentPath)
 	// Search the component's own extension first so matching pairs win when
 	// both ambiguous siblings exist.
 	const orderedExts = [
@@ -228,14 +294,41 @@ function getRawStoryFileData(componentPath: string) {
 		}
 	}
 
+	// Read once, not once per candidate: every candidate is built from
+	// `componentPath` with only its ending changed, so they all sit in the
+	// component's own folder. There are a dozen or more of them — twice that for
+	// an Angular component, which has a second base to try — and this runs for
+	// every module and every edge on every rebuild.
+	const folderEntries = readFolderEntriesOrNull(dirname(componentPath))
+	if (!folderEntries) return { storyFileData: null, storyFilePath: null }
+
 	for (const path of candidates) {
-		const data = getRawFileData(path)
+		const data = getRawFileData(path, folderEntries)
 		if (data) return { storyFileData: data, storyFilePath: path }
 	}
 
 	return { storyFileData: null, storyFilePath: null }
 }
 
-function getRawFileData(path: string) {
-	return existsSync(path) && readFileSync(path, 'utf8')
+/**
+ * A candidate story file's contents, or `false` when the folder holds no file
+ * under that exact name.
+ *
+ * Matched against the folder's own listing rather than asked of `existsSync`,
+ * which on Windows and macOS opens `Button.Stories.tsx` when asked for
+ * `Button.stories.tsx`. Reading that file would write a story id into the graph
+ * for a story Storybook's own exact matching never indexes, so the addon would
+ * show a link to a story that isn't there.
+ */
+function getRawFileData(path: string, folderEntries: ReadonlyArray<string>) {
+	if (!folderEntries.includes(basename(path))) return false
+	try {
+		return readFileSync(path, 'utf8')
+	} catch {
+		// The listing is taken once for every candidate, so a file can be renamed
+		// or deleted in the gap before this read — routine while the watcher is
+		// rebuilding on a save. One missing story is a missing link; letting the
+		// read throw would end the whole build.
+		return false
+	}
 }

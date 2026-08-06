@@ -16,6 +16,10 @@ import { createRequire } from 'node:module'
 import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
+import {
+	getNameWithLowerCasedEndings,
+	readFolderEntriesOrNull,
+} from './scripts/fileNames.js'
 import { detectProject, type Framework } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
 
@@ -183,8 +187,10 @@ function runDepCruiseOnce() {
 	// slash `^src` would also match `src2/`, `srcabc/`, etc.
 	//
 	// dependency-cruiser compiles the pattern with a plain case-SENSITIVE
-	// `new RegExp(...)` — unlike the path checks in this file, which all ignore
-	// case on the file systems that do. So on those platforms every letter is
+	// `new RegExp(...)`, and it cannot be handed a flag. The FOLDER half of a
+	// path still has to ignore case on the file systems that do — file endings
+	// are matched exactly now, but folder names are not, for the reason
+	// `escapeForFolderRegex` gives. So on those platforms every letter is
 	// written as a pair matching both of its cases (`s` → `[sS]`): with srcDir
 	// spelled `src` in the config but `Src` on disk, a case-sensitive `^src/`
 	// would reject every module dependency-cruiser finds and the graph would
@@ -196,9 +202,7 @@ function runDepCruiseOnce() {
 	// `node_modules` as any path segment — covers nested
 	// `packages/foo/node_modules/...` paths in monorepos, not just the
 	// top-level folder.
-	const escapedSrcDir = IS_CASE_INSENSITIVE_PATH_FS
-		? escapeForRegexIgnoringCase(SRC_DIR)
-		: escapeForRegex(SRC_DIR)
+	const escapedSrcDir = escapeForFolderRegex(SRC_DIR)
 	const includeOnly =
 		SRC_DIR === '' ? '^(?!(?:[^/]*/)*node_modules/)' : `^${escapedSrcDir}/`
 	const args: Array<string> = ['.']
@@ -248,7 +252,13 @@ function postprocessOnce() {
 	// `node` is a real executable on every platform (no `.cmd` shim), so we
 	// don't need shell:true here — args pass through directly with no quoting
 	// or escape concerns.
-	execFileSync('node', [post, rawPath, cookedPath, SRC_DIR], {
+	// The framework goes with it because `.component` only means anything in an
+	// Angular project — every framework here writes `.ts` files, so the
+	// extension alone can't tell an Angular component from an ordinary dotted
+	// name. The graph filter runs as its own process and has no other way to
+	// know.
+	const projectFamily = getProjectFrameworkFamily() ?? ''
+	execFileSync('node', [post, rawPath, cookedPath, SRC_DIR, projectFamily], {
 		cwd: projectRoot,
 		stdio: 'inherit',
 	})
@@ -256,10 +266,26 @@ function postprocessOnce() {
 }
 
 /**
+ * Escape a folder name for a pattern that has to match a path on disk, matching
+ * either capitalisation where the file system treats the two as one folder and
+ * exactly where it doesn't.
+ *
+ * Neither caller can reach for an ignore-case flag, for its own reason. The
+ * `--include-only` argument is a string dependency-cruiser compiles itself, so
+ * there is nowhere to put a flag. `buildSrcSubpathRegex` compiles its own
+ * pattern but pairs this folder prefix with a file ending that is deliberately
+ * exact, so a flag would loosen the half that must not loosen.
+ */
+function escapeForFolderRegex(folderName: string): string {
+	return IS_CASE_INSENSITIVE_PATH_FS
+		? escapeForRegexIgnoringCase(folderName)
+		: escapeForRegex(folderName)
+}
+
+/**
  * Like `escapeForRegex`, but every letter becomes a pair matching both of its
- * cases (`s` → `[sS]`). For a pattern that has to ignore case in a place we
- * can't hand the compiled regex an `i` flag — dependency-cruiser builds its
- * `--include-only` regex itself, with no flags.
+ * cases (`s` → `[sS]`). Reached through `escapeForFolderRegex`, which owns the
+ * decision about when that is wanted.
  */
 function escapeForRegexIgnoringCase(text: string): string {
 	return text
@@ -371,8 +397,11 @@ function toComparablePath(path: string): string {
 
 /**
  * Options for the watcher's glob matching. `micromatch` matches case-sensitively
- * by default, which would disagree with every other path check here — those all
- * ignore case on the platforms whose file systems do.
+ * by default, which would disagree with how a path's FOLDER half is matched
+ * everywhere else here — that still ignores case on the platforms whose file
+ * systems do. File endings are matched exactly, but these globs have to admit
+ * an oddly-spelled one so the name check below can see it and say so; matching
+ * exactly here would turn that error into silence.
  */
 const MICROMATCH_OPTIONS = { nocase: IS_CASE_INSENSITIVE_PATH_FS }
 
@@ -481,10 +510,17 @@ function buildSrcSubpathRegex(suffixPattern: string): RegExp {
 	// watcher's ignore list (node_modules, .git, dist, build) keeps the noise
 	// out before paths ever reach here, so a permissive regex is fine.
 	if (SRC_DIR === '') {
-		return new RegExp(`.+${suffixPattern}`, 'i')
+		return new RegExp(`.+${suffixPattern}`)
 	}
-	const escapedSrcDir = escapeForRegex(SRC_DIR)
-	return new RegExp(`^${escapedSrcDir}\\/.+${suffixPattern}`, 'i')
+	// Two halves with two different rules, which is why there is no ignore-case
+	// flag on the compiled pattern. The file ending is exact, because an
+	// oddly-capitalised one is turned away rather than understood. The folder
+	// prefix is not: `srcDir: 'src'` against a `Src/` on disk is one folder to
+	// the file system, and matching it exactly would silently switch every
+	// scaffolding check below to false. `escapeForFolderRegex` carries that rule
+	// in the pattern so only the prefix gets it.
+	const escapedSrcDir = escapeForFolderRegex(SRC_DIR)
+	return new RegExp(`^${escapedSrcDir}\\/.+${suffixPattern}`)
 }
 
 /**
@@ -500,17 +536,18 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  * where `<ext>` is any single-segment file extension (`.svelte`, `.ts`, `.tsx`,
  * `.js`, `.jsx`, `.mdx`, …). Used by the scaffolding-trigger helpers to make
  * sure they don't try to auto-scaffold a story file for an existing story.
+ *
+ * Matched exactly, with no ignore-case flag, because `getWrongCasedNameError`
+ * turns a `Button.Stories.tsx` away before this pattern ever sees it — so it
+ * can spell one name and mean one file.
  */
-const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`, 'i')
+const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`)
 
 /** Splits a `.ts` story path into its base and story suffix, for building Angular's `.component`-carrying spelling. */
-const COMPONENT_STORY_TS_REGEX = new RegExp(
-	`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts)$`,
-	'i',
-)
+const COMPONENT_STORY_TS_REGEX = new RegExp(`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts)$`)
 
-/** Does a file base already end in `.component`? Matched case-insensitively, like every other `.component` check here. */
-const COMPONENT_SUFFIX_REGEX = /\.component$/i
+/** Does a file base already end in `.component`? */
+const COMPONENT_SUFFIX_REGEX = /\.component$/
 
 /**
  * Is this `<srcDir>/**​/Thing.story.<ext>` or `Thing.stories.<ext>`? Limits
@@ -558,27 +595,139 @@ function isComponentsAngularHtml(relPath: string) {
 }
 
 /**
- * Compiled extension-strippers, keyed by extension. Only a handful of fixed
- * extensions are ever passed in, and the watcher consults these on every
- * create event, so each regex is built once and reused — same treatment as
- * `srcSubpathRegexCache`.
+ * The message to print when a file's name spells its extension, or one of
+ * the endings in `scripts/fileNames.ts` that mean something here, with capitals
+ * — or `null` when the name is fine. `.stories` and `.story` count on any
+ * extension; `.decorator` only on `.svelte`; `.component` only on `.ts` and
+ * `.html`, and only in an Angular project, which is why the project's framework
+ * is passed in.
+ *
+ * The patterns in this file each spell one name and mean one file, which is
+ * only safe because this check turns the odd spellings away first.
+ *
+ * The Storybook half of the message is only added for a story file. It fires on
+ * any created file that clears the watcher's globs, so a plain `Badge.VUE`
+ * would otherwise send its author off to read their Storybook stories setting
+ * about a file that was never going to appear there.
  */
-const stripExtensionRegexCache = new Map<string, RegExp>()
+function getWrongCasedNameError(absPath: string): string | null {
+	const fileName = basename(absPath)
+	const readyFileName = getNameWithLowerCasedEndings(fileName, {
+		isAngularProject: getProjectFrameworkFamily() === 'angular',
+	})
+	if (readyFileName === fileName) return null
+	const isStoryFile = STORY_FILE_REGEX.test(readyFileName)
+	const storybookNote = isStoryFile
+		? " Storybook matches its own stories setting exactly too, so a story file spelled with capitals never shows up there either."
+		: ''
+	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. These endings are matched exactly.${storybookNote}`
+}
 
 /**
- * Strip a known extension from a file name, ignoring its case — `Button.TSX`
- * and `Button.tsx` both give `Button`. The watcher accepts either spelling (the
- * globs and detectors all ignore case), so stripping case-sensitively would
- * leave the extension embedded in the name and scaffold from it.
+ * For a name this tool worked out for itself rather than read off an event:
+ * does the folder agree with it? True when the folder holds that exact name, or
+ * nothing resembling it — the ordinary "not there yet" case most of the writing
+ * paths begin from. False, with a line saying which two names clash, when the
+ * folder holds the same name spelled with different capitals.
+ *
+ * Reading the folder rather than asking whether the file exists is the whole
+ * point. On Windows and macOS an existence check happily opens
+ * `CardListing.tsx` when asked for `cardlisting.tsx`, so the disagreement the
+ * user needs telling about is exactly the one an existence check cannot see.
+ *
+ * It says no on every platform, including the ones where two spellings really
+ * are two separate files. There the alternative is writing a second component
+ * beside the one they meant, which is the worse outcome.
+ *
+ * A folder that can't be read says nothing either way, so it counts as agreeing.
+ */
+function checkDoesFolderAgreeWithName(builtPath: string): boolean {
+	const differentlyCasedName = getDifferentlyCasedName(builtPath)
+	if (!differentlyCasedName) return true
+	reportNamesClash(builtPath, differentlyCasedName)
+	return false
+}
+
+/**
+ * Tell the user their just-created file was left alone because of a name clash.
+ *
+ * Written once and reached from every decline that leaves the user's own file
+ * untouched — a created story file, whether the clash was found on its
+ * component or on another story naming, and a created Angular template.
+ * Rewording this sentence has been most of the work in several review rounds,
+ * and a reword landing at one site and not the others would tell different
+ * stories about the same outcome.
+ */
+function warnFileLeftEmptyOverNameClash(absPath: string) {
+	warn(
+		`left "${rel(absPath)}" empty — nothing was written until the two names agree.`,
+	)
+}
+
+/**
+ * Say which two names clash. It is the sentence a reader acts on, so it is
+ * written once and reached from everywhere that needs it: the checks on a
+ * component name derived from a story's and on one derived from a template's,
+ * the check on a story name derived from a component's, and the story lookup
+ * when it settles on a name the folder spells differently.
+ *
+ * Note there is no check on a derived *template* name — that direction is
+ * deliberately unchecked, for the reason given where the external template is
+ * scaffolded.
+ *
+ * Deliberately not phrased as a count of those callers — that sentence has gone
+ * stale here once already.
+ */
+function reportNamesClash(builtPath: string, onDiskName: string) {
+	error(
+		`looked for "${basename(builtPath)}" and found "${onDiskName}" in ${rel(dirname(builtPath))} — the two names differ only in capitals, so rename one of them to match the other.`,
+	)
+}
+
+/** Does the folder hold this file name, whatever capitals it spells it with? */
+function checkDoesFolderHoldName(
+	fileName: string,
+	folderEntries: ReadonlyArray<string>,
+): boolean {
+	const comparableName = fileName.toLowerCase()
+	return folderEntries.some((entry) => entry.toLowerCase() === comparableName)
+}
+
+/**
+ * The folder's own spelling of this name when it holds one differing only in
+ * capitals, or `null` when it agrees, holds nothing like it, or can't be read.
+ *
+ * Separate from `checkDoesFolderAgreeWithName` so the callers that carry on
+ * anyway — the Svelte decorator, and the story lookup, which only reports a
+ * clash once it knows it is going to act on it — can decide for themselves what
+ * to say.
+ */
+function getDifferentlyCasedName(
+	builtPath: string,
+	preReadEntries?: ReadonlyArray<string>,
+): string | null {
+	const entries = preReadEntries ?? readFolderEntriesOrNull(dirname(builtPath))
+	if (!entries) return null
+	const builtFileName = basename(builtPath)
+	if (entries.includes(builtFileName)) return null
+	const comparableFileName = builtFileName.toLowerCase()
+	return (
+		entries.find((entry) => entry.toLowerCase() === comparableFileName) ?? null
+	)
+}
+
+
+/**
+ * Strip a known extension from a file name — `Button.tsx` gives `Button`. The
+ * extension has to be spelled exactly, which it always is: a file whose
+ * extension carries capitals is turned away by `getWrongCasedNameError` long
+ * before anything asks for its base name.
  */
 function stripExtension(absPath: string, extension: string) {
-	let extensionRegex = stripExtensionRegexCache.get(extension)
-	if (!extensionRegex) {
-		const escapedExtension = escapeForRegex(extension)
-		extensionRegex = new RegExp(`${escapedExtension}$`, 'i')
-		stripExtensionRegexCache.set(extension, extensionRegex)
-	}
-	return basename(absPath).replace(extensionRegex, '')
+	const fileName = basename(absPath)
+	return fileName.endsWith(extension)
+		? fileName.slice(0, -extension.length)
+		: fileName
 }
 
 function componentBaseFromComponent(absCompPath: string) {
@@ -594,7 +743,7 @@ function componentBaseFromVueComponent(absCompPath: string) {
 }
 
 function componentBaseFromAngularComponent(absCompPath: string) {
-	return basename(absCompPath).replace(/\.component\.(ts|html)$/i, '')
+	return basename(absCompPath).replace(/\.component\.(ts|html)$/, '')
 }
 
 function angularComponentTsPath(absPath: string) {
@@ -731,6 +880,9 @@ export const Primary: Story = {
 	return targetStoryPath
 }
 
+/** A story already on disk: where it is, and whether it was found only by ignoring capitals. */
+type ExistingStory = { path: string; isNamesClash: boolean }
+
 /**
  * Return the on-disk story file for `canonicalStoryPath` if one already exists —
  * under either `.story.` / `.stories.` naming AND, for React, either extension
@@ -750,7 +902,7 @@ export const Primary: Story = {
 function findExistingStory(
 	canonicalStoryPath: string,
 	framework: StoryFramework,
-): string | null {
+): ExistingStory | null {
 	const namingVariants = [canonicalStoryPath]
 	const alternateStoryPath = getAlternateStoryNaming(canonicalStoryPath)
 	if (alternateStoryPath) namingVariants.push(alternateStoryPath)
@@ -776,16 +928,64 @@ function findExistingStory(
 		path.endsWith('.tsx') ? [path, path.replace(/\.tsx$/, '.ts')] : [path],
 	)
 
-	// No `existsSync` needed — a missing file already reports as empty.
-	return allVariants.find((path) => !isEmptyOrWhitespace(path)) ?? null
+	// Every variant here is a name this tool worked out, so each has to be read
+	// off the folder rather than probed with `isEmptyOrWhitespace` alone — that
+	// asks the file system, which on Windows and macOS answers for
+	// `Button.Story.tsx` when asked about `Button.story.tsx`. Taking that as a
+	// hit would decline to write a story on the strength of a file Storybook's
+	// own exact matching never indexes, and say nothing about why.
+	const folderEntries = readFolderEntriesOrNull(dirname(canonicalStoryPath))
+	// A folder that can't be listed must not read as "no story here": both
+	// callers take that as leave to write, and the scaffolders write without
+	// asking again, so a story already on disk would be replaced by a template.
+	// Fall back to the plain probes, which fail the other way —
+	// `isEmptyOrWhitespace` reports a file it cannot read as NOT empty.
+	if (!folderEntries) {
+		const foundPath = allVariants.find((path) => !isEmptyOrWhitespace(path))
+		return foundPath ? { path: foundPath, isNamesClash: false } : null
+	}
+	// A variant the folder holds under different capitals is the same story to
+	// the user, so it is considered alongside the ones spelled exactly. Matching
+	// exactly on its own would find nothing and write a second story beside it.
+	// Every variant, not just the canonical name, because the clash is just as
+	// real under the `.story` spelling or Angular's `.component` one.
+	//
+	// A name the folder spells exactly wins over one it only spells with
+	// different capitals, wherever each sits in the variant order. Otherwise a
+	// user with a real duplicate — an exactly-spelled `Foo.story.ts` beside the
+	// `Foo.stories.ts` being built — could be sent to fix a capitals clash on
+	// some other variant instead of the duplicate actually in front of them.
+	//
+	// The emptiness rule applies to both alike: an empty file is not a story
+	// whatever it is called, so it must not suppress the write.
+	const spelledExactly = allVariants.filter((path) =>
+		folderEntries.includes(basename(path)),
+	)
+	const foundExactly = spelledExactly.find(
+		(path) => !isEmptyOrWhitespace(path),
+	)
+	if (foundExactly) return { path: foundExactly, isNamesClash: false }
+
+	const clashingVariants = allVariants.flatMap((builtPath) => {
+		const onDiskName = getDifferentlyCasedName(builtPath, folderEntries)
+		if (!onDiskName) return []
+		return [{ builtPath, onDiskName, path: join(dirname(builtPath), onDiskName) }]
+	})
+	// Reported only here, once it is settled that this is the story being used.
+	const foundClashing = clashingVariants.find(
+		(variant) => !isEmptyOrWhitespace(variant.path),
+	)
+	if (!foundClashing) return null
+	reportNamesClash(foundClashing.builtPath, foundClashing.onDiskName)
+	return { path: foundClashing.path, isNamesClash: true }
 }
 
 /** Swap a story path between its `.story.<ext>` and `.stories.<ext>` naming. */
 function getAlternateStoryNaming(storyPath: string): string | null {
-	if (/\.story\.\w+$/i.test(storyPath))
-		return storyPath.replace(/\.story\.(\w+)$/i, '.stories.$1')
-	if (/\.stories\.\w+$/i.test(storyPath))
-		return storyPath.replace(/\.stories\.(\w+)$/i, '.story.$1')
+	if (/\.story\.\w+$/.test(storyPath))
+		return storyPath.replace(/\.story\.(\w+)$/, '.stories.$1')
+	if (/\.stories\.\w+$/.test(storyPath))
+		return storyPath.replace(/\.stories\.(\w+)$/, '.story.$1')
 	return null
 }
 
@@ -841,11 +1041,75 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	const fullBase = componentBaseFromSvelteComponent(absDecoratorPath)
 	const wrappedBase = fullBase.split('.')[0] ?? fullBase
 	const componentName = toPascalCase(wrappedBase)
+	// The wrapped component is imported by its file name, not by the name it
+	// binds to above. `card-listing.decorator.svelte` sits beside
+	// `card-listing.svelte`, so importing `./CardListing.svelte` would name a
+	// file that exists on no platform.
+	//
+	// This is the one derived name that is reported but not refused, and the
+	// reason is recoverability rather than when scaffolding runs. Nothing here
+	// is scaffolded on save — every branch of the watcher fires on creation —
+	// but an empty *story* still gets filled later, because `findExistingStory`
+	// counts only a non-empty file, so creating the component once the clash is
+	// fixed writes into it. A decorator has no second file whose creation comes
+	// back for it, so refusing would leave one that only deleting and
+	// re-creating could ever fill.
+	const componentImportPath = `${wrappedBase}.svelte`
+	const wrappedComponentPath = join(
+		dirname(absDecoratorPath),
+		componentImportPath,
+	)
+	// Looked up before the write, said after it — the sentences below claim the
+	// file was written, so they must not be printed by a run that then fails to
+	// write one.
+	const folderEntries = readFolderEntriesOrNull(dirname(absDecoratorPath))
+	const differentlyCasedName = getDifferentlyCasedName(
+		wrappedComponentPath,
+		folderEntries ?? undefined,
+	)
+	// `wrappedBase` is the part of the name before the FIRST dot, because a
+	// middle segment names a variant of the wrapped component by design —
+	// `Button.Primary.decorator.svelte` decorates `Button`. A component whose
+	// own name carries a dot reads the same way, so `Table.Row.decorator.svelte`
+	// is taken to decorate `Table` and imports a file that may not exist.
+	//
+	// That ambiguity is inherent in the naming convention, so this says what it
+	// did rather than trying to guess which reading was meant. Two names derived
+	// from the decorator's own — the one it imports, and the fuller one just
+	// below — both looked up in the folder listing already read above. Neither
+	// is a general check of what a written file imports.
+	const isWrappedComponentMissing =
+		!!folderEntries &&
+		!differentlyCasedName &&
+		!folderEntries.includes(componentImportPath)
+	// Whether the dot is what actually stands in the way, decided by what is on
+	// disk rather than by the shape of the name.
+	//
+	// `Table.Row.decorator.svelte` and `Button.Primary.decorator.svelte` are
+	// indistinguishable as names — both wrap whatever precedes the first dot.
+	// But the dot only blocks a remedy when the component the fuller name spells
+	// is sitting right there: for a real `Table.Row.svelte` there is nothing the
+	// user can rename to reach it, while `Button.Primary.decorator.svelte` with
+	// no `Button.Primary.svelte` is just a decorator written before its
+	// component, and creating `Button.svelte` is a perfectly good answer.
+	// Matched however the folder capitalises it, the same way
+	// `getDifferentlyCasedName` matches for the wrapped component above — a
+	// `table.row.svelte` beside this decorator is the same clash to the user.
+	// The ending itself is matched exactly: `getWrongCasedNameError` has already
+	// turned away anything but a lower-case `.decorator`.
+	const fullBaseWithoutDecorator = fullBase.replace(/\.decorator$/, '')
+	const isWrappedNameAmbiguous =
+		!!folderEntries &&
+		fullBaseWithoutDecorator !== wrappedBase &&
+		checkDoesFolderHoldName(`${fullBaseWithoutDecorator}.svelte`, folderEntries)
 
 	const tpl =
-		SCAFFOLD_CONFIG?.svelte?.decorator?.({ componentName }) ??
+		SCAFFOLD_CONFIG?.svelte?.decorator?.({
+			componentName,
+			componentImportPath,
+		}) ??
 		`<script lang="ts">
-	import ${componentName} from "./${componentName}.svelte";
+	import ${componentName} from "./${componentImportPath}";
 
 	interface DecoratorProps {
 	}
@@ -859,6 +1123,54 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 `
 	writeFileSync(absDecoratorPath, tpl, 'utf8')
 	info(`scaffolded svelte decorator → ${rel(absDecoratorPath)}`)
+	// Its own message, not the shared clash line: that one is written for the
+	// callers that abort, so it would tell the reader to rename a file that
+	// isn't there and imply nothing was written.
+	//
+	// The two endings hang off one opening because they describe one thing —
+	// what the decorator now imports — differing only in what the folder turned
+	// out to hold. Written separately, the shared half drifts.
+	const wrappedComponentNote = getWrappedComponentNote(
+		differentlyCasedName,
+		isWrappedComponentMissing,
+		isWrappedNameAmbiguous,
+	)
+	if (wrappedComponentNote) {
+		warn(
+			`"${rel(absDecoratorPath)}" was written importing "./${componentImportPath}"${wrappedComponentNote}`,
+		)
+	}
+}
+
+/**
+ * What to add about the component a decorator was written to import, or `''`
+ * when the folder holds it under exactly that name and there is nothing to say.
+ *
+ * The missing case has two shapes and they want different things said. Most of
+ * the time the decorator simply arrived first — `Button.decorator.svelte` with
+ * no `Button.svelte` yet — and the useful line is the actionable one: create it
+ * or point the decorator elsewhere.
+ *
+ * The other shape only arises when the decorator's own name has a middle
+ * segment, because a decorator wraps whatever is named before the first dot and
+ * a middle segment names a variant. `Button.Primary.decorator.svelte` decorates
+ * `Button` by design, and `Table.Row.decorator.svelte` reads identically — so
+ * beside a real `Table.Row.svelte` neither remedy exists: no decorator name can
+ * produce it, and the `Table.svelte` being asked for is not the component they
+ * meant. Only that shape is told about the dot; saying it to someone who simply
+ * has not written their component yet is a non-sequitur.
+ */
+function getWrappedComponentNote(
+	differentlyCasedName: string | null,
+	isWrappedComponentMissing: boolean,
+	isWrappedNameAmbiguous: boolean,
+): string {
+	if (differentlyCasedName)
+		return `, but the folder holds "${differentlyCasedName}" — that import works on Windows and macOS and fails everywhere else until the two names match.`
+	if (!isWrappedComponentMissing) return ''
+	if (!isWrappedNameAmbiguous)
+		return `, and there is no such file beside it — create it, or rename the decorator after a component that is.`
+	return `, and there is no such file beside it. A decorator wraps whatever is named before its first dot, so this is the only component it can ask for — one whose own name carries a dot cannot be wrapped this way.`
 }
 
 function scaffoldStoryForSvelteComponent(
@@ -1078,7 +1390,6 @@ function scaffoldAngularComponent(
 	const selector = ANGULAR_SELECTOR_PREFIX + toKebabCase(componentName)
 	const dir = dirname(absCompPath)
 	const tsPath = join(dir, `${base}.component.ts`)
-	const htmlPath = join(dir, `${base}.component.html`)
 
 	if (isEmptyOrWhitespace(tsPath)) {
 		const defaultTsTpl =
@@ -1124,12 +1435,24 @@ export class ${className} {
 		info(`scaffolded angular component → ${rel(tsPath)}`)
 	}
 
-	// Only scaffold the HTML file when using an external template
-	const shouldScaffoldExternalHtml =
-		templateLocation === 'external' && isEmptyOrWhitespace(htmlPath)
-	if (shouldScaffoldExternalHtml) {
-		writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
-		info(`scaffolded angular template → ${rel(htmlPath)}`)
+	// Only scaffold the HTML file when using an external template.
+	//
+	// No capitals check here, unlike the other names this tool works out: the
+	// only path that reaches an external template starts from a just-created
+	// `.component.html`, and this rebuilds that same name from that same file,
+	// so the folder always holds it under this exact spelling and the check
+	// could never say no. A `Button.Component.html` that appears while the
+	// watcher is NOT running is not covered here or anywhere — while it is
+	// running, a checkout or a copy arrives as a creation like any other and is
+	// turned away by the name check, except on a file system that tells
+	// capitals apart, where the glob never matches it. See the naming section
+	// of the README.
+	if (templateLocation === 'external') {
+		const htmlPath = join(dir, `${base}.component.html`)
+		if (isEmptyOrWhitespace(htmlPath)) {
+			writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
+			info(`scaffolded angular template → ${rel(htmlPath)}`)
+		}
 	}
 }
 
@@ -1341,7 +1664,9 @@ const STORY_SCAFFOLDERS: Record<
  * Ensure the component at `absCompPath` has a story file, scaffolding one if it
  * doesn't already exist under either naming variant. The component-side mirror
  * of `scaffoldStoryFromCreatedStoryFile`; called when a component file is
- * created. Returns the scaffolded story path, or `null` if one already existed.
+ * created. Returns the scaffolded story path, or `null` when nothing was
+ * written — either a story already exists, or the name it would take clashes
+ * with one already there under different capitals.
  */
 function ensureStoryFor(
 	framework: StoryFramework,
@@ -1350,6 +1675,13 @@ function ensureStoryFor(
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
 	const canonicalStoryPath = storyPath(absCompPath)
 	if (findExistingStory(canonicalStoryPath, framework)) return null
+	// Nothing above was worth reusing, so this name is about to be written to.
+	// That is a narrower question than the one just asked, and it needs asking
+	// separately: an EMPTY file under this name with different capitals is
+	// correctly not a story, so it doesn't stop the lookup — but it is still a
+	// file this write would land on or beside, and the two names still have to
+	// agree before anything is written.
+	if (!checkDoesFolderAgreeWithName(canonicalStoryPath)) return null
 	return story(absCompPath, canonicalStoryPath)
 }
 
@@ -1362,8 +1694,30 @@ function ensureStoryFor(
 function resolveComponentForStory(
 	absStoryPath: string,
 ): { compPath: string; framework: StoryFramework } | null {
+	const byExtension = getComponentForStoryByExtension(absStoryPath)
+	if (!byExtension) return null
+	// The component's name is worked out from the story's, so it has to clear the
+	// capitals check before anything is done with it. A story named with
+	// different capitals to its component pairs with it silently on Windows and
+	// macOS, and scaffolds a second component beside it everywhere else.
+	if (!checkDoesFolderAgreeWithName(byExtension.compPath)) {
+		// The story file the user just created stays on disk and empty, and it
+		// still matches Storybook's globs, so Storybook reports a file with no
+		// exports. Say so here, the same way the duplicate-story decline does —
+		// the name-clash line on its own explains the clash but not what
+		// happened to the file in front of them.
+		warnFileLeftEmptyOverNameClash(absStoryPath)
+		return null
+	}
+	return byExtension
+}
+
+/** The `resolveComponentForStory` answer before the capitals check, chosen by the story file's extension. */
+function getComponentForStoryByExtension(
+	absStoryPath: string,
+): { compPath: string; framework: StoryFramework } | null {
 	const storyBase = absStoryPath.replace(STORY_FILE_REGEX, '')
-	const ext = extname(absStoryPath).toLowerCase()
+	const ext = extname(absStoryPath)
 	// `.tsx`/`.svelte` are framework-specific — a stray one in a non-matching
 	// project is ignored + warned rather than backfilled as the wrong framework.
 	// `.ts` names no framework itself, so it's resolved separately — but its
@@ -1540,40 +1894,27 @@ function scaffoldStoryFromCreatedStoryFile(absStoryPath: string): string | null 
 		// Say why. The empty trigger file stays on disk and still matches the
 		// Storybook globs, so Storybook will report a file with no exports —
 		// which is baffling without a line explaining what suppressed the fill.
-		warn(
-			`left "${rel(absStoryPath)}" empty — "${rel(existingStory)}" is already the story for this component. Delete whichever one you don't want.`,
-		)
+		//
+		// Which "why" depends on what was found. A story under a genuinely
+		// different naming is a duplicate, and deleting one of the pair is the
+		// fix. One found only by ignoring capitals is not a duplicate — the
+		// clash line already printed says to make the two names agree, and
+		// telling them to delete a file as well would be a second, contrary
+		// instruction about the same pair.
+		if (existingStory.isNamesClash) {
+			warnFileLeftEmptyOverNameClash(absStoryPath)
+		} else {
+			warn(
+				`left "${rel(absStoryPath)}" empty — "${rel(existingStory.path)}" is already the story for this component. Delete whichever one you don't want.`,
+			)
+		}
 		return null
 	}
 	const isComponentMissing =
 		isEmptyOrWhitespace(compPath)
 	const createdStory = scaffoldFrameworkStory(compPath, absStoryPath)
 	if (isComponentMissing) scaffoldFrameworkComponent(compPath)
-	warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath)
 	return createdStory
-}
-
-/**
- * Storybook's own stories globs (`../src/**​/*.stories.@(ts|tsx|…)`) match
- * case-SENSITIVELY even on file systems that ignore case — unlike this
- * watcher's checks, which admit a trigger file like `Button.STORIES.TSX`. Such
- * a story is real on disk but never appears in Storybook, and the fill's two
- * success log lines would suggest everything worked. The fill still happens
- * (the file is the user's, so renaming it is their call) — this just says,
- * right after those success lines, why the story won't show up.
- */
-function warnWhenStoryFileCasingHidesItFromStorybook(absStoryPath: string) {
-	const storyFileName = basename(absStoryPath)
-	const storySuffix = storyFileName.match(STORY_FILE_REGEX)?.[0]
-	if (!storySuffix) return
-	const lowerCaseSuffix = storySuffix.toLowerCase()
-	if (storySuffix === lowerCaseSuffix) return
-	const expectedFileName =
-		storyFileName.slice(0, storyFileName.length - storySuffix.length) +
-		lowerCaseSuffix
-	warn(
-		`Storybook only picks up the lower-case "${lowerCaseSuffix}" spelling, so this story won't appear in Storybook — rename "${rel(absStoryPath)}" to "${expectedFileName}".`,
-	)
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -1689,13 +2030,41 @@ function startWatcher() {
 						// source folder, so if its spelling differs from the folder on
 						// disk (config `src`, folder `Src` — the same folder to the OS)
 						// a case-sensitive match drops component creates here while the
-						// source-independent story globs still match. Every check behind
-						// this one already ignores case.
+						// source-independent story globs still match.
+						//
+						// It is also what lets the name check below see an oddly-spelled
+						// file at all — but only on the platforms where it is on.
+						// `MICROMATCH_OPTIONS` is `nocase` only where the file system
+						// ignores capitals, so on Linux these globs match exactly and
+						// four odd spellings match none of them: a capitalised extension
+						// (`Gadget.TSX`), an Angular template (`Button.Component.html`),
+						// a story outside the source folder, and a `.Stories.mdx`. Those
+						// are dropped here, before the check, and nothing reports them —
+						// the graph filter can't either, since dependency-cruiser scans a
+						// fixed lower-case extension list inside the source folder only.
+						// The README's naming section carries the same four; keep the
+						// two together. Widening every glob unconditionally is not the
+						// answer: it would also make `Src/` match a `srcDir` of `src` on
+						// a file system where those really are two folders.
 						if (!includeMatchers.some((isMatch) => isMatch(relPath))) continue
 
 						if (ev.type === 'delete') {
 							console.log('Deleted:', relPath)
 							kick('unlink', abs)
+							continue
+						}
+
+						// Every check past this point spells one name and means one
+						// file, so a name that could be read two ways is turned away
+						// here rather than half-understood further in. The rebuild still
+						// fires: the file is real, and leaving it out of the graph until
+						// its next save would be worse than including it — the same
+						// reasoning as the framework-mismatch fall-through below.
+						const nameError =
+							ev.type === 'create' ? getWrongCasedNameError(abs) : null
+						if (nameError) {
+							error(nameError)
+							kick(ev.type, abs)
 							continue
 						}
 
@@ -1727,6 +2096,13 @@ function startWatcher() {
 								checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
 							if (isScaffoldableComponent) {
 								await componentBranch.handle(abs, relPath)
+								// The component file is real whether or not a story came of
+								// it — one may already exist, or a name clash may have
+								// stopped one being written — so the graph should not have to
+								// wait for the file's next save either way. `kick` collapses
+								// this with the story kick the handler may already have
+								// fired, so the common path still rebuilds once.
+								kick(ev.type, abs)
 								continue
 							}
 						}
@@ -1745,7 +2121,28 @@ function startWatcher() {
 							isAngularHtmlCreate &&
 							checkDoesFileFrameworkMatchProject('angular', abs)
 						if (isScaffoldableAngularHtml) {
+							// Named after the template, so it goes through the capitals
+							// check. This is the component direction; the template
+							// direction — a template name rebuilt from a component's — is
+							// the one derived name deliberately left unchecked, for the
+							// reason given where the external template is scaffolded.
 							const tsPath = angularComponentTsPath(abs)
+							if (!checkDoesFolderAgreeWithName(tsPath)) {
+								// Say what became of the file they created, the way the
+								// other two decline paths do. The clash line above names
+								// the component, which is a file they never touched.
+								//
+								// Only when it really is empty. The other two reach their
+								// decline through a caller that has already returned on a
+								// non-empty file, so they can assert it; this branch is
+								// entered on any created template, and a user who pasted
+								// one in still has everything they wrote.
+								if (isEmptyOrWhitespace(abs)) {
+									warnFileLeftEmptyOverNameClash(abs)
+								}
+								kick(ev.type, abs)
+								continue
+							}
 							if (!isEmptyOrWhitespace(tsPath)) {
 								// .ts already exists — scaffold HTML from it (migrate inline template if present)
 								if (isEmptyOrWhitespace(abs)) {
@@ -1764,6 +2161,12 @@ function startWatcher() {
 									'external',
 								)
 							}
+							// Same reasoning as the component branch above, and it matters
+							// more here: this arm may already have written the template and
+							// rewritten the component to point at it, so with a story
+							// already on disk nothing else would rebuild and the graph
+							// would show the state from before that change.
+							kick(ev.type, abs)
 							continue
 						}
 
