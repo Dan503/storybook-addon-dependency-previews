@@ -134,6 +134,16 @@ let SRC_DIR = 'src'
 type StorybookFileExtension = NonNullable<SbDepsConfig['storybookFileExtension']>
 let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 
+// React and Solid both author `.tsx` components, so the extension alone can't
+// tell them apart. `tsxFramework` (config, default `'react'`) picks which
+// templates a `.tsx` component/story gets — Solid emits a `solid-js`
+// `createSignal`/`mergeProps` component and a `storybook-solidjs-vite` story
+// import. A Solid project still routes through the `react` scaffold family
+// (see `getFrameworkFamily`); only the emitted template text differs. Derived
+// from the config schema so it can't drift.
+type TsxFlavor = NonNullable<SbDepsConfig['tsxFramework']>
+let TSX_FRAMEWORK: TsxFlavor = 'react'
+
 // Framework of the project the CLI is running in — needed to disambiguate a
 // `.stories.ts` story with no sibling component (Vue vs Angular both use `.ts`).
 // `detectProject` reads package.json + `.storybook/main.*`, so cache the result:
@@ -811,14 +821,43 @@ function makeTitleFromComponent(absCompPath: string, base: string) {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story & component scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
-function scaffoldComponent(absCompPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
+// The default `.tsx` component template, in the flavor `TSX_FRAMEWORK` selects.
+// React and Solid share the `.tsx` extension but need different code.
+function tsxComponentTemplate(
+	flavor: TsxFlavor,
+	componentName: string,
+	propsName: string,
+): string {
+	if (flavor === 'solid') {
+		return `import { createSignal, mergeProps, type JSX } from 'solid-js'
 
-	const tpl =
-		SCAFFOLD_CONFIG?.react?.component?.({ componentName, propsName }) ??
-		`import type { ReactNode } from 'react'
+export interface ${propsName} {
+	text?: string
+	children?: JSX.Element
+}
+
+export function ${componentName}(props: ${propsName}) {
+	const mergedProps = mergeProps(
+		{
+			text: '${componentName}',
+		} satisfies ${propsName},
+		props,
+	)
+	const [count, setCount] = createSignal(0)
+
+	return (
+		<div class="${componentName}">
+			<p>{mergedProps.text}</p>
+			<button type="button" onClick={() => setCount(count() + 1)}>
+				count: {count()}
+			</button>
+			{mergedProps.children}
+		</div>
+	)
+}
+`
+	}
+	return `import type { ReactNode } from 'react'
 
 export interface ${propsName} {
   children?: ReactNode
@@ -833,28 +872,21 @@ export function ${componentName}({ children }: ${propsName}) {
   )
 }
 `
-	writeFileSync(absCompPath, tpl, 'utf8')
-	info(`scaffolded component → ${rel(absCompPath)}`)
 }
 
-function scaffoldStoryForComponent(absCompPath: string, targetStoryPath: string) {
-	const base = componentBaseFromComponent(absCompPath)
-	const componentName = toPascalCase(base)
-	const propsName = `PropsFor${componentName}`
-	const title = makeTitleFromComponent(absCompPath, base)
-	const atomic = detectAtomicTag(absCompPath)
-	const tags = ['autodocs']
-	if (atomic) tags.push(atomic)
-
-	const storyTpl =
-		SCAFFOLD_CONFIG?.react?.story?.({
-			componentName,
-			propsName,
-			title,
-			tags,
-			base,
-		}) ??
-		`import type { Meta, StoryObj } from '@storybook/react-vite'
+// The default `.tsx` story template. React and Solid stories are identical apart
+// from which package the Storybook types come from.
+function tsxStoryTemplate(
+	flavor: TsxFlavor,
+	componentName: string,
+	propsName: string,
+	base: string,
+	title: string,
+	tags: Array<string>,
+): string {
+	const frameworkImport =
+		flavor === 'solid' ? 'storybook-solidjs-vite' : '@storybook/react-vite'
+	return `import type { Meta, StoryObj } from '${frameworkImport}'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${base}'
 
@@ -875,8 +907,44 @@ export const Primary: Story = {
   args: {} satisfies ${propsName},
 }
 `
+}
+
+function scaffoldComponent(absCompPath: string) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+
+	const override = SCAFFOLD_CONFIG?.[TSX_FRAMEWORK]?.component?.({
+		componentName,
+		propsName,
+	})
+	const tpl =
+		override ?? tsxComponentTemplate(TSX_FRAMEWORK, componentName, propsName)
+	writeFileSync(absCompPath, tpl, 'utf8')
+	info(`scaffolded ${TSX_FRAMEWORK} component → ${rel(absCompPath)}`)
+}
+
+function scaffoldStoryForComponent(absCompPath: string, targetStoryPath: string) {
+	const base = componentBaseFromComponent(absCompPath)
+	const componentName = toPascalCase(base)
+	const propsName = `PropsFor${componentName}`
+	const title = makeTitleFromComponent(absCompPath, base)
+	const atomic = detectAtomicTag(absCompPath)
+	const tags = ['autodocs']
+	if (atomic) tags.push(atomic)
+
+	const override = SCAFFOLD_CONFIG?.[TSX_FRAMEWORK]?.story?.({
+		componentName,
+		propsName,
+		title,
+		tags,
+		base,
+	})
+	const storyTpl =
+		override ??
+		tsxStoryTemplate(TSX_FRAMEWORK, componentName, propsName, base, title, tags)
 	writeFileSync(targetStoryPath, storyTpl, 'utf8')
-	info(`scaffolded story → ${rel(targetStoryPath)}`)
+	info(`scaffolded ${TSX_FRAMEWORK} story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
 }
 
@@ -1613,6 +1681,10 @@ function getFrameworkFamily(framework: Framework): StoryFramework | null {
 	switch (framework) {
 		case 'react-vite':
 		case 'nextjs-webpack':
+		// Solid components are `.tsx` too, so a Solid project resolves and builds
+		// component paths exactly like React — it rides the `react` family. Only
+		// the emitted template text differs, chosen by `TSX_FRAMEWORK`.
+		case 'solid-vite':
 			return 'react'
 		case 'vue3-vite':
 			return 'vue'
@@ -2393,6 +2465,24 @@ async function startStorybook() {
 			`storybookFileExtension "${configuredStorybookFileExtension}" is invalid — must be 'story' or 'stories'. Falling back to 'stories'.`,
 		)
 		STORYBOOK_FILE_EXTENSION = 'stories'
+	}
+
+	// `tsxFramework` disambiguates React vs Solid for `.tsx` scaffolding. Same
+	// runtime validation as the fields above — a JS config can hold any value, so
+	// warn and fall back to `'react'` for anything unrecognised.
+	const configuredTsxFramework = cfg.tsxFramework
+	if (configuredTsxFramework === undefined) {
+		TSX_FRAMEWORK = 'react'
+	} else if (
+		configuredTsxFramework === 'react' ||
+		configuredTsxFramework === 'solid'
+	) {
+		TSX_FRAMEWORK = configuredTsxFramework
+	} else {
+		error(
+			`tsxFramework "${configuredTsxFramework}" is invalid — must be 'react' or 'solid'. Falling back to 'react'.`,
+		)
+		TSX_FRAMEWORK = 'react'
 	}
 
 	banner('sb-deps')
