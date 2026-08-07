@@ -3,12 +3,16 @@ dist
 storybook-static
 .claude
 
-# dependency-cruiser's raw output — embeds the local machine's absolute
-# `baseDir` / `rulesFile` paths in `summary.optionsUsed`, so committing it
-# produces machine-specific noise and non-portable diffs. Only the
-# postprocessed `dependency-previews.json` (next to it) is consumed by the
-# addon at runtime; the `.raw.json` is debug output, not a deliverable.
-**/.storybook/dependency-previews.raw.json
+# The sb-deps dependency graphs, both the postprocessed `dependency-previews.json`
+# the addon reads and the `.raw.json` dependency-cruiser hands it. Generated from
+# the source tree on every `sb`, `sb:build` and `sb:deps` run, so a checkout never
+# needs a copy — and tracking them means a graph that silently goes stale whenever
+# the source or the generator changes, which is exactly what happened before.
+#
+# The raw file is worse still: `summary.optionsUsed` records the absolute
+# `baseDir` and `rulesFile` of whichever machine last ran the generator, so each
+# person who regenerates commits their own paths over everyone else's.
+**/.storybook/dependency-previews*.json
 
 # graphify-axet
 .graphify/
