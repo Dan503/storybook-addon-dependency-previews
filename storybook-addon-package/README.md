@@ -97,6 +97,48 @@ The wizard supports React (`@storybook/react-vite`), Svelte (`@storybook/sveltek
 - [Manual setup — Vite (React, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
+## Auto-scaffolding new components and stories
+
+While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fills it in from a template — and creates its matching sibling too. It works from either side:
+
+- **Create a component file** (`Button.tsx`, `Button.svelte`, `Button.vue`, `Button.component.ts`) → the component body is scaffolded **and** a matching story file is generated next to it.
+- **Create a story file** (`Button.stories.tsx`, or the singular `Button.story.tsx`) → the story is scaffolded into that exact file, and if the sibling component doesn't exist yet it is created and scaffolded too.
+
+Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+
+React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. In a Solid project, set `tsxFramework: 'solid'` in your `sb-deps` config — scaffolded `.tsx` components and stories then use Solid templates (`solid-js`, `storybook-solidjs-vite`) instead of React. It defaults to `'react'`.
+
+### File names must end in lower case
+
+`sb-deps` matches file endings exactly, so an extension has to be spelled in lower case, and so do the `.stories` and `.story` parts. `Button.stories.tsx` works; `Button.Stories.tsx` and `Button.TSX` do not. Storybook matches its own `stories` setting exactly too, so a story file spelled with capitals would never show up there whatever this tool did with it.
+
+Two more endings are read, but only where they mean anything. `.decorator` is read on `.svelte` files, since only Svelte writes those. `.component` is read on `.ts` and `.html` files **in an Angular project only** — every framework writes `.ts`, so the extension alone can't tell an Angular component from an ordinary dotted name. Anywhere else the two mean nothing here: a NestJS `Roles.Decorator.ts`, or an `Auth.Component.ts` in a React project, is left alone.
+
+Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it.
+
+It checks files as they are created, which includes ones a branch checkout or a copy brings in while it is running — those arrive as creations like any other and are turned away the same way. What it cannot see is a file that appeared while it was not running, or one already in your project before you installed the addon. Nothing breaks: such a file simply won't be paired with its story until you rename it.
+
+On Linux and other systems that tell capitals apart, four spellings go unnoticed entirely — the patterns the watcher listens on match exactly there, and these match none of them, so they are neither refused nor mentioned. Nothing breaks that renaming won't fix; there is just nothing telling you to rename them. On Windows and macOS all four are caught as usual:
+
+- **Angular templates** — `Button.Component.html`.
+- **A capitalised extension** — `Gadget.TSX`.
+- **A story outside your source folder** — `stories/Foo.Stories.tsx`.
+- **A capitalised story ending on `.mdx`** — `Foo.Stories.mdx`.
+
+The last two have perfectly ordinary extensions; it is the `.Stories` part carrying the capitals.
+
+The watcher's patterns can't be widened *across the board* to catch these: on those same systems, matching every pattern loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
+
+Only the endings are checked, so a component whose own name carries a dot is left alone — as long as none of its dotted parts is an ending that means something here, on that extension and in that framework. `Table.Row.tsx` is fine; `My.Story.tsx` is read as a story file and refused.
+
+A story and its component also have to agree on capitals. Creating `cardlisting.stories.tsx` next to an existing `CardListing.tsx` is reported rather than guessed at: on Windows and macOS the two names open the same file and elsewhere they don't, so there is no reading of it that works everywhere.
+
+A Svelte decorator is the one exception — it is reported but still written. Creating `cardlisting.decorator.svelte` next to `CardListing.svelte` writes the decorator with an import that works on Windows and macOS and fails elsewhere, and says so.
+
+The difference is that a refused decorator would be stuck, while a refused story isn't. An empty story file gets filled later — once you fix the clash, creating the component writes into the empty story that is already there. A decorator has no second file whose creation comes back for it, so refusing would leave you one that only deleting and re-creating could ever fill.
+
+**Tip — if a brand-new story shows `importers[path] is not a function` in Storybook**, just reload the browser tab. This is an occasional Storybook dev-server timing quirk when a story file is added while the dev server is running (the preview's internal module map briefly lags behind); a refresh clears it and the scaffolded files themselves are correct. Creating the **component** first (and letting the story auto-generate) avoids the hiccup entirely.
+
 ## Configuration file (optional)
 
 The `sb-deps` CLI can be customized via a `sb-deps.config.mjs` file in your project root (alongside `package.json`). Supported formats: `.mjs`, `.js`, or `.cjs`.
@@ -174,9 +216,26 @@ export default defineSbDepsConfig({
 })
 ```
 
+### `tsxFramework`
+
+Which flavor to scaffold for `.tsx` component and story files — `'react'` or `'solid'`. React and Solid both author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports) instead of React. The setup wizard sets it for you when it detects a Solid project. Per-template overrides for Solid go under [`scaffold.solid`](#scaffold).
+
+**Default:** `'react'`
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	tsxFramework: 'solid',
+})
+```
+
 ### `scaffold`
 
 Override the templates used when `sb-deps` auto-scaffolds new component and story files. Each template function receives a context object with relevant variables and must return the full file content as a string.
+
+For `.tsx` files the override key follows [`tsxFramework`](#tsxframework): a React project reads `scaffold.react`, a Solid project reads `scaffold.solid` — overrides placed under the wrong key are silently ignored.
 
 ```js
 // sb-deps.config.mjs
@@ -199,8 +258,14 @@ export function ${componentName}({}: ${propsName}) {
 		svelte: {
 			/** Customize the generated .svelte component file */
 			component: ({ componentName }) => '...',
-			/** Customize the generated .decorator.svelte file */
-			decorator: ({ componentName }) => '...',
+			/**
+			 * Customize the generated .decorator.svelte file.
+			 * Import the wrapped component from `componentImportPath` rather than
+			 * building the path out of `componentName` — that is the name the
+			 * import binds to, and it can differ from the file
+			 * (`card-listing.svelte` binds as `CardListing`).
+			 */
+			decorator: ({ componentName, componentImportPath }) => '...',
 			/** Customize the generated .stories.svelte file */
 			story: ({ componentName, title, tags }) => '...',
 		},
