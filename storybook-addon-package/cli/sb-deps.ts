@@ -900,6 +900,11 @@ export function ${componentName}({ children }: ${propsName}) {
 /**
  * The default `.tsx` story template. React and Solid stories are identical apart
  * from which package the Storybook types come from.
+ *
+ * The component is imported from `./${base}` (the actual filename), not
+ * `./${componentName}` — the two differ for a non-PascalCase filename (e.g.
+ * `button-atom.tsx` exports `ButtonAtom`), so keying the module path off the
+ * symbol name would generate a broken import.
  */
 function tsxStoryTemplate(
 	flavor: TsxFlavor,
