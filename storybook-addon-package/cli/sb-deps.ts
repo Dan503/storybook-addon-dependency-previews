@@ -2476,16 +2476,16 @@ async function startStorybook() {
 	// isn't type-checked at runtime (a JS config can hold any value), so validate
 	// each against its known set — warn and fall back to the default for anything
 	// unrecognised, the same way `srcDir` is handled above.
-	STORYBOOK_FILE_EXTENSION = validateConfigChoice(
+	STORYBOOK_FILE_EXTENSION = validateConfigChoice<StorybookFileExtension>(
 		'storybookFileExtension',
 		cfg.storybookFileExtension,
-		['story', 'stories'] as const,
+		['story', 'stories'],
 		'stories',
 	)
-	TSX_FRAMEWORK = validateConfigChoice(
+	TSX_FRAMEWORK = validateConfigChoice<TsxFlavor>(
 		'tsxFramework',
 		cfg.tsxFramework,
-		['react', 'solid'] as const,
+		['react', 'solid'],
 		'react',
 	)
 

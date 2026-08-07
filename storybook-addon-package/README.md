@@ -216,9 +216,26 @@ export default defineSbDepsConfig({
 })
 ```
 
+### `tsxFramework`
+
+Which flavor to scaffold for `.tsx` component and story files — `'react'` or `'solid'`. React and Solid both author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports) instead of React. The setup wizard sets it for you when it detects a Solid project. Per-template overrides for Solid go under [`scaffold.solid`](#scaffold).
+
+**Default:** `'react'`
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	tsxFramework: 'solid',
+})
+```
+
 ### `scaffold`
 
 Override the templates used when `sb-deps` auto-scaffolds new component and story files. Each template function receives a context object with relevant variables and must return the full file content as a string.
+
+For `.tsx` files the override key follows [`tsxFramework`](#tsxframework): a React project reads `scaffold.react`, a Solid project reads `scaffold.solid` — overrides placed under the wrong key are silently ignored.
 
 ```js
 // sb-deps.config.mjs
