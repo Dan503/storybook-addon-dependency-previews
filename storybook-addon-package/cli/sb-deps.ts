@@ -125,6 +125,27 @@ async function loadSbDepsConfig(): Promise<SbDepsConfig> {
 	return {}
 }
 
+/**
+ * Validate a string config value against a known set of choices. An unset
+ * (`undefined`) field silently takes `fallback`; an unrecognised value warns and
+ * falls back. A JS config file isn't type-checked at runtime, so string-choice
+ * fields are guarded here rather than trusting whatever the file holds.
+ */
+function validateConfigChoice<T extends string>(
+	fieldName: string,
+	value: string | undefined,
+	allowed: ReadonlyArray<T>,
+	fallback: T,
+): T {
+	if (value === undefined) return fallback
+	if (allowed.includes(value as T)) return value as T
+	const choices = allowed.map((choice) => `'${choice}'`).join(' or ')
+	error(
+		`${fieldName} "${value}" is invalid — must be ${choices}. Falling back to '${fallback}'.`,
+	)
+	return fallback
+}
+
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
@@ -2451,43 +2472,22 @@ async function startStorybook() {
 		}
 	}
 
-	// `storybookFileExtension` comes from a config file that isn't type-checked
-	// at runtime (a JS config can hold any value), so validate it against the
-	// known set the same way `srcDir` is above — warn and fall back to the
-	// default `'stories'` for anything unrecognised, rather than letting a stray
-	// value produce broken story filenames.
-	const configuredStorybookFileExtension = cfg.storybookFileExtension
-	if (configuredStorybookFileExtension === undefined) {
-		STORYBOOK_FILE_EXTENSION = 'stories'
-	} else if (
-		configuredStorybookFileExtension === 'story' ||
-		configuredStorybookFileExtension === 'stories'
-	) {
-		STORYBOOK_FILE_EXTENSION = configuredStorybookFileExtension
-	} else {
-		error(
-			`storybookFileExtension "${configuredStorybookFileExtension}" is invalid — must be 'story' or 'stories'. Falling back to 'stories'.`,
-		)
-		STORYBOOK_FILE_EXTENSION = 'stories'
-	}
-
-	// `tsxFramework` disambiguates React vs Solid for `.tsx` scaffolding. Same
-	// runtime validation as the fields above — a JS config can hold any value, so
-	// warn and fall back to `'react'` for anything unrecognised.
-	const configuredTsxFramework = cfg.tsxFramework
-	if (configuredTsxFramework === undefined) {
-		TSX_FRAMEWORK = 'react'
-	} else if (
-		configuredTsxFramework === 'react' ||
-		configuredTsxFramework === 'solid'
-	) {
-		TSX_FRAMEWORK = configuredTsxFramework
-	} else {
-		error(
-			`tsxFramework "${configuredTsxFramework}" is invalid — must be 'react' or 'solid'. Falling back to 'react'.`,
-		)
-		TSX_FRAMEWORK = 'react'
-	}
+	// `storybookFileExtension` and `tsxFramework` come from a config file that
+	// isn't type-checked at runtime (a JS config can hold any value), so validate
+	// each against its known set — warn and fall back to the default for anything
+	// unrecognised, the same way `srcDir` is handled above.
+	STORYBOOK_FILE_EXTENSION = validateConfigChoice(
+		'storybookFileExtension',
+		cfg.storybookFileExtension,
+		['story', 'stories'] as const,
+		'stories',
+	)
+	TSX_FRAMEWORK = validateConfigChoice(
+		'tsxFramework',
+		cfg.tsxFramework,
+		['react', 'solid'] as const,
+		'react',
+	)
 
 	banner('sb-deps')
 	info(`outDir: ${rel(outDir)}`)
