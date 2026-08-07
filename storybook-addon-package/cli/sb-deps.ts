@@ -821,8 +821,10 @@ function makeTitleFromComponent(absCompPath: string, base: string) {
 // ───────────────────────────────────────────────────────────────────────────────
 // Story & component scaffolding
 // ───────────────────────────────────────────────────────────────────────────────
-// The default `.tsx` component template, in the flavor `TSX_FRAMEWORK` selects.
-// React and Solid share the `.tsx` extension but need different code.
+/**
+ * The default `.tsx` component template, in the flavor `TSX_FRAMEWORK` selects.
+ * React and Solid share the `.tsx` extension but need different code.
+ */
 function tsxComponentTemplate(
 	flavor: TsxFlavor,
 	componentName: string,
@@ -874,8 +876,10 @@ export function ${componentName}({ children }: ${propsName}) {
 `
 }
 
-// The default `.tsx` story template. React and Solid stories are identical apart
-// from which package the Storybook types come from.
+/**
+ * The default `.tsx` story template. React and Solid stories are identical apart
+ * from which package the Storybook types come from.
+ */
 function tsxStoryTemplate(
 	flavor: TsxFlavor,
 	componentName: string,

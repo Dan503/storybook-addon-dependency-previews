@@ -104,7 +104,9 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 - **Create a component file** (`Button.tsx`, `Button.svelte`, `Button.vue`, `Button.component.ts`) → the component body is scaffolded **and** a matching story file is generated next to it.
 - **Create a story file** (`Button.stories.tsx`, or the singular `Button.story.tsx`) → the story is scaffolded into that exact file, and if the sibling component doesn't exist yet it is created and scaffolded too.
 
-Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+
+React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. In a Solid project, set `tsxFramework: 'solid'` in your `sb-deps` config — scaffolded `.tsx` components and stories then use Solid templates (`solid-js`, `storybook-solidjs-vite`) instead of React. It defaults to `'react'`.
 
 ### File names must end in lower case
 
