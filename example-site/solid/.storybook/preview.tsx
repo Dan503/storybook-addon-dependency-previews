@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import {
 	defaultPreviewParameters,
 	dependencyPreviewDecorators,
@@ -5,7 +7,6 @@ import {
 
 import dependenciesJson from './dependency-previews.json'
 
-// @ts-ignore
 import '../src/app.css'
 
 import type { Preview } from 'storybook-solidjs-vite'
