@@ -65,6 +65,15 @@ export interface SvelteDecoratorScaffoldContext {
 	 * - `card-listing.Error.decorator.svelte` → `"CardListing"`
 	 */
 	componentName: string
+	/**
+	 * What to import the wrapped component from, relative to the decorator file
+	 * and without a leading `./` — e.g. `"card-listing.svelte"`.
+	 *
+	 * Use this rather than building the path out of `componentName`, which is
+	 * the name the import binds to and can differ from the file
+	 * (`card-listing.svelte` binds as `CardListing`).
+	 */
+	componentImportPath: string
 }
 
 export interface AngularBaseScaffoldContext {
