@@ -15,10 +15,12 @@ export function ContactFormOrganism({
 	form,
 	onSubmit,
 }: PropsForContactFormOrganism) {
-	const errors = getDeepErrors(form)
 	return (
 		<div class="grid gap-4">
-			<ErrorBlockOrganism errors={errors} />
+			{/* Read inside the markup, not into a variable above it. Checking the
+			form finishes just after the first draw, and Solid only re-draws the
+			parts of the page that read a value from inside the markup. */}
+			<ErrorBlockOrganism errors={getDeepErrors(form)} />
 			<Form
 				class="ContactFormOrganism grid gap-4"
 				of={form}
