@@ -1,12 +1,17 @@
+import { InternalLinkAtom } from '../01-atoms/InternalLinkAtom'
 import { ScreenPaddingAtom } from '../01-atoms/ScreenPaddingAtom'
 import { MainNavMolecule } from '../02-molecules/MainNavMolecule'
+import { routePaths } from '../../routePaths'
 
 export function HeaderOrganism() {
 	return (
 		<header class="p-2 bg-teal-100 border-b-2 border-teal-900 text-black">
 			<ScreenPaddingAtom>
 				<div class="flex w-full items-center justify-between gap-2 max-md:flex-col max-md:justify-center">
-					<a href="/" class="flex items-center gap-2">
+					<InternalLinkAtom
+						href={routePaths.home}
+						class="flex items-center gap-2"
+					>
 						<img
 							src="/simplified-logo.png"
 							alt="Logo"
@@ -14,7 +19,7 @@ export function HeaderOrganism() {
 							width={50}
 						/>
 						<p class="font-extrabold text-3xl">The Meal Place</p>
-					</a>
+					</InternalLinkAtom>
 					<MainNavMolecule />
 				</div>
 			</ScreenPaddingAtom>

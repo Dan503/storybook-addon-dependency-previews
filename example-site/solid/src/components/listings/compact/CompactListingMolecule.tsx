@@ -1,8 +1,12 @@
+import { InternalLinkAtom } from '../../01-atoms/InternalLinkAtom'
+import type { RoutePath } from '../../../routePaths'
+
 export interface PropsForCompactListingMolecule {
 	imageSrc: string
 	title: string
 	description: string
-	href?: string
+	/** An address inside this site. Outside links belong in `ExternalLinkAtom`. */
+	href?: RoutePath
 }
 
 export function CompactListingMolecule({
@@ -13,13 +17,13 @@ export function CompactListingMolecule({
 }: PropsForCompactListingMolecule) {
 	if (href) {
 		return (
-			<a href={href}>
+			<InternalLinkAtom href={href}>
 				<ItemInternals
 					title={title}
 					imageSrc={imageSrc}
 					description={description}
 				/>
-			</a>
+			</InternalLinkAtom>
 		)
 	}
 	return (

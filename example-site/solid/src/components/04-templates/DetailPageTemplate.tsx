@@ -1,3 +1,4 @@
+import { Show } from 'solid-js'
 import type { Meal } from 'example-site-shared/utils'
 import { CompactListingOrganism } from '../listings/compact/CompactListingOrganism'
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
@@ -8,40 +9,45 @@ export interface PropsForDetailPageTemplate {
 	isLoading?: boolean
 }
 
-export function DetailPageTemplate({
-	meal,
-	isLoading,
-}: PropsForDetailPageTemplate) {
-	if (isLoading || !meal) {
-		return <div>Loading...</div>
-	}
-
+// The meal is read as `props.meal` and the waiting state is handled with
+// `Show` rather than an early return, so that a meal arriving after the first
+// draw replaces the "Loading..." message — which is what happens when the page
+// is opened by moving to it rather than by loading the address directly.
+export function DetailPageTemplate(props: PropsForDetailPageTemplate) {
 	return (
-		<SiteFrameOrganism>
-			<ScreenPaddingAtom padVertical>
-				<h1 class="text-3xl font-bold mb-5">{meal.name}</h1>
-				<div class="grid gap-4 lg:grid-cols-[2fr_30rem]">
-					<div class="grid gap-4 sm:grid-cols-[1fr_2fr]">
-						<img src={meal.image} alt={meal.name} class="mt-2" />
-						<div>
-							<h2 class="text-2xl font-bold">Recipe</h2>
-							<p class="whitespace-pre-wrap">
-								{meal.instructions}
-							</p>
+		<Show when={!props.isLoading && props.meal} fallback={<div>Loading...</div>}>
+			{(meal) => (
+				<SiteFrameOrganism>
+					<ScreenPaddingAtom padVertical>
+						<h1 class="text-3xl font-bold mb-5">{meal().name}</h1>
+						<div class="grid gap-4 lg:grid-cols-[2fr_30rem]">
+							<div class="grid gap-4 sm:grid-cols-[1fr_2fr]">
+								<img
+									src={meal().image}
+									alt={meal().name}
+									class="mt-2"
+								/>
+								<div>
+									<h2 class="text-2xl font-bold">Recipe</h2>
+									<p class="whitespace-pre-wrap">
+										{meal().instructions}
+									</p>
+								</div>
+							</div>
+							<div class="grid gap-4 grid-rows-[auto_1fr] items-start">
+								<h2 class="text-2xl font-bold">Ingredients</h2>
+								<CompactListingOrganism
+									items={meal().ingredients.map((x) => ({
+										title: x.ingredient,
+										description: x.amount,
+										imageSrc: x.imageUrl.small,
+									}))}
+								/>
+							</div>
 						</div>
-					</div>
-					<div class="grid gap-4 grid-rows-[auto_1fr] items-start">
-						<h2 class="text-2xl font-bold">Ingredients</h2>
-						<CompactListingOrganism
-							items={meal.ingredients.map((x) => ({
-								title: x.ingredient,
-								description: x.amount,
-								imageSrc: x.imageUrl.small,
-							}))}
-						/>
-					</div>
-				</div>
-			</ScreenPaddingAtom>
-		</SiteFrameOrganism>
+					</ScreenPaddingAtom>
+				</SiteFrameOrganism>
+			)}
+		</Show>
 	)
 }

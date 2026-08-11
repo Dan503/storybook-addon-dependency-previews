@@ -1,8 +1,11 @@
+import { InternalLinkAtom } from '../../01-atoms/InternalLinkAtom'
+import type { RoutePath } from '../../../routePaths'
+
 export interface PropsForCardMolecule {
 	title: string
 	imgSrc: string
 	description: string
-	href: string
+	href: RoutePath
 }
 
 export function CardMolecule({
@@ -13,7 +16,7 @@ export function CardMolecule({
 }: PropsForCardMolecule) {
 	return (
 		<div class="@container grid">
-			<a
+			<InternalLinkAtom
 				href={href}
 				class="h-full flex @max-sm:flex-col gap-2 border rounded-2xl overflow-hidden bg-white focus:bg-teal-200 hover:bg-teal-200 hover:shadow-lg hover:transform-[scale(1.02)] transition-all"
 			>
@@ -26,7 +29,7 @@ export function CardMolecule({
 					<h3 class="text-xl font-bold">{title}</h3>
 					<p class="line-clamp-4">{description}</p>
 				</div>
-			</a>
+			</InternalLinkAtom>
 		</div>
 	)
 }

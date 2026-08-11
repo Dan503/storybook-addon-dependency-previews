@@ -5,6 +5,8 @@ import {
 	dependencyPreviewDecorators,
 } from 'storybook-addon-dependency-previews'
 
+import { MemoryRouter, Route } from '@solidjs/router'
+
 import dependenciesJson from './dependency-previews.json'
 
 import '../src/app.css'
@@ -12,7 +14,17 @@ import '../src/app.css'
 import type { Preview } from 'storybook-solidjs-vite'
 
 const preview: Preview = {
-	decorators: [...dependencyPreviewDecorators],
+	decorators: [
+		...dependencyPreviewDecorators,
+		// Solid Start's link only works inside a router, so every story is
+		// wrapped in one that keeps its address in memory and goes nowhere.
+		// Not needed by the addon itself.
+		(Story) => (
+			<MemoryRouter>
+				<Route path="*" component={() => <Story />} />
+			</MemoryRouter>
+		),
+	],
 	parameters: {
 		...defaultPreviewParameters,
 		dependencyPreviews: {

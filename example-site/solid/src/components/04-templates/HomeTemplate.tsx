@@ -4,6 +4,7 @@ import { HeroBlockOrganism } from '../03-organisms/HeroBlockOrganism'
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
 import { CardListingOrganism } from '../listings/card/CardListingOrganism'
 import { ExternalLinkAtom } from '../01-atoms/ExternalLinkAtom'
+import { routePaths } from '../../routePaths'
 
 export interface PropsForHomeTemplate {
 	featuredMeals: Array<Meal>
@@ -40,8 +41,7 @@ export function HomeTemplate({ featuredMeals }: PropsForHomeTemplate) {
 							title: c.name,
 							description: c.area,
 							imgSrc: c.image,
-							href: '/meal/$mealId',
-							hrefParams: { mealId: c.id },
+							href: routePaths.getMeal(c.id),
 						}))}
 					/>
 				</ScreenPaddingAtom>
