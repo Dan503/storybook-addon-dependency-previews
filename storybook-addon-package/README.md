@@ -135,6 +135,20 @@ A Svelte decorator is the one exception — it is reported but still written. Cr
 
 The difference is that a refused decorator would be stuck, while a refused story isn't. An empty story file gets filled later — once you fix the clash, creating the component writes into the empty story that is already there. A decorator has no second file whose creation comes back for it, so refusing would leave you one that only deleting and re-creating could ever fill.
 
+### File names must be able to become component names
+
+The name of a file is what the templates put in front of `export function`, in the props type name, and in the import the story writes — so a file whose name can't be used that way can't be scaffolded from. Creating one is reported and nothing is written for it:
+
+```
+[sb-deps] left "src/routes/[category].tsx" alone — "[category]" can't be used as a component name in the generated code, so nothing was scaffolded for it.
+```
+
+Router page files are the usual reason. `[category].tsx` is how Solid Start, SvelteKit and Next.js App Router name a page with a changing part of its address, SvelteKit also writes `+page.svelte` and `+layout.svelte`, and a name that starts with a digit (`2-column.tsx`) can't be a function name either.
+
+Only files the scaffolder would otherwise have acted on are checked, so a plain `.ts` file such as SvelteKit's `+page.server.ts` is never mentioned — no component or story was ever going to come of it.
+
+If a whole folder of these is expected — which it is, for any project with a router — [`scaffoldIgnore`](#scaffoldignore) turns the messages off along with the scaffolding.
+
 **Tip — if a brand-new story shows `importers[path] is not a function` in Storybook**, just reload the browser tab. This is an occasional Storybook dev-server timing quirk when a story file is added while the dev server is running (the preview's internal module map briefly lags behind); a refresh clears it and the scaffolded files themselves are correct. Creating the **component** first (and letting the story auto-generate) avoids the hiccup entirely.
 
 ## Configuration file (optional)
@@ -213,6 +227,42 @@ export default defineSbDepsConfig({
 	storybookFileExtension: 'story',
 })
 ```
+
+### `scaffoldIgnore`
+
+Paths the scaffolder leaves alone. Each entry is a path pattern matched against a file's path from your project root, written with forward slashes.
+
+**Default:** `[]` (nothing is left alone)
+
+A file matching one of the patterns gets nothing written into it, gets no story beside it, and is never mentioned by the two naming checks above — those messages exist only to explain why nothing was scaffolded, so they have nothing to say about a file the tool was told to leave alone.
+
+Matching files **still appear in the dependency graph**, so a page still shows what it is built with. This option is about scaffolding, not about hiding files.
+
+A router folder is the usual reason to set it. A page takes no props, so the story generated for one has nothing to show — and page names like `[category].tsx` or `+page.svelte` can't be scaffolded from at all.
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	scaffoldIgnore: ['src/routes/**'],
+})
+```
+
+| Pattern           | Matches                                         |
+| ----------------- | ----------------------------------------------- |
+| `'src/routes/**'` | Everything under that one folder                |
+| `'**/routes/**'`  | Everything under a `routes` folder at any depth |
+| `'src/pages/**'`  | Everything under `src/pages`                    |
+| `'**/*.page.tsx'` | Files named that way, wherever they are         |
+
+Patterns are read by [`micromatch`](https://github.com/micromatch/micromatch), the same matcher the watcher uses for its own file patterns, so anything it understands works here.
+
+On Windows and macOS the **whole path** is matched ignoring capitals — the file name as well as the folders. So `'src/routes/**'` covers a `Src/Routes` folder on disk, and `'**/*.page.tsx'` also covers `Foo.Page.tsx`. That is wider than the rest of the tool, which matches file endings exactly; the difference is deliberate, since these patterns are yours rather than something the tool infers. On Linux every pattern is matched exactly.
+
+A story file is checked against its component, not only against itself, and a component is checked against the story name it would be given. A folder pattern covers both, since a story always sits beside its component — the difference only shows with a pattern naming files. With `'**/*.page.tsx'`, creating `Foo.page.stories.tsx` by hand leaves that story empty rather than filling it, because the component it belongs to is one you asked to be left alone. With `'**/*.stories.tsx'`, creating `Foo.tsx` scaffolds the component but writes no story. Either way the reason is printed.
+
+An entry that isn't a non-empty string makes the whole option invalid — the CLI says so and carries on with no patterns, rather than applying half the list.
 
 ### `scaffold`
 

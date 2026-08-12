@@ -148,6 +148,30 @@ export interface SbDepsConfig {
 	storybookFileExtension?: 'story' | 'stories'
 
 	/**
+	 * Paths the scaffolder leaves alone. Each entry is a path pattern matched
+	 * against a file's path from the project root, written with forward
+	 * slashes — `'src/routes/**'` covers one folder. Patterns are read by
+	 * `micromatch`, so a leading `**` followed by a slash matches a folder of
+	 * that name at any depth; the README spells that form out, which a doc
+	 * comment can't do without ending itself early.
+	 *
+	 * A file matching one of them gets nothing written into it, gets no story
+	 * beside it, and is not mentioned when its name is one this tool can't
+	 * read — those messages exist only to explain why nothing was scaffolded,
+	 * so they have nothing to say about a file it was told to leave alone.
+	 *
+	 * Matching files still appear in `.storybook/dependency-previews.json`, so
+	 * a page still shows what it is built with.
+	 *
+	 * Defaults to no patterns. A router folder is the usual reason to set it:
+	 * a page takes no props, so a story generated for one has nothing to show.
+	 *
+	 * @example ['src/routes/**']
+	 * @example ['src/routes/**', 'src/pages/**']
+	 */
+	scaffoldIgnore?: string[]
+
+	/**
 	 * Customize the scaffold templates used when new component or story files are created.
 	 * Each function receives a context object with relevant variables and must return the
 	 * full file content as a string.
