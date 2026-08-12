@@ -41,7 +41,7 @@ export function HomeTemplate({ featuredMeals }: PropsForHomeTemplate) {
 							title: c.name,
 							description: c.area,
 							imgSrc: c.image,
-							href: routePaths.getMeal(c.id),
+							href: routePaths.getMealPath(c.id),
 						}))}
 					/>
 				</ScreenPaddingAtom>

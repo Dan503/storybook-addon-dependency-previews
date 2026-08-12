@@ -16,8 +16,8 @@ interface RoutePathBuilders {
 	home: RoutePath
 	categories: RoutePath
 	contact: RoutePath
-	getCategory: (categoryName: string) => RoutePath
-	getMeal: (mealId: string) => RoutePath
+	getCategoryPath: (categoryName: string) => RoutePath
+	getMealPath: (mealId: string) => RoutePath
 }
 
 export const routePaths = {
@@ -25,7 +25,7 @@ export const routePaths = {
 	categories: '/categories',
 	contact: '/contact',
 	// Escaping happens here so that no call site can forget it.
-	getCategory: (categoryName) =>
+	getCategoryPath: (categoryName) =>
 		`/categories/${encodeURIComponent(categoryName)}`,
-	getMeal: (mealId) => `/meal/${mealId}`,
+	getMealPath: (mealId) => `/meal/${mealId}`,
 } satisfies RoutePathBuilders

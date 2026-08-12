@@ -23,7 +23,7 @@ export default function Categories() {
 					title: category.strCategory,
 					description: category.strCategoryDescription,
 					imgSrc: category.strCategoryThumb,
-					href: routePaths.getCategory(category.strCategory),
+					href: routePaths.getCategoryPath(category.strCategory),
 				}))}
 			/>
 		</>
