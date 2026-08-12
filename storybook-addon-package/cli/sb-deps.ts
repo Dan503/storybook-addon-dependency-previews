@@ -133,6 +133,9 @@ let SRC_DIR = 'src'
 // Storybook's convention), so all four `storyPathFor*` helpers stay in sync.
 type StorybookFileExtension = NonNullable<SbDepsConfig['storybookFileExtension']>
 let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
+// Path patterns the scaffolder leaves alone, from the config. Empty by
+// default, so a project that says nothing keeps the behaviour it has.
+let SCAFFOLD_IGNORE: Array<string> = []
 
 // Framework of the project the CLI is running in — needed to disambiguate a
 // `.stories.ts` story with no sibling component (Vue vs Angular both use `.ts`).
@@ -550,6 +553,13 @@ const COMPONENT_STORY_TS_REGEX = new RegExp(`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts
 const COMPONENT_SUFFIX_REGEX = /\.component$/
 
 /**
+ * A name the generated code can use: a letter, `_` or `$` first, then letters,
+ * digits, `_` or `$`. Anything else — a square bracket, a `+`, a space, a
+ * leading digit — is a name no template can put in front of `export function`.
+ */
+const CODE_NAME_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+
+/**
  * Is this `<srcDir>/**​/Thing.story.<ext>` or `Thing.stories.<ext>`? Limits
  * story-file scaffolding to the configured source dir, mirroring the component
  * detectors below. The story watcher globs match any directory (so out-of-src
@@ -621,6 +631,35 @@ function getWrongCasedNameError(absPath: string): string | null {
 		? " Storybook matches its own stories setting exactly too, so a story file spelled with capitals never shows up there either."
 		: ''
 	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. These endings are matched exactly.${storybookNote}`
+}
+
+/**
+ * The message to print when a file's name can't become a name the generated
+ * code could use — or `null` when it can.
+ *
+ * Every framework's scaffolder builds that name the same way: drop the
+ * extension, run the rest through `toPascalCase`, and put the result in front
+ * of `export function`, in the props type name, and in the name the story
+ * imports. A router page named `[category].tsx` or `+page.svelte` therefore
+ * used to produce files that don't parse, on every line that names the
+ * component.
+ *
+ * Only the extension is dropped here, not the story or framework endings. It
+ * reads like those should come off first, but it makes no difference: they are
+ * all plain letters, and `toWords` treats a dot as a word break, so a name that
+ * survives with them attached survives without them and the other way round.
+ *
+ * It warns where the capitals check errors, because a bracketed page name is a
+ * framework's own convention rather than a mistake — there is nothing to
+ * correct, only a folder to leave alone.
+ */
+function getUnusableNameWarning(absPath: string): string | null {
+	const fileName = basename(absPath)
+	const lastDotIndex = fileName.lastIndexOf('.')
+	const nameWithoutExtension =
+		lastDotIndex > 0 ? fileName.slice(0, lastDotIndex) : fileName
+	if (CODE_NAME_REGEX.test(toPascalCase(nameWithoutExtension))) return null
+	return `left "${rel(absPath)}" alone — "${nameWithoutExtension}" can't be used as a component name in the generated code, so nothing was scaffolded for it. Page file names like "[id]" and "+page" are the usual reason; add a path pattern to scaffoldIgnore in your sb-deps config to stop this being mentioned.`
 }
 
 /**
@@ -1942,6 +1981,18 @@ function startWatcher() {
 		micromatch.matcher(glob, MICROMATCH_OPTIONS),
 	)
 
+	// Compiled once alongside the include globs, and matched the same way —
+	// `MICROMATCH_OPTIONS` ignores capitals where the file system does, so a
+	// pattern spelling `src/routes` still covers a `Src/Routes` on disk.
+	const scaffoldIgnoreMatchers = SCAFFOLD_IGNORE.map((pattern) =>
+		micromatch.matcher(pattern, MICROMATCH_OPTIONS),
+	)
+
+	/** Was this path one the config told the scaffolder to leave alone? */
+	function checkIsScaffoldIgnored(relPath: string): boolean {
+		return scaffoldIgnoreMatchers.some((isMatch) => isMatch(relPath))
+	}
+
 	const ignoreGlobs = [
 		'node_modules/**',
 		'.git/**',
@@ -2054,16 +2105,63 @@ function startWatcher() {
 							continue
 						}
 
+						// Everything between here and the rebuild at the bottom only runs
+						// on creation, and all of it is scaffolding. The three questions
+						// it asks of the path are asked once each, here, because the name
+						// check below needs all three to know whether this file is one
+						// the scaffolder would have touched at all — and asking again
+						// further down would mean the same regex work twice per event.
+						// `isCreate` guards each one, so the update events that dominate
+						// while editing still skip the path work entirely.
+						const isCreate = ev.type === 'create'
+						const componentBranch = isCreate
+							? COMPONENT_CREATE_BRANCHES.find((branch) =>
+									branch.checkIsMatch(relPath),
+								)
+							: undefined
+						const isStoryCreate = isCreate && isStoryFileUnderSrc(relPath)
+						const isAngularHtmlCreate =
+							isCreate && isComponentsAngularHtml(relPath)
+						// Is this a file the scaffolder would have done anything with?
+						// The name check below is only worth making for those: a plain
+						// `.ts` file matches the watcher's globs but no scaffolder, so
+						// SvelteKit's `+page.server.ts` would otherwise be told its name
+						// is unusable for a purpose it was never put to.
+						const isScaffoldCandidate =
+							!!componentBranch || isStoryCreate || isAngularHtmlCreate
+
+						// Told to leave this path alone, so nothing below runs and
+						// nothing is said — including the two naming messages, which
+						// exist only to explain why nothing was scaffolded. The rebuild
+						// still fires, so an ignored page keeps its place in the graph
+						// and still shows what it is built with.
+						if (isCreate && checkIsScaffoldIgnored(relPath)) {
+							kick(ev.type, abs)
+							continue
+						}
+
 						// Every check past this point spells one name and means one
 						// file, so a name that could be read two ways is turned away
 						// here rather than half-understood further in. The rebuild still
 						// fires: the file is real, and leaving it out of the graph until
 						// its next save would be worse than including it — the same
 						// reasoning as the framework-mismatch fall-through below.
-						const nameError =
-							ev.type === 'create' ? getWrongCasedNameError(abs) : null
+						const nameError = isCreate ? getWrongCasedNameError(abs) : null
 						if (nameError) {
 							error(nameError)
+							kick(ev.type, abs)
+							continue
+						}
+
+						// A name this tool can read, but not one it can write into the
+						// files it generates. It goes after the capitals check because
+						// that one hands back a spelling to rename to, which is the more
+						// useful thing to read first when a name has both problems.
+						const unusableNameWarning = isScaffoldCandidate
+							? getUnusableNameWarning(abs)
+							: null
+						if (unusableNameWarning) {
+							warn(unusableNameWarning)
 							kick(ev.type, abs)
 							continue
 						}
@@ -2073,7 +2171,7 @@ function startWatcher() {
 						// created outside SRC_DIR never scaffolds a component there.
 						// Falls through to the normal rebuild when there's nothing to
 						// scaffold (non-empty story, or an extension we don't template).
-						if (ev.type === 'create' && isStoryFileUnderSrc(relPath)) {
+						if (isStoryCreate) {
 							if (handleStoryCreation(abs)) continue
 						}
 
@@ -2081,30 +2179,27 @@ function startWatcher() {
 						// scaffolds when the file's extension matches the project's
 						// framework; a mismatch is ignored + warned inside
 						// `checkDoesFileFrameworkMatchProject`.
-						if (ev.type === 'create') {
-							const componentBranch = COMPONENT_CREATE_BRANCHES.find((branch) =>
-								branch.checkIsMatch(relPath),
-							)
-							// On a framework mismatch, fall through to the normal rebuild at
-							// the bottom rather than `continue` — the file is still a real
-							// source file, so skipping it would leave the graph stale until
-							// its next save. (The match check logs its own warning.) The `if`
-							// below tests only `isScaffoldableComponent`, which already
-							// includes the branch-matched check.
-							const isScaffoldableComponent =
-								!!componentBranch &&
-								checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
-							if (isScaffoldableComponent) {
-								await componentBranch.handle(abs, relPath)
-								// The component file is real whether or not a story came of
-								// it — one may already exist, or a name clash may have
-								// stopped one being written — so the graph should not have to
-								// wait for the file's next save either way. `kick` collapses
-								// this with the story kick the handler may already have
-								// fired, so the common path still rebuilds once.
-								kick(ev.type, abs)
-								continue
-							}
+						//
+						// On a framework mismatch, fall through to the normal rebuild at
+						// the bottom rather than `continue` — the file is still a real
+						// source file, so skipping it would leave the graph stale until
+						// its next save. (The match check logs its own warning.) The `if`
+						// below tests only `isScaffoldableComponent`, which already
+						// includes the branch-matched check — and `componentBranch` is
+						// only looked up on creation, so that covers the event type too.
+						const isScaffoldableComponent =
+							!!componentBranch &&
+							checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
+						if (isScaffoldableComponent) {
+							await componentBranch.handle(abs, relPath)
+							// The component file is real whether or not a story came of
+							// it — one may already exist, or a name clash may have
+							// stopped one being written — so the graph should not have to
+							// wait for the file's next save either way. `kick` collapses
+							// this with the story kick the handler may already have
+							// fired, so the common path still rebuilds once.
+							kick(ev.type, abs)
+							continue
 						}
 
 						// ANGULAR .component.html CREATE
@@ -2112,11 +2207,6 @@ function startWatcher() {
 						// reasoning as the component branches above. The match check logs
 						// its own warning, so keep it out of an inline `&&` chain where
 						// that would be easy to miss.
-						// `ev.type` first, so the path check (a conversion plus regex work)
-						// is skipped for the update events that dominate while editing —
-						// same treatment the table branches above get.
-						const isAngularHtmlCreate =
-							ev.type === 'create' && isComponentsAngularHtml(relPath)
 						const isScaffoldableAngularHtml =
 							isAngularHtmlCreate &&
 							checkDoesFileFrameworkMatchProject('angular', abs)
@@ -2390,6 +2480,28 @@ async function startStorybook() {
 			`storybookFileExtension "${configuredStorybookFileExtension}" is invalid — must be 'story' or 'stories'. Falling back to 'stories'.`,
 		)
 		STORYBOOK_FILE_EXTENSION = 'stories'
+	}
+
+	// Same treatment as the two options above, for the same reason: a JS config
+	// file can hold any value. An entry that is empty or only spaces would
+	// match nothing useful and reads as a mistake rather than a pattern, so the
+	// whole list is refused rather than quietly dropping the bad entry — a
+	// half-applied ignore list is harder to notice than one that isn't applied.
+	const configuredScaffoldIgnore = cfg.scaffoldIgnore
+	const isScaffoldIgnoreUsable =
+		Array.isArray(configuredScaffoldIgnore) &&
+		configuredScaffoldIgnore.every(
+			(pattern) => typeof pattern === 'string' && pattern.trim() !== '',
+		)
+	if (configuredScaffoldIgnore === undefined) {
+		SCAFFOLD_IGNORE = []
+	} else if (isScaffoldIgnoreUsable) {
+		SCAFFOLD_IGNORE = configuredScaffoldIgnore
+	} else {
+		error(
+			`scaffoldIgnore is invalid — must be an array of path patterns, each a non-empty string (e.g. ['src/routes/**']). Carrying on with no patterns, so nothing is left alone.`,
+		)
+		SCAFFOLD_IGNORE = []
 	}
 
 	banner('sb-deps')
