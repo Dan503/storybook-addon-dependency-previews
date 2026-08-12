@@ -1809,8 +1809,9 @@ function ensureStoryFor(
 /**
  * Work out the component a created story file belongs to, and which framework's
  * scaffolders to use. `.tsx` → React, `.svelte` → Svelte, `.ts` → React, Vue,
- * or Angular (disambiguated in `resolveTsStoryComponent`). Any other extension
- * (`.js`, `.jsx`, `.mdx`) returns `null` — not something we scaffold.
+ * or Angular (disambiguated in `resolveTsStoryComponent`). Any extension with
+ * no entry in `STORY_COMPONENT_RESOLVERS` returns `null` — not something we
+ * scaffold.
  */
 function resolveComponentForStory(
 	absStoryPath: string,
@@ -1853,24 +1854,73 @@ function resolveComponentForStory(
 }
 
 /**
- * The extensions a created story file can be scaffolded from — the three the
- * function directly below has a branch for. A `.mdx`, `.js` or `.jsx` story
- * clears the watcher's globs and reads as a story file, but no template exists
- * for one, so nothing was ever going to be written for it.
+ * How a created story file finds its component, keyed by the story's own
+ * extension. Its keys ARE the set of extensions a story can be scaffolded
+ * from, which is why `checkIsScaffoldableStoryFile` below reads them straight
+ * off it: a hand-written second copy of that set could fall out of step with
+ * these branches, and the drift is silent in the direction that matters — an
+ * extension resolvable here but missing from the set would skip the
+ * unusable-name check and go on to write the broken name this whole change
+ * exists to prevent.
  *
- * Sitting directly above that function on purpose: the two have to name the
- * same set, and a fourth branch added there needs an entry here, or the watcher
- * will start telling that story's author their file was refused for its name.
+ * A `.mdx`, `.js`, `.jsx` or `.vue` story clears the watcher's globs and reads
+ * as a story file, but has no entry here, so nothing is ever written for one.
+ *
+ * `.tsx` and `.svelte` name a framework, so a stray one in a non-matching
+ * project is turned away with a warning rather than backfilled as the wrong
+ * framework. `.ts` names none itself and is worked out separately — its
+ * sibling lookup runs the same check, since a sibling can name any framework.
  */
-const SCAFFOLDABLE_STORY_EXTENSIONS: ReadonlyArray<string> = [
-	'.tsx',
-	'.svelte',
-	'.ts',
-]
+const STORY_COMPONENT_RESOLVERS: Record<
+	string,
+	(
+		storyBase: string,
+		absStoryPath: string,
+	) => { compPath: string; framework: StoryFramework } | null
+> = {
+	'.tsx': (storyBase, absStoryPath) => {
+		if (!checkDoesFileFrameworkMatchProject('react', absStoryPath)) return null
+		// Through the shared helper, so the react spelling has one owner. (The
+		// `.svelte` entry below can't: the helper has no Svelte spelling, since a
+		// `.ts` story can't scaffold one.)
+		const compPath = getComponentPathForFamily(storyBase, 'react')
+		if (!compPath) return null
+		return { compPath, framework: 'react' }
+	},
+	'.svelte': (storyBase, absStoryPath) => {
+		if (!checkDoesFileFrameworkMatchProject('svelte', absStoryPath)) return null
+		return { compPath: `${storyBase}.svelte`, framework: 'svelte' }
+	},
+	'.ts': (storyBase, absStoryPath) =>
+		resolveTsStoryComponent(storyBase, absStoryPath),
+}
 
-/** Is a created story file at this path one the scaffolder would fill at all? */
+/**
+ * Is a created story file at this path one the scaffolder could fill at all?
+ * Only those get the unusable-name check, so that it never blames a file's
+ * name for an outcome its name had nothing to do with.
+ *
+ * Two questions, because `.ts` needs both. There has to be a resolver for the
+ * extension, and for `.ts` the project's own framework has to be one a `.ts`
+ * story can name. In a Svelte project it cannot: with a sibling,
+ * `resolveTsStoryComponent` finds one from another framework and declines;
+ * with none, there is no Svelte spelling for it to fall back to. So a `.ts`
+ * story there produces nothing whatever it is called, and saying its name was
+ * the reason would be untrue.
+ *
+ * A `.tsx` or `.svelte` story in a project of the other framework is
+ * deliberately still a candidate: that path turns the file away with a warning
+ * naming the mismatch, so unlike the `.ts` case there is something to say and
+ * it gets said.
+ */
 function checkIsScaffoldableStoryFile(absStoryPath: string): boolean {
-	return SCAFFOLDABLE_STORY_EXTENSIONS.includes(extname(absStoryPath))
+	const extension = extname(absStoryPath)
+	if (!Object.hasOwn(STORY_COMPONENT_RESOLVERS, extension)) return false
+	if (extension !== '.ts') return true
+	const projectFamily = getProjectFrameworkFamily()
+	// The same set a `.ts` story can name through a sibling, reused rather than
+	// spelled again — `getComponentPathForFamily` answers for exactly these.
+	return !!projectFamily && TS_STORY_SIBLING_FAMILIES.includes(projectFamily)
 }
 
 /** The `resolveComponentForStory` answer before the capitals check, chosen by the story file's extension. */
@@ -1878,26 +1928,9 @@ function getComponentForStoryByExtension(
 	absStoryPath: string,
 ): { compPath: string; framework: StoryFramework } | null {
 	const storyBase = absStoryPath.replace(STORY_FILE_REGEX, '')
-	const ext = extname(absStoryPath)
-	// `.tsx`/`.svelte` are framework-specific — a stray one in a non-matching
-	// project is ignored + warned rather than backfilled as the wrong framework.
-	// `.ts` names no framework itself, so it's resolved separately — but its
-	// sibling lookup runs the same check, since a sibling can name any framework.
-	if (ext === '.tsx') {
-		if (!checkDoesFileFrameworkMatchProject('react', absStoryPath)) return null
-		// Through the shared helper, so the react spelling has one owner. (The
-		// `.svelte` branch below can't: the helper has no Svelte spelling, since a
-		// `.ts` story can't scaffold one.)
-		const compPath = getComponentPathForFamily(storyBase, 'react')
-		if (!compPath) return null
-		return { compPath, framework: 'react' }
-	}
-	if (ext === '.svelte') {
-		if (!checkDoesFileFrameworkMatchProject('svelte', absStoryPath)) return null
-		return { compPath: `${storyBase}.svelte`, framework: 'svelte' }
-	}
-	if (ext === '.ts') return resolveTsStoryComponent(storyBase, absStoryPath)
-	return null
+	const resolveComponent = STORY_COMPONENT_RESOLVERS[extname(absStoryPath)]
+	if (!resolveComponent) return null
+	return resolveComponent(storyBase, absStoryPath)
 }
 
 /**
@@ -2240,9 +2273,9 @@ function startWatcher() {
 						//
 						// A story file needs the narrower question, not `isStoryCreate`.
 						// That one asks whether the name reads as a story, which a
-						// `.mdx`, `.js` or `.jsx` story does — but there is no template
-						// for those, so nothing was going to be written for one whatever
-						// it was called.
+						// `.mdx`, `.js`, `.jsx` or `.vue` story does — but nothing was
+						// going to be written for one whatever it was called, and in a
+						// Svelte project the same is true of a `.ts` story.
 						const isScaffoldCandidate =
 							!!componentBranch ||
 							(isStoryCreate && checkIsScaffoldableStoryFile(abs)) ||
