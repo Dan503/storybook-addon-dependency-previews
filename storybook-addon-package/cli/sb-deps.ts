@@ -1902,16 +1902,23 @@ const STORY_COMPONENT_RESOLVERS: Record<
  *
  * Two questions, because `.ts` needs both. There has to be a resolver for the
  * extension, and for `.ts` the project's own framework has to be one a `.ts`
- * story can name. In a Svelte project it cannot: with a sibling,
- * `resolveTsStoryComponent` finds one from another framework and declines;
- * with none, there is no Svelte spelling for it to fall back to. So a `.ts`
- * story there produces nothing whatever it is called, and saying its name was
- * the reason would be untrue.
+ * story can name. Two kinds of project fail that: a Svelte one, where a
+ * sibling can only come from another framework and there is no Svelte spelling
+ * to fall back to; and one whose framework was never recognised, which is
+ * every framework this tool has no support for — Solid Start among them, the
+ * one this whole change was reported from. A `.ts` story in either produces
+ * nothing whatever it is called, so saying its name was the reason would be
+ * untrue.
  *
- * A `.tsx` or `.svelte` story in a project of the other framework is
- * deliberately still a candidate: that path turns the file away with a warning
- * naming the mismatch, so unlike the `.ts` case there is something to say and
- * it gets said.
+ * A `.tsx` or `.svelte` story in a project of the other framework stays a
+ * candidate, and the reason is the name rather than the message. Its name
+ * really would have stopped it even in a matching project, so the line it
+ * prints is true — which is the opposite of the `.ts` case, where the
+ * framework is the blocker and the name is blameless. Note what that costs:
+ * candidacy gates the name check alone, and the name check ends the event, so
+ * a `.tsx` story with an unusable name in a Vue project is told about its name
+ * and never told about the mismatch. Nothing is written either way, so the
+ * choice is only about which true thing gets said first.
  */
 function checkIsScaffoldableStoryFile(absStoryPath: string): boolean {
 	const extension = extname(absStoryPath)
@@ -2274,8 +2281,10 @@ function startWatcher() {
 						// A story file needs the narrower question, not `isStoryCreate`.
 						// That one asks whether the name reads as a story, which a
 						// `.mdx`, `.js`, `.jsx` or `.vue` story does — but nothing was
-						// going to be written for one whatever it was called, and in a
-						// Svelte project the same is true of a `.ts` story.
+						// going to be written for one whatever it was called. The same
+						// goes for a `.ts` story in a project whose framework cannot
+						// host one: a Svelte project, or any whose framework this tool
+						// does not recognise.
 						const isScaffoldCandidate =
 							!!componentBranch ||
 							(isStoryCreate && checkIsScaffoldableStoryFile(abs)) ||
