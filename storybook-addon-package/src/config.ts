@@ -169,7 +169,7 @@ export interface SbDepsConfig {
 	 * @example ['src/routes/**']
 	 * @example ['src/routes/**', 'src/pages/**']
 	 */
-	scaffoldIgnore?: Array<string>
+	scaffoldIgnore?: string[]
 
 	/**
 	 * Customize the scaffold templates used when new component or story files are created.

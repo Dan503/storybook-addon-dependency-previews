@@ -540,9 +540,12 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  * `.js`, `.jsx`, `.mdx`, …). Used by the scaffolding-trigger helpers to make
  * sure they don't try to auto-scaffold a story file for an existing story.
  *
- * Matched exactly, with no ignore-case flag, because `getWrongCasedNameError`
- * turns a `Button.Stories.tsx` away before this pattern ever sees it — so it
- * can spell one name and mean one file.
+ * Matched exactly, with no ignore-case flag, so it can spell one name and mean
+ * one file. What makes that safe is that a `Button.Stories.tsx` is refused by
+ * `getWrongCasedNameError` and never scaffolded from. This pattern does get
+ * evaluated on one first — the watcher works out what kind of file it is
+ * looking at before running that check — but no answer of this pattern's is
+ * read until the check has had its chance to turn the file away.
  */
 const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`)
 
@@ -553,11 +556,20 @@ const COMPONENT_STORY_TS_REGEX = new RegExp(`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts
 const COMPONENT_SUFFIX_REGEX = /\.component$/
 
 /**
- * A name the generated code can use: a letter, `_` or `$` first, then letters,
- * digits, `_` or `$`. Anything else — a square bracket, a `+`, a space, a
- * leading digit — is a name no template can put in front of `export function`.
+ * A name the generated code can use, matching what JavaScript itself accepts:
+ * a letter, `_` or `$` to start, then letters, digits, `_` or `$`. Anything
+ * else — a square bracket, a `+`, a space, a leading digit — is a name no
+ * template can put in front of `export function`.
+ *
+ * "Letter" means any language's, via the `ID_Start` and `ID_Continue`
+ * properties the language is itself defined in terms of, so `Café.tsx` and
+ * `按钮.tsx` are accepted — both scaffold code that parses. Spelling the set
+ * out as `A-Za-z` instead would refuse them, which is what this did at first
+ * and is a regression for anyone not naming components in English.
+ * `Foo².tsx` is still refused: a superscript two is a number to Unicode but
+ * not one JavaScript will take.
  */
-const CODE_NAME_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+const CODE_NAME_REGEX = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D]*$/u
 
 /**
  * Is this `<srcDir>/**​/Thing.story.<ext>` or `Thing.stories.<ext>`? Limits
@@ -642,7 +654,11 @@ function checkIsScaffoldIgnored(absPath: string): boolean {
  * is passed in.
  *
  * The patterns in this file each spell one name and mean one file, which is
- * only safe because this check turns the odd spellings away first.
+ * safe because this check refuses an odd spelling and nothing is scaffolded
+ * from it. Several of those patterns are evaluated before this check runs —
+ * the watcher works out what kind of file it is looking at first — so it is
+ * that nothing reads their answers until this check has had its chance to turn
+ * the file away, rather than the ordering, that keeps them honest.
  *
  * The Storybook half of the message is only added for a story file. It fires on
  * any created file that clears the watcher's globs and isn't covered by
@@ -674,8 +690,9 @@ function getWrongCasedNameError(absPath: string): string | null {
  * used to produce files that don't parse, on every line that names the
  * component.
  *
- * This drops only the extension, so it asks the question of the whole rest of
- * the name rather than of whichever part a given scaffolder would have used.
+ * This drops only the extension, via `basename`'s own suffix argument, so it
+ * asks the question of the whole rest of the name rather than of whichever
+ * part a given scaffolder would have used.
  * The endings are all plain letters and `toWords` treats a dot as a word break,
  * so `.stories` and Angular's `.component` can't change the answer either way.
  * A middle segment can: a hypothetical `Button.[id].decorator.svelte` is turned
@@ -688,11 +705,13 @@ function getWrongCasedNameError(absPath: string): string | null {
  * correct, only a folder to leave alone.
  */
 function getUnusableNameWarning(absPath: string): string | null {
-	const fileName = basename(absPath)
-	const lastDotIndex = fileName.lastIndexOf('.')
-	const nameWithoutExtension =
-		lastDotIndex > 0 ? fileName.slice(0, lastDotIndex) : fileName
-	if (CODE_NAME_REGEX.test(toPascalCase(nameWithoutExtension))) return null
+	const nameWithoutExtension = basename(absPath, extname(absPath))
+	// Named rather than tested inline, because the two forms are not
+	// interchangeable and the line below prints the other one: the branch turns
+	// on the PascalCase spelling, while the message quotes the name as the user
+	// typed it, which is the one they can act on.
+	const componentName = toPascalCase(nameWithoutExtension)
+	if (CODE_NAME_REGEX.test(componentName)) return null
 	return `left "${rel(absPath)}" alone — "${nameWithoutExtension}" can't be used as a component name in the generated code, so nothing was scaffolded for it. Page file names like "[id]" and "+page" are the usual reason; add a path pattern to scaffoldIgnore in your sb-deps config to stop this being mentioned.`
 }
 
@@ -1738,8 +1757,14 @@ const STORY_SCAFFOLDERS: Record<
  * doesn't already exist under either naming variant. The component-side mirror
  * of `scaffoldStoryFromCreatedStoryFile`; called when a component file is
  * created. Returns the scaffolded story path, or `null` when nothing was
- * written — either a story already exists, or the name it would take clashes
- * with one already there under different capitals.
+ * written — a story already exists, the name it would take clashes with one
+ * already there under different capitals, or that name is one the config asked
+ * to be left alone.
+ *
+ * The component is not checked against the config here: every caller reaches
+ * this with a path that has already been through `checkIsScaffoldIgnored` —
+ * the four framework branches with the created file itself, and the Angular
+ * template branch with the component name it worked out.
  */
 function ensureStoryFor(
 	framework: StoryFramework,
@@ -1748,6 +1773,25 @@ function ensureStoryFor(
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
 	const canonicalStoryPath = storyPath(absCompPath)
 	if (findExistingStory(canonicalStoryPath, framework)) return null
+	// The story is a name this tool works out, so the config has to be asked
+	// about it in its own right — the component being fair game says nothing
+	// about the story beside it. Only a pattern naming files rather than a
+	// folder can tell the two apart, which is exactly what the README's
+	// `**/*.stories.tsx`-shaped examples are.
+	//
+	// After the lookup above, so this only speaks when a story really would
+	// have been written. Asked before it, the same config would announce that
+	// nothing was written for a component whose story is already sitting there.
+	//
+	// Said rather than done silently: the component the user created is
+	// untouched and perfectly fine, so a story simply never appearing would
+	// look like the watcher had missed it.
+	if (checkIsScaffoldIgnored(canonicalStoryPath)) {
+		warn(
+			`no story written for "${rel(absCompPath)}" — the name it would take, "${rel(canonicalStoryPath)}", is covered by scaffoldIgnore.`,
+		)
+		return null
+	}
 	// Nothing above was worth reusing, so this name is about to be written to.
 	// That is a narrower question than the one just asked, and it needs asking
 	// separately: an EMPTY file under this name with different capitals is
@@ -2254,6 +2298,20 @@ function startWatcher() {
 							// the one derived name deliberately left unchecked, for the
 							// reason given where the external template is scaffolded.
 							const tsPath = angularComponentTsPath(abs)
+							// The component name is worked out from the template's, so the
+							// config has to be asked about it too. Both arms below act on
+							// this component — one writes it, the other writes the template
+							// beside it and gives it a story — so a component the config
+							// leaves alone stops the branch outright. Again only a pattern
+							// naming files can separate the two, since the pair share a
+							// directory.
+							if (checkIsScaffoldIgnored(tsPath)) {
+								warn(
+									`left "${rel(abs)}" alone — the component it belongs to, "${rel(tsPath)}", is covered by scaffoldIgnore.`,
+								)
+								kick(ev.type, abs)
+								continue
+							}
 							if (!checkDoesFolderAgreeWithName(tsPath)) {
 								// Say what became of the file they created, the way the
 								// other two decline paths do. The clash line above names
