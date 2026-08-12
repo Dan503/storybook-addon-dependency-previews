@@ -135,9 +135,9 @@ A Svelte decorator is the one exception — it is reported but still written. Cr
 
 The difference is that a refused decorator would be stuck, while a refused story isn't. An empty story file gets filled later — once you fix the clash, creating the component writes into the empty story that is already there. A decorator has no second file whose creation comes back for it, so refusing would leave you one that only deleting and re-creating could ever fill.
 
-### Names that can't become code names
+### File names must be able to become component names
 
-The name of a file is what the templates put in front of `export function`, in the props type name, and in the import the story writes — so a name that can't be a name in code can't be scaffolded from. Creating one is reported and nothing is written for it:
+The name of a file is what the templates put in front of `export function`, in the props type name, and in the import the story writes — so a file whose name can't be used that way can't be scaffolded from. Creating one is reported and nothing is written for it:
 
 ```
 [sb-deps] left "src/routes/[category].tsx" alone — "[category]" can't be used as a component name in the generated code, so nothing was scaffolded for it.
@@ -257,6 +257,8 @@ export default defineSbDepsConfig({
 | `'**/*.page.tsx'` | Files named that way, wherever they are         |
 
 Patterns are read by [`micromatch`](https://github.com/micromatch/micromatch), the same matcher the watcher uses for its own file patterns, so anything it understands works here. On Windows and macOS folder names are matched ignoring capitals, matching how the rest of the tool treats them.
+
+A story file is checked against its component, not only against itself. A folder pattern covers both, since a story always sits beside its component — but with a pattern naming files (`'**/*.page.tsx'`), creating `Foo.page.stories.tsx` would otherwise have written the `Foo.page.tsx` you asked to be left alone. Instead the story is left empty and the reason is printed.
 
 An entry that isn't a non-empty string makes the whole option invalid — the CLI says so and carries on with no patterns, rather than applying half the list.
 

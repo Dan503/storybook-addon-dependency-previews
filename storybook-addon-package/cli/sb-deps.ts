@@ -605,6 +605,35 @@ function isComponentsAngularHtml(relPath: string) {
 }
 
 /**
+ * The `scaffoldIgnore` patterns, compiled. Built on first use rather than at
+ * module load, because `SCAFFOLD_IGNORE` is read from the config in the boot
+ * block — which runs after this module is evaluated, and before anything is
+ * ever scaffolded.
+ */
+let scaffoldIgnoreMatchers: Array<(path: string) => boolean> | null = null
+
+/**
+ * Was this file one the config told the scaffolder to leave alone?
+ *
+ * Takes the absolute path and converts it itself, so the patterns are matched
+ * against a project-relative path with forward slashes wherever this is asked
+ * from — the watcher has that form to hand, the story-to-component lookup does
+ * not, and a helper each caller has to prepare for is one a caller can prepare
+ * wrongly.
+ *
+ * Matched with the watcher's own options, so folder names ignore capitals on
+ * the file systems that do: a pattern spelling `src/routes` still covers a
+ * `Src/Routes` on disk.
+ */
+function checkIsScaffoldIgnored(absPath: string): boolean {
+	scaffoldIgnoreMatchers ??= SCAFFOLD_IGNORE.map((pattern) =>
+		micromatch.matcher(pattern, MICROMATCH_OPTIONS),
+	)
+	const relPath = toProjectRelativePath(absPath)
+	return scaffoldIgnoreMatchers.some((isMatch) => isMatch(relPath))
+}
+
+/**
  * The message to print when a file's name spells its extension, or one of
  * the endings in `scripts/fileNames.ts` that mean something here, with capitals
  * — or `null` when the name is fine. `.stories` and `.story` count on any
@@ -616,9 +645,10 @@ function isComponentsAngularHtml(relPath: string) {
  * only safe because this check turns the odd spellings away first.
  *
  * The Storybook half of the message is only added for a story file. It fires on
- * any created file that clears the watcher's globs, so a plain `Badge.VUE`
- * would otherwise send its author off to read their Storybook stories setting
- * about a file that was never going to appear there.
+ * any created file that clears the watcher's globs and isn't covered by
+ * `scaffoldIgnore`, so a plain `Badge.VUE` would otherwise send its author off
+ * to read their Storybook stories setting about a file that was never going to
+ * appear there.
  */
 function getWrongCasedNameError(absPath: string): string | null {
 	const fileName = basename(absPath)
@@ -637,17 +667,21 @@ function getWrongCasedNameError(absPath: string): string | null {
  * The message to print when a file's name can't become a name the generated
  * code could use — or `null` when it can.
  *
- * Every framework's scaffolder builds that name the same way: drop the
- * extension, run the rest through `toPascalCase`, and put the result in front
+ * Whatever each framework's scaffolder trims off the file name first, what it
+ * does with the rest is the same: `toPascalCase`, then the result goes in front
  * of `export function`, in the props type name, and in the name the story
  * imports. A router page named `[category].tsx` or `+page.svelte` therefore
  * used to produce files that don't parse, on every line that names the
  * component.
  *
- * Only the extension is dropped here, not the story or framework endings. It
- * reads like those should come off first, but it makes no difference: they are
- * all plain letters, and `toWords` treats a dot as a word break, so a name that
- * survives with them attached survives without them and the other way round.
+ * This drops only the extension, so it asks the question of the whole rest of
+ * the name rather than of whichever part a given scaffolder would have used.
+ * The endings are all plain letters and `toWords` treats a dot as a word break,
+ * so `.stories` and Angular's `.component` can't change the answer either way.
+ * A middle segment can: a hypothetical `Button.[id].decorator.svelte` is turned
+ * away even though the decorator scaffolder would only have used `Button`.
+ * That is the safe direction to be wrong in — nothing is written, and the line
+ * below says why.
  *
  * It warns where the capitals check errors, because a bracketed page name is a
  * framework's own convention rather than a mistake — there is nothing to
@@ -1735,6 +1769,21 @@ function resolveComponentForStory(
 ): { compPath: string; framework: StoryFramework } | null {
 	const byExtension = getComponentForStoryByExtension(absStoryPath)
 	if (!byExtension) return null
+	// The component is worked out from the story's name, so a config that leaves
+	// the component alone has to stop here too — filling this story would
+	// otherwise write the very file the config asked this tool not to write.
+	//
+	// Only reachable with a pattern naming files rather than folders, since a
+	// story and its component always share a directory. It says something rather
+	// than staying silent the way an ignored path does, because the file left
+	// empty is the story the user just created, which is not the ignored one —
+	// and Storybook reports an empty story file as having no exports.
+	if (checkIsScaffoldIgnored(byExtension.compPath)) {
+		warn(
+			`left "${rel(absStoryPath)}" empty — its component "${rel(byExtension.compPath)}" is covered by scaffoldIgnore, so neither file was written.`,
+		)
+		return null
+	}
 	// The component's name is worked out from the story's, so it has to clear the
 	// capitals check before anything is done with it. A story named with
 	// different capitals to its component pairs with it silently on Windows and
@@ -1981,18 +2030,6 @@ function startWatcher() {
 		micromatch.matcher(glob, MICROMATCH_OPTIONS),
 	)
 
-	// Compiled once alongside the include globs, and matched the same way —
-	// `MICROMATCH_OPTIONS` ignores capitals where the file system does, so a
-	// pattern spelling `src/routes` still covers a `Src/Routes` on disk.
-	const scaffoldIgnoreMatchers = SCAFFOLD_IGNORE.map((pattern) =>
-		micromatch.matcher(pattern, MICROMATCH_OPTIONS),
-	)
-
-	/** Was this path one the config told the scaffolder to leave alone? */
-	function checkIsScaffoldIgnored(relPath: string): boolean {
-		return scaffoldIgnoreMatchers.some((isMatch) => isMatch(relPath))
-	}
-
 	const ignoreGlobs = [
 		'node_modules/**',
 		'.git/**',
@@ -2135,7 +2172,7 @@ function startWatcher() {
 						// exist only to explain why nothing was scaffolded. The rebuild
 						// still fires, so an ignored page keeps its place in the graph
 						// and still shows what it is built with.
-						if (isCreate && checkIsScaffoldIgnored(relPath)) {
+						if (isCreate && checkIsScaffoldIgnored(abs)) {
 							kick(ev.type, abs)
 							continue
 						}
