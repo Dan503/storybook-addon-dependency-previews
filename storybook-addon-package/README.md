@@ -256,9 +256,11 @@ export default defineSbDepsConfig({
 | `'src/pages/**'`  | Everything under `src/pages`                    |
 | `'**/*.page.tsx'` | Files named that way, wherever they are         |
 
-Patterns are read by [`micromatch`](https://github.com/micromatch/micromatch), the same matcher the watcher uses for its own file patterns, so anything it understands works here. On Windows and macOS folder names are matched ignoring capitals, matching how the rest of the tool treats them.
+Patterns are read by [`micromatch`](https://github.com/micromatch/micromatch), the same matcher the watcher uses for its own file patterns, so anything it understands works here.
 
-A story file is checked against its component, not only against itself. A folder pattern covers both, since a story always sits beside its component — but with a pattern naming files (`'**/*.page.tsx'`), creating `Foo.page.stories.tsx` would otherwise have written the `Foo.page.tsx` you asked to be left alone. Instead the story is left empty and the reason is printed.
+On Windows and macOS the **whole path** is matched ignoring capitals — the file name as well as the folders. So `'src/routes/**'` covers a `Src/Routes` folder on disk, and `'**/*.page.tsx'` also covers `Foo.Page.tsx`. That is wider than the rest of the tool, which matches file endings exactly; the difference is deliberate, since these patterns are yours rather than something the tool infers. On Linux every pattern is matched exactly.
+
+A story file is checked against its component, not only against itself, and a component is checked against the story name it would be given. A folder pattern covers both, since a story always sits beside its component — the difference only shows with a pattern naming files. With `'**/*.page.tsx'`, creating `Foo.page.stories.tsx` by hand leaves that story empty rather than filling it, because the component it belongs to is one you asked to be left alone. With `'**/*.stories.tsx'`, creating `Foo.tsx` scaffolds the component but writes no story. Either way the reason is printed.
 
 An entry that isn't a non-empty string makes the whole option invalid — the CLI says so and carries on with no patterns, rather than applying half the list.
 

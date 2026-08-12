@@ -633,9 +633,13 @@ let scaffoldIgnoreMatchers: Array<(path: string) => boolean> | null = null
  * not, and a helper each caller has to prepare for is one a caller can prepare
  * wrongly.
  *
- * Matched with the watcher's own options, so folder names ignore capitals on
- * the file systems that do: a pattern spelling `src/routes` still covers a
- * `Src/Routes` on disk.
+ * Matched with the watcher's own options, so on the file systems that ignore
+ * capitals the whole path does — the file name as well as the folders. A
+ * pattern spelling `src/routes` covers a `Src/Routes` on disk, and one naming
+ * files by their ending covers a `Foo.Page.tsx` as well as a `Foo.page.tsx`.
+ * That is wider than the folder-only rule the rest of this file applies, and
+ * deliberately so: these patterns are the user naming their own paths, not the
+ * tool deciding what a file ending means.
  */
 function checkIsScaffoldIgnored(absPath: string): boolean {
 	scaffoldIgnoreMatchers ??= SCAFFOLD_IGNORE.map((pattern) =>
@@ -1814,8 +1818,12 @@ function resolveComponentForStory(
 	const byExtension = getComponentForStoryByExtension(absStoryPath)
 	if (!byExtension) return null
 	// The component is worked out from the story's name, so a config that leaves
-	// the component alone has to stop here too — filling this story would
-	// otherwise write the very file the config asked this tool not to write.
+	// the component alone has to stop here too. What that saves depends on what
+	// is already on disk: with no component yet, filling this story would go on
+	// to write the very file the config asked this tool not to write; with one
+	// already there, the story would be a story for a component the config says
+	// to leave alone. Neither is wanted, so this declines without needing to
+	// know which case it is in — and the line it prints says only what it did.
 	//
 	// Only reachable with a pattern naming files rather than folders, since a
 	// story and its component always share a directory. It says something rather
@@ -1824,7 +1832,7 @@ function resolveComponentForStory(
 	// and Storybook reports an empty story file as having no exports.
 	if (checkIsScaffoldIgnored(byExtension.compPath)) {
 		warn(
-			`left "${rel(absStoryPath)}" empty — its component "${rel(byExtension.compPath)}" is covered by scaffoldIgnore, so neither file was written.`,
+			`left "${rel(absStoryPath)}" empty — its component "${rel(byExtension.compPath)}" is covered by scaffoldIgnore, so no story was written for it.`,
 		)
 		return null
 	}
@@ -1842,6 +1850,27 @@ function resolveComponentForStory(
 		return null
 	}
 	return byExtension
+}
+
+/**
+ * The extensions a created story file can be scaffolded from — the three the
+ * function directly below has a branch for. A `.mdx`, `.js` or `.jsx` story
+ * clears the watcher's globs and reads as a story file, but no template exists
+ * for one, so nothing was ever going to be written for it.
+ *
+ * Sitting directly above that function on purpose: the two have to name the
+ * same set, and a fourth branch added there needs an entry here, or the watcher
+ * will start telling that story's author their file was refused for its name.
+ */
+const SCAFFOLDABLE_STORY_EXTENSIONS: ReadonlyArray<string> = [
+	'.tsx',
+	'.svelte',
+	'.ts',
+]
+
+/** Is a created story file at this path one the scaffolder would fill at all? */
+function checkIsScaffoldableStoryFile(absStoryPath: string): boolean {
+	return SCAFFOLDABLE_STORY_EXTENSIONS.includes(extname(absStoryPath))
 }
 
 /** The `resolveComponentForStory` answer before the capitals check, chosen by the story file's extension. */
@@ -2208,8 +2237,16 @@ function startWatcher() {
 						// `.ts` file matches the watcher's globs but no scaffolder, so
 						// SvelteKit's `+page.server.ts` would otherwise be told its name
 						// is unusable for a purpose it was never put to.
+						//
+						// A story file needs the narrower question, not `isStoryCreate`.
+						// That one asks whether the name reads as a story, which a
+						// `.mdx`, `.js` or `.jsx` story does — but there is no template
+						// for those, so nothing was going to be written for one whatever
+						// it was called.
 						const isScaffoldCandidate =
-							!!componentBranch || isStoryCreate || isAngularHtmlCreate
+							!!componentBranch ||
+							(isStoryCreate && checkIsScaffoldableStoryFile(abs)) ||
+							isAngularHtmlCreate
 
 						// Told to leave this path alone, so nothing below runs and
 						// nothing is said — including the two naming messages, which
@@ -2591,7 +2628,12 @@ async function startStorybook() {
 	if (configuredScaffoldIgnore === undefined) {
 		SCAFFOLD_IGNORE = []
 	} else if (isScaffoldIgnoreUsable) {
-		SCAFFOLD_IGNORE = configuredScaffoldIgnore
+		// Trimmed on the way in, the same way `srcDir` is. The check above only
+		// asks whether an entry has something in it once trimmed, so a pattern
+		// written with a stray space — `'src/routes/** '` — would otherwise be
+		// accepted and then match nothing at all, which gives the user a
+		// configured option that silently does nothing.
+		SCAFFOLD_IGNORE = configuredScaffoldIgnore.map((pattern) => pattern.trim())
 	} else {
 		error(
 			`scaffoldIgnore is invalid — must be an array of path patterns, each a non-empty string (e.g. ['src/routes/**']). Carrying on with no patterns, so nothing is left alone.`,
