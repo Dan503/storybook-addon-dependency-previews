@@ -2,7 +2,11 @@
 
 html,
 body,
-#app {
+/* The node the site mounts into, and the one Storybook mounts a story into.
+   This stylesheet is loaded in both, and a template asking for full height
+   has nothing to measure against without them. */
+#app,
+#storybook-root {
 	display: grid;
 	min-height: 100%;
 }
