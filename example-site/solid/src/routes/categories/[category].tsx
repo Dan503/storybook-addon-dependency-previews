@@ -11,7 +11,7 @@ import { routePaths } from '../../routePaths'
 
 const getMealsByCategory = query(fetchMealsByCategory, 'mealsByCategory')
 
-export const route: RouteDefinition = {
+export const route = {
 	// `params` is typed as possibly missing because it is shared by every
 	// route, so there is nothing to fetch ahead of time without a category.
 	preload: ({ params }) => {
