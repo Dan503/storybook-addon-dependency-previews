@@ -24,7 +24,10 @@ export const routePaths = {
 	home: '/',
 	categories: '/categories',
 	contact: '/contact',
-	// Escaping happens here so that no call site can forget it.
+	// Category names are free text, so they are escaped here rather than at
+	// each call site. Meal ids are numbers from the meal database, and the page
+	// that reads one does not unescape it, so escaping it here would break the
+	// pair — leave it as it is unless that page changes to match.
 	getCategoryPath: (categoryName) =>
 		`/categories/${encodeURIComponent(categoryName)}`,
 	getMealPath: (mealId) => `/meal/${mealId}`,

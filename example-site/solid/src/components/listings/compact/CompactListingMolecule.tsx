@@ -11,34 +11,30 @@ export interface PropsForCompactListingMolecule {
 }
 
 export function CompactListingMolecule(props: PropsForCompactListingMolecule) {
+	// A function, so that both branches below draw it from the current values
+	// rather than one copy going stale.
+	const itemInternals = () => (
+		<ItemInternals
+			title={props.title}
+			imageSrc={props.imageSrc}
+			description={props.description}
+		/>
+	)
 	// Show rather than an early return, so that gaining or losing the address
 	// swaps between the linked and plain forms. An early return is taken once
 	// and cannot be undone.
 	return (
-		<Show
-			when={props.href}
-			fallback={
-				<ItemInternals
-					title={props.title}
-					imageSrc={props.imageSrc}
-					description={props.description}
-				/>
-			}
-		>
+		<Show when={props.href} fallback={itemInternals()}>
 			{(href) => (
-				<InternalLinkAtom href={href()}>
-					<ItemInternals
-						title={props.title}
-						imageSrc={props.imageSrc}
-						description={props.description}
-					/>
-				</InternalLinkAtom>
+				<InternalLinkAtom href={href()}>{itemInternals()}</InternalLinkAtom>
 			)}
 		</Show>
 	)
 }
 
-function ItemInternals(props: PropsForCompactListingMolecule) {
+// Takes everything but the address, which it does not draw. The wider type
+// would let a caller pass one and see nothing happen.
+function ItemInternals(props: Omit<PropsForCompactListingMolecule, 'href'>) {
 	return (
 		<div class="grid grid-cols-[auto_1fr] gap-4 items-center">
 			<img src={props.imageSrc} alt="" class="h-15" />

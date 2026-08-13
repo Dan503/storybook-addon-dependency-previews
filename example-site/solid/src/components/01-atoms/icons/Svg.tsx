@@ -1,12 +1,9 @@
-import type { PropsWithChildren } from 'solid-js'
-import type { SvgAttributes } from './iconTypes'
+import type { IconProps, SvgAttributes } from './iconTypes'
 
-export interface SvgProps extends PropsWithChildren<SvgAttributes> {
-	altText?: string
-	className?: string
-}
-
-export function Svg(props: SvgProps) {
+// Takes the icon props and nothing wider, because those are the only ones the
+// markup below passes on. Accepting every SVG attribute would let a caller set
+// one and see nothing happen.
+export function Svg(props: IconProps) {
 	return (
 		<svg
 			{...staticAttrs}
@@ -30,6 +27,7 @@ const staticAttrs: SvgAttributes = {
 	stroke: 'currentColor',
 	height: 24,
 	width: 24,
-	// @ts-ignore
+	// @ts-expect-error Solid's SVG attribute types have no `focusable`. Written
+	// as expect-error rather than ignore so this fails once they gain it.
 	focusable: false,
 }
