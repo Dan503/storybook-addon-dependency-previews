@@ -5,10 +5,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"start": "vite start",
 		"preview": "vite preview",
-		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build",
 		"sb:setup": "sb-deps setup",
 		"sb": "sb-deps --watch --run-storybook",
 		"sb:deps": "sb-deps",
