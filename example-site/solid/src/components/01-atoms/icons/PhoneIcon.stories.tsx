@@ -8,6 +8,7 @@ const meta: Meta<typeof PhoneIcon> = {
 	tags: ['autodocs', 'icon'],
 	parameters: {
 		layout: 'padded',
+		__filePath: import.meta.url,
 	} satisfies StoryParameters,
 }
 
