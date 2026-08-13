@@ -10,3 +10,23 @@ body,
 	display: grid;
 	min-height: 100%;
 }
+
+/* Both of these are set by all four sibling sites and by nothing else —
+   Tailwind's base styles cover neither, so without them the buttons here show
+   an arrow where the other demos show a hand, and the text sits heavier. */
+body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+button {
+	cursor: pointer;
+}
+
+/* Tailwind does supply a monospace stack, but a different one from the four
+   sibling sites, so the values preview under each form would read in another
+   font here. Pinned to the same stack they use. */
+code {
+	font-family:
+		source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
