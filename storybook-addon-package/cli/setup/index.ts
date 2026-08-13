@@ -523,6 +523,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		isSolid: isSolidProject,
 		storybookFileExtension: effectiveStorybookFileExtension,
 	})
+	const doesSkippedConfigNeedSolidNote =
+		sbDepsConfigResult.kind === 'skipped' && doesSolidNeedTheKey
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
 		log(
@@ -535,7 +537,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
 		)
 		if (doesSolidNeedTheKey) logSolidTsxFrameworkNote()
-	} else if (sbDepsConfigResult.kind === 'skipped' && doesSolidNeedTheKey) {
+	} else if (doesSkippedConfigNeedSolidNote) {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
 		logSolidTsxFrameworkNote()

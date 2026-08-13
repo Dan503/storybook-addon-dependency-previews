@@ -74,7 +74,9 @@ export function writeSbDepsConfigIfNeeded(
 
 	const needsSrcDir = srcDir !== 'src'
 	const needsStorybookFileExtension = storybookFileExtension === 'story'
-	if (!needsSrcDir && !isSolid && !needsStorybookFileExtension) {
+	const hasNothingWorthWriting =
+		!needsSrcDir && !isSolid && !needsStorybookFileExtension
+	if (hasNothingWorthWriting) {
 		return {
 			kind: 'skipped',
 			reason:
