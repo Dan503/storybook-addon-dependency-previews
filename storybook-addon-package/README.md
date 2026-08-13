@@ -112,7 +112,7 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 
 Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
 
-React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. In a Solid project, set `tsxFramework: 'solid'` in your `sb-deps` config — scaffolded `.tsx` components and stories then use Solid templates (`solid-js`, `storybook-solidjs-vite`) instead of React. It defaults to `'react'`.
+React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) without being told. Set `tsxFramework: 'solid'` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files, since that is the case that falls back to React.
 
 ### File names must end in lower case
 
@@ -240,7 +240,7 @@ export default defineSbDepsConfig({
 
 Which flavor to scaffold for `.tsx` component and story files — `'react'` or `'solid'`. React and Solid both author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports) instead of React. The setup wizard sets it for you when it detects a Solid project. Per-template overrides for Solid go under [`scaffold.solid`](#scaffold).
 
-**Default:** `'react'`
+**Default:** the framework `sb-deps` detects in your project — so a Solid project gets `'solid'` without the key being set. `'react'` only where that detection comes up empty, which is the case worth setting the key for.
 
 ```js
 // sb-deps.config.mjs

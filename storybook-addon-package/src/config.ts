@@ -155,8 +155,7 @@ export interface SbDepsConfig {
 	angularSelectorPrefix?: string
 
 	/**
-	 * Which flavor to scaffold for `.tsx` component and story files. Defaults
-	 * to `'react'`.
+	 * Which flavor to scaffold for `.tsx` component and story files.
 	 *
 	 * React and Solid both author components in `.tsx`, so the file extension
 	 * alone can't tell them apart. Set this to `'solid'` in a Solid project so
@@ -165,7 +164,12 @@ export interface SbDepsConfig {
 	 * ones. The `sb-deps setup` wizard writes this automatically for detected
 	 * Solid projects.
 	 *
-	 * @example 'react'  (default)
+	 * Leave it out and the detected framework decides: a project `sb-deps` can
+	 * see is Solid gets Solid templates anyway. It only falls back to `'react'`
+	 * where that detection comes up empty, so the key is worth setting when
+	 * your project's framework isn't obvious from its files.
+	 *
+	 * @example 'react'
 	 * @example 'solid'
 	 */
 	tsxFramework?: 'react' | 'solid'

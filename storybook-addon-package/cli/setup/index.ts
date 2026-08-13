@@ -215,6 +215,12 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		return
 	}
 
+	// Whether the framework was worked out from the project's own files, or
+	// supplied by the user below. It decides whether the Solid note further down
+	// is worth printing: the scaffolder runs the same detection, so it only
+	// needs telling about Solid when that detection came up empty.
+	const wasFrameworkDetected = framework !== 'unknown'
+
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
 		const choice = await choose<
@@ -495,15 +501,21 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
-	// default `'src'`, when the project is Solid (the config carries
-	// `tsxFramework: 'solid'` so the scaffolder knows to emit Solid — not React
-	// — templates for `.tsx` files), or when the user chose a non-default
+	// default `'src'`, when the project is Solid (the config records
+	// `tsxFramework: 'solid'` outright, so the scaffolder emits Solid — not
+	// React — templates for `.tsx` files even where its own detection of the
+	// framework comes up empty), or when the user chose a non-default
 	// story-file extension. Must happen before Step 5 so the sb-deps build below
 	// picks up the configured values on its first run. Silent no-op when
 	// everything is default so setups without overrides don't see an extra log
 	// line. Uses `effectiveSrcDir` so a user-edited value via the edit flow is
 	// what gets persisted, not the auto-detected one.
 	const isSolidProject = framework === 'solid-vite'
+	// Only worth saying where the scaffolder's own detection will come up empty
+	// too. Where it can see the project is Solid, it emits Solid templates with
+	// or without the config key, so the note would be telling the user to guard
+	// against something that cannot happen to them.
+	const doesSolidNeedTheKey = isSolidProject && !wasFrameworkDetected
 	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
 		cwd,
 		srcDir: effectiveSrcDir,
@@ -522,8 +534,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(
 			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
 		)
-		if (isSolidProject) logSolidTsxFrameworkNote()
-	} else if (sbDepsConfigResult.kind === 'skipped' && isSolidProject) {
+		if (doesSolidNeedTheKey) logSolidTsxFrameworkNote()
+	} else if (sbDepsConfigResult.kind === 'skipped' && doesSolidNeedTheKey) {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
 		logSolidTsxFrameworkNote()
@@ -577,17 +589,21 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 /**
  * Tell a Solid user to set `tsxFramework` themselves.
  *
- * Printed whenever the wizard finished without writing the key — the write
- * failed, or an existing config blocked it. Either way the key may be missing,
- * and a missing key is silent: nothing else tells the user their Solid project
- * is being scaffolded as React. The wizard doesn't read an existing config, so
- * this asks the user to check rather than claiming the key is absent.
+ * Printed when the wizard finished without writing the key — the write failed,
+ * or an existing config blocked it — AND the wizard could not work the
+ * framework out from the project's own files, so the user supplied it. The
+ * scaffolder repeats that same detection, so where it succeeds it emits Solid
+ * templates whether or not the key is there; where it came up empty, the key is
+ * the only thing left saying so, and a missing one is silent. The wizard does
+ * not read an existing config, so this asks the user to check rather than
+ * claiming the key is absent.
  */
 function logSolidTsxFrameworkNote() {
 	log(
-		`    Ensure your sb-deps.config sets \`tsxFramework: 'solid'\` — without that key`,
+		`    Ensure your sb-deps.config sets \`tsxFramework: 'solid'\` — the scaffolder`,
 	)
 	log(
-		`    the sb-deps scaffolder emits React (not Solid) templates for .tsx files.`,
+		`    could not tell this is a Solid project, so without that key it emits`,
 	)
+	log(`    React (not Solid) templates for .tsx files.`)
 }

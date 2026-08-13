@@ -217,4 +217,4 @@ npm run sb
 
 As you create new component files the wizard auto-scaffolds matching story files and the dependency-previews JSON updates on the fly.
 
-See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file. **Solid projects:** set [`tsxFramework: 'solid'`](../README.md#tsxframework) there so `sb-deps` scaffolds Solid `.tsx` templates instead of React (both frameworks use `.tsx`, so it can't be inferred from the extension).
+See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file. **Solid projects:** `sb-deps` works the framework out from your project, so it scaffolds Solid `.tsx` templates without being told. Setting [`tsxFramework: 'solid'`](../README.md#tsxframework) there says so outright, which is worth doing where your project's framework isn't obvious from its files — both frameworks use `.tsx`, so the extension alone can't settle it.

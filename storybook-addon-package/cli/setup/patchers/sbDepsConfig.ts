@@ -35,9 +35,11 @@ export interface WriteSbDepsConfigOptions {
 	isEsm: boolean
 	/**
 	 * Whether the project uses Solid. When true, the config is written even for
-	 * the default `srcDir` so it can carry `tsxFramework: 'solid'` — the signal
-	 * the `sb-deps` scaffolder needs to emit Solid (not React) templates for
-	 * `.tsx` component/story files, which the two frameworks share.
+	 * the default `srcDir` so it can carry `tsxFramework: 'solid'`, which tells
+	 * the `sb-deps` scaffolder outright to emit Solid (not React) templates for
+	 * the `.tsx` component/story files the two frameworks share. The scaffolder
+	 * works the framework out for itself as well, so the key is what settles it
+	 * where that detection comes up empty.
 	 */
 	isSolid?: boolean
 	/**
