@@ -154,6 +154,9 @@ let SRC_DIR = 'src'
 // Storybook's convention), so all four `storyPathFor*` helpers stay in sync.
 type StorybookFileExtension = NonNullable<SbDepsConfig['storybookFileExtension']>
 let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
+// Path patterns the scaffolder leaves alone, from the config. Empty by
+// default, so a project that says nothing keeps the behaviour it has.
+let SCAFFOLD_IGNORE: Array<string> = []
 
 // React and Solid both author `.tsx` components, so the extension alone can't
 // tell them apart. `tsxFramework` (config, default `'react'`) picks which
@@ -568,9 +571,12 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  * `.js`, `.jsx`, `.mdx`, …). Used by the scaffolding-trigger helpers to make
  * sure they don't try to auto-scaffold a story file for an existing story.
  *
- * Matched exactly, with no ignore-case flag, because `getWrongCasedNameError`
- * turns a `Button.Stories.tsx` away before this pattern ever sees it — so it
- * can spell one name and mean one file.
+ * Matched exactly, with no ignore-case flag, so it can spell one name and mean
+ * one file. What makes that safe is that a `Button.Stories.tsx` is refused by
+ * `getWrongCasedNameError` and never scaffolded from. This pattern does get
+ * evaluated on one first — the watcher works out what kind of file it is
+ * looking at before running that check — but no answer of this pattern's is
+ * read until the check has had its chance to turn the file away.
  */
 const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`)
 
@@ -579,6 +585,22 @@ const COMPONENT_STORY_TS_REGEX = new RegExp(`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts
 
 /** Does a file base already end in `.component`? */
 const COMPONENT_SUFFIX_REGEX = /\.component$/
+
+/**
+ * A name the generated code can use, matching what JavaScript itself accepts:
+ * a letter, `_` or `$` to start, then letters, digits, `_` or `$`. Anything
+ * else — a square bracket, a `+`, a space, a leading digit — is a name no
+ * template can put in front of `export function`.
+ *
+ * "Letter" means any language's, via the `ID_Start` and `ID_Continue`
+ * properties the language is itself defined in terms of, so `Café.tsx` and
+ * `按钮.tsx` are accepted — both scaffold code that parses. Spelling the set
+ * out as `A-Za-z` instead would refuse them, which is what this did at first
+ * and is a regression for anyone not naming components in English.
+ * `Foo².tsx` is still refused: a superscript two is a number to Unicode but
+ * not one JavaScript will take.
+ */
+const CODE_NAME_REGEX = /^[\p{ID_Start}_$][\p{ID_Continue}$\u200C\u200D]*$/u
 
 /**
  * Is this `<srcDir>/**​/Thing.story.<ext>` or `Thing.stories.<ext>`? Limits
@@ -626,6 +648,39 @@ function isComponentsAngularHtml(relPath: string) {
 }
 
 /**
+ * The `scaffoldIgnore` patterns, compiled. Built on first use rather than at
+ * module load, because `SCAFFOLD_IGNORE` is read from the config in the boot
+ * block — which runs after this module is evaluated, and before anything is
+ * ever scaffolded.
+ */
+let scaffoldIgnoreMatchers: Array<(path: string) => boolean> | null = null
+
+/**
+ * Was this file one the config told the scaffolder to leave alone?
+ *
+ * Takes the absolute path and converts it itself, so the patterns are matched
+ * against a project-relative path with forward slashes wherever this is asked
+ * from — the watcher has that form to hand, the story-to-component lookup does
+ * not, and a helper each caller has to prepare for is one a caller can prepare
+ * wrongly.
+ *
+ * Matched with the watcher's own options, so on the file systems that ignore
+ * capitals the whole path does — the file name as well as the folders. A
+ * pattern spelling `src/routes` covers a `Src/Routes` on disk, and one naming
+ * files by their ending covers a `Foo.Page.tsx` as well as a `Foo.page.tsx`.
+ * That is wider than the folder-only rule the rest of this file applies, and
+ * deliberately so: these patterns are the user naming their own paths, not the
+ * tool deciding what a file ending means.
+ */
+function checkIsScaffoldIgnored(absPath: string): boolean {
+	scaffoldIgnoreMatchers ??= SCAFFOLD_IGNORE.map((pattern) =>
+		micromatch.matcher(pattern, MICROMATCH_OPTIONS),
+	)
+	const relPath = toProjectRelativePath(absPath)
+	return scaffoldIgnoreMatchers.some((isMatch) => isMatch(relPath))
+}
+
+/**
  * The message to print when a file's name spells its extension, or one of
  * the endings in `scripts/fileNames.ts` that mean something here, with capitals
  * — or `null` when the name is fine. `.stories` and `.story` count on any
@@ -634,12 +689,17 @@ function isComponentsAngularHtml(relPath: string) {
  * is passed in.
  *
  * The patterns in this file each spell one name and mean one file, which is
- * only safe because this check turns the odd spellings away first.
+ * safe because this check refuses an odd spelling and nothing is scaffolded
+ * from it. Several of those patterns are evaluated before this check runs —
+ * the watcher works out what kind of file it is looking at first — so it is
+ * that nothing reads their answers until this check has had its chance to turn
+ * the file away, rather than the ordering, that keeps them honest.
  *
  * The Storybook half of the message is only added for a story file. It fires on
- * any created file that clears the watcher's globs, so a plain `Badge.VUE`
- * would otherwise send its author off to read their Storybook stories setting
- * about a file that was never going to appear there.
+ * any created file that clears the watcher's globs and isn't covered by
+ * `scaffoldIgnore`, so a plain `Badge.VUE` would otherwise send its author off
+ * to read their Storybook stories setting about a file that was never going to
+ * appear there.
  */
 function getWrongCasedNameError(absPath: string): string | null {
 	const fileName = basename(absPath)
@@ -652,6 +712,42 @@ function getWrongCasedNameError(absPath: string): string | null {
 		? " Storybook matches its own stories setting exactly too, so a story file spelled with capitals never shows up there either."
 		: ''
 	return `"${rel(absPath)}" needs a lower-case ending — rename it to "${readyFileName}", and nothing was written for it. These endings are matched exactly.${storybookNote}`
+}
+
+/**
+ * The message to print when a file's name can't become a name the generated
+ * code could use — or `null` when it can.
+ *
+ * Whatever each framework's scaffolder trims off the file name first, what it
+ * does with the rest is the same: `toPascalCase`, then the result goes in front
+ * of `export function`, in the props type name, and in the name the story
+ * imports. A router page named `[category].tsx` or `+page.svelte` therefore
+ * used to produce files that don't parse, on every line that names the
+ * component.
+ *
+ * This drops only the extension, via `basename`'s own suffix argument, so it
+ * asks the question of the whole rest of the name rather than of whichever
+ * part a given scaffolder would have used.
+ * The endings are all plain letters and `toWords` treats a dot as a word break,
+ * so `.stories` and Angular's `.component` can't change the answer either way.
+ * A middle segment can: a hypothetical `Button.[id].decorator.svelte` is turned
+ * away even though the decorator scaffolder would only have used `Button`.
+ * That is the safe direction to be wrong in — nothing is written, and the line
+ * below says why.
+ *
+ * It warns where the capitals check errors, because a bracketed page name is a
+ * framework's own convention rather than a mistake — there is nothing to
+ * correct, only a folder to leave alone.
+ */
+function getUnusableNameWarning(absPath: string): string | null {
+	const nameWithoutExtension = basename(absPath, extname(absPath))
+	// Named rather than tested inline, because the two forms are not
+	// interchangeable and the line below prints the other one: the branch turns
+	// on the PascalCase spelling, while the message quotes the name as the user
+	// typed it, which is the one they can act on.
+	const componentName = toPascalCase(nameWithoutExtension)
+	if (CODE_NAME_REGEX.test(componentName)) return null
+	return `left "${rel(absPath)}" alone — "${nameWithoutExtension}" can't be used as a component name in the generated code, so nothing was scaffolded for it. Page file names like "[id]" and "+page" are the usual reason; add a path pattern to scaffoldIgnore in your sb-deps config to stop this being mentioned.`
 }
 
 /**
@@ -1783,8 +1879,14 @@ const STORY_SCAFFOLDERS: Record<
  * doesn't already exist under either naming variant. The component-side mirror
  * of `scaffoldStoryFromCreatedStoryFile`; called when a component file is
  * created. Returns the scaffolded story path, or `null` when nothing was
- * written — either a story already exists, or the name it would take clashes
- * with one already there under different capitals.
+ * written — a story already exists, the name it would take clashes with one
+ * already there under different capitals, or that name is one the config asked
+ * to be left alone.
+ *
+ * The component is not checked against the config here: every caller reaches
+ * this with a path that has already been through `checkIsScaffoldIgnored` —
+ * the four framework branches with the created file itself, and the Angular
+ * template branch with the component name it worked out.
  */
 function ensureStoryFor(
 	framework: StoryFramework,
@@ -1793,6 +1895,25 @@ function ensureStoryFor(
 	const { storyPath, story } = STORY_SCAFFOLDERS[framework]
 	const canonicalStoryPath = storyPath(absCompPath)
 	if (findExistingStory(canonicalStoryPath, framework)) return null
+	// The story is a name this tool works out, so the config has to be asked
+	// about it in its own right — the component being fair game says nothing
+	// about the story beside it. Only a pattern naming files rather than a
+	// folder can tell the two apart, which is exactly what the README's
+	// `**/*.stories.tsx`-shaped examples are.
+	//
+	// After the lookup above, so this only speaks when a story really would
+	// have been written. Asked before it, the same config would announce that
+	// nothing was written for a component whose story is already sitting there.
+	//
+	// Said rather than done silently: the component the user created is
+	// untouched and perfectly fine, so a story simply never appearing would
+	// look like the watcher had missed it.
+	if (checkIsScaffoldIgnored(canonicalStoryPath)) {
+		warn(
+			`no story written for "${rel(absCompPath)}" — the name it would take, "${rel(canonicalStoryPath)}", is covered by scaffoldIgnore.`,
+		)
+		return null
+	}
 	// Nothing above was worth reusing, so this name is about to be written to.
 	// That is a narrower question than the one just asked, and it needs asking
 	// separately: an EMPTY file under this name with different capitals is
@@ -1806,14 +1927,34 @@ function ensureStoryFor(
 /**
  * Work out the component a created story file belongs to, and which framework's
  * scaffolders to use. `.tsx` → React, `.svelte` → Svelte, `.ts` → React, Vue,
- * or Angular (disambiguated in `resolveTsStoryComponent`). Any other extension
- * (`.js`, `.jsx`, `.mdx`) returns `null` — not something we scaffold.
+ * or Angular (disambiguated in `resolveTsStoryComponent`). Any extension with
+ * no entry in `STORY_COMPONENT_RESOLVERS` returns `null` — not something we
+ * scaffold.
  */
 function resolveComponentForStory(
 	absStoryPath: string,
 ): { compPath: string; framework: StoryFramework } | null {
 	const byExtension = getComponentForStoryByExtension(absStoryPath)
 	if (!byExtension) return null
+	// The component is worked out from the story's name, so a config that leaves
+	// the component alone has to stop here too. What that saves depends on what
+	// is already on disk: with no component yet, filling this story would go on
+	// to write the very file the config asked this tool not to write; with one
+	// already there, the story would be a story for a component the config says
+	// to leave alone. Neither is wanted, so this declines without needing to
+	// know which case it is in — and the line it prints says only what it did.
+	//
+	// Only reachable with a pattern naming files rather than folders, since a
+	// story and its component always share a directory. It says something rather
+	// than staying silent the way an ignored path does, because the file left
+	// empty is the story the user just created, which is not the ignored one —
+	// and Storybook reports an empty story file as having no exports.
+	if (checkIsScaffoldIgnored(byExtension.compPath)) {
+		warn(
+			`left "${rel(absStoryPath)}" empty — its component "${rel(byExtension.compPath)}" is covered by scaffoldIgnore, so no story was written for it.`,
+		)
+		return null
+	}
 	// The component's name is worked out from the story's, so it has to clear the
 	// capitals check before anything is done with it. A story named with
 	// different capitals to its component pairs with it silently on Windows and
@@ -1830,31 +1971,91 @@ function resolveComponentForStory(
 	return byExtension
 }
 
+/**
+ * How a created story file finds its component, keyed by the story's own
+ * extension. Its keys ARE the set of extensions a story can be scaffolded
+ * from, which is why `checkIsScaffoldableStoryFile` below reads them straight
+ * off it: a hand-written second copy of that set could fall out of step with
+ * these branches, and the drift is silent in the direction that matters — an
+ * extension resolvable here but missing from the set would skip the
+ * unusable-name check and go on to write the broken name this whole change
+ * exists to prevent.
+ *
+ * A `.mdx`, `.js`, `.jsx` or `.vue` story clears the watcher's globs and reads
+ * as a story file, but has no entry here, so nothing is ever written for one.
+ *
+ * `.tsx` and `.svelte` name a framework, so a stray one in a non-matching
+ * project is turned away with a warning rather than backfilled as the wrong
+ * framework. `.ts` names none itself and is worked out separately — its
+ * sibling lookup runs the same check, since a sibling can name any framework.
+ */
+const STORY_COMPONENT_RESOLVERS: Record<
+	string,
+	(
+		storyBase: string,
+		absStoryPath: string,
+	) => { compPath: string; framework: StoryFramework } | null
+> = {
+	'.tsx': (storyBase, absStoryPath) => {
+		if (!checkDoesFileFrameworkMatchProject('react', absStoryPath)) return null
+		// Through the shared helper, so the react spelling has one owner. (The
+		// `.svelte` entry below can't: the helper has no Svelte spelling, since a
+		// `.ts` story can't scaffold one.)
+		const compPath = getComponentPathForFamily(storyBase, 'react')
+		if (!compPath) return null
+		return { compPath, framework: 'react' }
+	},
+	'.svelte': (storyBase, absStoryPath) => {
+		if (!checkDoesFileFrameworkMatchProject('svelte', absStoryPath)) return null
+		return { compPath: `${storyBase}.svelte`, framework: 'svelte' }
+	},
+	'.ts': (storyBase, absStoryPath) =>
+		resolveTsStoryComponent(storyBase, absStoryPath),
+}
+
+/**
+ * Is a created story file at this path one the scaffolder could fill at all?
+ * Only those get the unusable-name check, so that it never blames a file's
+ * name for an outcome its name had nothing to do with.
+ *
+ * Two questions, because `.ts` needs both. There has to be a resolver for the
+ * extension, and for `.ts` the project's own framework has to be one a `.ts`
+ * story can name. Two kinds of project fail that: a Svelte one, where a
+ * sibling can only come from another framework and there is no Svelte spelling
+ * to fall back to; and one whose framework was never recognised, which is
+ * every framework this tool has no support for — Solid Start among them, the
+ * one this whole change was reported from. A `.ts` story in either produces
+ * nothing whatever it is called, so saying its name was the reason would be
+ * untrue.
+ *
+ * A `.tsx` or `.svelte` story in a project of the other framework stays a
+ * candidate, and the reason is the name rather than the message. Its name
+ * really would have stopped it even in a matching project, so the line it
+ * prints is true — which is the opposite of the `.ts` case, where the
+ * framework is the blocker and the name is blameless. Note what that costs:
+ * candidacy gates the name check alone, and the name check ends the event, so
+ * a `.tsx` story with an unusable name in a Vue project is told about its name
+ * and never told about the mismatch. Nothing is written either way, so the
+ * choice is only about which true thing gets said first.
+ */
+function checkIsScaffoldableStoryFile(absStoryPath: string): boolean {
+	const extension = extname(absStoryPath)
+	if (!Object.hasOwn(STORY_COMPONENT_RESOLVERS, extension)) return false
+	if (extension !== '.ts') return true
+	const projectFamily = getProjectFrameworkFamily()
+	// The same set a `.ts` story can name through a sibling, reused rather than
+	// spelled again — `getComponentPathForFamily` answers for exactly these.
+	return !!projectFamily && TS_STORY_SIBLING_FAMILIES.includes(projectFamily)
+}
+
 /** The `resolveComponentForStory` answer before the capitals check, chosen by the story file's extension. */
 function getComponentForStoryByExtension(
 	absStoryPath: string,
 ): { compPath: string; framework: StoryFramework } | null {
 	const storyBase = absStoryPath.replace(STORY_FILE_REGEX, '')
-	const ext = extname(absStoryPath)
-	// `.tsx`/`.svelte` are framework-specific — a stray one in a non-matching
-	// project is ignored + warned rather than backfilled as the wrong framework.
-	// `.ts` names no framework itself, so it's resolved separately — but its
-	// sibling lookup runs the same check, since a sibling can name any framework.
-	if (ext === '.tsx') {
-		if (!checkDoesFileFrameworkMatchProject('react', absStoryPath)) return null
-		// Through the shared helper, so the react spelling has one owner. (The
-		// `.svelte` branch below can't: the helper has no Svelte spelling, since a
-		// `.ts` story can't scaffold one.)
-		const compPath = getComponentPathForFamily(storyBase, 'react')
-		if (!compPath) return null
-		return { compPath, framework: 'react' }
-	}
-	if (ext === '.svelte') {
-		if (!checkDoesFileFrameworkMatchProject('svelte', absStoryPath)) return null
-		return { compPath: `${storyBase}.svelte`, framework: 'svelte' }
-	}
-	if (ext === '.ts') return resolveTsStoryComponent(storyBase, absStoryPath)
-	return null
+	const resolveComponent = STORY_COMPONENT_RESOLVERS[extname(absStoryPath)]
+	if (!resolveComponent) return null
+	return resolveComponent(storyBase, absStoryPath)
 }
 
 /**
@@ -2172,16 +2373,73 @@ function startWatcher() {
 							continue
 						}
 
+						// Everything between here and the rebuild at the bottom only runs
+						// on creation, and all of it is scaffolding. The three questions
+						// it asks of the path are asked once each, here, because the name
+						// check below needs all three to know whether this file is one
+						// the scaffolder would have touched at all — and asking again
+						// further down would mean the same regex work twice per event.
+						// `isCreate` guards each one, so the update events that dominate
+						// while editing still skip the path work entirely.
+						const isCreate = ev.type === 'create'
+						const componentBranch = isCreate
+							? COMPONENT_CREATE_BRANCHES.find((branch) =>
+									branch.checkIsMatch(relPath),
+								)
+							: undefined
+						const isStoryCreate = isCreate && isStoryFileUnderSrc(relPath)
+						const isAngularHtmlCreate =
+							isCreate && isComponentsAngularHtml(relPath)
+						// Is this a file the scaffolder would have done anything with?
+						// The name check below is only worth making for those: a plain
+						// `.ts` file matches the watcher's globs but no scaffolder, so
+						// SvelteKit's `+page.server.ts` would otherwise be told its name
+						// is unusable for a purpose it was never put to.
+						//
+						// A story file needs the narrower question, not `isStoryCreate`.
+						// That one asks whether the name reads as a story, which a
+						// `.mdx`, `.js`, `.jsx` or `.vue` story does — but nothing was
+						// going to be written for one whatever it was called. The same
+						// goes for a `.ts` story in a project whose framework cannot
+						// host one: a Svelte project, or any whose framework this tool
+						// does not recognise.
+						const isScaffoldCandidate =
+							!!componentBranch ||
+							(isStoryCreate && checkIsScaffoldableStoryFile(abs)) ||
+							isAngularHtmlCreate
+
+						// Told to leave this path alone, so nothing below runs and
+						// nothing is said — including the two naming messages, which
+						// exist only to explain why nothing was scaffolded. The rebuild
+						// still fires, so an ignored page keeps its place in the graph
+						// and still shows what it is built with.
+						if (isCreate && checkIsScaffoldIgnored(abs)) {
+							kick(ev.type, abs)
+							continue
+						}
+
 						// Every check past this point spells one name and means one
 						// file, so a name that could be read two ways is turned away
 						// here rather than half-understood further in. The rebuild still
 						// fires: the file is real, and leaving it out of the graph until
 						// its next save would be worse than including it — the same
 						// reasoning as the framework-mismatch fall-through below.
-						const nameError =
-							ev.type === 'create' ? getWrongCasedNameError(abs) : null
+						const nameError = isCreate ? getWrongCasedNameError(abs) : null
 						if (nameError) {
 							error(nameError)
+							kick(ev.type, abs)
+							continue
+						}
+
+						// A name this tool can read, but not one it can write into the
+						// files it generates. It goes after the capitals check because
+						// that one hands back a spelling to rename to, which is the more
+						// useful thing to read first when a name has both problems.
+						const unusableNameWarning = isScaffoldCandidate
+							? getUnusableNameWarning(abs)
+							: null
+						if (unusableNameWarning) {
+							warn(unusableNameWarning)
 							kick(ev.type, abs)
 							continue
 						}
@@ -2191,7 +2449,7 @@ function startWatcher() {
 						// created outside SRC_DIR never scaffolds a component there.
 						// Falls through to the normal rebuild when there's nothing to
 						// scaffold (non-empty story, or an extension we don't template).
-						if (ev.type === 'create' && isStoryFileUnderSrc(relPath)) {
+						if (isStoryCreate) {
 							if (handleStoryCreation(abs)) continue
 						}
 
@@ -2199,30 +2457,27 @@ function startWatcher() {
 						// scaffolds when the file's extension matches the project's
 						// framework; a mismatch is ignored + warned inside
 						// `checkDoesFileFrameworkMatchProject`.
-						if (ev.type === 'create') {
-							const componentBranch = COMPONENT_CREATE_BRANCHES.find((branch) =>
-								branch.checkIsMatch(relPath),
-							)
-							// On a framework mismatch, fall through to the normal rebuild at
-							// the bottom rather than `continue` — the file is still a real
-							// source file, so skipping it would leave the graph stale until
-							// its next save. (The match check logs its own warning.) The `if`
-							// below tests only `isScaffoldableComponent`, which already
-							// includes the branch-matched check.
-							const isScaffoldableComponent =
-								!!componentBranch &&
-								checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
-							if (isScaffoldableComponent) {
-								await componentBranch.handle(abs, relPath)
-								// The component file is real whether or not a story came of
-								// it — one may already exist, or a name clash may have
-								// stopped one being written — so the graph should not have to
-								// wait for the file's next save either way. `kick` collapses
-								// this with the story kick the handler may already have
-								// fired, so the common path still rebuilds once.
-								kick(ev.type, abs)
-								continue
-							}
+						//
+						// On a framework mismatch, fall through to the normal rebuild at
+						// the bottom rather than `continue` — the file is still a real
+						// source file, so skipping it would leave the graph stale until
+						// its next save. (The match check logs its own warning.) The `if`
+						// below tests only `isScaffoldableComponent`, which already
+						// includes the branch-matched check — and `componentBranch` is
+						// only looked up on creation, so that covers the event type too.
+						const isScaffoldableComponent =
+							!!componentBranch &&
+							checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
+						if (isScaffoldableComponent) {
+							await componentBranch.handle(abs, relPath)
+							// The component file is real whether or not a story came of
+							// it — one may already exist, or a name clash may have
+							// stopped one being written — so the graph should not have to
+							// wait for the file's next save either way. `kick` collapses
+							// this with the story kick the handler may already have
+							// fired, so the common path still rebuilds once.
+							kick(ev.type, abs)
+							continue
 						}
 
 						// ANGULAR .component.html CREATE
@@ -2230,11 +2485,6 @@ function startWatcher() {
 						// reasoning as the component branches above. The match check logs
 						// its own warning, so keep it out of an inline `&&` chain where
 						// that would be easy to miss.
-						// `ev.type` first, so the path check (a conversion plus regex work)
-						// is skipped for the update events that dominate while editing —
-						// same treatment the table branches above get.
-						const isAngularHtmlCreate =
-							ev.type === 'create' && isComponentsAngularHtml(relPath)
 						const isScaffoldableAngularHtml =
 							isAngularHtmlCreate &&
 							checkDoesFileFrameworkMatchProject('angular', abs)
@@ -2245,6 +2495,20 @@ function startWatcher() {
 							// the one derived name deliberately left unchecked, for the
 							// reason given where the external template is scaffolded.
 							const tsPath = angularComponentTsPath(abs)
+							// The component name is worked out from the template's, so the
+							// config has to be asked about it too. Both arms below act on
+							// this component — one writes it, the other writes the template
+							// beside it and gives it a story — so a component the config
+							// leaves alone stops the branch outright. Again only a pattern
+							// naming files can separate the two, since the pair share a
+							// directory.
+							if (checkIsScaffoldIgnored(tsPath)) {
+								warn(
+									`left "${rel(abs)}" alone — the component it belongs to, "${rel(tsPath)}", is covered by scaffoldIgnore.`,
+								)
+								kick(ev.type, abs)
+								continue
+							}
 							if (!checkDoesFolderAgreeWithName(tsPath)) {
 								// Say what became of the file they created, the way the
 								// other two decline paths do. The clash line above names
@@ -2506,6 +2770,33 @@ async function startStorybook() {
 		['react', 'solid'],
 		'react',
 	)
+
+	// Same treatment as the two options above, for the same reason: a JS config
+	// file can hold any value. An entry that is empty or only spaces would
+	// match nothing useful and reads as a mistake rather than a pattern, so the
+	// whole list is refused rather than quietly dropping the bad entry — a
+	// half-applied ignore list is harder to notice than one that isn't applied.
+	const configuredScaffoldIgnore = cfg.scaffoldIgnore
+	const isScaffoldIgnoreUsable =
+		Array.isArray(configuredScaffoldIgnore) &&
+		configuredScaffoldIgnore.every(
+			(pattern) => typeof pattern === 'string' && pattern.trim() !== '',
+		)
+	if (configuredScaffoldIgnore === undefined) {
+		SCAFFOLD_IGNORE = []
+	} else if (isScaffoldIgnoreUsable) {
+		// Trimmed on the way in, the same way `srcDir` is. The check above only
+		// asks whether an entry has something in it once trimmed, so a pattern
+		// written with a stray space — `'src/routes/** '` — would otherwise be
+		// accepted and then match nothing at all, which gives the user a
+		// configured option that silently does nothing.
+		SCAFFOLD_IGNORE = configuredScaffoldIgnore.map((pattern) => pattern.trim())
+	} else {
+		error(
+			`scaffoldIgnore is invalid — must be an array of path patterns, each a non-empty string (e.g. ['src/routes/**']). Carrying on with no patterns, so nothing is left alone.`,
+		)
+		SCAFFOLD_IGNORE = []
+	}
 
 	banner('sb-deps')
 	info(`outDir: ${rel(outDir)}`)
