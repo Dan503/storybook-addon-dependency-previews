@@ -40,6 +40,12 @@ Vue version built for Vue 3.
 - [Vue rendered example website](https://dependency-previews-demo-site-vue.netlify.app/)
 - [Vue demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/vue)
 
+#### Solid demos
+
+- [Solid Storybook demo site](https://dependency-previews-storybook-solid.netlify.app/?path=/docs/04-templates-home-template--docs)
+- [Solid rendered example website](https://dependency-previews-demo-site-solid.netlify.app/)
+- [Solid demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/solid)
+
 #### Angular demos
 
 - [Angular Storybook demo site](https://dependency-previews-storybook-angular.netlify.app/?path=/docs/04-templates-home-template--docs)
@@ -274,6 +280,12 @@ export function ${componentName}({}: ${propsName}) {
 			component: ({ componentName }) => '...',
 			/** Customize the generated .stories.ts file */
 			story: ({ componentName, title, tags }) => '...',
+		},
+		solid: {
+			/** Customize the generated .tsx component file */
+			component: ({ componentName, propsName }) => '...',
+			/** Customize the generated .stories.tsx file */
+			story: ({ componentName, propsName, title, tags, base }) => '...',
 		},
 		angular: {
 			/** Customize the generated .component.ts file */
