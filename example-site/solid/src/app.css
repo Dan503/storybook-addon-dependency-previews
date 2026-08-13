@@ -23,9 +23,11 @@ button {
 	cursor: pointer;
 }
 
-/* Tailwind does supply a monospace stack, but a different one from the four
-   sibling sites, so the values preview under each form would read in another
-   font here. Pinned to the same stack they use. */
+/* Tailwind does supply a monospace stack, but a different one from the React,
+   Svelte and Vue sites, so the values preview under each form would read in
+   another font here. Pinned to the stack those three use. The Angular site
+   pins nothing and stays on the Tailwind default, so this site now matches
+   three of the four and differs from that one. */
 code {
 	font-family:
 		source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
