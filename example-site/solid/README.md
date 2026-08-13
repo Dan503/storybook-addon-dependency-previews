@@ -25,8 +25,8 @@ npm run dev -- --open
 
 ## Building
 
-Solid apps are built with _presets_, which optimise your project for deployment to different environments.
+Solid apps are built for a particular host, and this one is built for Netlify: `vite.config.ts` passes `preset: 'netlify'` to the Nitro plugin, so `npm run build` writes the site into `dist` and its server into `.netlify/functions-internal`.
 
-By default, `npm run build` will generate a Node app that you can run with `npm start`. To use a different preset, add it to the `devDependencies` in `package.json` and specify in your `app.config.js`.
+There is no plain Node build to run, so `npm start` and `npm run preview` will not serve the built site — use `npm run dev` for local work. To build for somewhere other than Netlify, change that preset in `vite.config.ts`.
 
 ## This project was created with the [Solid CLI](https://github.com/solidjs-community/solid-cli)
