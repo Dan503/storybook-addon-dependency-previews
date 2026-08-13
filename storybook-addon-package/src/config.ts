@@ -164,10 +164,10 @@ export interface SbDepsConfig {
 	 * ones. The `sb-deps setup` wizard writes this automatically for detected
 	 * Solid projects.
 	 *
-	 * Leave it out and the detected framework decides: a project `sb-deps` can
-	 * see is Solid gets Solid templates anyway. It only falls back to `'react'`
-	 * where that detection comes up empty, so the key is worth setting when
-	 * your project's framework isn't obvious from its files.
+	 * Leave it out and detection decides: a project `sb-deps` reads as Solid
+	 * gets Solid templates anyway, and anything else gets React ones. So the
+	 * key is worth setting when your project's framework isn't obvious from
+	 * its files.
 	 *
 	 * @example 'react'
 	 * @example 'solid'

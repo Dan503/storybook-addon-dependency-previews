@@ -48,7 +48,7 @@ const config: StorybookConfig = {
 	addons: [
 		// autodocs is required for this addon to work
 		'@storybook/addon-docs',
-		// required for .stories.svelte CSF format (Svelte projects only — delete if using React or Vue)
+		// required for .stories.svelte CSF format (Svelte projects only — delete if using React, Vue, or Solid)
 		'@storybook/addon-svelte-csf',
 		// the storybook dependency previews addon registration
 		'storybook-addon-dependency-previews/addon',
