@@ -159,12 +159,14 @@ let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 let SCAFFOLD_IGNORE: Array<string> = []
 
 // React and Solid both author `.tsx` components, so the extension alone can't
-// tell them apart. `tsxFramework` (config, default `'react'`) picks which
-// templates a `.tsx` component/story gets — Solid emits a `solid-js`
-// `createSignal`/`mergeProps` component and a `storybook-solidjs-vite` story
-// import. A Solid project still routes through the `react` scaffold family
-// (see `getFrameworkFamily`); only the emitted template text differs. Derived
-// from the config schema so it can't drift.
+// tell them apart. `tsxFramework` picks which templates a `.tsx` component or
+// story gets — Solid emits a `solid-js` `createSignal`/`mergeProps` component
+// and a `storybook-solidjs-vite` story import. The config key wins where it is
+// set; where it is absent the detected framework decides, so a Solid project
+// without the key still gets Solid templates. A Solid project still routes
+// through the `react` scaffold family (see `getFrameworkFamily`); only the
+// emitted template text differs. Derived from the config schema so it can't
+// drift.
 type TsxFlavor = NonNullable<SbDepsConfig['tsxFramework']>
 let TSX_FRAMEWORK: TsxFlavor = 'react'
 
@@ -2764,11 +2766,14 @@ async function startStorybook() {
 		['story', 'stories'],
 		'stories',
 	)
+	// The fallback follows the detected framework rather than always being
+	// `react`, so a Solid project that never got the config key still scaffolds
+	// Solid templates instead of silently writing React ones into it.
 	TSX_FRAMEWORK = validateConfigChoice<TsxFlavor>(
 		'tsxFramework',
 		cfg.tsxFramework,
 		['react', 'solid'],
-		'react',
+		getProjectFramework() === 'solid-vite' ? 'solid' : 'react',
 	)
 
 	// Same treatment as the two options above, for the same reason: a JS config

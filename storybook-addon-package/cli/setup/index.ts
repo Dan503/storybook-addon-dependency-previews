@@ -522,21 +522,11 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(
 			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
 		)
+		if (isSolidProject) logSolidTsxFrameworkNote()
 	} else if (sbDepsConfigResult.kind === 'skipped' && isSolidProject) {
-		// A pre-existing config blocked the write, so the wizard could NOT
-		// auto-persist `tsxFramework: 'solid'`. The existing config may or may not
-		// already carry it (the wizard doesn't parse it), so point the user at
-		// verifying it rather than assuming it's absent. Without the key the
-		// scaffolder defaults to React templates for this Solid project's `.tsx`
-		// files, silently, with no other signal.
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		log(
-			`    Ensure your existing sb-deps.config sets \`tsxFramework: 'solid'\` — without`,
-		)
-		log(
-			`    that key the sb-deps scaffolder emits React (not Solid) templates for .tsx files.`,
-		)
+		logSolidTsxFrameworkNote()
 	}
 
 	rule()
@@ -582,4 +572,22 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		rule()
 		process.exit(1)
 	}
+}
+
+/**
+ * Tell a Solid user to set `tsxFramework` themselves.
+ *
+ * Printed whenever the wizard finished without writing the key — the write
+ * failed, or an existing config blocked it. Either way the key may be missing,
+ * and a missing key is silent: nothing else tells the user their Solid project
+ * is being scaffolded as React. The wizard doesn't read an existing config, so
+ * this asks the user to check rather than claiming the key is absent.
+ */
+function logSolidTsxFrameworkNote() {
+	log(
+		`    Ensure your sb-deps.config sets \`tsxFramework: 'solid'\` — without that key`,
+	)
+	log(
+		`    the sb-deps scaffolder emits React (not Solid) templates for .tsx files.`,
+	)
 }
