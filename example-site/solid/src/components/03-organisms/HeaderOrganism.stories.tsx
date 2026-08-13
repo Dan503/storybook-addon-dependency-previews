@@ -3,7 +3,7 @@ import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { HeaderOrganism } from './HeaderOrganism'
 
 const meta: Meta<typeof HeaderOrganism> = {
-	title: '03 organisms / Header Organism',
+	title: '03 Organisms / Header Organism',
 	component: HeaderOrganism,
 	tags: ['autodocs', 'organism'],
 	parameters: {
