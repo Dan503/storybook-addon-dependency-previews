@@ -11,25 +11,18 @@ export interface PropsForHeroBlockOrganism {
 	children?: JSX.Element
 }
 
-export function HeroBlockOrganism({
-	title,
-	children,
-	imgSrc,
-	altText,
-	tintColor,
-	tintPercent,
-}: PropsForHeroBlockOrganism) {
+export function HeroBlockOrganism(props: PropsForHeroBlockOrganism) {
 	return (
 		<BgImageContainer
 			className="HeroBlockOrganism text-center w-full min-h-100 grid place-items-center border-b-2 border-teal-900"
-			imgSrc={imgSrc}
-			altText={altText}
-			tintColor={tintColor}
-			tintPercent={tintPercent}
+			imgSrc={props.imgSrc}
+			altText={props.altText}
+			tintColor={props.tintColor}
+			tintPercent={props.tintPercent}
 		>
 			<ScreenPaddingAtom padVertical>
-				<h1 class="text-4xl font-bold">{title}</h1>
-				{children}
+				<h1 class="text-4xl font-bold">{props.title}</h1>
+				{props.children}
 			</ScreenPaddingAtom>
 		</BgImageContainer>
 	)

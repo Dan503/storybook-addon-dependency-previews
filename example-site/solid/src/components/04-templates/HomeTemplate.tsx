@@ -10,8 +10,12 @@ export interface PropsForHomeTemplate {
 	featuredMeals: Array<Meal>
 }
 
-export function HomeTemplate({ featuredMeals }: PropsForHomeTemplate) {
-	const [featureMeal, ...otherMeals] = featuredMeals
+export function HomeTemplate(props: PropsForHomeTemplate) {
+	// Functions rather than plain values, so that a change to the meal list
+	// redraws the page. Splitting the list up once here would hold whatever it
+	// held on the first draw.
+	const featureMeal = () => props.featuredMeals[0]
+	const otherMeals = () => props.featuredMeals.slice(1)
 	return (
 		<SiteFrameOrganism>
 			<div class="HomeTemplate">
@@ -27,7 +31,7 @@ export function HomeTemplate({ featuredMeals }: PropsForHomeTemplate) {
 							example site
 						</>
 					}
-					imgSrc={featureMeal.image}
+					imgSrc={featureMeal().image}
 				>
 					<p>
 						This is an example site to demonstrate the dependency preview addon
@@ -37,7 +41,7 @@ export function HomeTemplate({ featuredMeals }: PropsForHomeTemplate) {
 				<ScreenPaddingAtom padVertical>
 					<h2 class="text-2xl font-bold mb-4">Featured meals:</h2>
 					<CardListingOrganism
-						cards={otherMeals.map((c) => ({
+						cards={otherMeals().map((c) => ({
 							title: c.name,
 							description: c.area,
 							imgSrc: c.image,

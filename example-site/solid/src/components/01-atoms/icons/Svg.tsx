@@ -6,10 +6,18 @@ export interface SvgProps extends PropsWithChildren<SvgAttributes> {
 	className?: string
 }
 
-export function Svg({ altText, className, children }: SvgProps) {
+export function Svg(props: SvgProps) {
 	return (
-		<svg {...defaultIconAttributes(altText)} class={className}>
-			{children}
+		<svg
+			{...staticAttrs}
+			role="img"
+			// Set here rather than through a helper, so that a change to the alt
+			// text is drawn. Solid only re-draws what is read inside the markup.
+			aria-label={props.altText ? props.altText : ''}
+			aria-hidden={props.altText ? undefined : true}
+			class={props.className}
+		>
+			{props.children}
 		</svg>
 	)
 }
@@ -24,16 +32,4 @@ const staticAttrs: SvgAttributes = {
 	width: 24,
 	// @ts-ignore
 	focusable: false,
-}
-
-function defaultIconAttributes(altText?: string): SvgAttributes {
-	const dynamicAttrs: SvgAttributes = {
-		role: 'img',
-		'aria-label': altText ? altText : '',
-		'aria-hidden': altText ? undefined : true,
-	}
-	return {
-		...staticAttrs,
-		...dynamicAttrs,
-	}
 }

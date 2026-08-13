@@ -5,13 +5,12 @@ export interface PropsForScreenPaddingAtom {
 	padVertical?: boolean
 }
 
-export function ScreenPaddingAtom({
-	children,
-	padVertical,
-}: PropsForScreenPaddingAtom) {
+export function ScreenPaddingAtom(props: PropsForScreenPaddingAtom) {
 	return (
-		<div class={`ScreenPaddingAtom ${padVertical ? 'p-6' : 'px-6'} w-full`}>
-			{children}
+		<div
+			class={`ScreenPaddingAtom ${props.padVertical ? 'p-6' : 'px-6'} w-full`}
+		>
+			{props.children}
 		</div>
 	)
 }

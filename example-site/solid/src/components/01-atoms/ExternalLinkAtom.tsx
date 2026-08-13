@@ -6,16 +6,16 @@ export interface PropsForExternalLinkAtom {
 	children?: JSX.Element
 }
 
-export function ExternalLinkAtom({ href, children }: PropsForExternalLinkAtom) {
+export function ExternalLinkAtom(props: PropsForExternalLinkAtom) {
 	return (
 		<a
 			class="ExternalLinkAtom inline-flex items-center gap-1 text-teal-700 hover:underline hover:text-teal-900"
 			target="_blank"
 			rel="noopener noreferrer"
-			href={href}
+			href={props.href}
 			title="Opens in new tab"
 		>
-			{children}
+			{props.children}
 			<ExternalLinkIcon />
 		</a>
 	)

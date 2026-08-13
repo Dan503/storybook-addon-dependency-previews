@@ -6,11 +6,11 @@ export interface PropsForSiteFrameOrganism {
 	children?: JSX.Element
 }
 
-export function SiteFrameOrganism({ children }: PropsForSiteFrameOrganism) {
+export function SiteFrameOrganism(props: PropsForSiteFrameOrganism) {
 	return (
 		<div class="SiteFrameOrganism grid grid-rows-[auto_1fr_auto] min-h-full">
 			<HeaderOrganism />
-			<div class="flex-1 grid">{children}</div>
+			<div class="flex-1 grid">{props.children}</div>
 			<FooterOrganism />
 		</div>
 	)

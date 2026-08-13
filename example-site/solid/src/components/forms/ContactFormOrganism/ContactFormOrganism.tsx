@@ -11,22 +11,19 @@ export interface PropsForContactFormOrganism {
 	onSubmit: SubmitHandler<ContactFormSchemaType>
 }
 
-export function ContactFormOrganism({
-	form,
-	onSubmit,
-}: PropsForContactFormOrganism) {
+export function ContactFormOrganism(props: PropsForContactFormOrganism) {
 	return (
 		<div class="grid gap-4">
 			{/* Read inside the markup, not into a variable above it. Checking the
 			form finishes just after the first draw, and Solid only re-draws the
 			parts of the page that read a value from inside the markup. */}
-			<ErrorBlockOrganism errors={getDeepErrors(form)} />
+			<ErrorBlockOrganism errors={getDeepErrors(props.form)} />
 			<Form
 				class="ContactFormOrganism grid gap-4"
-				of={form}
-				onSubmit={onSubmit}
+				of={props.form}
+				onSubmit={props.onSubmit}
 			>
-				<Field of={form} path={['name']}>
+				<Field of={props.form} path={['name']}>
 					{(field) => (
 						<TextFieldMolecule
 							label="Name"
@@ -36,7 +33,7 @@ export function ContactFormOrganism({
 					)}
 				</Field>
 
-				<Field of={form} path={['email']}>
+				<Field of={props.form} path={['email']}>
 					{(field) => (
 						<TextFieldMolecule
 							label="Email"
@@ -46,7 +43,7 @@ export function ContactFormOrganism({
 					)}
 				</Field>
 
-				<Field of={form} path={['message']}>
+				<Field of={props.form} path={['message']}>
 					{(field) => (
 						<TextAreaMolecule
 							label="Message"

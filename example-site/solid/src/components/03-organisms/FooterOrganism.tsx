@@ -4,7 +4,7 @@ export interface PropsForFooterOrganism {
 	children?: JSX.Element
 }
 
-export function FooterOrganism({ children }: PropsForFooterOrganism) {
+export function FooterOrganism(props: PropsForFooterOrganism) {
 	return (
 		<div class="FooterOrganism border-t-2 border-teal-900 bg-teal-200 p-4 text-center text-black">
 			<p>
@@ -18,7 +18,7 @@ export function FooterOrganism({ children }: PropsForFooterOrganism) {
 					TheMealDB.com
 				</a>
 			</p>
-			{children}
+			{props.children}
 		</div>
 	)
 }

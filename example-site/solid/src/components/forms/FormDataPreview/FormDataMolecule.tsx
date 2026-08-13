@@ -9,14 +9,13 @@ interface PropsForFormDataWrapper<
 	children?: JSX.Element
 }
 
-export function FormDataMolecule<TSchema extends FormSchema>({
-	form,
-	children,
-}: PropsForFormDataWrapper<TSchema>) {
+export function FormDataMolecule<TSchema extends FormSchema>(
+	props: PropsForFormDataWrapper<TSchema>,
+) {
 	return (
 		<div class="grid gap-2">
-			{children}
-			<FormDataPreviewAtom form={form} />
+			{props.children}
+			<FormDataPreviewAtom form={props.form} />
 		</div>
 	)
 }
