@@ -1,4 +1,4 @@
-import { Show } from 'solid-js'
+import { createUniqueId, Show } from 'solid-js'
 import { ErrorListMolecule } from '../ErrorMessages/ErrorListMolecule'
 import type { FormSchema, RequiredPath } from '@formisch/solid'
 import type { WithField } from '../FormTypes'
@@ -17,10 +17,9 @@ export function TextAreaMolecule<
 	TSchema extends FormSchema,
 	TPath extends RequiredPath,
 >(props: FieldPropsForTextAreaMolecule<TSchema, TPath>) {
-	// A function rather than a plain value, for the same reason as the errors
-	// below: the label can change, and a value worked out once up here would
-	// keep whatever it held on the first draw.
-	const id = () => `ID-${props.label.replace(/\W/g, '')}`
+	// Built from a counter rather than the label, so that two fields sharing a
+	// label — which the stories for this component do — still get an id each.
+	const id = createUniqueId()
 	// Written as a function so that each use below reads the errors afresh.
 	// Checking the field finishes just after the first draw, and Solid only
 	// re-draws the parts of the page that read a value from inside the markup.
@@ -28,12 +27,12 @@ export function TextAreaMolecule<
 
 	return (
 		<div>
-			<label for={id()} class="block mb-1 w-full">
+			<label for={id} class="block mb-1 w-full">
 				<span class="font-bold text-xl">{props.label}</span>
 				<div class="grid grid-cols-[minmax(0,1fr)]">
 					<textarea
 						{...props.field.props}
-						id={id()}
+						id={id}
 						placeholder={props.placeholder}
 						class={`col-start-1 row-start-1 w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${checkHasErrors() ? 'placeholder-red-900/60' : ''}`}
 					/>
