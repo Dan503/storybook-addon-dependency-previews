@@ -1928,10 +1928,11 @@ function ensureStoryFor(
 
 /**
  * Work out the component a created story file belongs to, and which framework's
- * scaffolders to use. `.tsx` → React, `.svelte` → Svelte, `.ts` → React, Vue,
- * or Angular (disambiguated in `resolveTsStoryComponent`). Any extension with
- * no entry in `STORY_COMPONENT_RESOLVERS` returns `null` — not something we
- * scaffold.
+ * scaffolders to use. `.tsx` → React or Solid, `.svelte` → Svelte, `.ts` →
+ * React, Solid, Vue, or Angular (disambiguated in `resolveTsStoryComponent`).
+ * React and Solid share the `.tsx` route and are told apart by `tsxFramework`.
+ * Any extension with no entry in `STORY_COMPONENT_RESOLVERS` returns `null` —
+ * not something we scaffold.
  */
 function resolveComponentForStory(
 	absStoryPath: string,
@@ -2024,9 +2025,8 @@ const STORY_COMPONENT_RESOLVERS: Record<
  * extension, and for `.ts` the project's own framework has to be one a `.ts`
  * story can name. Two kinds of project fail that: a Svelte one, where a
  * sibling can only come from another framework and there is no Svelte spelling
- * to fall back to; and one whose framework was never recognised, which is
- * every framework this tool has no support for — Solid Start among them, the
- * one this whole change was reported from. A `.ts` story in either produces
+ * to fall back to; and one whose framework was never recognised, which is any
+ * framework this tool has no support for. A `.ts` story in either produces
  * nothing whatever it is called, so saying its name was the reason would be
  * untrue.
  *
@@ -2061,12 +2061,13 @@ function getComponentForStoryByExtension(
 }
 
 /**
- * A `.stories.ts` story can be React, Vue, or Angular — all three use `.ts`
- * story files (React's scaffolded template is JSX-free, so it's valid as `.ts`
- * even though React stories are `.tsx` by convention). Prefer an existing
- * sibling component to decide (`<base>.tsx` → React, `<base>.vue` → Vue,
- * `<base>.component.ts` → Angular); with none present, fall back to the
- * project's detected framework. Svelte is intentionally excluded: its story
+ * A `.stories.ts` story can be React, Solid, Vue, or Angular — all of them use
+ * `.ts` story files (the React and Solid scaffolded templates are JSX-free, so
+ * they're valid as `.ts` even though both write stories as `.tsx` by
+ * convention). Prefer an existing sibling component to decide
+ * (`<base>.tsx` → React or Solid, told apart by `tsxFramework`;
+ * `<base>.vue` → Vue; `<base>.component.ts` → Angular); with none present,
+ * fall back to the project's detected framework. Svelte is intentionally excluded: its story
  * template is `.svelte`-specific, so a `.ts` Svelte story can't be scaffolded
  * from it.
  */
