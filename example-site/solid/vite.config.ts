@@ -13,9 +13,29 @@ const dirname =
 		? __dirname
 		: path.dirname(fileURLToPath(import.meta.url))
 
+// Storybook reads this same file, so without this the Solid Start and Nitro
+// plugins join its build as well as the site's. They are built to take a whole
+// build over — they replace the step that writes the output and choose where it
+// goes — so the built Storybook ends up shaped by plugins that have nothing to
+// do with it.
+//
+// Which command is running is read from the path of the program node was told
+// to run, split into its parts. Asking whether that path merely contains
+// "storybook" does not work here: this repository is itself called
+// storybook-addon-dependency-previews, so every path inside it contains the
+// word, and the site's own build would be treated as Storybook's. A part that
+// is exactly "storybook" is the folder Storybook's own program lives in, which
+// the site's build does not go through.
+const commandParts = (process.argv[1] ?? '').split(/[\\/]/)
+const isStorybook = commandParts.includes('storybook')
+
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-	plugins: [tailwind(), solidStart(), nitro({ preset: 'netlify' })],
+	plugins: [
+		tailwind(),
+		!isStorybook && solidStart(),
+		!isStorybook && nitro({ preset: 'netlify' }),
+	].filter(Boolean),
 	test: {
 		projects: [
 			{
