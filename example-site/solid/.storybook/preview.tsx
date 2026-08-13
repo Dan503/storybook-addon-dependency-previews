@@ -30,10 +30,9 @@ const preview: Preview = {
 		dependencyPreviews: {
 			dependenciesJson,
 			projectRootPath: new URL('..', import.meta.url).pathname,
-			storyModules: import.meta.glob(
-				'/src/**/*.stories.{tsx,ts,jsx,js}',
-				{ eager: false },
-			),
+			storyModules: import.meta.glob('/src/**/*.stories.{tsx,ts,jsx,js}', {
+				eager: false,
+			}),
 			sourceRootUrl:
 				'https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site/solid',
 		},

@@ -18,9 +18,7 @@ export function ContactTemplate() {
 				<ContentRestraintAtom padVertical>
 					<div class="ContactTemplate grid gap-4">
 						<h1 class="text-3xl font-bold">Contact Us</h1>
-						<IconTextMolecule Icon={PhoneIcon}>
-							0412 345 678
-						</IconTextMolecule>
+						<IconTextMolecule Icon={PhoneIcon}>0412 345 678</IconTextMolecule>
 						<IconTextMolecule Icon={MapPinIcon}>
 							123 Main St, Anytown, Australia
 						</IconTextMolecule>
@@ -28,15 +26,13 @@ export function ContactTemplate() {
 							<div class="grid gap-4">
 								<p>Thank you for your message!</p>
 								<p>
-									This website is just a demo so your message
-									was not sent anywhere.
+									This website is just a demo so your message was not sent
+									anywhere.
 								</p>
 								<p>Here is what you submitted:</p>
 								<FormDataPreviewAtom form={contactForm} />
 								<div class="flex justify-start">
-									<ButtonAtom
-										onClick={() => setIsSubmitted(false)}
-									>
+									<ButtonAtom onClick={() => setIsSubmitted(false)}>
 										Back to the contact form
 									</ButtonAtom>
 								</div>

@@ -14,7 +14,5 @@ export function createContactForm(validate: ValidationMode = 'submit') {
 }
 
 export function onContactFormSubmit(output: ContactFormOutputData) {
-	alert(
-		'Form submitted with these values:\n' + JSON.stringify(output, null, 2),
-	)
+	alert('Form submitted with these values:\n' + JSON.stringify(output, null, 2))
 }

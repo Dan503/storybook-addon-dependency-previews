@@ -12,12 +12,7 @@ export function HeaderOrganism() {
 						href={routePaths.home}
 						class="flex items-center gap-2"
 					>
-						<img
-							src="/simplified-logo.png"
-							alt="Logo"
-							height={50}
-							width={50}
-						/>
+						<img src="/simplified-logo.png" alt="Logo" height={50} width={50} />
 						<p class="font-extrabold text-3xl">The Meal Place</p>
 					</InternalLinkAtom>
 					<MainNavMolecule />

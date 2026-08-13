@@ -30,8 +30,8 @@ export function HomeTemplate({ featuredMeals }: PropsForHomeTemplate) {
 					imgSrc={featureMeal.image}
 				>
 					<p>
-						This is an example site to demonstrate the dependency
-						preview addon in a realistic environment.
+						This is an example site to demonstrate the dependency preview addon
+						in a realistic environment.
 					</p>
 				</HeroBlockOrganism>
 				<ScreenPaddingAtom padVertical>

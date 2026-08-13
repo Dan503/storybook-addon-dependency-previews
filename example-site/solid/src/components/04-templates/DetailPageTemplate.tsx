@@ -15,23 +15,20 @@ export interface PropsForDetailPageTemplate {
 // is opened by moving to it rather than by loading the address directly.
 export function DetailPageTemplate(props: PropsForDetailPageTemplate) {
 	return (
-		<Show when={!props.isLoading && props.meal} fallback={<div>Loading...</div>}>
+		<Show
+			when={!props.isLoading && props.meal}
+			fallback={<div>Loading...</div>}
+		>
 			{(meal) => (
 				<SiteFrameOrganism>
 					<ScreenPaddingAtom padVertical>
 						<h1 class="text-3xl font-bold mb-5">{meal().name}</h1>
 						<div class="grid gap-4 lg:grid-cols-[2fr_30rem]">
 							<div class="grid gap-4 sm:grid-cols-[1fr_2fr]">
-								<img
-									src={meal().image}
-									alt={meal().name}
-									class="mt-2"
-								/>
+								<img src={meal().image} alt={meal().name} class="mt-2" />
 								<div>
 									<h2 class="text-2xl font-bold">Recipe</h2>
-									<p class="whitespace-pre-wrap">
-										{meal().instructions}
-									</p>
+									<p class="whitespace-pre-wrap">{meal().instructions}</p>
 								</div>
 							</div>
 							<div class="grid gap-4 grid-rows-[auto_1fr] items-start">
