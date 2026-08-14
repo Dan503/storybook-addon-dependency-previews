@@ -50,10 +50,12 @@ function getPiecesWithValues(hrefParams?: HrefParams): Array<[string, string]> {
  * Every address on this site marks a changing piece as `[name]`, which is the only form this reads.
  * None of the other forms SvelteKit can write would work here. A piece that may be left out
  * (`[[name]]`) is the dangerous one, because the brackets inside it match and it is read as a piece
- * that is required. One that swallows the rest of the address (`[...name]`), one carrying a test to
- * pass (`[name=test]`), and an encoded character (`[x+2b]`) are each read as no piece at all, so
- * supplying the piece they do take is refused as one the address has no place for. Teaching this
- * about a form is what has to happen before that form can be used on this site.
+ * that is required. One that swallows the rest of the address (`[...name]`) and one carrying a test
+ * to pass (`[name=test]`) are read as no piece at all, so supplying the piece they do take is
+ * refused as one the address has no place for. An encoded character (`[x+2b]`, meaning a literal
+ * `+`) takes no piece in the first place, so there is nothing for either check to refuse — but the
+ * brackets are no better understood, they are simply left alone. Teaching this about a form is what
+ * has to happen before that form can be used on this site.
  */
 export function getFullAddress(href: RouteId, hrefParams?: HrefParams): ResolvedPathname {
 	const namesNeeded = [...href.matchAll(changingPiece)].map(([, name]) => name);
@@ -121,11 +123,9 @@ function assertNeededPiecesAreGiven(
 				`The address "${href}" was given an empty [${name}], which would link to the wrong page.`
 			);
 		}
-		// A name carrying no value does not count as given. Listing it would point the reader at a
-		// name that is already there, rather than at the value.
-		const namesGiven = [...piecesGiven]
-			.filter(([, givenValue]) => givenValue)
-			.map(([givenName]) => givenName);
+		// Every name still here was written by the caller, so all of them are listed — including one
+		// left empty, since the name is what the caller typed and is what they will go looking for.
+		const namesGiven = [...piecesGiven.keys()];
 		const whatWasGiven = namesGiven.length
 			? `only these were given: ${namesGiven.join(', ')}`
 			: 'none were given';
