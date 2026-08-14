@@ -2,6 +2,16 @@
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
+## Type checking
+
+```bash
+pnpm typecheck
+```
+
+This runs `vue-tsc` over `.nuxt/tsconfig.app.json`, which covers the site's own code: everything under `app/`, plus every component those pages import. Story files are imported by nothing, so they are not covered — Storybook is what exercises those.
+
+It deliberately does not use `nuxt typecheck`, which would also check `nuxt.config.ts`. Two copies of Vite end up in this workspace's dependencies, and the config file sits on the seam between them: `@tailwindcss/vite` resolves the newer one while Nuxt's own config types resolve the older one, so handing `tailwindcss()` to `vite.plugins` reports a mismatch between two structurally identical types. Nothing is actually wrong with the config, and putting it right would mean settling the whole workspace on one Vite version.
+
 ## Setup
 
 Make sure to install dependencies:
