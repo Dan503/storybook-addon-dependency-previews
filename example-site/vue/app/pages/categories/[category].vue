@@ -5,12 +5,12 @@ import type { PropsForCardMolecule } from '../../../components/listings/card/Car
 import { fetchMealsByCategory } from 'example-site-shared/utils/mealDbApiUtils'
 
 const route = useRoute()
-const categoryName = computed(() => String(route.params.categoryName))
+const category = computed(() => String(route.params.category))
 
 const { data: mealList } = await useAsyncData(
-	`category-${categoryName.value}`,
-	() => fetchMealsByCategory(categoryName.value),
-	{ watch: [categoryName] },
+	`category-${category.value}`,
+	() => fetchMealsByCategory(category.value),
+	{ watch: [category] },
 )
 
 const cardList = computed<Array<PropsForCardMolecule>>(() =>
@@ -22,7 +22,7 @@ const cardList = computed<Array<PropsForCardMolecule>>(() =>
 	})),
 )
 
-useHead({ title: () => `${categoryName.value} Meals` })
+useHead({ title: () => `${category.value} Meals` })
 useSeoMeta({
 	description:
 		'Explore the delicious meals in this category! Click on any meal to discover its recipe, ingredients, and cooking instructions.',
