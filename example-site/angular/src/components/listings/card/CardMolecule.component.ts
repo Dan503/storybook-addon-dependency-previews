@@ -79,14 +79,20 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
  * `track`.
  *
  * The cards in a list share one address and differ only in its changing piece, so
- * that piece is what identifies a card. A title cannot do the job — nothing stops
- * two meals or two categories being called the same thing, and repeated values
- * make Angular reuse the wrong card when the list changes. A card with no changing
- * piece falls back to its address, which is then the only thing there is to go on.
+ * that piece is what identifies a card. Repeated values make Angular reuse the
+ * wrong card when a list changes, and a meal's title is a weaker thing to go on
+ * than its id — two meals can be called the same thing, while their ids differ.
+ * For a category the piece is the category's name, so that list is exactly as well
+ * off as it was; what it gains is that both lists now follow one rule. A card with
+ * no changing piece falls back to its address, which is then all there is.
  *
  * @param card - the card being drawn
  */
 export function getCardTrackValue(card: PropsForCardMolecule): string {
-	const { mealId, category } = card.hrefParams ?? {};
-	return mealId ?? category ?? card.href;
+	// Whichever piece is present is the identifying one, since an address takes at
+	// most one — so this does not name the pieces, and picks up any later one for
+	// free. Naming them here would leave a new piece falling back to the address,
+	// which is the same string for every card in a list.
+	const [pieceValue] = Object.values(card.hrefParams ?? {});
+	return pieceValue ?? card.href;
 }

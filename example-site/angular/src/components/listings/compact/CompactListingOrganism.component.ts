@@ -9,8 +9,11 @@ import {
 	host: { '[class]': '["CompactListingOrganism", class()].join(" ")' },
 	template: `
 		<ul class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
-			<!-- Tracked by position: an item's address is allowed to be missing, and
-			its title may be too, so neither can be relied on to differ. -->
+			<!-- Tracked by position, which for this list is the only thing that is
+			sure to differ. An item's address is allowed to be missing and its title
+			may be too, and the one list the site draws here — a meal's ingredients —
+			repeats a name whenever a recipe uses something twice, as four of the
+			fifteen meals in the example data do. -->
 			@for (card of items(); track $index) {
 				<li>
 					<compact-listing-molecule
