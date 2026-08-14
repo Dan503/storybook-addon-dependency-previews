@@ -48,14 +48,15 @@ function getPiecesWithValues(hrefParams?: HrefParams): Array<[string, string]> {
  * SvelteKit unescapes it again before a page reads it back, so a page needs to do nothing itself.
  *
  * Every address on this site marks a changing piece as `[name]`, which is the only form this reads.
- * None of the other forms SvelteKit can write would work here. A piece that may be left out
- * (`[[name]]`) is the dangerous one, because the brackets inside it match and it is read as a piece
- * that is required. One that swallows the rest of the address (`[...name]`) and one carrying a test
- * to pass (`[name=test]`) are read as no piece at all, so supplying the piece they do take is
- * refused as one the address has no place for. An encoded character (`[x+2b]`, meaning a literal
- * `+`) takes no piece in the first place, so there is nothing for either check to refuse — but the
- * brackets are no better understood, they are simply left alone. Teaching this about a form is what
- * has to happen before that form can be used on this site.
+ * None of the other forms SvelteKit can write would work here, and the worst of them says nothing.
+ * An encoded character (`[x+2b]`, meaning a literal `+`) takes no piece, so neither check has
+ * anything to refuse, and the brackets are left sitting in the address — while SvelteKit serves
+ * that page at the decoded character instead. The link then points at a path the site never serves,
+ * quietly, which is what this helper exists to prevent. The rest are noisy by comparison: a piece
+ * that may be left out (`[[name]]`) is read as one that is required, so leaving it out is refused
+ * even though the address allows it, and one that swallows the rest (`[...name]`) or carries a test
+ * to pass (`[name=test]`) has its piece refused as one the address has no place for. Teaching this
+ * about a form is what has to happen before that form can be used on this site.
  *
  * `example-site-shared` exports a `getFullAddress` of its own, deliberately sharing the name so the
  * sites read alike — nothing imports both, so there is no ambiguity at a call site. That one serves
