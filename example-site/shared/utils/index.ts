@@ -14,3 +14,11 @@ export {
 	type MealDBResponse,
 	type MealRawData,
 } from './mealDbApiUtils'
+
+export {
+	getFullAddress,
+	type HrefParamName,
+	type HrefParams,
+	type LinkAddress,
+	type RouteAddress,
+} from './routeAddressUtils'

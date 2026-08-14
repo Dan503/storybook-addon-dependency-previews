@@ -2,7 +2,6 @@ import { Title } from '@solidjs/meta'
 import { createAsync, query, type RouteDefinition } from '@solidjs/router'
 import { fetchCategories } from 'example-site-shared/utils'
 import { CardListTemplate } from '../../components/04-templates/CardListTemplate'
-import { routePaths } from '../../routePaths'
 
 const getCategories = query(fetchCategories, 'categories')
 
@@ -23,7 +22,8 @@ export default function Categories() {
 					title: category.strCategory,
 					description: category.strCategoryDescription,
 					imgSrc: category.strCategoryThumb,
-					href: routePaths.getCategoryPath(category.strCategory),
+					href: '/categories/$category',
+					hrefParams: { category: category.strCategory },
 				}))}
 			/>
 		</>

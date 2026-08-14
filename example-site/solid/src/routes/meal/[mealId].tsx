@@ -20,6 +20,10 @@ export const route = {
 } satisfies RouteDefinition
 
 export default function MealDetail() {
+	// The id is not unescaped here. That is safe while meal ids are digits from
+	// the meal database, because escaping leaves those alone. An id that ever
+	// needed escaping would have to be unescaped here to match the link that
+	// produced it.
 	const params = useParams<{ mealId: string }>()
 	// `deferStream` holds the page back on the server until the meal has
 	// arrived, so the browser tab title is the meal's name on the first view

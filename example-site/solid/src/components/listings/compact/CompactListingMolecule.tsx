@@ -1,14 +1,19 @@
 import { Show } from 'solid-js'
+import type { LinkAddress } from 'example-site-shared/utils'
 import { InternalLinkAtom } from '../../01-atoms/InternalLinkAtom'
-import type { RoutePath } from '../../../routePaths'
 
-export interface PropsForCompactListingMolecule {
+interface ContentForCompactListing {
 	imageSrc: string
 	title: string
 	description: string
-	/** An address inside this site. Outside links belong in `ExternalLinkAtom`. */
-	href?: RoutePath
 }
+
+/**
+ * The address is optional — without one the item draws as plain content rather
+ * than a link. Addresses outside this site belong in `ExternalLinkAtom`.
+ */
+export type PropsForCompactListingMolecule = ContentForCompactListing &
+	Partial<LinkAddress>
 
 export function CompactListingMolecule(props: PropsForCompactListingMolecule) {
 	// A function, so that both branches below draw it from the current values
@@ -26,15 +31,21 @@ export function CompactListingMolecule(props: PropsForCompactListingMolecule) {
 	return (
 		<Show when={props.href} fallback={itemInternals()}>
 			{(href) => (
-				<InternalLinkAtom href={href()}>{itemInternals()}</InternalLinkAtom>
+				<InternalLinkAtom href={href()} hrefParams={props.hrefParams}>
+					{itemInternals()}
+				</InternalLinkAtom>
 			)}
 		</Show>
 	)
 }
 
-// Takes everything but the address, which it does not draw. The wider type
-// would let a caller pass one and see nothing happen.
-function ItemInternals(props: Omit<PropsForCompactListingMolecule, 'href'>) {
+/**
+ * Draws the picture and words of one item, without the link around them.
+ *
+ * Takes everything but the address, which it does not draw. The wider type
+ * would let a caller pass one and see nothing happen.
+ */
+function ItemInternals(props: ContentForCompactListing) {
 	return (
 		<div class="grid grid-cols-[auto_1fr] gap-4 items-center">
 			<img src={props.imageSrc} alt="" class="h-15" />
