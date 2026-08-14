@@ -15,6 +15,11 @@ const blankRouteComponent = { template: '<div />' }
 
 const router = createRouter({
 	history: createMemoryHistory(),
+	// Keep this list in step with `RouteAddress` in `example-site-shared/utils`,
+	// which is what the site's own links are checked against. Nothing enforces
+	// the pairing, so an address added there needs adding to this list too.
+	// Written out rather than caught by a catch-all, so a story pointing
+	// somewhere the site does not have still shows up as unmatched.
 	routes: [
 		{ path: '/', component: blankRouteComponent },
 		{ path: '/categories', component: blankRouteComponent },

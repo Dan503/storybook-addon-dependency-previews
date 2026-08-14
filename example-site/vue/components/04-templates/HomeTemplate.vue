@@ -6,7 +6,7 @@ import HeroBlockOrganism from '../03-organisms/HeroBlockOrganism.vue'
 import ExternalLinkAtom from '../01-atoms/ExternalLinkAtom.vue'
 import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.vue'
 import CardListingOrganism from '../listings/card/CardListingOrganism.vue'
-import type { PropsForCardMolecule } from '../listings/card/CardMolecule.vue'
+import { getMealCard } from '../listings/card/CardMolecule.vue'
 
 export interface PropsForHomeTemplate {
 	featuredMeals: Array<Meal>
@@ -15,17 +15,7 @@ export interface PropsForHomeTemplate {
 const { featuredMeals } = defineProps<PropsForHomeTemplate>()
 
 const featureMeal = computed(() => featuredMeals[0])
-const cards = computed(() =>
-	featuredMeals.slice(1).map(
-		(meal): PropsForCardMolecule => ({
-			title: meal.name,
-			description: meal.area,
-			imgSrc: meal.image,
-			href: '/meal/$mealId',
-			hrefParams: { mealId: meal.id },
-		}),
-	),
-)
+const cards = computed(() => featuredMeals.slice(1).map(getMealCard))
 </script>
 
 <template>

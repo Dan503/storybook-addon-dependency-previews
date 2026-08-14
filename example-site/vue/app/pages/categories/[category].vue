@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import CardListTemplate from '../../../components/04-templates/CardListTemplate.vue'
-import type { PropsForCardMolecule } from '../../../components/listings/card/CardMolecule.vue'
+import { getMealCard } from '../../../components/listings/card/CardMolecule.vue'
 import { fetchMealsByCategory } from 'example-site-shared/utils/mealDbApiUtils'
 
 const route = useRoute()
@@ -13,15 +13,7 @@ const { data: mealList } = await useAsyncData(
 	{ watch: [category] },
 )
 
-const cardList = computed<Array<PropsForCardMolecule>>(() =>
-	(mealList.value ?? []).map((meal) => ({
-		title: meal.name,
-		description: meal.area,
-		imgSrc: meal.image,
-		href: '/meal/$mealId',
-		hrefParams: { mealId: meal.id },
-	})),
-)
+const cardList = computed(() => (mealList.value ?? []).map(getMealCard))
 
 useHead({ title: () => `${category.value} Meals` })
 useSeoMeta({

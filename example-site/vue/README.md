@@ -8,9 +8,9 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 pnpm typecheck
 ```
 
-This runs `vue-tsc` over `.nuxt/tsconfig.app.json`, which covers the site's own code: everything under `app/`, plus every component those pages reach through their imports. A few components are only ever used by a story — the three story decorators and `ChildContentAtom.vue` — so those are left out along with the story files themselves. Storybook is what exercises them.
+This runs `vue-tsc` over `.nuxt/tsconfig.app.json`, which covers the site's own code: everything under `app/`, plus every component those pages reach through their imports. Anything reachable only from a story is left out, along with the story files themselves — Storybook is what exercises those.
 
-It deliberately does not use `nuxt typecheck`, which would also check `nuxt.config.ts` and report an error there that says nothing about the config. This workspace ends up with more than one copy of Vite installed, and that file is where two of them meet: `@tailwindcss/vite` is built against a newer copy than the one Nuxt's own config types are built against, so handing `tailwindcss()` to `vite.plugins` looks like a mismatch even though the two types are identical. Putting it right would mean settling the whole workspace on one Vite version, which is a change of its own.
+It deliberately does not use `nuxt typecheck`, which would also check `nuxt.config.ts` and report an error there that says nothing about the config being wrong. This workspace ends up with more than one copy of Vite installed, and that file is where two of them meet: `@tailwindcss/vite` is built against a newer copy than the one Nuxt's own config types are built against, so handing `tailwindcss()` to `vite.plugins` is reported as a type mismatch. The two really do differ — each Vite carries its own copy of Rollup, and the newer Rollup added a field to the shape describing a module — but nothing about it stops the config working. Putting it right would mean settling the whole workspace on one Vite version, which is a change of its own.
 
 ## Setup
 
