@@ -1,5 +1,6 @@
 import { A, type AnchorProps } from '@solidjs/router'
-import type { RoutePath } from '../../routePaths'
+import { splitProps } from 'solid-js'
+import { getFullAddress, type LinkAddress } from 'example-site-shared/utils'
 
 /**
  * A link to a page inside this site. Pairs with `ExternalLinkAtom`, which is
@@ -8,13 +9,16 @@ import type { RoutePath } from '../../routePaths'
  * Solid Start's own link takes any text as its address, so every internal link
  * goes through this one instead: it only accepts an address the site actually
  * has, which means a misspelt or wrong-shaped address fails the type check.
- * Everything else Solid Start's link accepts — `class`, `activeClass`, `end`
- * and the rest — is passed straight through.
+ * An address with a `$name` piece in it needs that piece supplied as
+ * `hrefParams`, and this component fills it in. Everything else Solid Start's
+ * link accepts — `class`, `activeClass`, `end` and the rest — is passed
+ * straight through.
  */
-export interface PropsForInternalLinkAtom extends Omit<AnchorProps, 'href'> {
-	href: RoutePath
-}
+export type PropsForInternalLinkAtom = Omit<AnchorProps, 'href'> & LinkAddress
 
 export function InternalLinkAtom(props: PropsForInternalLinkAtom) {
-	return <A {...props} />
+	// Held back from the anchor: `hrefParams` is not an anchor attribute, and
+	// `href` is replaced by the finished address rather than passed on.
+	const [linkAddress, anchorProps] = splitProps(props, ['href', 'hrefParams'])
+	return <A {...anchorProps} href={getFullAddress(linkAddress)} />
 }
