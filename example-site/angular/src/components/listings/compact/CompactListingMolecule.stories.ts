@@ -17,6 +17,7 @@ export default meta;
 
 type Story = StoryObj<CompactListingMoleculeComponent>;
 
+/** No address, so the row draws as plain content rather than as a link. */
 export const Primary: Story = {
 	args: {
 		title: 'Title of the listing',
@@ -25,7 +26,10 @@ export const Primary: Story = {
 	},
 };
 
-/** A changing address, so the story also shows its piece being filled in. */
+/**
+ * Given an address, the whole row becomes a link. The address used here is one
+ * with a changing piece, so the row also shows that piece being filled in.
+ */
 export const WithLink: Story = {
 	args: {
 		title: 'Title of the listing',

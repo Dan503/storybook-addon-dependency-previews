@@ -40,9 +40,9 @@ export class CardMoleculeComponent {
 	);
 }
 
-// The address and its pieces are taken from the shared type rather than read back
-// off the inputs above, so that the pieces stay optional — read off the inputs
-// they would become something every card has to spell out, even the cards whose
+// The address and its pieces come from the shared type rather than being read back
+// off the inputs above, which keeps the pieces optional. Read off the inputs they
+// would come out as something every card has to spell out, even a card whose
 // address has no changing piece in it.
 export type PropsForCardMolecule = AngularComponentProps<
 	CardMoleculeComponent,

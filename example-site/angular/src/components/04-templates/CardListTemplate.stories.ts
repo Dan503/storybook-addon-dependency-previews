@@ -8,7 +8,7 @@ import type { PropsForCardMolecule } from '../listings/card/CardMolecule.compone
 // The shared card data writes its address inside a `.map`, where TypeScript widens
 // it to plain text, so the narrower prop no longer accepts it as it stands. The
 // card listing story restates its type the same way for the same data.
-const mealCards = mealCardList as Array<PropsForCardMolecule>;
+const mealCardsWithSharedAddress = mealCardList as Array<PropsForCardMolecule>;
 
 const meta: Meta<CardListTemplateComponent> = {
 	title: '04 Templates / Card List Template',
@@ -30,7 +30,7 @@ export const GridView: Story = {
 		title: 'Chicken Meals',
 		introText:
 			'Discover our delicious chicken meals, crafted with fresh ingredients and bursting with flavor. Perfect for any occasion, our chicken dishes are sure to satisfy your cravings.',
-		cardList: mealCards,
+		cardList: mealCardsWithSharedAddress,
 	},
 };
 
@@ -39,7 +39,7 @@ export const ListView: Story = {
 		title: 'Chicken Meals',
 		introText:
 			'Discover our delicious chicken meals, crafted with fresh ingredients and bursting with flavor. Perfect for any occasion, our chicken dishes are sure to satisfy your cravings.',
-		cardList: mealCards,
+		cardList: mealCardsWithSharedAddress,
 		view: 'list',
 	},
 };
