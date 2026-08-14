@@ -28,3 +28,13 @@
 >
 	<p>Listings / Compact / Compact Listing Molecule</p>
 </Story>
+
+<Story
+	name="Links to a page"
+	args={{
+		title: exampleIngredient.ingredient,
+		imageSrc: exampleIngredient.imageUrl.small,
+		description: exampleIngredient.amount,
+		href: '/'
+	} satisfies Args}
+/>

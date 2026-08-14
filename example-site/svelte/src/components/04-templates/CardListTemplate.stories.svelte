@@ -4,6 +4,18 @@
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { categoryCardList, mealCardList } from 'example-site-shared/data';
 
+	// The shared example cards mark a changing piece the way the React site's router does
+	// (`$category`, `$mealId`). Swap in the way SvelteKit marks it, so each address is one this
+	// site has.
+	const svelteCategoryCardList = categoryCardList.map((card) => ({
+		...card,
+		href: '/categories/[category]' as const
+	}));
+	const svelteMealCardList = mealCardList.map((card) => ({
+		...card,
+		href: '/meal/[mealId]' as const
+	}));
+
 	const { Story } = defineMeta({
 		title: '04 Templates / Card List Template',
 		component: CardListTemplate,
@@ -16,8 +28,8 @@
 			// Use mapping to prevent large data from being serialized into URL
 			cardList: {
 				mapping: {
-					categories: categoryCardList,
-					meals: mealCardList
+					categories: svelteCategoryCardList,
+					meals: svelteMealCardList
 				},
 				control: {
 					type: 'select'
