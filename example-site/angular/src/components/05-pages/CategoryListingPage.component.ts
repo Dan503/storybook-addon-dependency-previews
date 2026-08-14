@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CardListTemplateComponent } from '../04-templates/CardListTemplate.component';
-import type { PropsForCardMolecule } from '../listings/card/CardMolecule.component';
+import { getMealCard, type PropsForCardMolecule } from '../listings/card/CardMolecule.component';
 import type { Meal } from 'example-site-shared/data';
 import { fetchMealsByCategory } from 'example-site-shared/utils/mealDbApiUtils';
 
@@ -23,15 +23,6 @@ export class CategoryListingPageComponent {
 		const category: string = this.route.snapshot.params['category'];
 		this.title.set(category);
 		const mealsData: Meal[] = await fetchMealsByCategory(category);
-		const mealsForCard: PropsForCardMolecule[] = mealsData.map((meal) => {
-			return {
-				title: meal.name,
-				href: '/meal/$mealId',
-				hrefParams: { mealId: meal.id },
-				imgSrc: meal.image,
-				description: meal.area,
-			} satisfies PropsForCardMolecule;
-		});
-		this.meals.set(mealsForCard);
+		this.meals.set(mealsData.map(getMealCard));
 	}
 }

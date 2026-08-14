@@ -5,7 +5,7 @@ import { ExternalLinkAtomComponent } from '../01-atoms/ExternalLinkAtom.componen
 import { ScreenPaddingAtomComponent } from '../01-atoms/ScreenPaddingAtom.component';
 import { CardListingOrganismComponent } from '../listings/card/CardListingOrganism.component';
 import type { Meal } from 'example-site-shared/data';
-import type { PropsForCardMolecule } from '../listings/card/CardMolecule.component';
+import { getMealCard } from '../listings/card/CardMolecule.component';
 
 @Component({
 	selector: 'home-template',
@@ -50,16 +50,5 @@ import type { PropsForCardMolecule } from '../listings/card/CardMolecule.compone
 export class HomeTemplateComponent {
 	class = input<string>('');
 	featuredMeals = input<Array<Meal>>([]);
-	protected allMeals = computed(() =>
-		this.featuredMeals().map(
-			(x) =>
-				({
-					title: x.name,
-					description: x.area,
-					imgSrc: x.image,
-					href: '/meal/$mealId',
-					hrefParams: { mealId: x.id },
-				}) satisfies PropsForCardMolecule,
-		),
-	);
+	protected allMeals = computed(() => this.featuredMeals().map(getMealCard));
 }

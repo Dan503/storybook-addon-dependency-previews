@@ -6,9 +6,14 @@ import { mealCardList } from 'example-site-shared/data';
 import type { PropsForCardMolecule } from '../listings/card/CardMolecule.component';
 
 // The shared card data writes its address inside a `.map`, where TypeScript widens
-// it to plain text, so the narrower prop no longer accepts it as it stands. The
-// card listing story restates its type the same way for the same data.
-const mealCardsWithSharedAddress = mealCardList as Array<PropsForCardMolecule>;
+// it to plain text, so the narrower prop no longer accepts it as it stands. Naming
+// the address again here narrows it back to one of the shared addresses, and every
+// other field stays checked against the card's own props — which a type assertion
+// over the whole array would have switched off.
+const mealCardsWithSharedAddress: Array<PropsForCardMolecule> = mealCardList.map((card) => ({
+	...card,
+	href: '/meal/$mealId',
+}));
 
 const meta: Meta<CardListTemplateComponent> = {
 	title: '04 Templates / Card List Template',
