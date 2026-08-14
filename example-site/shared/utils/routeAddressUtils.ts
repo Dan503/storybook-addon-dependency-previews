@@ -94,6 +94,11 @@ export function getFullAddress({ href, hrefParams }: LinkAddress): string {
  * Says why a changing piece could not be used, for the error `getFullAddress`
  * throws. The name being present but empty is worth telling apart from it being
  * absent, because the two are fixed in different places.
+ *
+ * @param href - the address being built, quoted back in the message
+ * @param marker - the piece as it appears in the address, like `$mealId`
+ * @param pieceName - the same piece without the `$`, like `mealId`
+ * @param pieceValues - the pieces the caller passed, by name
  */
 function getUnusablePieceMessage(
 	href: string,
@@ -101,11 +106,15 @@ function getUnusablePieceMessage(
 	pieceName: string,
 	pieceValues: Map<string, string>,
 ): string {
-	const hasEmptyValue = pieceValues.has(pieceName)
-	if (hasEmptyValue) {
+	const isPieceBlank = pieceValues.get(pieceName) === ''
+	if (isPieceBlank) {
 		return `The address "${href}" was given an empty ${marker}, which would link to the wrong page.`
 	}
-	const namesGiven = [...pieceValues.keys()]
+	// A name carrying no value does not count as given. Listing it would point
+	// the reader at a name that is already there, rather than at the value.
+	const namesGiven = [...pieceValues]
+		.filter(([, pieceValue]) => pieceValue)
+		.map(([name]) => name)
 	const whatWasGiven = namesGiven.length
 		? `only these were given: ${namesGiven.join(', ')}`
 		: 'none were given'

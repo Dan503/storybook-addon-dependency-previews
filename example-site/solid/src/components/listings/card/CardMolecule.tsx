@@ -14,6 +14,8 @@ export type PropsForCardMolecule = {
  * Both lists that show meals — the featured ones on the home page and the ones
  * in a category — draw the same card from the same fields, so they share this
  * rather than each writing it out.
+ *
+ * @param meal - the meal the card stands for
  */
 export function getMealCard(meal: Meal): PropsForCardMolecule {
 	return {
