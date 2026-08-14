@@ -56,6 +56,12 @@ function getPiecesWithValues(hrefParams?: HrefParams): Array<[string, string]> {
  * `+`) takes no piece in the first place, so there is nothing for either check to refuse — but the
  * brackets are no better understood, they are simply left alone. Teaching this about a form is what
  * has to happen before that form can be used on this site.
+ *
+ * `example-site-shared` exports a `getFullAddress` of its own, deliberately sharing the name so the
+ * sites read alike — nothing imports both, so there is no ambiguity at a call site. That one serves
+ * the sites whose framework generates no address list, from a list written out by hand which marks
+ * a changing piece as `$name`. This site keeps its own so its addresses stay the generated ones,
+ * which is what makes a renamed route folder fail the type check rather than drift.
  */
 export function getFullAddress(href: RouteId, hrefParams?: HrefParams): ResolvedPathname {
 	const namesNeeded = [...href.matchAll(changingPiece)].map(([, name]) => name);

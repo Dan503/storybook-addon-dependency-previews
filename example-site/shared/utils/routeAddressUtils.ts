@@ -2,9 +2,11 @@
  * The addresses the example sites link to.
  *
  * The sites are meant to share one set of addresses, so this list is the one
- * place they are written down. React and Solid already sit on it; the Svelte,
- * Vue and Angular sites are being moved onto it one at a time, so for now a few
- * of their pages are still at addresses that are not in this list.
+ * place they are written down. React and Solid sit on these addresses and import
+ * this list. Svelte sits on the same addresses but reads them from the list
+ * SvelteKit generates out of its own route folders, so it needs nothing from
+ * here. Vue and Angular are being moved onto them one at a time, so for now a
+ * few of their pages are still at addresses that are not in this list.
  *
  * Adding a page to a site means adding its address here — nothing checks that
  * automatically for the sites whose framework generates no list of its own.
