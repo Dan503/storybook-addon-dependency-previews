@@ -7,7 +7,6 @@ import {
 } from '@solidjs/router'
 import { fetchMealsByCategory } from 'example-site-shared/utils'
 import { CardListTemplate } from '../../components/04-templates/CardListTemplate'
-import { routePaths } from '../../routePaths'
 
 const getMealsByCategory = query(fetchMealsByCategory, 'mealsByCategory')
 
@@ -35,7 +34,8 @@ export default function CategoryMeals() {
 					title: meal.name,
 					description: meal.area,
 					imgSrc: meal.image,
-					href: routePaths.getMealPath(meal.id),
+					href: '/meal/$mealId',
+					hrefParams: { mealId: meal.id },
 				}))}
 			/>
 		</>
