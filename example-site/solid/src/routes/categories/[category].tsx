@@ -7,7 +7,7 @@ import {
 } from '@solidjs/router'
 import { fetchMealsByCategory } from 'example-site-shared/utils'
 import { CardListTemplate } from '../../components/04-templates/CardListTemplate'
-import { routePaths } from '../../routePaths'
+import { getMealCard } from '../../components/listings/card/CardMolecule'
 
 const getMealsByCategory = query(fetchMealsByCategory, 'mealsByCategory')
 
@@ -31,12 +31,7 @@ export default function CategoryMeals() {
 			<CardListTemplate
 				title={`${categoryName()} meals`}
 				introText={`Explore the delicious ${categoryName()} meals!`}
-				cardList={meals()?.map((meal) => ({
-					title: meal.name,
-					description: meal.area,
-					imgSrc: meal.image,
-					href: routePaths.getMealPath(meal.id),
-				}))}
+				cardList={meals()?.map(getMealCard)}
 			/>
 		</>
 	)

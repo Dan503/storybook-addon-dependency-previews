@@ -3,8 +3,8 @@ import { ScreenPaddingAtom } from '../01-atoms/ScreenPaddingAtom'
 import { HeroBlockOrganism } from '../03-organisms/HeroBlockOrganism'
 import { SiteFrameOrganism } from '../03-organisms/SiteFrameOrganism'
 import { CardListingOrganism } from '../listings/card/CardListingOrganism'
+import { getMealCard } from '../listings/card/CardMolecule'
 import { ExternalLinkAtom } from '../01-atoms/ExternalLinkAtom'
-import { routePaths } from '../../routePaths'
 
 export interface PropsForHomeTemplate {
 	featuredMeals: Array<Meal>
@@ -40,14 +40,7 @@ export function HomeTemplate(props: PropsForHomeTemplate) {
 				</HeroBlockOrganism>
 				<ScreenPaddingAtom padVertical>
 					<h2 class="text-2xl font-bold mb-4">Featured meals:</h2>
-					<CardListingOrganism
-						cards={otherMeals().map((c) => ({
-							title: c.name,
-							description: c.area,
-							imgSrc: c.image,
-							href: routePaths.getMealPath(c.id),
-						}))}
-					/>
+					<CardListingOrganism cards={otherMeals().map(getMealCard)} />
 				</ScreenPaddingAtom>
 			</div>
 		</SiteFrameOrganism>
