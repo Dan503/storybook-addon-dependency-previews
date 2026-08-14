@@ -1,6 +1,6 @@
 <script lang="ts" module>
 	import type { StoryParameters } from 'storybook-addon-dependency-previews'
-	import FooterOrganism, { type PropsForFooterOrganism } from './FooterOrganism.svelte'
+	import FooterOrganism from './FooterOrganism.svelte'
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
@@ -12,9 +12,9 @@
 			__filePath: import.meta.url,
 		} satisfies StoryParameters,
 	})
-	type Args = Omit<PropsForFooterOrganism, 'children'>;
 </script>
 
-<Story name="Primary" args={{} satisfies Args}>
+<!-- No `Args` type, because the footer takes no props. -->
+<Story name="Primary" args={{}}>
 	<p>03 Organisms / Footer Organism</p>
 </Story>
