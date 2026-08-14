@@ -4,8 +4,9 @@ import type { ResolvedPathname, RouteId, RouteParams } from '$app/types';
 /**
  * The pieces that complete an address, looked up by name.
  *
- * The names come from the addresses SvelteKit generates rather than being written out here, so
- * renaming a piece in a route folder fails the type check on this line instead of drifting quietly.
+ * The names are read out of what SvelteKit generates from this site's own route folders, rather
+ * than written out here, so renaming a piece in a route folder fails the type check on this line
+ * rather than drifting quietly.
  *
  * Every entry is optional because an address needs only its own piece — no address on this site
  * takes both.
@@ -23,6 +24,17 @@ export type HrefParams = Partial<
 const changingPiece = /\[(\w+)\]/g;
 
 /**
+ * The pieces that carry a value, as name-and-value pairs.
+ *
+ * A name written out as `undefined` is dropped, so it reads the same as one never written at all.
+ * Without this, writing `{ category: undefined }` would count as having supplied a category.
+ */
+function getPiecesWithValues(hrefParams?: HrefParams): Array<[string, string]> {
+	const everyPiece = Object.entries(hrefParams ?? {});
+	return everyPiece.filter((piece): piece is [string, string] => piece[1] !== undefined);
+}
+
+/**
  * Fills an address's changing pieces in and hands back the address to link to.
  *
  * The address and its pieces reach a link component as two separate props, because tying them
@@ -35,20 +47,19 @@ const changingPiece = /\[(\w+)\]/g;
  * Each piece is escaped, because `resolve` puts a piece into the address exactly as it is given.
  * SvelteKit unescapes it again before a page reads it back, so a page needs to do nothing itself.
  *
- * Every address on this site marks a changing piece as `[name]`. SvelteKit can also write a piece
- * that may be left out, or one that swallows the rest of the address; this would need teaching
- * about those before either could be used.
- *
- * This does much the same work as the `getFullAddress` in `example-site-shared`, which the sites
- * whose framework writes no list of its own share. It is kept separate so that this site's
- * addresses stay the ones SvelteKit generates from its own route folders — the shared list is
- * written by hand, and marks a changing piece as `$name` rather than `[name]`.
+ * Every address on this site marks a changing piece as `[name]`, which is the only form this reads.
+ * None of the other forms SvelteKit can write would work here. A piece that may be left out
+ * (`[[name]]`) is the dangerous one, because the brackets inside it match and it is read as a piece
+ * that is required. One that swallows the rest of the address (`[...name]`), one carrying a test to
+ * pass (`[name=test]`), and an encoded character (`[x+2b]`) are each read as no piece at all, so
+ * supplying the piece they do take is refused as one the address has no place for. Teaching this
+ * about a form is what has to happen before that form can be used on this site.
  */
 export function getFullAddress(href: RouteId, hrefParams?: HrefParams): ResolvedPathname {
 	const namesNeeded = [...href.matchAll(changingPiece)].map(([, name]) => name);
 	// A Map rather than the object itself, so a piece named after something every object inherits
 	// (`constructor`, `toString`) reads as absent rather than picking up the inherited value.
-	const piecesGiven = new Map(Object.entries(hrefParams ?? {}));
+	const piecesGiven = new Map(getPiecesWithValues(hrefParams));
 	assertNeededPiecesAreGiven(href, namesNeeded, piecesGiven);
 	assertNoSparePiecesAreGiven(href, namesNeeded, piecesGiven);
 
@@ -65,6 +76,28 @@ export function getFullAddress(href: RouteId, hrefParams?: HrefParams): Resolved
 		hrefParams: Record<string, string>
 	) => ResolvedPathname;
 	return resolveUntiedAddress(href, Object.fromEntries(escapedPieces));
+}
+
+/**
+ * The same, for a link whose address may be left off entirely — it hands back nothing when there is
+ * no address, so the caller can draw plain content instead.
+ *
+ * Pieces without an address are refused rather than ignored. Dropping them quietly is the same
+ * silent-wrong-link shape the checks above exist to catch: it means the caller meant to link
+ * somewhere and got plain content with no complaint.
+ */
+export function getOptionalFullAddress(
+	href?: RouteId,
+	hrefParams?: HrefParams
+): ResolvedPathname | undefined {
+	if (href) return getFullAddress(href, hrefParams);
+	const namesGiven = getPiecesWithValues(hrefParams).map(([name]) => name);
+	if (namesGiven.length) {
+		throw new Error(
+			`hrefParams was given ${namesGiven.join(', ')} with no href to put them in, so this would have drawn as plain content rather than a link.`
+		);
+	}
+	return undefined;
 }
 
 /**

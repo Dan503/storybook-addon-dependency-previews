@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Level, H } from 'svelte-headings';
 	import type { RouteId } from '$app/types';
-	import { getFullAddress, type HrefParams } from '$lib/getFullAddress';
+	import { getOptionalFullAddress, type HrefParams } from '$lib/getFullAddress';
 
 	export interface PropsForCompactListingMolecule {
 		imageSrc: string;
@@ -10,6 +10,9 @@
 		/**
 		 * The page to link to. Leave it off to draw the item as plain content rather than a link.
 		 * One with a `[name]` in it needs that piece in `hrefParams`.
+		 *
+		 * SvelteKit offers `/meal` here as well, which is a folder with no page behind it — linking
+		 * to it reaches a "not found" page. Every other address on the list is a real page.
 		 */
 		href?: RouteId;
 		/** The pieces that complete the address, looked up by the name in the brackets. */
@@ -18,7 +21,7 @@
 
 	const { description, imageSrc, title, href, hrefParams }: PropsForCompactListingMolecule =
 		$props();
-	const fullAddress = $derived(href ? getFullAddress(href, hrefParams) : undefined);
+	const fullAddress = $derived(getOptionalFullAddress(href, hrefParams));
 </script>
 
 <!-- A snippet rather than two copies of the markup, so the linked and plain forms cannot drift apart. -->

@@ -4,14 +4,7 @@
 		type PropsForCardListingOrganism
 	} from './CardListingOrganism.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { mealCards } from 'example-site-shared/data';
-
-	// The shared example cards mark a changing piece the way the React site's router does
-	// (`$mealId`). Swap in the way SvelteKit marks it, so the address is one this site has.
-	const mealCardsForThisSite = mealCards.map((card) => ({
-		...card,
-		href: '/meal/[mealId]' as const
-	}));
+	import { mealCardsForThisSite } from '$lib/storyExampleCards';
 
 	const { Story } = defineMeta({
 		title: 'Listings / Card / Card Listing Organism',

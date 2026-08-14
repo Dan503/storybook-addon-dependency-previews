@@ -2,19 +2,7 @@
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
 	import CardListTemplate from './CardListTemplate.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { categoryCardList, mealCardList } from 'example-site-shared/data';
-
-	// The shared example cards mark a changing piece the way the React site's router does
-	// (`$category`, `$mealId`). Swap in the way SvelteKit marks it, so each address is one this
-	// site has.
-	const categoryCardListForThisSite = categoryCardList.map((card) => ({
-		...card,
-		href: '/categories/[category]' as const
-	}));
-	const mealCardListForThisSite = mealCardList.map((card) => ({
-		...card,
-		href: '/meal/[mealId]' as const
-	}));
+	import { categoryCardListForThisSite, mealCardListForThisSite } from '$lib/storyExampleCards';
 
 	const { Story } = defineMeta({
 		title: '04 Templates / Card List Template',

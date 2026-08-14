@@ -7,7 +7,12 @@
 		title: string;
 		imgSrc: string;
 		description: string;
-		/** The page to link to. One with a `[name]` in it needs that piece in `hrefParams`. */
+		/**
+		 * The page to link to. One with a `[name]` in it needs that piece in `hrefParams`.
+		 *
+		 * SvelteKit offers `/meal` here as well, which is a folder with no page behind it — linking
+		 * to it reaches a "not found" page. Every other address on the list is a real page.
+		 */
 		href: RouteId;
 		/** The pieces that complete the address, looked up by the name in the brackets. */
 		hrefParams?: HrefParams;
