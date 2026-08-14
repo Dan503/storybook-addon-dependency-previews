@@ -14,9 +14,9 @@ import type { AngularComponentProps } from 'storybook-addon-dependency-previews'
 		'[class]': `["CompactListingMolecule", class()].join(" ")`,
 	},
 	// The row is written once and drawn by whichever branch runs below, so the
-	// linked and plain forms cannot drift apart. It also has to sit on its own
-	// element rather than on the host: the host would be the only child of the
-	// link, which collapses the two columns into one.
+	// linked and plain forms cannot drift apart. Its grid also has to sit on its own
+	// element rather than on the host: left on the host, the link would be the
+	// host's only child, so the two-column grid would have one item in it.
 	template: `
 		<ng-template #row>
 			<div class="grid grid-cols-[auto_1fr] items-center gap-4">
