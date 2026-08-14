@@ -83,16 +83,18 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
  * wrong card when a list changes, and a meal's title is a weaker thing to go on
  * than its id — two meals can be called the same thing, while their ids differ.
  * For a category the piece is the category's name, so that list is exactly as well
- * off as it was; what it gains is that both lists now follow one rule. A card with
- * no changing piece falls back to its address, which is then all there is.
+ * off as it was — it is the meals list that needed this, once every meal card came
+ * to share one address, and one helper covers both. A card with no changing piece
+ * falls back to its address, which is then all there is.
  *
  * @param card - the card being drawn
  */
 export function getCardTrackValue(card: PropsForCardMolecule): string {
-	// Whichever piece is present is the identifying one, since an address takes at
-	// most one — so this does not name the pieces, and picks up any later one for
+	// Whichever piece carries a value is the identifying one, since an address takes
+	// at most one — so this does not name the pieces, and picks up any later one for
 	// free. Naming them here would leave a new piece falling back to the address,
-	// which is the same string for every card in a list.
-	const [pieceValue] = Object.values(card.hrefParams ?? {});
+	// which is the same string for every card in a list. A name written with no
+	// value is skipped rather than winning by being first.
+	const pieceValue = Object.values(card.hrefParams ?? {}).find(Boolean);
 	return pieceValue ?? card.href;
 }
