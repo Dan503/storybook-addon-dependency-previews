@@ -17,6 +17,8 @@ export {
 
 export {
 	getFullAddress,
+	type HrefParamName,
+	type HrefParams,
 	type LinkAddress,
 	type RouteAddress,
 } from './routeAddressUtils'

@@ -1,5 +1,5 @@
 import { splitProps } from 'solid-js'
-import type { LinkAddress } from 'example-site-shared/utils'
+import type { LinkAddress, Meal } from 'example-site-shared/utils'
 import { InternalLinkAtom } from '../../01-atoms/InternalLinkAtom'
 
 export type PropsForCardMolecule = {
@@ -7,6 +7,23 @@ export type PropsForCardMolecule = {
 	imgSrc: string
 	description: string
 } & LinkAddress
+
+/**
+ * Builds the card for one meal.
+ *
+ * Both lists that show meals — the featured ones on the home page and the ones
+ * in a category — draw the same card from the same fields, so they share this
+ * rather than each writing it out.
+ */
+export function getMealCard(meal: Meal): PropsForCardMolecule {
+	return {
+		title: meal.name,
+		description: meal.area,
+		imgSrc: meal.image,
+		href: '/meal/$mealId',
+		hrefParams: { mealId: meal.id },
+	}
+}
 
 export function CardMolecule(props: PropsForCardMolecule) {
 	const [linkAddress, card] = splitProps(props, ['href', 'hrefParams'])

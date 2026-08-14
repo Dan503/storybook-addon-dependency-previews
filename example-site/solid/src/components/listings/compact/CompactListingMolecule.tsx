@@ -39,8 +39,12 @@ export function CompactListingMolecule(props: PropsForCompactListingMolecule) {
 	)
 }
 
-// Takes everything but the address, which it does not draw. The wider type
-// would let a caller pass one and see nothing happen.
+/**
+ * Draws the picture and words of one item, without the link around them.
+ *
+ * Takes everything but the address, which it does not draw. The wider type
+ * would let a caller pass one and see nothing happen.
+ */
 function ItemInternals(props: ContentForCompactListing) {
 	return (
 		<div class="grid grid-cols-[auto_1fr] gap-4 items-center">

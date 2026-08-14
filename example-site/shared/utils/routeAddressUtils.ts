@@ -43,7 +43,18 @@ export type HrefParams = Partial<Record<HrefParamName, string>>
  * `mealId`. `getFullAddress` checks that when it builds the address.
  */
 export interface LinkAddress {
+	/**
+	 * The page to link to, written the way it appears in `RouteAddress`. A
+	 * `$name` in it stands for a piece that changes and has to be supplied in
+	 * `hrefParams`.
+	 */
 	href: RouteAddress
+	/**
+	 * The pieces that complete the address, looked up by the name after the `$`.
+	 * An address with no `$name` in it needs none of these. Leaving out a piece
+	 * an address does need throws when the link is drawn — the type cannot catch
+	 * it, because it does not tie the two together.
+	 */
 	hrefParams?: HrefParams
 }
 
@@ -60,9 +71,12 @@ export interface LinkAddress {
  */
 export function getFullAddress({ href, hrefParams }: LinkAddress): string {
 	const changingPiece = /\$(\w+)/g
-	const pieceValues: Record<string, string | undefined> = hrefParams ?? {}
+	// A Map rather than the object itself, so a piece named after something every
+	// object inherits (`constructor`, `toString`) reads as absent rather than
+	// picking up the inherited value.
+	const pieceValues = new Map(Object.entries(hrefParams ?? {}))
 	return href.replace(changingPiece, (marker, pieceName: string) => {
-		const pieceValue = pieceValues[pieceName]
+		const pieceValue = pieceValues.get(pieceName)
 		if (!pieceValue) {
 			const message = getUnusablePieceMessage(
 				href,
@@ -85,13 +99,13 @@ function getUnusablePieceMessage(
 	href: string,
 	marker: string,
 	pieceName: string,
-	pieceValues: Record<string, string | undefined>,
+	pieceValues: Map<string, string>,
 ): string {
-	const hasEmptyValue = pieceName in pieceValues
+	const hasEmptyValue = pieceValues.has(pieceName)
 	if (hasEmptyValue) {
 		return `The address "${href}" was given an empty ${marker}, which would link to the wrong page.`
 	}
-	const namesGiven = Object.keys(pieceValues)
+	const namesGiven = [...pieceValues.keys()]
 	const whatWasGiven = namesGiven.length
 		? `only these were given: ${namesGiven.join(', ')}`
 		: 'none were given'
