@@ -1,14 +1,16 @@
 import { Component, input } from '@angular/core';
-import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule.component';
+import {
+	CardMoleculeComponent,
+	getCardTrackValue,
+	type PropsForCardMolecule,
+} from './CardMolecule.component';
 
 @Component({
 	selector: 'card-listing-organism',
 	host: { '[class]': '["@container", "grid", class()].join(" ")' },
 	template: `
 		<div class="CardListingOrganism grid gap-6" [attr.data-view]="view()">
-			<!-- Tracked by title rather than by address: the cards in a list share one
-			address and differ only in its changing piece. -->
-			@for (card of cards(); track card.title) {
+			@for (card of cards(); track getCardTrackValue(card)) {
 				<card-molecule
 					[title]="card.title"
 					[href]="card.href"
@@ -39,4 +41,7 @@ export class CardListingOrganismComponent {
 	class = input<string>('');
 	cards = input<Array<PropsForCardMolecule>>([]);
 	view = input<'grid' | 'list'>('grid');
+	// A template can only reach what sits on the component, so the shared helper is
+	// held here for the `track` above to call.
+	protected getCardTrackValue = getCardTrackValue;
 }

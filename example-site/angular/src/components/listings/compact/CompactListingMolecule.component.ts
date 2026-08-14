@@ -54,9 +54,13 @@ export class CompactListingMoleculeComponent {
 	});
 }
 
-// The address and its pieces come from the shared type rather than from the inputs
-// above, and are optional: an item without an address draws as plain content
-// instead of a link.
+/**
+ * What a compact listing row needs to draw itself.
+ *
+ * The address and its pieces come from the shared type rather than from the
+ * component's inputs, and are optional: an item without an address draws as plain
+ * content instead of a link.
+ */
 export type PropsForCompactListingMolecule = AngularComponentProps<
 	CompactListingMoleculeComponent,
 	'class' | 'href' | 'hrefParams'

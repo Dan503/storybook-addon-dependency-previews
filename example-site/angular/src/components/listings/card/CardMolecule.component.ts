@@ -41,10 +41,14 @@ export class CardMoleculeComponent {
 	);
 }
 
-// The address and its pieces come from the shared type rather than being read back
-// off the inputs above, which keeps the pieces optional. Read off the inputs they
-// would come out as something every card has to spell out, even a card whose
-// address has no changing piece in it.
+/**
+ * What a card needs to draw itself.
+ *
+ * The address and its pieces come from the shared type rather than being read back
+ * off the component's inputs, which keeps the pieces optional. Read off the inputs
+ * they would come out as something every card has to spell out, even a card whose
+ * address has no changing piece in it.
+ */
 export type PropsForCardMolecule = AngularComponentProps<
 	CardMoleculeComponent,
 	'class' | 'href' | 'hrefParams'
@@ -68,4 +72,21 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
 		href: '/meal/$mealId',
 		hrefParams: { mealId: meal.id },
 	};
+}
+
+/**
+ * The value that tells one card in a list apart from the others, for Angular's
+ * `track`.
+ *
+ * The cards in a list share one address and differ only in its changing piece, so
+ * that piece is what identifies a card. A title cannot do the job — nothing stops
+ * two meals or two categories being called the same thing, and repeated values
+ * make Angular reuse the wrong card when the list changes. A card with no changing
+ * piece falls back to its address, which is then the only thing there is to go on.
+ *
+ * @param card - the card being drawn
+ */
+export function getCardTrackValue(card: PropsForCardMolecule): string {
+	const { mealId, category } = card.hrefParams ?? {};
+	return mealId ?? category ?? card.href;
 }
