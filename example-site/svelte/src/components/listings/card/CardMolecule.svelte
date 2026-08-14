@@ -1,5 +1,22 @@
 <script lang="ts" module>
 	import type { Meal } from 'example-site-shared/data';
+	import type { RouteId } from '$app/types';
+	import type { HrefParams } from '$lib/getFullAddress';
+
+	export interface PropsForCardMolecule {
+		title: string;
+		imgSrc: string;
+		description: string;
+		/**
+		 * The page to link to. One with a `[name]` in it needs that piece in `hrefParams`.
+		 *
+		 * SvelteKit offers `/meal` here as well, which is a folder with no page behind it — linking
+		 * to it reaches a "not found" page. Every other address on the list is a real page.
+		 */
+		href: RouteId;
+		/** The pieces that complete the address, looked up by the name in the brackets. */
+		hrefParams?: HrefParams;
+	}
 
 	/**
 	 * Builds the card for one meal.
@@ -22,23 +39,7 @@
 
 <script lang="ts">
 	import { H, Level } from 'svelte-headings';
-	import type { RouteId } from '$app/types';
-	import { getFullAddress, type HrefParams } from '$lib/getFullAddress';
-
-	export interface PropsForCardMolecule {
-		title: string;
-		imgSrc: string;
-		description: string;
-		/**
-		 * The page to link to. One with a `[name]` in it needs that piece in `hrefParams`.
-		 *
-		 * SvelteKit offers `/meal` here as well, which is a folder with no page behind it — linking
-		 * to it reaches a "not found" page. Every other address on the list is a real page.
-		 */
-		href: RouteId;
-		/** The pieces that complete the address, looked up by the name in the brackets. */
-		hrefParams?: HrefParams;
-	}
+	import { getFullAddress } from '$lib/getFullAddress';
 
 	const { title, imgSrc, description, href, hrefParams }: PropsForCardMolecule = $props();
 	const fullAddress = $derived(getFullAddress(href, hrefParams));
