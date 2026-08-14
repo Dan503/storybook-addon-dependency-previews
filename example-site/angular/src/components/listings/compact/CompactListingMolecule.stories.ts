@@ -22,6 +22,16 @@ export const Primary: Story = {
 		title: 'Title of the listing',
 		description: `Listing description`,
 		imageSrc: exampleIngredient.imageUrl.small,
-		href: '#',
+	},
+};
+
+/** A changing address, so the story also shows its piece being filled in. */
+export const WithLink: Story = {
+	args: {
+		title: 'Title of the listing',
+		description: `Listing description`,
+		imageSrc: exampleIngredient.imageUrl.small,
+		href: '/categories/$category',
+		hrefParams: { category: 'Beef' },
 	},
 };
