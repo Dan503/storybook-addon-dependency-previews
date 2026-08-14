@@ -1,0 +1,48 @@
+{
+	"name": "example-site-solid",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"sb:setup": "sb-deps setup",
+		"sb": "sb-deps --watch --run-storybook",
+		"sb:deps": "sb-deps",
+		"sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
+		"format": "prettier --write .",
+		"check": "prettier --check ."
+	},
+	"dependencies": {
+		"@formisch/solid": "1.0.0-rc.0",
+		"@solidjs/meta": "^0.29.4",
+		"@solidjs/router": "^0.15.0",
+		"@solidjs/start": "2.0.0-alpha.2",
+		"@solidjs/vite-plugin-nitro-2": "^0.1.0",
+		"@tailwindcss/vite": "^4.3.3",
+		"example-site-shared": "workspace:*",
+		"solid-js": "^1.9.14",
+		"tailwindcss": "^4.3.3",
+		"valibot": "^1.4.2",
+		"vite": "^7.0.0"
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"devDependencies": {
+		"@chromatic-com/storybook": "^5.2.1",
+		"@storybook/addon-a11y": "^10.4.6",
+		"@storybook/addon-docs": "^10.4.6",
+		"@storybook/addon-links": "^10.4.6",
+		"@storybook/addon-vitest": "^10.4.6",
+		"@vitest/browser-playwright": "^4.1.10",
+		"@vitest/coverage-v8": "^4.1.10",
+		"dependency-cruiser": "^17.3.6",
+		"playwright": "^1.61.1",
+		"prettier": "^3.8.1",
+		"storybook": "^10.4.6",
+		"storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
+		"storybook-solidjs-vite": "^10.6.0",
+		"vitest": "^4.1.10"
+	}
+}

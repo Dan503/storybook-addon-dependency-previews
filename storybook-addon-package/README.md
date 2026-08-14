@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Svelte**, **Vue 3**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Svelte, Vue 3) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
+Currently works with **React**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Svelte, Vue 3, Solid) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -40,6 +40,12 @@ Vue version built for Vue 3.
 - [Vue rendered example website](https://dependency-previews-demo-site-vue.netlify.app/)
 - [Vue demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/vue)
 
+#### Solid demos
+
+- [Solid Storybook demo site](https://dependency-previews-storybook-solid.netlify.app/?path=/docs/04-templates-home-template--docs)
+- [Solid rendered example website](https://dependency-previews-demo-site-solid.netlify.app/)
+- [Solid demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/solid)
+
 #### Angular demos
 
 - [Angular Storybook demo site](https://dependency-previews-storybook-angular.netlify.app/?path=/docs/04-templates-home-template--docs)
@@ -50,7 +56,7 @@ Vue version built for Vue 3.
 
 ## Installation guide
 
-### Quick start (React, Svelte, and Vue 3)
+### Quick start (React, Svelte, Vue 3, and Solid)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
@@ -92,9 +98,9 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), and Vue 3 (`@storybook/vue3-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+The wizard supports React (`@storybook/react-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), and Solid (`storybook-solidjs-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
 
-- [Manual setup — Vite (React, Svelte, Vue 3)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
+- [Manual setup — Vite (React, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
 ## Auto-scaffolding new components and stories
@@ -104,7 +110,9 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 - **Create a component file** (`Button.tsx`, `Button.svelte`, `Button.vue`, `Button.component.ts`) → the component body is scaffolded **and** a matching story file is generated next to it.
 - **Create a story file** (`Button.stories.tsx`, or the singular `Button.story.tsx`) → the story is scaffolded into that exact file, and if the sibling component doesn't exist yet it is created and scaffolded too.
 
-Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+
+React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) without being told; anything it does not read as Solid gets React ones. Set `tsxFramework: 'solid'` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
 
 ### File names must end in lower case
 
@@ -228,6 +236,21 @@ export default defineSbDepsConfig({
 })
 ```
 
+### `tsxFramework`
+
+Which flavor to scaffold for `.tsx` component and story files — `'react'` or `'solid'`. React and Solid both author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports) instead of React. The setup wizard sets it for you when it detects a Solid project. Per-template overrides for Solid go under [`scaffold.solid`](#scaffold).
+
+**Default:** `'solid'` when `sb-deps` detects a Solid project, `'react'` otherwise — so a Solid project gets Solid templates without the key being set. Setting the key is worth it where the framework isn't obvious from your project's files.
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	tsxFramework: 'solid',
+})
+```
+
 ### `scaffoldIgnore`
 
 Paths the scaffolder leaves alone. Each entry is a path pattern matched against a file's path from your project root, written with forward slashes.
@@ -268,6 +291,8 @@ An entry that isn't a non-empty string makes the whole option invalid — the CL
 
 Override the templates used when `sb-deps` auto-scaffolds new component and story files. Each template function receives a context object with relevant variables and must return the full file content as a string.
 
+For `.tsx` files the override key follows [`tsxFramework`](#tsxframework): a React project reads `scaffold.react`, a Solid project reads `scaffold.solid` — overrides placed under the wrong key are silently ignored.
+
 ```js
 // sb-deps.config.mjs
 import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
@@ -305,6 +330,12 @@ export function ${componentName}({}: ${propsName}) {
 			component: ({ componentName }) => '...',
 			/** Customize the generated .stories.ts file */
 			story: ({ componentName, title, tags }) => '...',
+		},
+		solid: {
+			/** Customize the generated .tsx component file */
+			component: ({ componentName, propsName }) => '...',
+			/** Customize the generated .stories.tsx file */
+			story: ({ componentName, propsName, title, tags, base }) => '...',
 		},
 		angular: {
 			/** Customize the generated .component.ts file */

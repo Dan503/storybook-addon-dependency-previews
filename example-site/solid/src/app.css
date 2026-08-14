@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+html,
+body,
+/* The node the site mounts into, and the one Storybook mounts a story into.
+   This stylesheet is loaded in both, and a template asking for full height
+   has nothing to measure against without them. */
+#app,
+#storybook-root {
+	display: grid;
+	min-height: 100%;
+}
+
+/* Both of these are set by all four sibling sites and by nothing else —
+   Tailwind's base styles cover neither, so without them the buttons here show
+   an arrow where the other demos show a hand, and the text sits heavier. */
+body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+button {
+	cursor: pointer;
+}
+
+/* Tailwind does supply a monospace stack, but a different one from the React,
+   Svelte and Vue sites, so the values preview under each form would read in
+   another font here. Pinned to the stack those three use. The Angular site
+   pins nothing and stays on the Tailwind default, so this site now matches
+   three of the four and differs from that one. */
+code {
+	font-family:
+		source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}

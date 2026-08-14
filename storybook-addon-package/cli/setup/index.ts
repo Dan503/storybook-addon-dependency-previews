@@ -204,7 +204,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This setup wizard currently supports React, Svelte, and Vue 3 (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
+			`This setup wizard currently supports React, Svelte, Vue 3, and Solid (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
 			'The addon itself also supports Angular and Next.js with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
@@ -215,10 +215,21 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		return
 	}
 
+	// Whether the framework was worked out from the project's own files, or
+	// supplied by the user below. It decides whether the Solid note further down
+	// is worth printing: the scaffolder runs the same detection, so it only
+	// needs telling about Solid when that detection came up empty.
+	const wasFrameworkDetected = framework !== 'unknown'
+
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
 		const choice = await choose<
-			'react-vite' | 'sveltekit' | 'svelte-vite' | 'vue3-vite' | 'cancel'
+			| 'react-vite'
+			| 'sveltekit'
+			| 'svelte-vite'
+			| 'vue3-vite'
+			| 'solid-vite'
+			| 'cancel'
 		>('Which framework is this project using?', [
 			{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
 			{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
@@ -230,6 +241,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				label: 'Svelte without SvelteKit (@storybook/svelte-vite)',
 				value: 'svelte-vite',
 			},
+			{ label: 'Solid (storybook-solidjs-vite)', value: 'solid-vite' },
 			{ label: 'Cancel', value: 'cancel' },
 		])
 		if (choice === 'cancel') {
@@ -489,18 +501,30 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
-	// default `'src'`, or when the user chose a non-default story-file
-	// extension. Must happen before Step 5 so the sb-deps build below picks up
-	// the configured values on its first run. Silent no-op when everything is
-	// default so setups without overrides don't see an extra log line. Uses
-	// `effectiveSrcDir` so a user-edited value via the edit flow is what gets
-	// persisted, not the auto-detected one.
+	// default `'src'`, when the project is Solid (the config records
+	// `tsxFramework: 'solid'` outright, so the scaffolder emits Solid — not
+	// React — templates for `.tsx` files even where its own detection of the
+	// framework comes up empty), or when the user chose a non-default
+	// story-file extension. Must happen before Step 5 so the sb-deps build below
+	// picks up the configured values on its first run. Silent no-op when
+	// everything is default so setups without overrides don't see an extra log
+	// line. Uses `effectiveSrcDir` so a user-edited value via the edit flow is
+	// what gets persisted, not the auto-detected one.
+	const isSolidProject = framework === 'solid-vite'
+	// Only worth saying where the scaffolder's own detection will come up empty
+	// too. Where it can see the project is Solid, it emits Solid templates with
+	// or without the config key, so the note would be telling the user to guard
+	// against something that cannot happen to them.
+	const doesSolidNeedTheKey = isSolidProject && !wasFrameworkDetected
 	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
 		cwd,
 		srcDir: effectiveSrcDir,
 		isEsm: detection.isEsm,
+		isSolid: isSolidProject,
 		storybookFileExtension: effectiveStorybookFileExtension,
 	})
+	const doesSkippedConfigNeedSolidNote =
+		sbDepsConfigResult.kind === 'skipped' && doesSolidNeedTheKey
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
 		log(
@@ -512,6 +536,11 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(
 			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
 		)
+		if (doesSolidNeedTheKey) logSolidTsxFrameworkNote()
+	} else if (doesSkippedConfigNeedSolidNote) {
+		rule()
+		log(`  ⚠ ${sbDepsConfigResult.reason}`)
+		logSolidTsxFrameworkNote()
 	}
 
 	rule()
@@ -557,4 +586,26 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		rule()
 		process.exit(1)
 	}
+}
+
+/**
+ * Tell a Solid user to set `tsxFramework` themselves.
+ *
+ * Printed when the wizard finished without writing the key — the write failed,
+ * or an existing config blocked it — AND the wizard could not work the
+ * framework out from the project's own files, so the user supplied it. The
+ * scaffolder repeats that same detection, so where it succeeds it emits Solid
+ * templates whether or not the key is there; where it came up empty, the key is
+ * the only thing left saying so, and a missing one is silent. The wizard does
+ * not read an existing config, so this asks the user to check rather than
+ * claiming the key is absent.
+ */
+function logSolidTsxFrameworkNote() {
+	log(
+		`    Ensure your sb-deps.config sets \`tsxFramework: 'solid'\` — the scaffolder`,
+	)
+	log(
+		`    could not tell this is a Solid project, so without that key it emits`,
+	)
+	log(`    React (not Solid) templates for .tsx files.`)
 }

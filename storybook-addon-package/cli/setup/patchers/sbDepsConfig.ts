@@ -9,10 +9,10 @@ export type SbDepsConfigPatchResult =
 			path: string
 			/**
 			 * Human-readable summaries of the non-default fields actually written
-			 * (e.g. `["srcDir: 'app'", "storybookFileExtension: 'story'"]`). The
-			 * caller logs these verbatim, so "which fields were written" has a
-			 * single source of truth here rather than being re-derived at the log
-			 * site.
+			 * (e.g. `["srcDir: 'app'", "tsxFramework: 'solid'",
+			 * "storybookFileExtension: 'story'"]`). The caller logs these verbatim,
+			 * so "which fields were written" has a single source of truth here
+			 * rather than being re-derived at the log site.
 			 */
 			fields: ReadonlyArray<string>
 	  }
@@ -22,9 +22,10 @@ export type SbDepsConfigPatchResult =
 export interface WriteSbDepsConfigOptions {
 	cwd: string
 	/**
-	 * Resolved source-folder name. The patcher is a no-op for the bundled
-	 * default `'src'` — only non-default values (including the empty-string
-	 * project-root sentinel) result in a file being written.
+	 * Resolved source-folder name. On its own, a non-default value (anything
+	 * other than the bundled `'src'`, including the empty-string project-root
+	 * sentinel) triggers a config write; the default `'src'` does not — unless
+	 * `isSolid` is set (see below).
 	 */
 	srcDir: string
 	/**
@@ -32,6 +33,15 @@ export interface WriteSbDepsConfigOptions {
 	 * the file extension and module syntax of the generated config.
 	 */
 	isEsm: boolean
+	/**
+	 * Whether the project uses Solid. When true, the config is written even for
+	 * the default `srcDir` so it can carry `tsxFramework: 'solid'`, which tells
+	 * the `sb-deps` scaffolder outright to emit Solid (not React) templates for
+	 * the `.tsx` component/story files the two frameworks share. The scaffolder
+	 * works the framework out for itself as well, so the key is what settles it
+	 * where that detection comes up empty.
+	 */
+	isSolid?: boolean
 	/**
 	 * Preferred story-file extension the scaffolder should use — `'stories'`
 	 * (Storybook's convention, the default) or `'story'`. Only a non-default
@@ -42,9 +52,10 @@ export interface WriteSbDepsConfigOptions {
 }
 
 /**
- * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`
- * and/or a non-default `storybookFileExtension`. No-op when there's nothing
- * worth persisting — i.e. `srcDir === 'src'` (bundled default) AND
+ * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`,
+ * the `tsxFramework` scaffolder signal, and/or a non-default
+ * `storybookFileExtension`. No-op when there's nothing worth persisting — i.e.
+ * `srcDir === 'src'` (bundled default) AND the project isn't Solid AND
  * `storybookFileExtension` is the default `'stories'` — or when any of the
  * candidate config filenames already exist (the loader at `sb-deps.ts` accepts
  * `.js`, `.mjs`, and `.cjs`; we never overwrite a user's existing config
@@ -53,15 +64,23 @@ export interface WriteSbDepsConfigOptions {
 export function writeSbDepsConfigIfNeeded(
 	opts: WriteSbDepsConfigOptions,
 ): SbDepsConfigPatchResult {
-	const { cwd, srcDir, isEsm, storybookFileExtension = 'stories' } = opts
+	const {
+		cwd,
+		srcDir,
+		isEsm,
+		isSolid = false,
+		storybookFileExtension = 'stories',
+	} = opts
 
 	const needsSrcDir = srcDir !== 'src'
 	const needsStorybookFileExtension = storybookFileExtension === 'story'
-	if (!needsSrcDir && !needsStorybookFileExtension) {
+	const hasNothingWorthWriting =
+		!needsSrcDir && !isSolid && !needsStorybookFileExtension
+	if (hasNothingWorthWriting) {
 		return {
 			kind: 'skipped',
 			reason:
-				'srcDir is the default (src) and storybookFileExtension is the default (stories) — no config file needed',
+				'srcDir is the default (src), project is not Solid, and storybookFileExtension is the default (stories) — no config file needed',
 		}
 	}
 
@@ -80,13 +99,22 @@ export function writeSbDepsConfigIfNeeded(
 	// Collect each non-default field once as both its file line and a
 	// human-readable summary, so the written file and the caller's success log
 	// share a single source of truth for "which fields differ from the
-	// defaults". Adding a field later updates both outputs from this one list.
+	// defaults": `srcDir` when it's non-default, `tsxFramework: 'solid'` for
+	// Solid projects (so the scaffolder picks Solid templates for `.tsx` files),
+	// and `storybookFileExtension: 'story'` for a non-default story extension.
+	// Adding a field later updates both outputs from this one list.
 	const fields: Array<{ line: string; summary: string }> = []
 	if (needsSrcDir) {
 		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
 		fields.push({
 			line: `\tsrcDir: ${srcDirLiteral},`,
 			summary: `srcDir: ${srcDirLiteral}`,
+		})
+	}
+	if (isSolid) {
+		fields.push({
+			line: `\ttsxFramework: 'solid',`,
+			summary: `tsxFramework: 'solid'`,
 		})
 	}
 	if (needsStorybookFileExtension) {
