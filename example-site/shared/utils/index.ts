@@ -14,3 +14,9 @@ export {
 	type MealDBResponse,
 	type MealRawData,
 } from './mealDbApiUtils'
+
+export {
+	getFullAddress,
+	type LinkAddress,
+	type RouteAddress,
+} from './routeAddressUtils'
