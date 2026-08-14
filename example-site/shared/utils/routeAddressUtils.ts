@@ -107,7 +107,8 @@ function getUnusablePieceMessage({
 	// The marker is the piece name with a `$` in front of it, so the name is the
 	// rest of it. Taking it from the marker rather than as a second argument
 	// means the two cannot be handed over the wrong way round.
-	const pieceName = marker.slice(1)
+	const markerPrefix = '$'
+	const pieceName = marker.slice(markerPrefix.length)
 	const isPieceBlank = pieceValues.get(pieceName) === ''
 	if (isPieceBlank) {
 		return `The address "${href}" was given an empty ${marker}, which would link to the wrong page.`
