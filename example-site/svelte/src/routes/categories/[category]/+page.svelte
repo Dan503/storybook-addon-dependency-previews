@@ -3,7 +3,7 @@
 	import type { PropsForCardMolecule } from '../../../components/listings/card/CardMolecule.svelte';
 	import type { PageProps } from './$types';
 
-	const { data, params }: PageProps = $props();
+	const { data }: PageProps = $props();
 
 	const cardList: Array<PropsForCardMolecule> = $derived(
 		data.mealList.map(
@@ -12,7 +12,8 @@
 					title: meal.name,
 					description: meal.area,
 					imgSrc: meal.image,
-					href: `/meal/${meal.id}`
+					href: '/meal/[mealId]',
+					hrefParams: { mealId: meal.id }
 				}) satisfies PropsForCardMolecule
 		)
 	);
