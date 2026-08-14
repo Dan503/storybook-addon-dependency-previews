@@ -78,34 +78,36 @@ export function getFullAddress({ href, hrefParams }: LinkAddress): string {
 	return href.replace(changingPiece, (marker, pieceName: string) => {
 		const pieceValue = pieceValues.get(pieceName)
 		if (!pieceValue) {
-			const message = getUnusablePieceMessage(
-				href,
-				marker,
-				pieceName,
-				pieceValues,
-			)
+			const message = getUnusablePieceMessage({ href, marker, pieceValues })
 			throw new Error(message)
 		}
 		return encodeURIComponent(pieceValue)
 	})
 }
 
+interface GetUnusablePieceMessageParams {
+	/** the address being built, quoted back in the message */
+	href: string
+	/** the piece as it appears in the address, like `$mealId` */
+	marker: string
+	/** the pieces the caller passed, by name */
+	pieceValues: Map<string, string>
+}
+
 /**
  * Says why a changing piece could not be used, for the error `getFullAddress`
  * throws. The name being present but empty is worth telling apart from it being
  * absent, because the two are fixed in different places.
- *
- * @param href - the address being built, quoted back in the message
- * @param marker - the piece as it appears in the address, like `$mealId`
- * @param pieceName - the same piece without the `$`, like `mealId`
- * @param pieceValues - the pieces the caller passed, by name
  */
-function getUnusablePieceMessage(
-	href: string,
-	marker: string,
-	pieceName: string,
-	pieceValues: Map<string, string>,
-): string {
+function getUnusablePieceMessage({
+	href,
+	marker,
+	pieceValues,
+}: GetUnusablePieceMessageParams): string {
+	// The marker is the piece name with a `$` in front of it, so the name is the
+	// rest of it. Taking it from the marker rather than as a second argument
+	// means the two cannot be handed over the wrong way round.
+	const pieceName = marker.slice(1)
 	const isPieceBlank = pieceValues.get(pieceName) === ''
 	if (isPieceBlank) {
 		return `The address "${href}" was given an empty ${marker}, which would link to the wrong page.`
