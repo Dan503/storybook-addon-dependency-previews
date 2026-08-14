@@ -47,7 +47,8 @@
 								title: c.name,
 								description: c.area,
 								imgSrc: c.image,
-								href: `/meal/${c.id}`
+								href: '/meal/[mealId]',
+								hrefParams: { mealId: c.id }
 							}) satisfies PropsForCardMolecule
 					)}
 				/>
