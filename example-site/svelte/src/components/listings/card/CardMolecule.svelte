@@ -19,8 +19,7 @@
 
 <div class="CardMolecule @container grid">
 	<!-- `getFullAddress` calls `resolve` itself, which the rule cannot see through. Turned off
-	around the tag rather than for the line above it, because the address sits on its own line
-	inside the tag and a next-line comment cannot reach in there. -->
+	around the whole tag because the address sits on its own line inside it. -->
 	<!-- eslint-disable svelte/no-navigation-without-resolve -->
 	<a
 		href={fullAddress}

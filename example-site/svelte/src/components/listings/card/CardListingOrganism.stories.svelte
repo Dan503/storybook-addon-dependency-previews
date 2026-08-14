@@ -8,7 +8,7 @@
 
 	// The shared example cards mark a changing piece the way the React site's router does
 	// (`$mealId`). Swap in the way SvelteKit marks it, so the address is one this site has.
-	const svelteMealCards = mealCards.map((card) => ({
+	const mealCardsForThisSite = mealCards.map((card) => ({
 		...card,
 		href: '/meal/[mealId]' as const
 	}));
@@ -24,7 +24,7 @@
 		argTypes: {
 			cards: {
 				mapping: {
-					meals: svelteMealCards
+					meals: mealCardsForThisSite
 				},
 				control: {
 					type: 'select'

@@ -14,7 +14,12 @@ export type HrefParams = Partial<
 	RouteParams<'/categories/[category]'> & RouteParams<'/meal/[mealId]'>
 >;
 
-/** A `[name]` in an address, standing for a piece that changes. */
+/**
+ * A `[name]` in an address, standing for a piece that changes.
+ *
+ * Safe to share between calls despite the `g` flag: `matchAll` reads from its own copy and leaves
+ * this one's position at the start, which a bare `exec` loop would not.
+ */
 const changingPiece = /\[(\w+)\]/g;
 
 /**

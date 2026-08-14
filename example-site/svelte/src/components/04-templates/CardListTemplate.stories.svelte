@@ -7,11 +7,11 @@
 	// The shared example cards mark a changing piece the way the React site's router does
 	// (`$category`, `$mealId`). Swap in the way SvelteKit marks it, so each address is one this
 	// site has.
-	const svelteCategoryCardList = categoryCardList.map((card) => ({
+	const categoryCardListForThisSite = categoryCardList.map((card) => ({
 		...card,
 		href: '/categories/[category]' as const
 	}));
-	const svelteMealCardList = mealCardList.map((card) => ({
+	const mealCardListForThisSite = mealCardList.map((card) => ({
 		...card,
 		href: '/meal/[mealId]' as const
 	}));
@@ -28,8 +28,8 @@
 			// Use mapping to prevent large data from being serialized into URL
 			cardList: {
 				mapping: {
-					categories: svelteCategoryCardList,
-					meals: svelteMealCardList
+					categories: categoryCardListForThisSite,
+					meals: mealCardListForThisSite
 				},
 				control: {
 					type: 'select'

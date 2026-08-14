@@ -18,6 +18,7 @@
 
 	const { description, imageSrc, title, href, hrefParams }: PropsForCompactListingMolecule =
 		$props();
+	const fullAddress = $derived(href ? getFullAddress(href, hrefParams) : undefined);
 </script>
 
 <!-- A snippet rather than two copies of the markup, so the linked and plain forms cannot drift apart. -->
@@ -31,10 +32,10 @@
 	</div>
 {/snippet}
 
-{#if href}
+{#if fullAddress}
 	<!-- `getFullAddress` calls `resolve` itself, which the rule cannot see through. -->
 	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-	<a href={getFullAddress(href, hrefParams)} class="block">{@render itemContent()}</a>
+	<a href={fullAddress} class="block">{@render itemContent()}</a>
 {:else}
 	{@render itemContent()}
 {/if}
