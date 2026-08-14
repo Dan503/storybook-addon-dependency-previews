@@ -1,4 +1,10 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
+import {
+	getFullAddress,
+	type HrefParams,
+	type LinkAddress,
+	type RouteAddress,
+} from 'example-site-shared/utils';
 import type { AngularComponentProps } from 'storybook-addon-dependency-previews';
 
 @Component({
@@ -6,7 +12,7 @@ import type { AngularComponentProps } from 'storybook-addon-dependency-previews'
 	host: { '[class]': '["CardMolecule", "@container", "h-full", "grid", class()].join(" ")' },
 	template: `
 		<a
-			[href]="href()"
+			[href]="fullAddress()"
 			class="grid @max-sm:grid-rows-[auto_1fr] @min-sm:grid-cols-[200px_1fr] h-full @min-sm:gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
 		>
 			<img [src]="imgSrc()" alt="" class="aspect-video object-cover h-full" />
@@ -25,7 +31,21 @@ export class CardMoleculeComponent {
 	title = input<string>('');
 	imgSrc = input<string>('');
 	description = input<string>('');
-	href = input<string>('');
+	href = input.required<RouteAddress>();
+	hrefParams = input<HrefParams>();
+	// A `$name` inside the address stands for a piece that changes; this fills it
+	// in from `hrefParams`.
+	protected fullAddress = computed(() =>
+		getFullAddress({ href: this.href(), hrefParams: this.hrefParams() }),
+	);
 }
 
-export type PropsForCardMolecule = AngularComponentProps<CardMoleculeComponent, 'class'>;
+// The address and its pieces are taken from the shared type rather than read back
+// off the inputs above, so that the pieces stay optional — read off the inputs
+// they would become something every card has to spell out, even the cards whose
+// address has no changing piece in it.
+export type PropsForCardMolecule = AngularComponentProps<
+	CardMoleculeComponent,
+	'class' | 'href' | 'hrefParams'
+> &
+	LinkAddress;

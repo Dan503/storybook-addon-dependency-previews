@@ -6,10 +6,13 @@ import { CardMoleculeComponent, type PropsForCardMolecule } from './CardMolecule
 	host: { '[class]': '["@container", "grid", class()].join(" ")' },
 	template: `
 		<div class="CardListingOrganism grid gap-6" [attr.data-view]="view()">
-			@for (card of cards(); track card.href) {
+			<!-- Tracked by title rather than by address: every meal card carries the
+			same address and only its changing piece differs. -->
+			@for (card of cards(); track card.title) {
 				<card-molecule
 					[title]="card.title"
 					[href]="card.href"
+					[hrefParams]="card.hrefParams"
 					[description]="card.description"
 					[imgSrc]="card.imgSrc"
 				/>

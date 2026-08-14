@@ -26,7 +26,8 @@ export class CategoryListingPageComponent {
 		const mealsForCard: PropsForCardMolecule[] = mealsData.map((meal) => {
 			return {
 				title: meal.name,
-				href: `/meal/${meal.id}`,
+				href: '/meal/$mealId',
+				hrefParams: { mealId: meal.id },
 				imgSrc: meal.image,
 				description: meal.area,
 			} satisfies PropsForCardMolecule;

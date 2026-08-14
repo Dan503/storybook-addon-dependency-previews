@@ -57,7 +57,8 @@ export class HomeTemplateComponent {
 					title: x.name,
 					description: x.area,
 					imgSrc: x.image,
-					href: `/meal/${x.id}`,
+					href: '/meal/$mealId',
+					hrefParams: { mealId: x.id },
 				}) satisfies PropsForCardMolecule,
 		),
 	);
