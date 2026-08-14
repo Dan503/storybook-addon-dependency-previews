@@ -21,7 +21,8 @@ const cards = computed(() =>
 			title: meal.name,
 			description: meal.area,
 			imgSrc: meal.image,
-			href: `/meal/${meal.id}`,
+			href: '/meal/$mealId',
+			hrefParams: { mealId: meal.id },
 		}),
 	),
 )

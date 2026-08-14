@@ -16,7 +16,8 @@ const cardList = computed<Array<PropsForCardMolecule>>(() =>
 		title: category.strCategory,
 		description: category.strCategoryDescription,
 		imgSrc: category.strCategoryThumb,
-		href: `/categories/${category.strCategory}`,
+		href: '/categories/$category',
+		hrefParams: { category: category.strCategory },
 	})),
 )
 

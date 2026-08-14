@@ -1,18 +1,28 @@
 <script setup lang="ts">
-export interface PropsForCardMolecule {
+import { getFullAddress, type LinkAddress } from 'example-site-shared/utils'
+
+/**
+ * A card that links to a page inside this site.
+ *
+ * The address arrives as `href` plus `hrefParams` rather than already finished,
+ * so `href` only accepts an address the site actually has and a misspelt one
+ * fails the type check. The card fills the changing piece in itself, because
+ * `NuxtLink` takes a finished address.
+ */
+export interface PropsForCardMolecule extends LinkAddress {
 	title: string
 	imgSrc: string
 	description: string
-	href: string
 }
 
-const { title, imgSrc, description, href } = defineProps<PropsForCardMolecule>()
+const { title, imgSrc, description, href, hrefParams } =
+	defineProps<PropsForCardMolecule>()
 </script>
 
 <template>
 	<div class="CardMolecule @container grid">
 		<NuxtLink
-			:to="href"
+			:to="getFullAddress({ href, hrefParams })"
 			class="flex h-full gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
 		>
 			<img :src="imgSrc" alt="" class="aspect-video object-cover" />

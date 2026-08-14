@@ -18,6 +18,8 @@ const router = createRouter({
 	routes: [
 		{ path: '/', component: blankRouteComponent },
 		{ path: '/categories', component: blankRouteComponent },
+		{ path: '/categories/:category', component: blankRouteComponent },
+		{ path: '/meal/:mealId', component: blankRouteComponent },
 		{ path: '/contact', component: blankRouteComponent },
 	],
 })
