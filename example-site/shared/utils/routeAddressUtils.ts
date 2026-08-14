@@ -1,10 +1,13 @@
 /**
- * Every address the example sites have.
+ * The addresses the example sites link to.
  *
- * All five sites use the same addresses, so this list is the one place they are
- * written down. Adding a page to a site means adding its address here — nothing
- * checks that automatically for the sites whose framework generates no list of
- * its own.
+ * The sites are meant to share one set of addresses, so this list is the one
+ * place they are written down. React and Solid already sit on it; the Svelte,
+ * Vue and Angular sites are being moved onto it one at a time, so for now a few
+ * of their pages are still at addresses that are not in this list.
+ *
+ * Adding a page to a site means adding its address here — nothing checks that
+ * automatically for the sites whose framework generates no list of its own.
  *
  * Each address is spelled out in full rather than written as a fixed start plus
  * free text, because an address that is only partly written out is never offered
@@ -36,8 +39,11 @@ export interface LinkAddress {
 /**
  * Fills an address's changing pieces in and hands back the address to link to.
  *
- * Every piece is escaped, so a page reading one back has to unescape it. An
- * address with a `$name` in it that was given no matching piece throws, since
+ * Each piece is escaped, so a page reading one back needs to unescape it to get
+ * the original text. Escaping leaves digits alone, which is why a page whose
+ * piece is always a number can read it back as it stands.
+ *
+ * An address with a `$name` in it that was given no matching piece throws, since
  * the alternative is a link that quietly points at the wrong page.
  */
 export function getFullAddress({ href, hrefParams }: LinkAddress): string {
