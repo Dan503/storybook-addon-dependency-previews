@@ -15,7 +15,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 			<a routerLink="/categories" class="hover:underline" routerLinkActive="underline"
 				>Food categories</a
 			>
-			<a routerLink="/contact-us" class="hover:underline" routerLinkActive="underline"
+			<a routerLink="/contact" class="hover:underline" routerLinkActive="underline"
 				>Contact us</a
 			>
 		</nav>

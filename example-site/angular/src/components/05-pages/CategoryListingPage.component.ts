@@ -20,9 +20,9 @@ export class CategoryListingPageComponent {
 	meals = signal<PropsForCardMolecule[]>([]);
 	title = signal<string>('');
 	async ngOnInit() {
-		const categoryName: string = this.route.snapshot.params['categoryName'];
-		this.title.set(categoryName);
-		const mealsData: Meal[] = await fetchMealsByCategory(categoryName);
+		const category: string = this.route.snapshot.params['category'];
+		this.title.set(category);
+		const mealsData: Meal[] = await fetchMealsByCategory(category);
 		const mealsForCard: PropsForCardMolecule[] = mealsData.map((meal) => {
 			return {
 				title: meal.name,
