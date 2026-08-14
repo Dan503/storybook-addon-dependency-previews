@@ -1,22 +1,11 @@
 <script lang="ts">
 	import CardListTemplate from '../../../components/04-templates/CardListTemplate.svelte';
-	import type { PropsForCardMolecule } from '../../../components/listings/card/CardMolecule.svelte';
+	import { getMealCard } from '../../../components/listings/card/CardMolecule.svelte';
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
 
-	const cardList: Array<PropsForCardMolecule> = $derived(
-		data.mealList.map(
-			(meal) =>
-				({
-					title: meal.name,
-					description: meal.area,
-					imgSrc: meal.image,
-					href: '/meal/[mealId]',
-					hrefParams: { mealId: meal.id }
-				}) satisfies PropsForCardMolecule
-		)
-	);
+	const cardList = $derived(data.mealList.map(getMealCard));
 </script>
 
 <svelte:head>

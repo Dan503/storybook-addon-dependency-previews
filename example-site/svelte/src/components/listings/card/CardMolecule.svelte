@@ -1,3 +1,25 @@
+<script lang="ts" module>
+	import type { Meal } from 'example-site-shared/data';
+
+	/**
+	 * Builds the card for one meal.
+	 *
+	 * Both lists that show meals — the featured ones on the home page and the ones in a category —
+	 * draw the same card from the same fields, so they share this rather than each writing it out.
+	 *
+	 * @param meal - the meal the card stands for
+	 */
+	export function getMealCard(meal: Meal): PropsForCardMolecule {
+		return {
+			title: meal.name,
+			description: meal.area,
+			imgSrc: meal.image,
+			href: '/meal/[mealId]',
+			hrefParams: { mealId: meal.id }
+		};
+	}
+</script>
+
 <script lang="ts">
 	import { H, Level } from 'svelte-headings';
 	import type { RouteId } from '$app/types';
