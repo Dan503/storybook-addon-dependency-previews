@@ -36,21 +36,24 @@ export type HrefParams = NonNullable<LinkAddress['hrefParams']>;
 /**
  * Fills an address's changing pieces in and hands back the address to link to.
  *
- * This exists for two reasons, and neither is checking the pairing — `LinkAddress` does that at
- * compile time. First, `resolve` insists on knowing which address it is being handed so it can
- * demand that address's own pieces, and a link component only learns its address when it is drawn;
- * destructuring the props loses the tie between the two, so the call is made through a widened
- * view. Second, `resolve` puts a piece into the address exactly as it is given, so each one is
- * escaped here. SvelteKit unescapes it again before a page reads it back, so a page needs to do
- * nothing itself.
+ * This exists for two reasons, and neither is checking the pairing. First, `resolve` insists on
+ * knowing which address it is being handed so it can demand that address's own pieces, and a link
+ * component only learns its address when it is drawn; destructuring the props loses the tie between
+ * the two, so the call is made through a widened view. Second, `resolve` puts a piece into the
+ * address exactly as it is given, so each one is escaped here. SvelteKit unescapes it again before
+ * a page reads it back, so a page needs to do nothing itself.
  *
- * Prefer calling `resolve` directly wherever the address is written out at the call site: it checks
- * the same pairing without the widening, which is why the nav links and the site logo use it.
+ * So these two arguments arrive untied, and calling this directly is unchecked:
+ * `getFullAddress('/contact', { mealId: '1' })` compiles. What is checked is `LinkAddress`, where a
+ * component's props are set — so the two listing components were checked before they reached here.
+ *
+ * For a link written straight into markup there is nothing to carry through a prop, so call
+ * `resolve` and get the pairing checked: that is what the nav links and the site logo do.
  */
 export function getFullAddress(href: RouteId, hrefParams?: HrefParams): ResolvedPathname {
 	const escapedPieces = Object.entries(hrefParams ?? {}).map(([name, pieceValue]) => [
 		name,
-		encodeURIComponent(pieceValue as string)
+		encodeURIComponent(pieceValue)
 	]);
 	const resolveUntiedAddress = resolve as (
 		href: RouteId,
