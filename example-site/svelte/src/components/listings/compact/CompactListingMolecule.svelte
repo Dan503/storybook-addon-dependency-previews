@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { Level, H } from 'svelte-headings';
-	import { getOptionalFullAddress, type LinkAddress } from '$lib/getFullAddress';
+	import { getOptionalFullAddress, type OptionalLinkAddress } from '$lib/getFullAddress';
 
 	/**
 	 * The address is optional — without one the item draws as plain content rather than a link.
 	 * Addresses outside this site belong in `ExternalLinkAtom`.
 	 */
-	export interface PropsForCompactListingMolecule extends Partial<LinkAddress> {
+	export type PropsForCompactListingMolecule = {
 		imageSrc: string;
 		title: string;
 		description: string;
-	}
+	} & OptionalLinkAddress;
 
 	const { description, imageSrc, title, href, hrefParams }: PropsForCompactListingMolecule =
 		$props();
