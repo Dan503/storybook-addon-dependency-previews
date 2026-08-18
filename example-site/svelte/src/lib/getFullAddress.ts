@@ -30,17 +30,6 @@ export type LinkAddress = {
  */
 export type OptionalLinkAddress = LinkAddress | { href?: never; hrefParams?: never };
 
-/**
- * `example-site-shared` exports `LinkAddress`, `HrefParams` and `getFullAddress` too, and all three
- * mean something different there: its list is written by hand and marks a changing piece `$name`,
- * where this one is read from what SvelteKit generates and marks it `[name]`. The names are shared
- * deliberately so the example sites read alike, and nothing imports both, so there is no ambiguity
- * at a call site — but a file can import from both packages, which `storyExampleCards.ts` does.
- *
- * This site keeps its own so its addresses stay the generated ones, which is what makes a renamed
- * route folder fail the type check rather than drift.
- */
-
 /** The pieces that complete an address, whichever address it is. */
 export type HrefParams = NonNullable<LinkAddress['hrefParams']>;
 
@@ -61,18 +50,33 @@ export type HrefParams = NonNullable<LinkAddress['hrefParams']>;
  * For a link written straight into markup there is nothing to carry through a prop, so call
  * `resolve` and get the pairing checked: that is what the nav links and the site logo do.
  *
- * The escaping is right for a plain `[name]` piece, which is every piece this site has. Three other
- * shapes would make this disagree with a `resolve` call in markup rather than merely fail:
+ * The escaping is right for a plain `[name]` piece carrying a value, which is every piece this site
+ * passes. Four cases make this disagree with a `resolve` call in markup rather than merely fail.
+ *
+ * The first applies to any shape, this site's included: a name written with nothing behind it.
+ * `resolve` sees a missing value and either drops the segment or refuses the call, while escaping
+ * turns it into the literal word `undefined` first, which is truthy — so `/categories/undefined`
+ * is built where `resolve` alone would have thrown. Leaving the name out entirely is fine; an
+ * absent key never reaches the escaping. `LinkAddress` types each piece as a required `string`, so
+ * this is only reachable by calling here directly.
+ *
+ * The other three are shapes this site does not use:
  *
  * - `[...name]` swallows the rest of the address and is meant to carry slashes; escaping turns each
  *   into `%2F`, so the two ways of writing one link stop producing the same address.
- * - `[[name]]` may be left out, and leaving it out is fine — an absent key never reaches the
- *   escaping. Writing the name with nothing behind it is the hazard: `resolve` drops that segment,
- *   while escaping turns the missing value into the literal word `undefined` and writes it in.
+ * - `[[name]]` may be left out, which is the case above rather than a separate one.
  * - `[name=test]` runs its test against the address before SvelteKit unescapes it, so a test that
  *   accepts a character escaping encodes will pass for `resolve` and refuse for this.
  *
  * Teaching this site a new piece shape means teaching the escaping about it too.
+ *
+ * `example-site-shared` exports a `getFullAddress` too, along with `LinkAddress` and `HrefParams`,
+ * and all three mean something different there: its list is written by hand and marks a changing
+ * piece `$name`, where this one is read from what SvelteKit generates and marks it `[name]`. The
+ * names are shared deliberately so the example sites read alike, and nothing imports both of any
+ * pair — but a file can import from both packages, which `storyExampleCards.ts` does. This site
+ * keeps its own so its addresses stay the generated ones, which is what makes a renamed route
+ * folder fail the type check rather than drift.
  */
 export function getFullAddress(href: RouteId, hrefParams?: HrefParams): ResolvedPathname {
 	const escapedPieces = Object.entries(hrefParams ?? {}).map(([name, pieceValue]) => [
