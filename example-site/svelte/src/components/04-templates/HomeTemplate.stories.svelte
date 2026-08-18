@@ -25,7 +25,6 @@
 			}
 		}
 	});
-	type Args = Omit<PropsForHomeTemplate, 'children'>;
 </script>
 
-<Story name="Primary" args={{ featuredMeals: 'featured' as any } satisfies Args} />
+<Story name="Primary" args={{ featuredMeals: 'featured' as any } satisfies PropsForHomeTemplate} />

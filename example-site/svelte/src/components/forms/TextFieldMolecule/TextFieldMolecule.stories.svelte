@@ -13,12 +13,14 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForTextFieldMolecule, 'children'>;
 </script>
 
 <Story
 	name="Primary"
-	args={{ label: 'First Name', placeholder: 'Enter your first name' } satisfies Args}
+	args={{
+		label: 'First Name',
+		placeholder: 'Enter your first name'
+	} satisfies PropsForTextFieldMolecule}
 >
 	{#snippet template(args)}
 		<TextFieldMoleculeDecorator {...args} />
@@ -27,7 +29,10 @@
 
 <Story
 	name="Error State"
-	args={{ label: 'First Name', placeholder: 'Enter your first name' } satisfies Args}
+	args={{
+		label: 'First Name',
+		placeholder: 'Enter your first name'
+	} satisfies PropsForTextFieldMolecule}
 >
 	{#snippet template(args)}
 		<TextFieldMoleculeDecorator {...args} validate="initial" />

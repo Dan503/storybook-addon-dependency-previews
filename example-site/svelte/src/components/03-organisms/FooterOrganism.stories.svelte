@@ -14,7 +14,6 @@
 	})
 </script>
 
-<!-- No `Args` type, because the footer takes no props. -->
 <Story name="Primary" args={{}}>
 	<p>03 Organisms / Footer Organism</p>
 </Story>

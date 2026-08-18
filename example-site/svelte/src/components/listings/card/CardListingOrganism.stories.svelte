@@ -26,10 +26,9 @@
 			}
 		}
 	});
-	type Args = Omit<PropsForCardListingOrganism, 'children'>;
 </script>
 
-<Story name="Primary" args={{ cards: 'meals' } as unknown as Args}>
+<Story name="Primary" args={{ cards: 'meals' } as unknown as PropsForCardListingOrganism}>
 	{#snippet template(args)}
 		<CardListingOrganism {...args} />
 	{/snippet}

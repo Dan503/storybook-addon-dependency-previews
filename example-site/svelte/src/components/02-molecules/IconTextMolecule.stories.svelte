@@ -14,11 +14,12 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForIconTextMolecule, 'children'>;
 </script>
 
-<Story name="Map Pin" args={{ Icon: MapPinIcon } satisfies Args}>
+<Story name="Map Pin" args={{ Icon: MapPinIcon } satisfies PropsForIconTextMolecule}>
 	123 Main St, Anytown, Australia
 </Story>
 
-<Story name="Phone" args={{ Icon: PhoneIcon } satisfies Args}>0412 345 678</Story>
+<Story name="Phone" args={{ Icon: PhoneIcon } satisfies PropsForIconTextMolecule}
+	>0412 345 678</Story
+>
