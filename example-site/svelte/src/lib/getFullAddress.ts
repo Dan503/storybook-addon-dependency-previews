@@ -49,6 +49,15 @@ export type HrefParams = NonNullable<LinkAddress['hrefParams']>;
  *
  * For a link written straight into markup there is nothing to carry through a prop, so call
  * `resolve` and get the pairing checked: that is what the nav links and the site logo do.
+ *
+ * The escaping is right for a piece that is one segment and always present, which is every piece
+ * this site has. Two of the other shapes SvelteKit can write would get it wrong, and both would make
+ * this disagree with a `resolve` call in markup rather than merely fail. A piece that swallows the
+ * rest of the address is meant to carry slashes, and escaping turns each into `%2F`, so the two
+ * ways of writing one link stop producing the same address. A piece that may be left out is dropped
+ * by `resolve`, but escaping a missing value yields the literal word `undefined`, which is truthy,
+ * so it would be written into the address instead. Teaching this site a new piece shape means
+ * teaching the escaping about it too.
  */
 export function getFullAddress(href: RouteId, hrefParams?: HrefParams): ResolvedPathname {
 	const escapedPieces = Object.entries(hrefParams ?? {}).map(([name, pieceValue]) => [
