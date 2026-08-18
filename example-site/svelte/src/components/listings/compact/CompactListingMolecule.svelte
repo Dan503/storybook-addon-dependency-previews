@@ -6,11 +6,11 @@
 	 * The address is optional — without one the item draws as plain content rather than a link.
 	 * Addresses outside this site belong in `ExternalLinkAtom`.
 	 */
-	export type PropsForCompactListingMolecule = {
+	export type PropsForCompactListingMolecule = OptionalLinkAddress & {
 		imageSrc: string;
 		title: string;
 		description: string;
-	} & OptionalLinkAddress;
+	};
 
 	const { description, imageSrc, title, href, hrefParams }: PropsForCompactListingMolecule =
 		$props();

@@ -2,11 +2,11 @@
 	import type { Meal } from 'example-site-shared/data';
 	import type { LinkAddress } from '$lib/getFullAddress';
 
-	export type PropsForCardMolecule = {
+	export type PropsForCardMolecule = LinkAddress & {
 		title: string;
 		imgSrc: string;
 		description: string;
-	} & LinkAddress;
+	};
 
 	/**
 	 * Builds the card for one meal.
