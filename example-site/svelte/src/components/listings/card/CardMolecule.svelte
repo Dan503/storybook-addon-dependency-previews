@@ -1,21 +1,11 @@
 <script lang="ts" module>
 	import type { Meal } from 'example-site-shared/data';
-	import type { RouteId } from '$app/types';
-	import type { HrefParams } from '$lib/getFullAddress';
+	import type { LinkAddress } from '$lib/getFullAddress';
 
-	export interface PropsForCardMolecule {
+	export interface PropsForCardMolecule extends LinkAddress {
 		title: string;
 		imgSrc: string;
 		description: string;
-		/**
-		 * The page to link to. One with a `[name]` in it needs that piece in `hrefParams`.
-		 *
-		 * SvelteKit offers `/meal` here as well, which is a folder with no page behind it — linking
-		 * to it reaches a "not found" page. Every other address on the list is a real page.
-		 */
-		href: RouteId;
-		/** The pieces that complete the address, looked up by the name in the brackets. */
-		hrefParams?: HrefParams;
 	}
 
 	/**

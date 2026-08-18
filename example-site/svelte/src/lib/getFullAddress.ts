@@ -25,6 +25,30 @@ type AddressWithPieces = Exclude<RouteParams<RouteId>, Record<string, never>>;
 export type HrefParams = Partial<Record<AnyKeyOf<AddressWithPieces>, string>>;
 
 /**
+ * Where a link points: one of this site's addresses, and the pieces that complete it.
+ *
+ * The two travel together everywhere a link is drawn, so anything that takes a link takes this
+ * rather than restating the pair. Kept as two separate fields rather than tying each address to
+ * its own pieces, because tying them makes a component's props a set of alternatives, which is
+ * what stops Storybook working out a story's arguments. `getFullAddress` checks the pairing when
+ * the link is drawn instead.
+ *
+ * A link whose address may be left off entirely takes `Partial<LinkAddress>`, which is what the
+ * compact listing does.
+ */
+export interface LinkAddress {
+	/**
+	 * The page to link to. One with a `[name]` in it needs that piece in `hrefParams`.
+	 *
+	 * SvelteKit offers `/meal` here as well, which is a folder with no page behind it — linking to
+	 * it reaches a "not found" page. Every other address on the list is a real page.
+	 */
+	href: RouteId;
+	/** The pieces that complete the address, looked up by the name in the brackets. */
+	hrefParams?: HrefParams;
+}
+
+/**
  * A `[name]` in an address, standing for a piece that changes.
  *
  * Safe to share between calls despite the `g` flag: `matchAll` reads from its own copy and leaves
