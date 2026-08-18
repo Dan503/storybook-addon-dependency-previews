@@ -4,7 +4,7 @@
 		type PropsForCardListingOrganism
 	} from './CardListingOrganism.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { mealCardsForThisSite } from '$lib/storyExampleCards';
+	import { mealCardsForSvelte } from '$lib/storyExampleCards';
 
 	const { Story } = defineMeta({
 		title: 'Listings / Card / Card Listing Organism',
@@ -17,7 +17,7 @@
 		argTypes: {
 			cards: {
 				mapping: {
-					meals: mealCardsForThisSite
+					meals: mealCardsForSvelte
 				},
 				control: {
 					type: 'select'

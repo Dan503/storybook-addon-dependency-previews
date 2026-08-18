@@ -2,7 +2,7 @@ import { categoryCardList, mealCardList, mealCards } from 'example-site-shared/d
 import type { RouteId } from '$app/types';
 
 /**
- * The shared example cards, with their addresses put in this site's marking, for the stories to
+ * The shared example cards, with their addresses put in Svelte's marking, for the stories to
  * draw from.
  *
  * The five example sites share one set of example cards, and those cards write an address the way
@@ -12,18 +12,18 @@ import type { RouteId } from '$app/types';
  *
  * Only the stories use these. The site's own pages build their cards from live data.
  */
-function withSiteAddress<TCard>(cards: Array<TCard>, href: RouteId) {
+function withSvelteAddress<TCard>(cards: Array<TCard>, href: RouteId) {
 	return cards.map((card) => ({ ...card, href }));
 }
 
 /** Meal cards for the card listing organism's story. */
-export const mealCardsForThisSite = withSiteAddress(mealCards, '/meal/[mealId]');
+export const mealCardsForSvelte = withSvelteAddress(mealCards, '/meal/[mealId]');
 
 /** Category cards for the card list template's story. */
-export const categoryCardListForThisSite = withSiteAddress(
+export const categoryCardListForSvelte = withSvelteAddress(
 	categoryCardList,
 	'/categories/[category]'
 );
 
-/** Meal cards for the card list template's story — a different shape from `mealCardsForThisSite`. */
-export const mealCardListForThisSite = withSiteAddress(mealCardList, '/meal/[mealId]');
+/** Meal cards for the card list template's story — a different shape from `mealCardsForSvelte`. */
+export const mealCardListForSvelte = withSvelteAddress(mealCardList, '/meal/[mealId]');
