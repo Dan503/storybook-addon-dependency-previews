@@ -1,19 +1,28 @@
 import { resolve } from '$app/paths';
 import type { ResolvedPathname, RouteId, RouteParams } from '$app/types';
 
+/** Every name across a set of alternatives — `keyof` on its own gives only the ones they share. */
+type AnyKeyOf<T> = T extends unknown ? keyof T : never;
+
+/**
+ * The addresses that take a changing piece.
+ *
+ * `Exclude` drops the empty set every fixed address contributes, and it is doing real work rather
+ * than tidying: that set's keys are `string`, which swallows the real names, and a piece named
+ * anything at all would then be accepted.
+ */
+type AddressWithPieces = Exclude<RouteParams<RouteId>, Record<string, never>>;
+
 /**
  * The pieces that complete an address, looked up by name.
  *
- * The names are read out of what SvelteKit generates from this site's own route folders, rather
- * than written out here, so renaming a piece in a route folder fails the type check on this line
- * rather than drifting quietly.
+ * Worked out from the addresses SvelteKit generates for this site rather than listed here, so a
+ * route folder that gains a changing piece, or renames one, needs no edit to this file — the names
+ * follow it, and any call site still passing the old one stops compiling.
  *
- * Every entry is optional because an address needs only its own piece — no address on this site
- * takes both.
+ * Every entry is optional because an address needs only its own piece.
  */
-export type HrefParams = Partial<
-	RouteParams<'/categories/[category]'> & RouteParams<'/meal/[mealId]'>
->;
+export type HrefParams = Partial<Record<AnyKeyOf<AddressWithPieces>, string>>;
 
 /**
  * A `[name]` in an address, standing for a piece that changes.
