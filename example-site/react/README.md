@@ -29,15 +29,18 @@ pnpm test
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
-## Linting & Formatting
+## Linting, Formatting & Type Checking
 
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+This project uses [eslint](https://eslint.org/) for linting, [prettier](https://prettier.io/) for formatting, and `tsc` for type checking. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
 
 ```bash
-pnpm lint
-pnpm format
-pnpm check
+pnpm lint         # eslint
+pnpm format       # prettier, writing changes
+pnpm typecheck    # tsc --noEmit
+pnpm check        # report only: prettier check, then typecheck — no eslint
 ```
+
+`check` reports and never writes, so it is the one to run in an automated setting. It deliberately leaves eslint out; run `pnpm lint` for that.
 
 ## Routing
 
