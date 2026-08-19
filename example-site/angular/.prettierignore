@@ -1,3 +1,7 @@
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+# Generated on every `sb`, `sb:build` and `sb:deps` run
+.storybook/dependency-previews.json
+.storybook/dependency-previews.raw.json

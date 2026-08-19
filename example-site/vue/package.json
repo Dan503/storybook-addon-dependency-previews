@@ -36,6 +36,7 @@
 		"storybook": "^10.4.1",
 		"storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
 		"tailwindcss": "^4.0.6",
+		"typescript": "~5.9.3",
 		"vite": "^7.1.7",
 		"vue-tsc": "^3.3.10"
 	}
