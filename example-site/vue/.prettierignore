@@ -1,13 +1,7 @@
-# Package Managers
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
-bun.lock
-bun.lockb
 
 # Generated on every `sb`, `sb:build` and `sb:deps` run
 .storybook/dependency-previews.json
 .storybook/dependency-previews.raw.json
-
-# Miscellaneous
-/static/

@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import HeaderOrganism, { type PropsForHeaderOrganism } from './HeaderOrganism.vue'
+import HeaderOrganism, {
+	type PropsForHeaderOrganism,
+} from './HeaderOrganism.vue'
 
 const meta: Meta<typeof HeaderOrganism> = {
 	title: '03 Organisms / Header Organism',
 	component: HeaderOrganism,
-	tags: ["autodocs","organism"],
+	tags: ['autodocs', 'organism'],
 	parameters: {
 		layout: 'padded',
 	} satisfies StoryParameters,

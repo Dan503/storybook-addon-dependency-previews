@@ -18,9 +18,7 @@ const activeNavItem = useActiveNavItem()
 			:class="{ underline: activeNavItem === 'categories' }"
 			>Food categories</NuxtLink
 		>
-		<NuxtLink
-			to="/contact"
-			:class="{ underline: activeNavItem === 'contact' }"
+		<NuxtLink to="/contact" :class="{ underline: activeNavItem === 'contact' }"
 			>Contact us</NuxtLink
 		>
 	</nav>
