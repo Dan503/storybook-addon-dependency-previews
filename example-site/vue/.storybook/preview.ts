@@ -7,36 +7,16 @@ import {
 	dependencyPreviewDecorators,
 	type StorybookPreviewConfig,
 } from 'storybook-addon-dependency-previews'
-import type { RoutePattern } from 'example-site-shared/utils'
+import { routePatterns } from './routePatterns'
 
 import '../app/assets/css/main.css'
 import dependenciesJson from './dependency-previews.json'
 
 const blankRouteComponent = { template: '<div />' }
 
-// Every address the site has, as vue-router matches them. This is the one place
-// that stays on the `:name` spelling — it is vue-router's own syntax and cannot
-// be anything else, while the site's links are written the way Nuxt names its
-// pages.
-//
-// A record rather than a list, so the type check insists on all of them. A list
-// would only check that each entry is one of the shared addresses, which leaves
-// this free to fall behind the moment the shared list gains one. Each value is
-// `true` only because a key needs one; the keys are the point.
-//
-// Written out one by one rather than caught by a catch-all, so a story pointing
-// somewhere the site does not have still shows up as unmatched.
-const everyRoutePattern: Record<RoutePattern, true> = {
-	'/': true,
-	'/categories': true,
-	'/categories/:category': true,
-	'/meal/:mealId': true,
-	'/contact': true,
-}
-
 const router = createRouter({
 	history: createMemoryHistory(),
-	routes: Object.keys(everyRoutePattern).map((path) => ({
+	routes: routePatterns.map((path) => ({
 		path,
 		component: blankRouteComponent,
 	})),

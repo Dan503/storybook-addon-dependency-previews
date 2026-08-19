@@ -1,12 +1,4 @@
-import {
-	categoryCardList,
-	mealCardList,
-	mealCards,
-} from 'example-site-shared/data'
-import type { RouteFileName } from 'example-site-shared/utils'
-import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
-
-/**
+/*
  * The shared example cards, with their addresses put into this site's spelling,
  * for the stories to draw from.
  *
@@ -23,6 +15,21 @@ import type { PropsForCardMolecule } from '../../components/listings/card/CardMo
  * literal `/meal/$mealId` rather than as an error. Each list below is checked
  * against the card's own props for that reason: this file is read by the type
  * check even though the stories drawing from it are not.
+ */
+
+import {
+	categoryCardList,
+	mealCardList,
+	mealCards,
+} from 'example-site-shared/data'
+import type { RouteFileName } from 'example-site-shared/utils'
+import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
+
+/**
+ * Puts one address on every card in a list, leaving the rest of each card alone.
+ *
+ * @param cards - the shared cards to re-address
+ * @param href - the address they should carry, in this site's spelling
  */
 function withSiteAddress<TCard>(cards: Array<TCard>, href: RouteFileName) {
 	return cards.map((card) => ({ ...card, href }))

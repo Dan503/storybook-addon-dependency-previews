@@ -1,11 +1,17 @@
 {
-	// What `pnpm typecheck` reads. Nuxt's own generated project covers `app/`
-	// and everything those pages import, but not `.storybook/`, which holds the
-	// router Storybook stands in for Nuxt's own — and that router's list of
-	// addresses is type-checked against the shared list, so it has to be read by
-	// something. Story files themselves are still left out: Storybook's `Meta`
-	// does not line up with the four components here that take a type parameter,
-	// which is a pre-existing disagreement and nothing to do with the addresses.
+	// What `pnpm typecheck` reads. Nuxt's own generated project covers `app/` and
+	// everything those pages import, but nothing under `.storybook/` — and the
+	// list of addresses the stand-in router uses is checked against the shared
+	// list, so it has to be read by something.
+	//
+	// That one file is named rather than the whole folder. Its neighbour
+	// `preview.ts` imports the dependency graph `sb-deps` generates, which is not
+	// in the repository, so taking in the folder would make this fail on a fresh
+	// clone until someone had run Storybook once.
+	//
+	// Story files are left out as well: Storybook's `Meta` does not line up with
+	// the four components here that take a type parameter, a pre-existing
+	// disagreement that has nothing to do with the addresses.
 	"extends": "./.nuxt/tsconfig.app.json",
-	"include": [".nuxt/nuxt.d.ts", "app/**/*", ".storybook/**/*"]
+	"include": [".nuxt/nuxt.d.ts", "app/**/*", ".storybook/routePatterns.ts"]
 }

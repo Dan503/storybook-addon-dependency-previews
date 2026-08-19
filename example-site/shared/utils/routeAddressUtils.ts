@@ -8,11 +8,13 @@
  * still being moved onto these addresses, so for now a few of its pages are at
  * addresses that are not in this list.
  *
- * A site that uses this list has its addresses added here by hand. Both sites
- * that do at least refuse a link pointing at an address the list does not have
- * — though a page nobody links to still slips by. Angular will want the same
- * care once it moves onto it. React and Svelte read their own generated lists,
- * so their pages are not this list's concern.
+ * A site that uses this list has its addresses added here by hand, and how much
+ * that buys depends on how much of the site goes through it. Solid puts every
+ * internal link through the list, so a link to an address the list does not have
+ * is refused; Vue only puts its card links through it, and its navigation links
+ * are still free text. Either way a page nobody links to still slips by. Angular
+ * will want the same care once it moves onto the list. React and Svelte read
+ * their own generated lists, so their pages are not this list's concern.
  *
  * Each address is spelled out in full rather than written as a fixed start plus
  * free text, because an address that is only partly written out is never offered
@@ -23,9 +25,10 @@
  * had in any of those spellings. Left off, they give `$name`, which is how the
  * React site's router writes them and how a link's address is written here.
  *
- * Ask for a spelling by its name below rather than writing the marks out where
- * they are used: only a named type is offered as an autocomplete option, which
- * is the whole point of the list.
+ * Prefer asking for a spelling by its name below to writing the marks out where
+ * they are used. Either works, and both autocomplete — a name just says which
+ * spelling is meant, and gives one place to change it if a framework's ever
+ * does.
  */
 export type RouteAddress<
 	Before extends string = '$',

@@ -8,7 +8,7 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 pnpm typecheck
 ```
 
-This runs `vue-tsc` over `tsconfig.typecheck.json`, which covers the site's own code: everything under `app/`, every component those pages reach through their imports, and `.storybook/` — the last of those because the router Storybook stands in for Nuxt's own has its addresses checked against the shared list, so something has to read it.
+This runs `vue-tsc` over `tsconfig.typecheck.json`, which covers the site's own code: everything under `app/`, every component those pages reach through their imports, and `.storybook/routePatterns.ts` — the last of those because the addresses the stand-in router uses are checked against the shared list, so something has to read them. That one file is named rather than the whole folder, so that a fresh clone can run this before anyone has run Storybook: its neighbour `preview.ts` imports a dependency graph that `sb-deps` generates and the repository does not carry.
 
 Story files are left out, and so is anything reachable only from one. That is not only to keep them cheap: Storybook's `Meta` does not line up with the four components here that take a type parameter, a pre-existing disagreement that has nothing to do with the code under test. Storybook is what exercises those. It is also why the example cards the stories draw from are assembled in `app/lib/storyExampleCards.ts`, which _is_ checked — a card whose address stops matching the card component is caught there rather than going unnoticed in a story.
 
