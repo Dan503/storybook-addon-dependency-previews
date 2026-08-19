@@ -12,12 +12,13 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForExternalLinkAtom, 'children'>;
 </script>
 
 <Story
 	name="Primary"
-	args={{ href: 'https://github.com/Dan503/storybook-addon-dependency-previews' } satisfies Args}
+	args={{
+		href: 'https://github.com/Dan503/storybook-addon-dependency-previews'
+	} satisfies PropsForExternalLinkAtom}
 >
 	Storybook Dependency Previews on GitHub
 </Story>

@@ -15,7 +15,6 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForCompactListingMolecule, 'children'>;
 </script>
 
 <Story
@@ -24,7 +23,17 @@
 		title: exampleIngredient.ingredient,
 		imageSrc: exampleIngredient.imageUrl.small,
 		description: exampleIngredient.amount
-	} satisfies Args}
+	} satisfies PropsForCompactListingMolecule}
 >
 	<p>Listings / Compact / Compact Listing Molecule</p>
 </Story>
+
+<Story
+	name="Links to a page"
+	args={{
+		title: exampleIngredient.ingredient,
+		imageSrc: exampleIngredient.imageUrl.small,
+		description: exampleIngredient.amount,
+		href: '/'
+	} satisfies PropsForCompactListingMolecule}
+/>

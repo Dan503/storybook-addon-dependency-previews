@@ -26,11 +26,13 @@
 			}
 		}
 	});
-	type Args = Omit<PropsForDetailPageTemplate, 'children'>;
 </script>
 
-<Story name="Primary" args={{ meal: 'example' as any } satisfies Args} />
+<Story name="Primary" args={{ meal: 'example' as any } satisfies PropsForDetailPageTemplate} />
 
-<Story name="Loading" args={{ meal: null, isLoading: true } satisfies Args} />
+<Story name="Loading" args={{ meal: null, isLoading: true } satisfies PropsForDetailPageTemplate} />
 
-<Story name="Null meal" args={{ meal: null, isLoading: false } satisfies Args} />
+<Story
+	name="Null meal"
+	args={{ meal: null, isLoading: false } satisfies PropsForDetailPageTemplate}
+/>

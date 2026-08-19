@@ -19,13 +19,12 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForFormDataMolecule<ContactFormSchemaType>, 'children'>;
 	const form = createForm({
 		schema: contactFormSchema,
 		initialInput: exampleContactFormValues
 	});
 </script>
 
-<Story name="Primary" args={{ form } satisfies Args}>
+<Story name="Primary" args={{ form } satisfies PropsForFormDataMolecule<ContactFormSchemaType>}>
 	<ChildContentAtom />
 </Story>

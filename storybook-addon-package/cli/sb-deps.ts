@@ -1408,10 +1408,9 @@ function scaffoldStoryForSvelteComponent(
 			layout: 'padded',
 		} satisfies StoryParameters,
 	})
-	type Args = Omit<PropsFor${componentName}, 'children'>;
 </script>
 
-<Story name="Primary" args={{} satisfies Args}>
+<Story name="Primary" args={{} satisfies PropsFor${componentName}}>
 	<p>${title}</p>
 </Story>
 `
