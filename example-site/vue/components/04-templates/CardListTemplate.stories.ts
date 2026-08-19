@@ -3,7 +3,7 @@ import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import {
 	categoryCardListForSite,
 	mealCardListForSite,
-} from '../../app/utils/storyExampleCards'
+} from '../../app/lib/storyExampleCards'
 import CardListTemplate, {
 	type PropsForCardListTemplate,
 } from './CardListTemplate.vue'

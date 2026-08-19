@@ -2,17 +2,17 @@
  * The addresses the example sites link to.
  *
  * The sites are meant to share one set of addresses, so this list is the one
- * place they are written down. Solid is the site that imports it. React and
- * Svelte sit on the same addresses but each reads them from the list its own
- * router generates, so neither needs anything from here. Vue and Angular are
- * being moved onto these addresses one at a time, so for now a few of their
- * pages are still at addresses that are not in this list.
+ * place they are written down. Solid and Vue are the sites that import it.
+ * React and Svelte sit on the same addresses but each reads them from the list
+ * its own router generates, so neither needs anything from here. Angular is
+ * still being moved onto these addresses, so for now a few of its pages are at
+ * addresses that are not in this list.
  *
- * A site that uses this list has its addresses added here by hand. Solid, the
- * only one that does today, at least refuses a link pointing at an address the
- * list does not have — though a page nobody links to still slips by. Vue and
- * Angular will want the same care once they move onto it. React and Svelte
- * read their own generated lists, so their pages are not this list's concern.
+ * A site that uses this list has its addresses added here by hand. Both sites
+ * that do at least refuse a link pointing at an address the list does not have
+ * — though a page nobody links to still slips by. Angular will want the same
+ * care once it moves onto it. React and Svelte read their own generated lists,
+ * so their pages are not this list's concern.
  *
  * Each address is spelled out in full rather than written as a fixed start plus
  * free text, because an address that is only partly written out is never offered
@@ -121,8 +121,9 @@ export function createAddressFiller<
 >(marks: RouteMarks<Before, After>) {
 	const { before, after } = marks
 	// Built once for the filler rather than per call. The marks are data now, and
-	// every one of them means something in a search, so each is escaped first —
-	// left raw, `$` matches the end of the address and `[` starts a set.
+	// some of them mean something in a search, so each is escaped first — left
+	// raw, `$` matches the end of the address and `[` starts a set of characters.
+	// A `:` needs no escaping, but the marks are not this function's to know.
 	const changingPiece = new RegExp(
 		`${escapeForSearch(before)}(\\w+)${escapeForSearch(after)}`,
 		'g',
@@ -214,10 +215,11 @@ function getUnusablePieceMessage({
 /**
  * Makes text safe to drop into a search, so each character stands for itself.
  *
- * Every mark a framework uses to set off a changing piece happens to mean
- * something in a search — `$` matches the end of the text, `[` and `]` bound a
- * set of characters — so without this a filler built for one of them quietly
- * looks for the wrong thing.
+ * Several of the marks a framework uses to set off a changing piece mean
+ * something in a search — `$` matches the end of the text, and `[` and `]` bound
+ * a set of characters — so without this a filler built for one of them quietly
+ * looks for the wrong thing. A `:` happens to be safe already; passing every
+ * mark through here means no caller has to know which are which.
  *
  * @param text - the text to be searched for exactly as written
  */

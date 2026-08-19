@@ -45,7 +45,7 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
 </script>
 
 <script setup lang="ts">
-import { getFullAddress } from '../../../app/utils/getFullAddress'
+import { getFullAddress } from '../../../app/lib/getFullAddress'
 
 const { title, imgSrc, description, href, hrefParams } =
 	defineProps<PropsForCardMolecule>()
