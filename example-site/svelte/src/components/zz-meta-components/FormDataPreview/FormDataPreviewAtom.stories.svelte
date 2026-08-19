@@ -21,12 +21,13 @@
 		} satisfies StoryParameters
 	});
 
-	type Args = Omit<PropsForFormDataPreviewAtom<ContactFormSchemaType>, 'children'>;
-
 	const form = createForm({
 		schema: contactFormSchema,
 		initialInput: exampleContactFormValues
 	});
 </script>
 
-<Story name="Primary" args={{ form } satisfies Args} />
+<Story
+	name="Primary"
+	args={{ form } satisfies PropsForFormDataPreviewAtom<ContactFormSchemaType>}
+/>

@@ -1,4 +1,5 @@
 <script>
+	import { resolve } from '$app/paths';
 	import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.svelte';
 	import MainNavMolecule from '../02-molecules/MainNavMolecule.svelte';
 	import logo from '$lib/assets/simplified-logo.png';
@@ -9,7 +10,7 @@
 		<div
 			class="flex w-full items-center justify-between gap-2 max-md:flex-col max-md:justify-center"
 		>
-			<a href="/" class="flex items-center gap-2">
+			<a href={resolve('/')} class="flex items-center gap-2">
 				<img src={logo} alt="Logo" height={50} width={50} />
 				<p class="text-3xl font-extrabold">The Meal Place</p>
 			</a>

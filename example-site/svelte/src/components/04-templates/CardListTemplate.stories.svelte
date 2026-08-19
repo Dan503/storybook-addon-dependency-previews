@@ -2,7 +2,7 @@
 	import type { StoryParameters } from 'storybook-addon-dependency-previews';
 	import CardListTemplate from './CardListTemplate.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { categoryCardList, mealCardList } from 'example-site-shared/data';
+	import { categoryCardListForSvelte, mealCardListForSvelte } from '$lib/storyExampleCards';
 
 	const { Story } = defineMeta({
 		title: '04 Templates / Card List Template',
@@ -16,8 +16,8 @@
 			// Use mapping to prevent large data from being serialized into URL
 			cardList: {
 				mapping: {
-					categories: categoryCardList,
-					meals: mealCardList
+					categories: categoryCardListForSvelte,
+					meals: mealCardListForSvelte
 				},
 				control: {
 					type: 'select'

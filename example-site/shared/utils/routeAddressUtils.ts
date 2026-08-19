@@ -2,12 +2,17 @@
  * The addresses the example sites link to.
  *
  * The sites are meant to share one set of addresses, so this list is the one
- * place they are written down. React and Solid already sit on it; the Svelte,
- * Vue and Angular sites are being moved onto it one at a time, so for now a few
- * of their pages are still at addresses that are not in this list.
+ * place they are written down. Solid is the site that imports it. React and
+ * Svelte sit on the same addresses but each reads them from the list its own
+ * router generates, so neither needs anything from here. Vue and Angular are
+ * being moved onto these addresses one at a time, so for now a few of their
+ * pages are still at addresses that are not in this list.
  *
- * Adding a page to a site means adding its address here — nothing checks that
- * automatically for the sites whose framework generates no list of its own.
+ * A site that uses this list has its addresses added here by hand. Solid, the
+ * only one that does today, at least refuses a link pointing at an address the
+ * list does not have — though a page nobody links to still slips by. Vue and
+ * Angular will want the same care once they move onto it. React and Svelte
+ * read their own generated lists, so their pages are not this list's concern.
  *
  * Each address is spelled out in full rather than written as a fixed start plus
  * free text, because an address that is only partly written out is never offered
@@ -78,34 +83,37 @@ export function getFullAddress({ href, hrefParams }: LinkAddress): string {
 	return href.replace(changingPiece, (marker, pieceName: string) => {
 		const pieceValue = pieceValues.get(pieceName)
 		if (!pieceValue) {
-			const message = getUnusablePieceMessage(
-				href,
-				marker,
-				pieceName,
-				pieceValues,
-			)
+			const message = getUnusablePieceMessage({ href, marker, pieceValues })
 			throw new Error(message)
 		}
 		return encodeURIComponent(pieceValue)
 	})
 }
 
+interface GetUnusablePieceMessageParams {
+	/** the address being built, quoted back in the message */
+	href: string
+	/** the piece as it appears in the address, like `$mealId` */
+	marker: string
+	/** the pieces the caller passed, by name */
+	pieceValues: Map<string, string>
+}
+
 /**
  * Says why a changing piece could not be used, for the error `getFullAddress`
  * throws. The name being present but empty is worth telling apart from it being
  * absent, because the two are fixed in different places.
- *
- * @param href - the address being built, quoted back in the message
- * @param marker - the piece as it appears in the address, like `$mealId`
- * @param pieceName - the same piece without the `$`, like `mealId`
- * @param pieceValues - the pieces the caller passed, by name
  */
-function getUnusablePieceMessage(
-	href: string,
-	marker: string,
-	pieceName: string,
-	pieceValues: Map<string, string>,
-): string {
+function getUnusablePieceMessage({
+	href,
+	marker,
+	pieceValues,
+}: GetUnusablePieceMessageParams): string {
+	// The marker is the piece name with a `$` in front of it, so the name is the
+	// rest of it. Taking it from the marker rather than as a second argument
+	// means the two cannot be handed over the wrong way round.
+	const markerPrefix = '$'
+	const pieceName = marker.slice(markerPrefix.length)
 	const isPieceBlank = pieceValues.get(pieceName) === ''
 	if (isPieceBlank) {
 		return `The address "${href}" was given an empty ${marker}, which would link to the wrong page.`

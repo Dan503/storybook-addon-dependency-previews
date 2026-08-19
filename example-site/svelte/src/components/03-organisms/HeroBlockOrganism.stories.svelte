@@ -13,7 +13,6 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForHeroBlockOrganism, 'children'>;
 </script>
 
 <Story
@@ -21,7 +20,7 @@
 	args={{
 		title: 'Hero Block Title',
 		imgSrc: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg'
-	} satisfies Args}
+	} satisfies PropsForHeroBlockOrganism}
 >
 	<p>This is where the hero block content goes.</p>
 </Story>

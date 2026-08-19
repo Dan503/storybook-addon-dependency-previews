@@ -13,12 +13,11 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForErrorListMolecule, 'children'>;
 
 	const errorStrings: FormErrors = ['Error One', 'Second error'];
 	const errorObjects: FormErrors = errorStrings.map((err) => new Error(err));
 </script>
 
-<Story name="Error Strings" args={{ errors: errorStrings } satisfies Args} />
+<Story name="Error Strings" args={{ errors: errorStrings } satisfies PropsForErrorListMolecule} />
 
-<Story name="Error Objects" args={{ errors: errorObjects } satisfies Args} />
+<Story name="Error Objects" args={{ errors: errorObjects } satisfies PropsForErrorListMolecule} />

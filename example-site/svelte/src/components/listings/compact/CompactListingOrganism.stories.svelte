@@ -27,14 +27,13 @@
 			}
 		}
 	});
-	type Args = Omit<PropsForCompactListingOrganism, 'children'>;
 </script>
 
 <Story
 	name="Primary"
 	args={{
 		items: 'ingredients' as any
-	} satisfies Args}
+	} satisfies PropsForCompactListingOrganism}
 >
 	<p>Listings / Compact / Compact Listing Organism</p>
 </Story>

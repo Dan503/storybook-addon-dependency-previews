@@ -12,7 +12,8 @@
 					title: c.strCategory,
 					description: c.strCategoryDescription,
 					imgSrc: c.strCategoryThumb,
-					href: `/category/${c.strCategory}`
+					href: '/categories/[category]',
+					hrefParams: { category: c.strCategory }
 				}) satisfies PropsForCardMolecule
 		)
 	);
