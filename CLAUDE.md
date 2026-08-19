@@ -35,8 +35,8 @@ pnpm typecheck    # Type-check both browser and CLI tsconfigs
 ### Example Site (`example-site/`)
 
 ```sh
-pnpm dev          # Vite dev server on port 3000
-pnpm test         # Run Vitest
+pnpm dev          # Vite dev server — every site but angular, which uses `start` (ng serve)
+pnpm test         # react (Vitest) and angular (ng test) only — the other three have no test script
 pnpm lint         # ESLint — react and svelte only; never run by `check`
 pnpm format       # Prettier, writing changes — every site but angular
 pnpm typecheck    # Type-check the site — every site (tsc, svelte-check + tsc, or nuxt typecheck)
