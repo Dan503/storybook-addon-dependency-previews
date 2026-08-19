@@ -20,6 +20,6 @@
 	123 Main St, Anytown, Australia
 </Story>
 
-<Story name="Phone" args={{ Icon: PhoneIcon } satisfies PropsForIconTextMolecule}
-	>0412 345 678</Story
->
+<Story name="Phone" args={{ Icon: PhoneIcon } satisfies PropsForIconTextMolecule}>
+	0412 345 678
+</Story>
