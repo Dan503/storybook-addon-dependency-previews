@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { Meal } from 'example-site-shared/data'
-import type { LinkAddress } from 'example-site-shared/utils'
+import type { HrefParams, RouteFileName } from 'example-site-shared/utils'
 
 /**
  * A card that links to a page inside this site.
@@ -10,10 +10,18 @@ import type { LinkAddress } from 'example-site-shared/utils'
  * fails the type check. The card fills the changing piece in itself, because
  * `NuxtLink` takes a finished address.
  */
-export interface PropsForCardMolecule extends LinkAddress {
+export interface PropsForCardMolecule {
 	title: string
 	imgSrc: string
 	description: string
+	/**
+	 * Written the way this site names its pages, so `/meal/[mealId]` is the
+	 * address `pages/meal/[mealId].vue` answers. Spelled out as `RouteFileName`
+	 * rather than taken from `LinkAddress<'[', ']'>`, because only a type with a
+	 * name of its own is offered as an autocomplete option.
+	 */
+	href: RouteFileName
+	hrefParams?: HrefParams
 }
 
 /**
@@ -30,14 +38,14 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
 		title: meal.name,
 		description: meal.area,
 		imgSrc: meal.image,
-		href: '/meal/$mealId',
+		href: '/meal/[mealId]',
 		hrefParams: { mealId: meal.id },
 	}
 }
 </script>
 
 <script setup lang="ts">
-import { getFullAddress } from 'example-site-shared/utils'
+import { getFullAddress } from '../../../app/utils/getFullAddress'
 
 const { title, imgSrc, description, href, hrefParams } =
 	defineProps<PropsForCardMolecule>()

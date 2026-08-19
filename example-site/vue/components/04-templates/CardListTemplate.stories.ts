@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { categoryCardList, mealCardList } from 'example-site-shared/data'
+import {
+	categoryCardListForSite,
+	mealCardListForSite,
+} from '../../app/utils/storyExampleCards'
 import CardListTemplate, {
 	type PropsForCardListTemplate,
 } from './CardListTemplate.vue'
@@ -16,8 +19,8 @@ const meta: Meta<typeof CardListTemplate> = {
 		// Use mapping to prevent large data from being serialized into URL
 		cardList: {
 			mapping: {
-				categories: categoryCardList,
-				meals: mealCardList,
+				categories: categoryCardListForSite,
+				meals: mealCardListForSite,
 			},
 			control: {
 				type: 'select',
