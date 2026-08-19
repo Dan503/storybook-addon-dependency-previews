@@ -37,10 +37,10 @@ pnpm typecheck    # Type-check both browser and CLI tsconfigs
 ```sh
 pnpm dev          # Vite dev server on port 3000
 pnpm test         # Run Vitest
-pnpm lint         # ESLint (where the site has one; not run by `check`)
-pnpm format       # Prettier, writing changes
-pnpm typecheck    # Type-check the site (per-site tool: tsc, svelte-check + tsc, or nuxt typecheck)
-pnpm check        # Report only: Prettier check, then typecheck (angular: typecheck only)
+pnpm lint         # ESLint — react and svelte only; never run by `check`
+pnpm format       # Prettier, writing changes — every site but angular
+pnpm typecheck    # Type-check the site — every site (tsc, svelte-check + tsc, or nuxt typecheck)
+pnpm check        # Report only: Prettier check, then typecheck — every site (angular: typecheck only)
 pnpm sb           # Run Storybook with dependency watching (sb-deps --watch --run-storybook)
 pnpm sb:build     # Generate deps then build static Storybook
 pnpm sb:deps      # One-off dependency graph generation
