@@ -1,0 +1,11 @@
+{
+	// What `pnpm typecheck` reads. Nuxt's own generated project covers `app/`
+	// and everything those pages import, but not `.storybook/`, which holds the
+	// router Storybook stands in for Nuxt's own — and that router's list of
+	// addresses is type-checked against the shared list, so it has to be read by
+	// something. Story files themselves are still left out: Storybook's `Meta`
+	// does not line up with the four components here that take a type parameter,
+	// which is a pre-existing disagreement and nothing to do with the addresses.
+	"extends": "./.nuxt/tsconfig.app.json",
+	"include": [".nuxt/nuxt.d.ts", "app/**/*", ".storybook/**/*"]
+}

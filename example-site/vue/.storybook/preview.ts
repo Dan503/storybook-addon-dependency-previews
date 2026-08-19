@@ -7,27 +7,34 @@ import {
 	dependencyPreviewDecorators,
 	type StorybookPreviewConfig,
 } from 'storybook-addon-dependency-previews'
+import type { RoutePattern } from 'example-site-shared/utils'
 
 import '../app/assets/css/main.css'
 import dependenciesJson from './dependency-previews.json'
 
 const blankRouteComponent = { template: '<div />' }
 
+// The site's addresses as vue-router matches them. This is the one place that
+// stays on the `:name` spelling — it is vue-router's own syntax and cannot be
+// anything else, while the site's links are written the way Nuxt names its
+// pages. Typing the list against the shared one is what keeps the two in step.
+//
+// Written out one by one rather than caught by a catch-all, so a story pointing
+// somewhere the site does not have still shows up as unmatched.
+const routePatterns: Array<RoutePattern> = [
+	'/',
+	'/categories',
+	'/categories/:category',
+	'/meal/:mealId',
+	'/contact',
+]
+
 const router = createRouter({
 	history: createMemoryHistory(),
-	// Keep this list in step with `RouteAddress` in `example-site-shared/utils`,
-	// which is the list a card's address is checked against — the site's other
-	// links are still written as free text. Nothing enforces the pairing, so an
-	// address added there needs adding to this list too. Written out rather than
-	// caught by a catch-all, so a story pointing somewhere the site does not
-	// have still shows up as unmatched.
-	routes: [
-		{ path: '/', component: blankRouteComponent },
-		{ path: '/categories', component: blankRouteComponent },
-		{ path: '/categories/:category', component: blankRouteComponent },
-		{ path: '/meal/:mealId', component: blankRouteComponent },
-		{ path: '/contact', component: blankRouteComponent },
-	],
+	routes: routePatterns.map((path) => ({
+		path,
+		component: blankRouteComponent,
+	})),
 })
 
 setup((app) => {
