@@ -16,18 +16,52 @@
  *
  * Each address is spelled out in full rather than written as a fixed start plus
  * free text, because an address that is only partly written out is never offered
- * as an autocomplete option. A `$name` stands in for a piece that changes, which
- * is how the React site's router writes them; the other frameworks mark them
- * differently in their own route files, and that spelling is theirs to choose.
+ * as an autocomplete option.
+ *
+ * Every framework marks a changing piece its own way, so the marks that sit
+ * either side of one are given as arguments and the same five addresses can be
+ * had in any of those spellings. Left off, they give `$name`, which is how the
+ * React site's router writes them and how a link's address is written here.
+ *
+ * Ask for a spelling by its name below rather than writing the marks out where
+ * they are used: only a named type is offered as an autocomplete option, which
+ * is the whole point of the list.
  */
-export type RouteAddress =
+export type RouteAddress<
+	Before extends string = '$',
+	After extends string = '',
+> =
 	| '/'
 	| '/categories'
-	| '/categories/$category'
-	| '/meal/$mealId'
+	| `/categories/${RouteParam<Before, 'category', After>}`
+	| `/meal/${RouteParam<Before, 'mealId', After>}`
 	| '/contact'
 
-/** The name after the `$` in each address that has a changing piece. */
+/** A changing piece as one framework writes it: `$mealId`, `:mealId`, `[mealId]`. */
+type RouteParam<
+	Before extends string,
+	Name extends string,
+	After extends string,
+> = `${Before}${Name}${After}`
+
+/** The addresses as a router matches them, with a `:` before each changing piece. */
+export type RoutePattern = RouteAddress<':', ''>
+
+/** The addresses as file-based routing names them, each changing piece in brackets. */
+export type RouteFileName = RouteAddress<'[', ']'>
+
+/**
+ * What one framework puts either side of a changing piece.
+ *
+ * `after` is empty for the spellings that mark only the front, like `$mealId`
+ * and `:mealId`.
+ */
+export interface RouteMarks<Before extends string, After extends string> {
+	before: Before
+	after: After
+}
+
+/** The name of each changing piece an address can have. */
 export type HrefParamName = 'category' | 'mealId'
 
 /**
@@ -45,75 +79,123 @@ export type HrefParams = Partial<Record<HrefParamName, string>>
  * set of props rather than a set of alternatives, which is what Storybook needs
  * to work out a story's arguments. So the type checks the piece *names* but not
  * the pairing: it cannot say that `/meal/$mealId` in particular must be given a
- * `mealId`. `getFullAddress` checks that when it builds the address.
+ * `mealId`. The filler checks that when it builds the address.
+ *
+ * The marks are the same two arguments `RouteAddress` takes, so a site writing
+ * its addresses in its own spelling passes them here as well.
  */
-export interface LinkAddress {
+export interface LinkAddress<
+	Before extends string = '$',
+	After extends string = '',
+> {
 	/**
-	 * The page to link to, written the way it appears in `RouteAddress`. A
-	 * `$name` in it stands for a piece that changes and has to be supplied in
-	 * `hrefParams`.
+	 * The page to link to, written the way it appears in `RouteAddress`. The
+	 * marked-out name in it stands for a piece that changes and has to be
+	 * supplied in `hrefParams`.
 	 */
-	href: RouteAddress
+	href: RouteAddress<Before, After>
 	/**
-	 * The pieces that complete the address, looked up by the name after the `$`.
-	 * An address with no `$name` in it needs none of these. Leaving out a piece
-	 * an address does need throws when the link is drawn — the type cannot catch
-	 * it, because it does not tie the two together.
+	 * The pieces that complete the address, looked up by the name inside the
+	 * marks. An address with no changing piece needs none of these. Leaving out a
+	 * piece an address does need throws when the link is drawn — the type cannot
+	 * catch it, because it does not tie the two together.
 	 */
 	hrefParams?: HrefParams
 }
 
 /**
- * Fills an address's changing pieces in and hands back the address to link to.
+ * Builds a filler for addresses written in one framework's spelling.
  *
- * Each piece is escaped, so a page reading one back needs to unescape it to get
- * the original text. Escaping leaves digits alone, which is why a page whose
- * piece is always a number can read it back as it stands.
+ * The marks are fixed here rather than passed to each call on purpose. Were they
+ * an argument the caller could leave off, the compiler would read the spelling
+ * off whichever address it was handed and accept it, and the filler would then
+ * look for pieces marked a way the address does not use — finding none, changing
+ * nothing, and handing back an address with its marks still in it. Fixing them
+ * here means a filler refuses an address in any other spelling outright.
  *
- * An address with a `$name` in it that was given no matching piece throws, and
- * so does one given an empty piece, since both build a link that quietly points
- * at the wrong page.
+ * @param marks - what this spelling puts either side of a changing piece
  */
-export function getFullAddress({ href, hrefParams }: LinkAddress): string {
-	const changingPiece = /\$(\w+)/g
-	// A Map rather than the object itself, so a piece named after something every
-	// object inherits (`constructor`, `toString`) reads as absent rather than
-	// picking up the inherited value.
-	const pieceValues = new Map(Object.entries(hrefParams ?? {}))
-	return href.replace(changingPiece, (marker, pieceName: string) => {
-		const pieceValue = pieceValues.get(pieceName)
-		if (!pieceValue) {
-			const message = getUnusablePieceMessage({ href, marker, pieceValues })
-			throw new Error(message)
-		}
-		return encodeURIComponent(pieceValue)
-	})
+export function createAddressFiller<
+	Before extends string,
+	After extends string,
+>(marks: RouteMarks<Before, After>) {
+	const { before, after } = marks
+	// Built once for the filler rather than per call. The marks are data now, and
+	// every one of them means something in a search, so each is escaped first —
+	// left raw, `$` matches the end of the address and `[` starts a set.
+	const changingPiece = new RegExp(
+		`${escapeForSearch(before)}(\\w+)${escapeForSearch(after)}`,
+		'g',
+	)
+
+	/**
+	 * Fills an address's changing pieces in and hands back the address to link to.
+	 *
+	 * Each piece is escaped, so a page reading one back needs to unescape it to
+	 * get the original text. Escaping leaves digits alone, which is why a page
+	 * whose piece is always a number can read it back as it stands.
+	 *
+	 * An address with a changing piece that was given no matching value throws,
+	 * and so does one given an empty value, since both build a link that quietly
+	 * points at the wrong page.
+	 */
+	return ({ href, hrefParams }: LinkAddress<Before, After>): string => {
+		// A Map rather than the object itself, so a piece named after something
+		// every object inherits (`constructor`, `toString`) reads as absent rather
+		// than picking up the inherited value.
+		const pieceValues = new Map(Object.entries(hrefParams ?? {}))
+		return href.replace(changingPiece, (marker, pieceName: string) => {
+			const pieceValue = pieceValues.get(pieceName)
+			if (!pieceValue) {
+				const message = getUnusablePieceMessage({
+					href,
+					marker,
+					marks,
+					pieceValues,
+				})
+				throw new Error(message)
+			}
+			return encodeURIComponent(pieceValue)
+		})
+	}
 }
+
+/**
+ * Fills in an address written the way a link's address is written here, with a
+ * `$` before each changing piece.
+ */
+export const getFullAddress = createAddressFiller({ before: '$', after: '' })
 
 interface GetUnusablePieceMessageParams {
 	/** the address being built, quoted back in the message */
 	href: string
-	/** the piece as it appears in the address, like `$mealId` */
+	/** the piece as it appears in the address, like `$mealId` or `[mealId]` */
 	marker: string
+	/** what this spelling puts either side of a changing piece */
+	marks: RouteMarks<string, string>
 	/** the pieces the caller passed, by name */
 	pieceValues: Map<string, string>
 }
 
 /**
- * Says why a changing piece could not be used, for the error `getFullAddress`
- * throws. The name being present but empty is worth telling apart from it being
- * absent, because the two are fixed in different places.
+ * Says why a changing piece could not be used, for the error a filler throws.
+ * The name being present but empty is worth telling apart from it being absent,
+ * because the two are fixed in different places.
  */
 function getUnusablePieceMessage({
 	href,
 	marker,
+	marks,
 	pieceValues,
 }: GetUnusablePieceMessageParams): string {
-	// The marker is the piece name with a `$` in front of it, so the name is the
-	// rest of it. Taking it from the marker rather than as a second argument
-	// means the two cannot be handed over the wrong way round.
-	const markerPrefix = '$'
-	const pieceName = marker.slice(markerPrefix.length)
+	// The marker is the piece name with this spelling's marks around it, so the
+	// name is what is left once they are taken off. Working it out from the marker
+	// rather than taking it as its own argument means the two cannot be handed
+	// over the wrong way round.
+	const pieceName = marker.slice(
+		marks.before.length,
+		marker.length - marks.after.length,
+	)
 	const isPieceBlank = pieceValues.get(pieceName) === ''
 	if (isPieceBlank) {
 		return `The address "${href}" was given an empty ${marker}, which would link to the wrong page.`
@@ -127,4 +209,19 @@ function getUnusablePieceMessage({
 		? `only these were given: ${namesGiven.join(', ')}`
 		: 'none were given'
 	return `The address "${href}" needs a value for ${marker} in hrefParams, but ${whatWasGiven}.`
+}
+
+/**
+ * Makes text safe to drop into a search, so each character stands for itself.
+ *
+ * Every mark a framework uses to set off a changing piece happens to mean
+ * something in a search — `$` matches the end of the text, `[` and `]` bound a
+ * set of characters — so without this a filler built for one of them quietly
+ * looks for the wrong thing.
+ *
+ * @param text - the text to be searched for exactly as written
+ */
+function escapeForSearch(text: string): string {
+	const charactersWithMeaning = /[.*+?^${}()|[\]\\]/g
+	return text.replace(charactersWithMeaning, '\\$&')
 }

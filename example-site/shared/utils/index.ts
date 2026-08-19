@@ -16,9 +16,13 @@ export {
 } from './mealDbApiUtils'
 
 export {
+	createAddressFiller,
 	getFullAddress,
 	type HrefParamName,
 	type HrefParams,
 	type LinkAddress,
 	type RouteAddress,
+	type RouteFileName,
+	type RouteMarks,
+	type RoutePattern,
 } from './routeAddressUtils'
