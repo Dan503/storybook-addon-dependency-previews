@@ -220,9 +220,12 @@ function getUnusablePieceMessage({
  *
  * Several of the marks a framework uses to set off a changing piece mean
  * something in a search — `$` matches the end of the text, and `[` and `]` bound
- * a set of characters — so without this a filler built for one of them quietly
- * looks for the wrong thing. A `:` happens to be safe already; passing every
- * mark through here means no caller has to know which are which.
+ * a set of characters — so without this a filler built for one of them looks for
+ * the wrong thing. The two fail differently: an unescaped `$` finds no piece at
+ * all, so an address comes back with its marks still in it and the link quietly
+ * points at the wrong page, while an unescaped `[` matches almost anything and
+ * throws on every address. A `:` happens to be safe already; passing every mark
+ * through here means no caller has to know which are which.
  *
  * @param text - the text to be searched for exactly as written
  */
