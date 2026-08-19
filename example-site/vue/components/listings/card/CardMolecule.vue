@@ -17,7 +17,7 @@ export interface PropsForCardMolecule {
 	/**
 	 * Written the way this site names its pages, so `/meal/[mealId]` is the
 	 * address `pages/meal/[mealId].vue` answers. Named as `RouteFileName` rather
-	 * than written out as `LinkAddress<'[', ']'>` so the spelling is said once,
+	 * than written out as `RouteAddress<'[', ']'>` so the spelling is said once,
 	 * where it can be changed once.
 	 */
 	href: RouteFileName
