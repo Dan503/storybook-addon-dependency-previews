@@ -18,7 +18,9 @@ const meta: Meta<typeof ErrorBlockOrganism> = {
 
 export default meta
 
-const errors = ['Error One', 'Second error']
+// Typed as a "one or more" list because that is the shape a form field's
+// errors come in — a plain string[] is not accepted.
+const errors: [string, ...Array<string>] = ['Error One', 'Second error']
 
 export const ErrorStrings = {
 	args: {
