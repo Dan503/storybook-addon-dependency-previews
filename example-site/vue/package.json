@@ -13,7 +13,8 @@
 		"sb:setup": "sb-deps setup",
 		"sb:deps": "sb-deps",
 		"format": "prettier --write .",
-		"check": "prettier --check ."
+		"typecheck": "nuxt typecheck",
+		"check": "prettier --check . && pnpm run typecheck"
 	},
 	"dependencies": {
 		"@formisch/vue": "^0.7.6",
@@ -35,6 +36,7 @@
 		"storybook": "^10.4.1",
 		"storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
 		"tailwindcss": "^4.0.6",
-		"vite": "^7.1.7"
+		"vite": "^7.1.7",
+		"vue-tsc": "^3.3.10"
 	}
 }

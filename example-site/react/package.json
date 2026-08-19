@@ -10,8 +10,9 @@
 		"serve": "vite preview",
 		"test": "vitest run",
 		"lint": "eslint",
-		"format": "prettier",
-		"check": "prettier --write . && eslint --fix",
+		"format": "prettier --write .",
+		"typecheck": "tsc --noEmit",
+		"check": "prettier --check . && pnpm run typecheck",
 		"sb": "sb-deps --watch --run-storybook",
 		"sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
 		"sb:deps": "sb-deps"
