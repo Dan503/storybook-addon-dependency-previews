@@ -22,7 +22,7 @@ import {
 	mealCardList,
 	mealCards,
 } from 'example-site-shared/data'
-import type { RouteFileName } from 'example-site-shared/utils'
+import type { BracketRouteAddress } from 'example-site-shared/utils'
 import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
 
 /**
@@ -31,7 +31,10 @@ import type { PropsForCardMolecule } from '../../components/listings/card/CardMo
  * @param cards - the shared cards to re-address
  * @param href - the address they should carry, in this site's spelling
  */
-function withSiteAddress<TCard>(cards: Array<TCard>, href: RouteFileName) {
+function withSiteAddress<TCard>(
+	cards: Array<TCard>,
+	href: BracketRouteAddress,
+) {
 	return cards.map((card) => ({ ...card, href }))
 }
 

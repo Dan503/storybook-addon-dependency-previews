@@ -16,13 +16,17 @@ export {
 } from './mealDbApiUtils'
 
 export {
-	createAddressFiller,
-	getFullAddress,
+	generatePaths,
+	getFullAddressViaBrackets,
+	getFullAddressViaColons,
+	getFullAddressViaDollars,
+	type AnyRouteAddressStyle,
+	type BracketRouteAddress,
+	type ColonRouteAddress,
+	type DollarRouteAddress,
 	type HrefParamName,
 	type HrefParams,
 	type LinkAddress,
 	type RouteAddress,
-	type RouteFileName,
 	type RouteMarks,
-	type RoutePattern,
 } from './routeAddressUtils'

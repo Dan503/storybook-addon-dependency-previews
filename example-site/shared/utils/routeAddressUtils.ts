@@ -30,10 +30,7 @@
  * spelling is meant, and gives one place to change it if a framework's ever
  * does.
  */
-export type RouteAddress<
-	Before extends string = '$',
-	After extends string = '',
-> =
+export type RouteAddress<Before extends string, After extends string> =
 	| '/'
 	| '/categories'
 	| `/categories/${RouteParam<Before, 'category', After>}`
@@ -47,11 +44,25 @@ type RouteParam<
 	After extends string,
 > = `${Before}${Name}${After}`
 
-/** The addresses as a router matches them, with a `:` before each changing piece. */
-export type RoutePattern = RouteAddress<':', ''>
+/** The addresses with a `:` before each changing piece, as a router matches them. */
+export type ColonRouteAddress = RouteAddress<':', ''>
 
-/** The addresses as file-based routing names them, each changing piece in brackets. */
-export type RouteFileName = RouteAddress<'[', ']'>
+/** The addresses with a `$` before each changing piece. */
+export type DollarRouteAddress = RouteAddress<'$', ''>
+
+/** The addresses with each changing piece in brackets, as file-based routing names them. */
+export type BracketRouteAddress = RouteAddress<'[', ']'>
+
+/**
+ * Any of the spellings a site may pick.
+ *
+ * Exported because it is the bound on `LinkAddress`, so a site naming that type
+ * needs to be able to name this one too.
+ */
+export type AnyRouteAddressStyle =
+	| ColonRouteAddress
+	| DollarRouteAddress
+	| BracketRouteAddress
 
 /**
  * What one framework puts either side of a changing piece.
@@ -84,19 +95,17 @@ export type HrefParams = Partial<Record<HrefParamName, string>>
  * the pairing: it cannot say that `/meal/$mealId` in particular must be given a
  * `mealId`. The filler checks that when it builds the address.
  *
- * The marks are the same two arguments `RouteAddress` takes, so a site writing
- * its addresses in its own spelling passes them here as well.
+ * The spelling is named rather than assumed, so a site passes the one it writes
+ * its addresses in — `LinkAddress<BracketRouteAddress>` for a site whose pages
+ * are files named `[mealId]`.
  */
-export interface LinkAddress<
-	Before extends string = '$',
-	After extends string = '',
-> {
+export interface LinkAddress<RouteStyle extends AnyRouteAddressStyle> {
 	/**
-	 * The page to link to, written the way it appears in `RouteAddress`. The
-	 * marked-out name in it stands for a piece that changes and has to be
-	 * supplied in `hrefParams`.
+	 * The page to link to, written in this site's spelling. The marked-out name
+	 * in it stands for a piece that changes and has to be supplied in
+	 * `hrefParams`.
 	 */
-	href: RouteAddress<Before, After>
+	href: RouteStyle
 	/**
 	 * The pieces that complete the address, looked up by the name inside the
 	 * marks. An address with no changing piece needs none of these. Leaving out a
@@ -105,6 +114,11 @@ export interface LinkAddress<
 	 */
 	hrefParams?: HrefParams
 }
+
+/** Fills a link's address in, for addresses written in one particular spelling. */
+type FillAddress<RouteStyle extends AnyRouteAddressStyle> = (
+	linkAddress: LinkAddress<RouteStyle>,
+) => string
 
 /**
  * Builds a filler for addresses written in one framework's spelling.
@@ -116,12 +130,12 @@ export interface LinkAddress<
  * nothing, and handing back an address with its marks still in it. Fixing them
  * here means a filler refuses an address in any other spelling outright.
  *
+ * Private: the three spellings below are the ones the sites use, and each is
+ * given the type of the spelling it was built for.
+ *
  * @param marks - what this spelling puts either side of a changing piece
  */
-export function createAddressFiller<
-	Before extends string,
-	After extends string,
->(marks: RouteMarks<Before, After>) {
+function createAddressFiller(marks: RouteMarks<string, string>) {
 	const { before, after } = marks
 	// Built once for the filler rather than per call. The marks are data now, and
 	// some of them mean something in a search, so each is escaped first — left
@@ -143,7 +157,7 @@ export function createAddressFiller<
 	 * and so does one given an empty value, since both build a link that quietly
 	 * points at the wrong page.
 	 */
-	return ({ href, hrefParams }: LinkAddress<Before, After>): string => {
+	return ({ href, hrefParams }: LinkAddress<AnyRouteAddressStyle>): string => {
 		// A Map rather than the object itself, so a piece named after something
 		// every object inherits (`constructor`, `toString`) reads as absent rather
 		// than picking up the inherited value.
@@ -164,11 +178,58 @@ export function createAddressFiller<
 	}
 }
 
+/** Fills in an address written with a `$` before each changing piece. */
+export const getFullAddressViaDollars: FillAddress<DollarRouteAddress> =
+	createAddressFiller({ before: '$', after: '' })
+
+/** Fills in an address written with a `:` before each changing piece. */
+export const getFullAddressViaColons: FillAddress<ColonRouteAddress> =
+	createAddressFiller({ before: ':', after: '' })
+
+/** Fills in an address written with each changing piece in brackets. */
+export const getFullAddressViaBrackets: FillAddress<BracketRouteAddress> =
+	createAddressFiller({ before: '[', after: ']' })
+
 /**
- * Fills in an address written the way a link's address is written here, with a
- * `$` before each changing piece.
+ * Every address, written in the spelling asked for.
+ *
+ * A record keyed by the `$` spelling rather than a plain list, so the type check
+ * insists on all of them: a list would only check that each entry is one of the
+ * addresses, leaving this free to fall behind the moment one is added above.
+ * Each value is `true` only because a key needs one; the keys are the point.
  */
-export const getFullAddress = createAddressFiller({ before: '$', after: '' })
+const everyDollarAddress: Record<DollarRouteAddress, true> = {
+	'/': true,
+	'/categories': true,
+	'/categories/$category': true,
+	'/meal/$mealId': true,
+	'/contact': true,
+}
+
+/**
+ * Lists every address the sites share, written in one framework's spelling.
+ *
+ * A site needing the same addresses as its own router or route files write them
+ * asks for them here rather than writing them out again, so the list cannot fall
+ * behind the one above.
+ *
+ * @param marks - what this spelling puts either side of a changing piece
+ */
+export function generatePaths<Before extends string, After extends string>({
+	before,
+	after,
+}: RouteMarks<Before, After>): Array<RouteAddress<Before, After>> {
+	const dollarPiece = /\$(\w+)/g
+	const addresses = Object.keys(everyDollarAddress).map((address) =>
+		address.replace(dollarPiece, (_marker, pieceName: string) =>
+			[before, pieceName, after].join(''),
+		),
+	)
+	// The replacing is string work, so the compiler cannot see that what comes
+	// out is one of the addresses in the asked-for spelling. The record above is
+	// what makes it true.
+	return addresses as Array<RouteAddress<Before, After>>
+}
 
 interface GetUnusablePieceMessageParams {
 	/** the address being built, quoted back in the message */

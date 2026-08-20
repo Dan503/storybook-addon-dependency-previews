@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { Meal } from 'example-site-shared/data'
-import type { HrefParams, RouteFileName } from 'example-site-shared/utils'
+import type { BracketRouteAddress, HrefParams } from 'example-site-shared/utils'
 
 /**
  * A card that links to a page inside this site.
@@ -16,11 +16,11 @@ export interface PropsForCardMolecule {
 	description: string
 	/**
 	 * Written the way this site names its pages, so `/meal/[mealId]` is the
-	 * address `pages/meal/[mealId].vue` answers. Named as `RouteFileName` rather
-	 * than written out as `RouteAddress<'[', ']'>` so the spelling is said once,
-	 * where it can be changed once.
+	 * address `pages/meal/[mealId].vue` answers. Named as `BracketRouteAddress`
+	 * rather than written out as `RouteAddress<'[', ']'>` so the spelling is said
+	 * once, where it can be changed once.
 	 */
-	href: RouteFileName
+	href: BracketRouteAddress
 	hrefParams?: HrefParams
 }
 
@@ -45,7 +45,7 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
 </script>
 
 <script setup lang="ts">
-import { getFullAddress } from '../../../app/lib/getFullAddress'
+import { getFullAddressViaBrackets } from 'example-site-shared/utils'
 
 const { title, imgSrc, description, href, hrefParams } =
 	defineProps<PropsForCardMolecule>()
@@ -54,7 +54,7 @@ const { title, imgSrc, description, href, hrefParams } =
 <template>
 	<div class="CardMolecule @container grid">
 		<NuxtLink
-			:to="getFullAddress({ href, hrefParams })"
+			:to="getFullAddressViaBrackets({ href, hrefParams })"
 			class="flex h-full gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
 		>
 			<img :src="imgSrc" alt="" class="aspect-video object-cover" />

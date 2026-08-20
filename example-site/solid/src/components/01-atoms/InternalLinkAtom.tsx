@@ -1,6 +1,10 @@
 import { A, type AnchorProps } from '@solidjs/router'
 import { splitProps } from 'solid-js'
-import { getFullAddress, type LinkAddress } from 'example-site-shared/utils'
+import {
+	getFullAddressViaDollars,
+	type DollarRouteAddress,
+	type LinkAddress,
+} from 'example-site-shared/utils'
 
 /**
  * A link to a page inside this site. Pairs with `ExternalLinkAtom`, which is
@@ -15,11 +19,12 @@ import { getFullAddress, type LinkAddress } from 'example-site-shared/utils'
  * Start's link accepts — `class`, `activeClass`, `end` and the rest — is passed
  * straight through.
  */
-export type PropsForInternalLinkAtom = Omit<AnchorProps, 'href'> & LinkAddress
+export type PropsForInternalLinkAtom = Omit<AnchorProps, 'href'> &
+	LinkAddress<DollarRouteAddress>
 
 export function InternalLinkAtom(props: PropsForInternalLinkAtom) {
 	// Held back from the anchor: `hrefParams` is not an anchor attribute, and
 	// `href` is replaced by the finished address rather than passed on.
 	const [linkAddress, anchorProps] = splitProps(props, ['href', 'hrefParams'])
-	return <A {...anchorProps} href={getFullAddress(linkAddress)} />
+	return <A {...anchorProps} href={getFullAddressViaDollars(linkAddress)} />
 }
