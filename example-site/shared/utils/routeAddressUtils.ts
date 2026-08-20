@@ -55,10 +55,11 @@ export type BracketRouteAddress = RouteAddress<'[', ']'>
 /**
  * Any of the spellings a site may pick.
  *
- * Exported because it is the bound on `LinkAddress`, so a site naming that type
- * needs to be able to name this one too.
+ * Private: it is only the bound on `LinkAddress` and the fillers, and a site
+ * names the one spelling it uses rather than this. Declaration output keeps it
+ * without needing it exported.
  */
-export type AnyRouteAddressStyle =
+type AnyRouteAddressStyle =
 	| ColonRouteAddress
 	| DollarRouteAddress
 	| BracketRouteAddress

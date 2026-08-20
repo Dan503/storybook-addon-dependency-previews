@@ -20,7 +20,6 @@ export {
 	getFullAddressViaBrackets,
 	getFullAddressViaColons,
 	getFullAddressViaDollars,
-	type AnyRouteAddressStyle,
 	type BracketRouteAddress,
 	type ColonRouteAddress,
 	type DollarRouteAddress,

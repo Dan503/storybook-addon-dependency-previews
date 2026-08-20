@@ -1,6 +1,9 @@
 <script lang="ts">
 import type { Meal } from 'example-site-shared/data'
-import type { BracketRouteAddress, HrefParams } from 'example-site-shared/utils'
+import type {
+	BracketRouteAddress,
+	LinkAddress,
+} from 'example-site-shared/utils'
 
 /**
  * A card that links to a page inside this site.
@@ -9,19 +12,15 @@ import type { BracketRouteAddress, HrefParams } from 'example-site-shared/utils'
  * so `href` only accepts an address the site actually has and a misspelt one
  * fails the type check. The card fills the changing piece in itself, because
  * `NuxtLink` takes a finished address.
+ *
+ * `BracketRouteAddress` is the spelling this site writes: `/meal/[mealId]` is
+ * the address `pages/meal/[mealId].vue` answers. The two address props and what
+ * they mean come from `LinkAddress` rather than being restated here.
  */
-export interface PropsForCardMolecule {
+export interface PropsForCardMolecule extends LinkAddress<BracketRouteAddress> {
 	title: string
 	imgSrc: string
 	description: string
-	/**
-	 * Written the way this site names its pages, so `/meal/[mealId]` is the
-	 * address `pages/meal/[mealId].vue` answers. Named as `BracketRouteAddress`
-	 * rather than written out as `RouteAddress<'[', ']'>`, which reads better and
-	 * says which spelling is meant without the reader decoding a pair of marks.
-	 */
-	href: BracketRouteAddress
-	hrefParams?: HrefParams
 }
 
 /**
