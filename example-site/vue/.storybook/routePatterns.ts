@@ -1,4 +1,7 @@
-import { generatePaths } from 'example-site-shared/utils'
+import {
+	generatePaths,
+	type ColonRouteAddress,
+} from 'example-site-shared/utils'
 
 /**
  * Every address the site has, as vue-router matches them.
@@ -12,9 +15,16 @@ import { generatePaths } from 'example-site-shared/utils'
  * catch-all, is what makes a story pointing somewhere the site does not have
  * still show up as unmatched.
  *
+ * Annotated rather than left to inference, so the marks below are checked
+ * against the spelling this file is for. Without it, asking for any other
+ * spelling is accepted here and only shows up as stories failing to match.
+ *
  * It lives in its own file so `pnpm typecheck` can read it. Its neighbour
  * `preview.ts` imports the dependency graph that `sb-deps` generates, which is
  * not in the repository, so a type check taking in the whole folder would fail
  * on a fresh clone before anyone had run Storybook once.
  */
-export const routePatterns = generatePaths({ before: ':', after: '' })
+export const routePatterns: Array<ColonRouteAddress> = generatePaths({
+	before: ':',
+	after: '',
+})

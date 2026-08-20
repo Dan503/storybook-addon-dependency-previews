@@ -22,13 +22,12 @@
  *
  * Every framework marks a changing piece its own way, so the marks that sit
  * either side of one are given as arguments and the same five addresses can be
- * had in any of those spellings. Left off, they give `$name`, which is how the
- * React site's router writes them and how a link's address is written here.
+ * had in any of those spellings. There is no default: a site says which
+ * spelling it means.
  *
  * Prefer asking for a spelling by its name below to writing the marks out where
- * they are used. Either works, and both autocomplete — a name just says which
- * spelling is meant, and gives one place to change it if a framework's ever
- * does.
+ * they are used. Either works, and both autocomplete — a name just reads better
+ * at the point of use than a pair of marks does.
  */
 export type RouteAddress<Before extends string, After extends string> =
 	| '/'
@@ -123,15 +122,17 @@ type FillAddress<RouteStyle extends AnyRouteAddressStyle> = (
 /**
  * Builds a filler for addresses written in one framework's spelling.
  *
- * The marks are fixed here rather than passed to each call on purpose. Were they
- * an argument the caller could leave off, the compiler would read the spelling
- * off whichever address it was handed and accept it, and the filler would then
- * look for pieces marked a way the address does not use — finding none, changing
- * nothing, and handing back an address with its marks still in it. Fixing them
- * here means a filler refuses an address in any other spelling outright.
+ * The marks are fixed when a filler is built rather than passed to each call. An
+ * optional pair the caller could leave off would let the compiler read the
+ * spelling off whichever address it was handed and accept it, and the filler
+ * would then look for pieces marked a way that address does not use — finding
+ * none, changing nothing, and handing back an address with its marks still in
+ * it.
  *
- * Private: the three spellings below are the ones the sites use, and each is
- * given the type of the spelling it was built for.
+ * What actually refuses a foreign spelling is the annotation on each of the
+ * three fillers below, not anything in here: this function takes plain strings
+ * and hands back something accepting any of the spellings. Keep those
+ * annotations.
  *
  * @param marks - what this spelling puts either side of a changing piece
  */

@@ -17,8 +17,8 @@ export interface PropsForCardMolecule {
 	/**
 	 * Written the way this site names its pages, so `/meal/[mealId]` is the
 	 * address `pages/meal/[mealId].vue` answers. Named as `BracketRouteAddress`
-	 * rather than written out as `RouteAddress<'[', ']'>` so the spelling is said
-	 * once, where it can be changed once.
+	 * rather than written out as `RouteAddress<'[', ']'>`, which reads better and
+	 * says which spelling is meant without the reader decoding a pair of marks.
 	 */
 	href: BracketRouteAddress
 	hrefParams?: HrefParams
