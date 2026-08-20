@@ -151,9 +151,12 @@ function createAddressFiller(marks: RouteMarks<string, string>) {
 	/**
 	 * Fills an address's changing pieces in and hands back the address to link to.
 	 *
-	 * Each piece is escaped, so a page reading one back needs to unescape it to
-	 * get the original text. Escaping leaves digits alone, which is why a page
-	 * whose piece is always a number can read it back as it stands.
+	 * Each piece is escaped on the way in. Whether a page has to unescape it on
+	 * the way out is its framework's business: vue-router and SvelteKit hand a
+	 * page the original text already, so the Vue category page reads its piece
+	 * straight, while a framework that passes the address through untouched needs
+	 * the page to unescape it. Escaping leaves digits alone either way, which is
+	 * why a piece that is always a number reads back the same everywhere.
 	 *
 	 * An address with a changing piece that was given no matching value throws,
 	 * and so does one given an empty value, since both build a link that quietly
@@ -193,12 +196,13 @@ export const getFullAddressViaBrackets: FillAddress<BracketRouteAddress> =
 	createAddressFiller({ before: '[', after: ']' })
 
 /**
- * Every address, written in the spelling asked for.
+ * Every address, written in the `$` spelling, as the source `generatePaths`
+ * rewrites into whichever spelling is asked for.
  *
- * A record keyed by the `$` spelling rather than a plain list, so the type check
- * insists on all of them: a list would only check that each entry is one of the
- * addresses, leaving this free to fall behind the moment one is added above.
- * Each value is `true` only because a key needs one; the keys are the point.
+ * A record rather than a plain list, so the type check insists on all of them: a
+ * list would only check that each entry is one of the addresses, leaving this
+ * free to fall behind the moment one is added above. Each value is `true` only
+ * because a key needs one; the keys are the point.
  */
 const everyDollarAddress: Record<DollarRouteAddress, true> = {
 	'/': true,
@@ -286,9 +290,10 @@ function getUnusablePieceMessage({
  * a set of characters — so without this a filler built for one of them looks for
  * the wrong thing. The two fail differently: an unescaped `$` finds no piece at
  * all, so an address comes back with its marks still in it and the link quietly
- * points at the wrong page, while an unescaped `[` matches almost anything and
- * throws on every address. A `:` happens to be safe already; passing every mark
- * through here means no caller has to know which are which.
+ * points at the wrong page, while an unescaped `[` becomes a set of characters
+ * that matches almost anything, so it throws on every address carrying a letter
+ * — every one of them except `/`. A `:` happens to be safe already; passing
+ * every mark through here means no caller has to know which are which.
  *
  * @param text - the text to be searched for exactly as written
  */
