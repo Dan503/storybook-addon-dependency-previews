@@ -20,7 +20,7 @@
  *
  * @param marks - what this spelling puts either side of a changing piece
  */
-export function generatePaths<Before extends string, After extends string>({
+export function generateRoutePathTemplates<Before extends string, After extends string>({
 	before,
 	after,
 }: RouteMarks<Before, After>) {
@@ -36,7 +36,7 @@ export function generatePaths<Before extends string, After extends string>({
 /**
  * The addresses the example sites link to.
  *
- * One member of the list `generatePaths` returns, which is where the addresses
+ * One member of the list `generateRoutePathTemplates` returns, which is where the addresses
  * themselves are written down. Solid and Vue are the sites that import this.
  * React and Svelte sit on the same addresses but each reads them from the list
  * its own router generates, so neither needs anything from here. Angular is
@@ -70,7 +70,7 @@ export type RouteAddress<
 > = RouteAddressArray<Before, After>[number]
 
 /**
- * All of the addresses at once, in one spelling, as `generatePaths` returns them.
+ * All of the addresses at once, in one spelling, as `generateRoutePathTemplates` returns them.
  *
  * Read off that function rather than written out, so the two cannot disagree —
  * which is the whole reason the addresses live in a function at all. Useful for
@@ -80,7 +80,7 @@ export type RouteAddress<
 export type RouteAddressArray<
 	Before extends string,
 	After extends string,
-> = ReturnType<typeof generatePaths<Before, After>>
+> = ReturnType<typeof generateRoutePathTemplates<Before, After>>
 
 /** A changing piece as one framework writes it: `$mealId`, `:mealId`, `[mealId]`. */
 type RouteParam<
@@ -93,7 +93,7 @@ type RouteParam<
  * Writes one changing piece the way a framework marks it.
  *
  * The runtime twin of `RouteParam`, and annotated with it so the two are the
- * same shape by construction. That annotation is what lets `generatePaths` be
+ * same shape by construction. That annotation is what lets `generateRoutePathTemplates` be
  * read as a source of literal addresses: without it this returns a plain string,
  * every address built from it widens to `string`, and the types derived from
  * them stop naming anything.
@@ -118,6 +118,25 @@ export type DollarRouteAddress = RouteAddress<'$', ''>
 
 /** The addresses with each changing piece in brackets, as file-based routing names them. */
 export type BracketRouteAddress = RouteAddress<'[', ']'>
+
+/*
+ * The three spellings, generated once here so a site imports the set it needs
+ * instead of keeping a file of its own to call the generator from. Each is
+ * annotated with its own type: without that the list widens and stops refusing
+ * the other spellings, the same way the fillers below do.
+ */
+
+/** Every address with a `$` before each changing piece. */
+export const dollarRoutePaths: RouteAddressArray<'$', ''> =
+	generateRoutePathTemplates({ before: '$', after: '' })
+
+/** Every address with a `:` before each changing piece, ready for a router. */
+export const colonRoutePaths: RouteAddressArray<':', ''> =
+	generateRoutePathTemplates({ before: ':', after: '' })
+
+/** Every address with each changing piece in brackets, as page files name them. */
+export const bracketRoutePaths: RouteAddressArray<'[', ']'> =
+	generateRoutePathTemplates({ before: '[', after: ']' })
 
 /**
  * Any of the spellings a site may pick.

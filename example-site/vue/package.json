@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt prepare && vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck": "nuxt prepare && vue-tsc --noEmit -p .nuxt/tsconfig.app.json",
     "sb": "sb-deps --watch --run-storybook",
     "sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
     "sb:setup": "sb-deps setup",

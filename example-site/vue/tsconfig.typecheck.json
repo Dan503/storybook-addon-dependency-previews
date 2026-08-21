@@ -1,4 +1,0 @@
-{
-	"extends": "./.nuxt/tsconfig.app.json",
-	"include": [".nuxt/nuxt.d.ts", "app/**/*", ".storybook/routePatterns.ts"]
-}

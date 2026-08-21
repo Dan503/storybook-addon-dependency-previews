@@ -7,16 +7,24 @@ import {
 	dependencyPreviewDecorators,
 	type StorybookPreviewConfig,
 } from 'storybook-addon-dependency-previews'
-import { routePatterns } from './routePatterns'
+import { colonRoutePaths } from 'example-site-shared/utils'
 
 import '../app/assets/css/main.css'
 import dependenciesJson from './dependency-previews.json'
 
 const blankRouteComponent = { template: '<div />' }
 
+// Storybook stands this router in for Nuxt's own, so the stories can draw links.
+// The addresses come from the shared list in the spelling vue-router matches on
+// — the one place in this site that uses the `:name` marks, since that is
+// vue-router's own syntax and cannot be anything else, while the site's links
+// are written the way Nuxt names its pages.
+//
+// Taken one by one rather than caught by a catch-all, so a story pointing
+// somewhere the site does not have still shows up as unmatched.
 const router = createRouter({
 	history: createMemoryHistory(),
-	routes: routePatterns.map((path) => ({
+	routes: colonRoutePaths.map((path) => ({
 		path,
 		component: blankRouteComponent,
 	})),

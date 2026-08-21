@@ -16,7 +16,10 @@ export {
 } from './mealDbApiUtils'
 
 export {
-	generatePaths,
+	bracketRoutePaths,
+	colonRoutePaths,
+	dollarRoutePaths,
+	generateRoutePathTemplates,
 	getFullAddressViaBrackets,
 	getFullAddressViaColons,
 	getFullAddressViaDollars,
