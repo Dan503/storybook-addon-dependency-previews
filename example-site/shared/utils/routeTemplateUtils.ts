@@ -5,14 +5,20 @@
  * where meal pages live, and a filler turns one into `/meal/52772`. Templates
  * with nothing changing in them, like `/contact`, are already addresses.
  *
- * This is the one place the routes are written down. Everything else in this
- * file is derived from it: `RouteTemplateArray` reads back what this returns and
- * `RouteTemplate` is one member of that, so adding a route to the array below
- * adds it to every type and every site that reads them, with nothing else to
- * update. A site calls this when it needs the same routes in its own router or
+ * Every type here is derived from the array below: `RouteTemplateArray` reads
+ * back what this returns and `RouteTemplate` is one member of that, so adding a
+ * route to the array adds it to every type and every site checked against them.
+ *
+ * That is not quite the same as the routes being written down only here. The
+ * shared example data in `../data/example-meal-data.ts` writes two of them out
+ * by hand for the stories to draw from, in object literals nothing checks, so
+ * dropping a route from the array leaves those still compiling and still
+ * pointing at a page that has gone. Typing that file is a change of its own.
+ *
+ * A site calls this when it needs the same routes in its own router or
  * route-file spelling, rather than writing them out a second time — though the
- * three spellings in use are already generated below, so most sites import one
- * of those instead.
+ * three spellings in use are already generated below, and every site reading the
+ * routes today imports one of those instead.
  *
  * Three things about the shape are load-bearing rather than incidental:
  *

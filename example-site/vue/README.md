@@ -10,7 +10,7 @@ pnpm typecheck
 
 This runs `vue-tsc` over the project Nuxt generates, which covers the site's own code: everything under `app/`, plus every component those pages reach through their imports.
 
-`.storybook/` is outside it, and nothing there needs checking: the stand-in router's addresses come from `example-site-shared`, where they are checked already. That also keeps this runnable on a fresh clone, since `preview.ts` imports a dependency graph that `sb-deps` generates and the repository does not carry.
+`.storybook/` is outside it, and is left that way on purpose: `preview.ts` imports a dependency graph that `sb-deps` generates and the repository does not carry, so including it would stop this running on a fresh clone. The addresses lose nothing by it — the stand-in router takes them from `example-site-shared`, where they are checked already. `main.ts` and `preview.ts` themselves go unchecked, as they were before.
 
 Story files themselves are left out, and so is any component only a story reaches. That is not only to keep them cheap: Storybook's `Meta` does not line up with the four components here that take a type parameter, a pre-existing disagreement that has nothing to do with the code under test. Storybook is what exercises those.
 

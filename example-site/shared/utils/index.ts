@@ -34,4 +34,5 @@ export {
 	type LinkAddressPropsViaDollars,
 	type RouteMarks,
 	type RouteTemplate,
+	type RouteTemplateArray,
 } from './routeTemplateUtils'
