@@ -50,8 +50,10 @@ export function generateRouteTemplates<
  * One route the example sites link to, as a template.
  *
  * One member of the list `generateRouteTemplates` returns, which is where the
- * routes themselves are written down. Solid and Vue are the sites that import
- * this. React and Svelte sit on the same routes but each reads them from the
+ * routes themselves are written down. Solid and Vue are the sites that read
+ * these, though neither names this type: each takes one of the named spellings
+ * below, or the link props built from it. React and Svelte sit on the same
+ * routes but each reads them from the
  * list its own router generates, so neither needs anything from here. Angular is
  * still being moved onto them, so for now a few of its pages are at routes that
  * are not in this list.
@@ -325,9 +327,9 @@ export const getFullAddressViaBrackets: FillAddress<BracketRouteTemplate> =
 
 /** What `getUnusablePieceMessage` needs to say which piece went wrong, and how. */
 interface GetUnusablePieceMessageParams {
-	/** the address being built, quoted back in the message */
+	/** the template being filled in, quoted back in the message */
 	href: string
-	/** the piece as it appears in the address, like `$mealId` or `[mealId]` */
+	/** the piece as it appears in the template, like `$mealId` or `[mealId]` */
 	marker: string
 	/** what this spelling puts either side of a changing piece */
 	marks: RouteMarks<string, string>
@@ -356,7 +358,7 @@ function getUnusablePieceMessage({
 	)
 	const isPieceBlank = pieceValues.get(pieceName) === ''
 	if (isPieceBlank) {
-		return `The address "${href}" was given an empty ${marker}, which would link to the wrong page.`
+		return `The link "${href}" was given an empty ${marker}, which would point at the wrong page.`
 	}
 	// A name carrying no value does not count as given. Listing it would point
 	// the reader at a name that is already there, rather than at the value.
@@ -366,7 +368,7 @@ function getUnusablePieceMessage({
 	const whatWasGiven = namesGiven.length
 		? `only these were given: ${namesGiven.join(', ')}`
 		: 'none were given'
-	return `The address "${href}" needs a value for ${marker} in hrefParams, but ${whatWasGiven}.`
+	return `The link "${href}" needs a value for ${marker} in hrefParams, but ${whatWasGiven}.`
 }
 
 /**
