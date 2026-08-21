@@ -1,8 +1,43 @@
 /**
+ * Every address the sites share, written in one framework's spelling.
+ *
+ * This is the one place the addresses are written down. Everything else in this
+ * file is derived from it: `RouteAddressArray` reads back what this returns and
+ * `RouteAddress` is one member of that, so adding an address to the array below
+ * adds it to every type and every site that reads them, with nothing else to
+ * update. That is what a site calls when it needs the same addresses in its own
+ * router or route-file spelling, rather than writing them out a second time.
+ *
+ * Two things about the shape are load-bearing rather than incidental:
+ *
+ * There is deliberately **no return type annotation**. The types are read off
+ * this function, so annotating it would make the annotation the source of truth
+ * instead of the array — and naming `RouteAddress` here would be circular.
+ *
+ * Each changing piece goes through `routeParam` rather than being written into
+ * the template directly, so that what runs and what the type says are built from
+ * the same parts and cannot drift.
+ *
+ * @param marks - what this spelling puts either side of a changing piece
+ */
+export function generatePaths<Before extends string, After extends string>({
+	before,
+	after,
+}: RouteMarks<Before, After>) {
+	return [
+		`/`,
+		`/categories`,
+		`/categories/${routeParam(before, 'category', after)}`,
+		`/meal/${routeParam(before, 'mealId', after)}`,
+		`/contact`,
+	]
+}
+
+/**
  * The addresses the example sites link to.
  *
- * The sites are meant to share one set of addresses, so this list is the one
- * place they are written down. Solid and Vue are the sites that import it.
+ * One member of the list `generatePaths` returns, which is where the addresses
+ * themselves are written down. Solid and Vue are the sites that import this.
  * React and Svelte sit on the same addresses but each reads them from the list
  * its own router generates, so neither needs anything from here. Angular is
  * still being moved onto these addresses, so for now a few of its pages are at
@@ -29,12 +64,23 @@
  * they are used. Either works, and both autocomplete — a name just reads better
  * at the point of use than a pair of marks does.
  */
-export type RouteAddress<Before extends string, After extends string> =
-	| '/'
-	| '/categories'
-	| `/categories/${RouteParam<Before, 'category', After>}`
-	| `/meal/${RouteParam<Before, 'mealId', After>}`
-	| '/contact'
+export type RouteAddress<
+	Before extends string,
+	After extends string,
+> = RouteAddressArray<Before, After>[number]
+
+/**
+ * All of the addresses at once, in one spelling, as `generatePaths` returns them.
+ *
+ * Read off that function rather than written out, so the two cannot disagree —
+ * which is the whole reason the addresses live in a function at all. Useful for
+ * typing a list a site hands to its router; `RouteAddress` is the type of a
+ * single one.
+ */
+export type RouteAddressArray<
+	Before extends string,
+	After extends string,
+> = ReturnType<typeof generatePaths<Before, After>>
 
 /** A changing piece as one framework writes it: `$mealId`, `:mealId`, `[mealId]`. */
 type RouteParam<
@@ -43,6 +89,19 @@ type RouteParam<
 	After extends string,
 > = `${Before}${Name}${After}`
 
+/**
+ * Writes one changing piece the way a framework marks it.
+ *
+ * The runtime twin of `RouteParam`, and annotated with it so the two are the
+ * same shape by construction. That annotation is what lets `generatePaths` be
+ * read as a source of literal addresses: without it this returns a plain string,
+ * every address built from it widens to `string`, and the types derived from
+ * them stop naming anything.
+ *
+ * @param before - what this spelling puts in front of the name
+ * @param name - the piece's name, like `mealId`
+ * @param after - what this spelling puts after the name, often nothing
+ */
 function routeParam<
 	Before extends string,
 	Name extends string,
@@ -135,10 +194,11 @@ type FillAddress<RouteStyle extends AnyRouteAddressStyle> = (
  * none, changing nothing, and handing back an address with its marks still in
  * it.
  *
- * What actually refuses a foreign spelling is the annotation on each of the
- * three fillers below, not anything in here: this function takes plain strings
- * and hands back something accepting any of the spellings. Keep those
- * annotations.
+ * Keep the `FillAddress` annotation on each of the three fillers below. They
+ * look like they merely restate what this function already works out from the
+ * marks it is handed, and they do not: taking the annotation off one of them and
+ * rebuilding lets that filler accept an address in any spelling, checked by
+ * doing it. So the refusal comes from the annotations, not from here.
  *
  * @param marks - what this spelling puts either side of a changing piece
  */
@@ -205,28 +265,7 @@ export const getFullAddressViaColons: FillAddress<ColonRouteAddress> =
 export const getFullAddressViaBrackets: FillAddress<BracketRouteAddress> =
 	createAddressFiller({ before: '[', after: ']' })
 
-/**
- * Lists every address the sites share, written in one framework's spelling.
- *
- * A site needing the same addresses as its own router or route files write them
- * asks for them here rather than writing them out again, so the list cannot fall
- * behind the one above.
- *
- * @param marks - what this spelling puts either side of a changing piece
- */
-export function generatePaths<Before extends string, After extends string>({
-	before,
-	after,
-}: RouteMarks<Before, After>): Array<RouteAddress<Before, After>> {
-	return [
-		`/`,
-		`/categories`,
-		`/categories/${routeParam(before, 'category', after)}`,
-		`/meal/${routeParam(before, 'mealId', after)}`,
-		`/contact`,
-	]
-}
-
+/** What `getUnusablePieceMessage` needs to say which piece went wrong, and how. */
 interface GetUnusablePieceMessageParams {
 	/** the address being built, quoted back in the message */
 	href: string
