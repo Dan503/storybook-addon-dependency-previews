@@ -1,12 +1,12 @@
 import { splitProps } from 'solid-js'
 import type {
-	DollarRouteAddress,
+	DollarRouteTemplate,
 	LinkAddressProps,
 	Meal,
 } from 'example-site-shared/utils'
 import { InternalLinkAtom } from '../../01-atoms/InternalLinkAtom'
 
-export interface PropsForCardMolecule extends LinkAddressProps<DollarRouteAddress> {
+export interface PropsForCardMolecule extends LinkAddressProps<DollarRouteTemplate> {
 	title: string
 	imgSrc: string
 	description: string

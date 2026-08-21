@@ -1,18 +1,24 @@
 /**
- * Every address the sites share, written in one framework's spelling.
+ * Every route this site family has, as a template in one framework's spelling.
  *
- * This is the one place the addresses are written down. Everything else in this
- * file is derived from it: `RouteAddressArray` reads back what this returns and
- * `RouteAddress` is one member of that, so adding an address to the array below
+ * A template is the pattern rather than a finished address: `/meal/$mealId` says
+ * where meal pages live, and a filler turns one into `/meal/52772`. Templates
+ * with nothing changing in them, like `/contact`, are already addresses.
+ *
+ * This is the one place the routes are written down. Everything else in this
+ * file is derived from it: `RouteTemplateArray` reads back what this returns and
+ * `RouteTemplate` is one member of that, so adding a route to the array below
  * adds it to every type and every site that reads them, with nothing else to
- * update. That is what a site calls when it needs the same addresses in its own
- * router or route-file spelling, rather than writing them out a second time.
+ * update. A site calls this when it needs the same routes in its own router or
+ * route-file spelling, rather than writing them out a second time — though the
+ * three spellings in use are already generated below, so most sites import one
+ * of those instead.
  *
  * Two things about the shape are load-bearing rather than incidental:
  *
  * There is deliberately **no return type annotation**. The types are read off
  * this function, so annotating it would make the annotation the source of truth
- * instead of the array — and naming `RouteAddress` here would be circular.
+ * instead of the array — and naming `RouteTemplate` here would be circular.
  *
  * Each changing piece goes through `routeParam` rather than being written into
  * the template directly, so that what runs and what the type says are built from
@@ -20,10 +26,10 @@
  *
  * @param marks - what this spelling puts either side of a changing piece
  */
-export function generateRoutePathTemplates<Before extends string, After extends string>({
-	before,
-	after,
-}: RouteMarks<Before, After>) {
+export function generateRouteTemplates<
+	Before extends string,
+	After extends string,
+>({ before, after }: RouteMarks<Before, After>) {
 	return [
 		`/`,
 		`/categories`,
@@ -34,53 +40,54 @@ export function generateRoutePathTemplates<Before extends string, After extends 
 }
 
 /**
- * The addresses the example sites link to.
+ * One route the example sites link to, as a template.
  *
- * One member of the list `generateRoutePathTemplates` returns, which is where the addresses
- * themselves are written down. Solid and Vue are the sites that import this.
- * React and Svelte sit on the same addresses but each reads them from the list
- * its own router generates, so neither needs anything from here. Angular is
- * still being moved onto these addresses, so for now a few of its pages are at
- * addresses that are not in this list.
+ * One member of the list `generateRouteTemplates` returns, which is where the
+ * routes themselves are written down. Solid and Vue are the sites that import
+ * this. React and Svelte sit on the same routes but each reads them from the
+ * list its own router generates, so neither needs anything from here. Angular is
+ * still being moved onto them, so for now a few of its pages are at routes that
+ * are not in this list.
  *
- * A site that uses this list has its addresses added here by hand, and how much
+ * A site that uses this list has its routes added here by hand, and how much
  * that buys depends on how much of the site goes through it. Solid puts every
- * internal link through the list, so a link to an address the list does not have
- * is refused; Vue only puts its card links through it, and its navigation links
- * are still free text. Either way a page nobody links to still slips by. Angular
+ * internal link through the list, so a link to a route the list does not have is
+ * refused; Vue only puts its card links through it, and its navigation links are
+ * still free text. Either way a page nobody links to still slips by. Angular
  * will want the same care once it moves onto the list. React and Svelte read
  * their own generated lists, so their pages are not this list's concern.
  *
- * Each address is spelled out in full rather than written as a fixed start plus
- * free text, because an address that is only partly written out is never offered
- * as an autocomplete option.
+ * Each template is spelled out in full rather than written as a fixed start plus
+ * free text, because one that is only partly written out is never offered as an
+ * autocomplete option.
  *
  * Every framework marks a changing piece its own way, so the marks that sit
- * either side of one are given as arguments and the same five addresses can be
- * had in any of those spellings. There is no default: a site says which
- * spelling it means.
+ * either side of one are given as arguments and the same five templates can be
+ * had in any of those spellings. There is no default: a site says which spelling
+ * it means.
  *
  * Prefer asking for a spelling by its name below to writing the marks out where
  * they are used. Either works, and both autocomplete — a name just reads better
  * at the point of use than a pair of marks does.
  */
-export type RouteAddress<
+export type RouteTemplate<
 	Before extends string,
 	After extends string,
-> = RouteAddressArray<Before, After>[number]
+> = RouteTemplateArray<Before, After>[number]
 
 /**
- * All of the addresses at once, in one spelling, as `generateRoutePathTemplates` returns them.
+ * All the templates at once, in one spelling, as `generateRouteTemplates`
+ * returns them.
  *
  * Read off that function rather than written out, so the two cannot disagree —
- * which is the whole reason the addresses live in a function at all. Useful for
- * typing a list a site hands to its router; `RouteAddress` is the type of a
+ * which is the whole reason the routes live in a function at all. Useful for
+ * typing a list a site hands to its router; `RouteTemplate` is the type of a
  * single one.
  */
-export type RouteAddressArray<
+export type RouteTemplateArray<
 	Before extends string,
 	After extends string,
-> = ReturnType<typeof generateRoutePathTemplates<Before, After>>
+> = ReturnType<typeof generateRouteTemplates<Before, After>>
 
 /** A changing piece as one framework writes it: `$mealId`, `:mealId`, `[mealId]`. */
 type RouteParam<
@@ -93,10 +100,10 @@ type RouteParam<
  * Writes one changing piece the way a framework marks it.
  *
  * The runtime twin of `RouteParam`, and annotated with it so the two are the
- * same shape by construction. That annotation is what lets `generateRoutePathTemplates` be
- * read as a source of literal addresses: without it this returns a plain string,
- * every address built from it widens to `string`, and the types derived from
- * them stop naming anything.
+ * same shape by construction. That annotation is what lets
+ * `generateRouteTemplates` be read as a source of literal templates: without it
+ * this returns a plain string, every template built from it widens to `string`,
+ * and the types derived from them stop naming anything.
  *
  * @param before - what this spelling puts in front of the name
  * @param name - the piece's name, like `mealId`
@@ -110,33 +117,33 @@ function routeParam<
 	return `${before}${name}${after}`
 }
 
-/** The addresses with a `:` before each changing piece, as a router matches them. */
-export type ColonRouteAddress = RouteAddress<':', ''>
+/** A template with a `:` before each changing piece, as a router matches them. */
+export type ColonRouteTemplate = RouteTemplate<':', ''>
 
-/** The addresses with a `$` before each changing piece. */
-export type DollarRouteAddress = RouteAddress<'$', ''>
+/** A template with a `$` before each changing piece. */
+export type DollarRouteTemplate = RouteTemplate<'$', ''>
 
-/** The addresses with each changing piece in brackets, as file-based routing names them. */
-export type BracketRouteAddress = RouteAddress<'[', ']'>
+/** A template with each changing piece in brackets, as file-based routing names them. */
+export type BracketRouteTemplate = RouteTemplate<'[', ']'>
 
 /*
  * The three spellings, generated once here so a site imports the set it needs
  * instead of keeping a file of its own to call the generator from. Each is
- * annotated with its own type: without that the list widens and stops refusing
- * the other spellings, the same way the fillers below do.
+ * annotated with its own type: without that the list widens to plain strings and
+ * stops refusing the other spellings, the same way the fillers below do.
  */
 
-/** Every address with a `$` before each changing piece. */
-export const dollarRoutePaths: RouteAddressArray<'$', ''> =
-	generateRoutePathTemplates({ before: '$', after: '' })
+/** Every template with a `$` before each changing piece. */
+export const dollarRouteTemplates: RouteTemplateArray<'$', ''> =
+	generateRouteTemplates({ before: '$', after: '' })
 
-/** Every address with a `:` before each changing piece, ready for a router. */
-export const colonRoutePaths: RouteAddressArray<':', ''> =
-	generateRoutePathTemplates({ before: ':', after: '' })
+/** Every template with a `:` before each changing piece, ready for a router. */
+export const colonRouteTemplates: RouteTemplateArray<':', ''> =
+	generateRouteTemplates({ before: ':', after: '' })
 
-/** Every address with each changing piece in brackets, as page files name them. */
-export const bracketRoutePaths: RouteAddressArray<'[', ']'> =
-	generateRoutePathTemplates({ before: '[', after: ']' })
+/** Every template with each changing piece in brackets, as page files name them. */
+export const bracketRouteTemplates: RouteTemplateArray<'[', ']'> =
+	generateRouteTemplates({ before: '[', after: ']' })
 
 /**
  * Any of the spellings a site may pick.
@@ -145,7 +152,7 @@ export const bracketRoutePaths: RouteAddressArray<'[', ']'> =
  * site names the one spelling it uses rather than this. Declaration output keeps
  * it without needing it exported.
  */
-type AnyRouteAddressStyle = RouteAddress<string, string>
+type AnyRouteTemplateStyle = RouteTemplate<string, string>
 
 /**
  * What one framework puts either side of a changing piece.
@@ -158,31 +165,32 @@ export interface RouteMarks<Before extends string, After extends string> {
 	after: After
 }
 
-/** The name of each changing piece an address can have. */
+/** The name of each changing piece a template can have. */
 export type HrefParamName = 'category' | 'mealId'
 
 /**
- * The pieces that complete an address, looked up by name.
+ * The pieces that complete a template, looked up by name.
  *
- * Every entry is optional because an address needs only its own piece — there
- * is no address that takes both.
+ * Every entry is optional because a template needs only its own piece — there is
+ * no template that takes both.
  */
 export type HrefParams = Partial<Record<HrefParamName, string>>
 
 /**
- * Where a link points: an address, plus the pieces that complete it.
+ * Where a link points: a route template, plus the pieces that complete it. A
+ * filler turns the two into the address the link finally carries.
  *
- * The two are separate props so that the sites' link components stay a plain
- * set of props rather than a set of alternatives, which is what Storybook needs
- * to work out a story's arguments. So the type checks the piece *names* but not
- * the pairing: it cannot say that `/meal/$mealId` in particular must be given a
+ * They are separate props so that the sites' link components stay a plain set of
+ * props rather than a set of alternatives, which is what Storybook needs to work
+ * out a story's arguments. So the type checks the piece *names* but not the
+ * pairing: it cannot say that `/meal/$mealId` in particular must be given a
  * `mealId`. The filler checks that when it builds the address.
  *
  * The spelling is named rather than assumed, so a site passes the one it writes
- * its addresses in — `LinkAddressProps<BracketRouteAddress>` for a site whose
+ * its templates in — `LinkAddressProps<BracketRouteTemplate>` for a site whose
  * pages are files named `[mealId]`.
  */
-export interface LinkAddressProps<RouteStyle extends AnyRouteAddressStyle> {
+export interface LinkAddressProps<RouteStyle extends AnyRouteTemplateStyle> {
 	/**
 	 * The page to link to, written in this site's spelling. The marked-out name
 	 * in it stands for a piece that changes and has to be supplied in
@@ -190,33 +198,33 @@ export interface LinkAddressProps<RouteStyle extends AnyRouteAddressStyle> {
 	 */
 	href: RouteStyle
 	/**
-	 * The pieces that complete the address, looked up by the name inside the
-	 * marks. An address with no changing piece needs none of these. Leaving out a
-	 * piece an address does need throws when the link is drawn — the type cannot
+	 * The pieces that complete the template, looked up by the name inside the
+	 * marks. A template with no changing piece needs none of these. Leaving out a
+	 * piece a template does need throws when the link is drawn — the type cannot
 	 * catch it, because it does not tie the two together.
 	 */
 	hrefParams?: HrefParams
 }
 
-/** Fills a link's address in, for addresses written in one particular spelling. */
-type FillAddress<RouteStyle extends AnyRouteAddressStyle> = (
+/** Turns a template into the address a link carries, for one spelling of them. */
+type FillAddress<RouteStyle extends AnyRouteTemplateStyle> = (
 	linkAddress: LinkAddressProps<RouteStyle>,
 ) => string
 
 /**
- * Builds a filler for addresses written in one framework's spelling.
+ * Builds a filler for templates written in one framework's spelling.
  *
  * The marks are fixed when a filler is built rather than passed to each call. An
  * optional pair the caller could leave off would let the compiler read the
- * spelling off whichever address it was handed and accept it, and the filler
- * would then look for pieces marked a way that address does not use — finding
- * none, changing nothing, and handing back an address with its marks still in
+ * spelling off whichever template it was handed and accept it, and the filler
+ * would then look for pieces marked a way that template does not use — finding
+ * none, changing nothing, and handing back the template with its marks still in
  * it.
  *
  * Keep the `FillAddress` annotation on each of the three fillers below. They
  * look like they merely restate what this function already works out from the
  * marks it is handed, and they do not: taking the annotation off one of them and
- * rebuilding lets that filler accept an address in any spelling, checked by
+ * rebuilding lets that filler accept a template in any spelling, checked by
  * doing it. So the refusal comes from the annotations, not from here.
  *
  * @param marks - what this spelling puts either side of a changing piece
@@ -227,7 +235,7 @@ function createAddressFiller<Before extends string, After extends string>(
 	const { before, after } = marks
 	// Built once for the filler rather than per call. The marks are data now, and
 	// some of them mean something in a search, so each is escaped first — left
-	// raw, `$` matches the end of the address and `[` starts a set of characters.
+	// raw, `$` matches the end of the template and `[` starts a set of characters.
 	// A `:` needs no escaping, but the marks are not this function's to know.
 	const changingPiece = new RegExp(
 		`${escapeForSearch(before)}(\\w+)${escapeForSearch(after)}`,
@@ -235,7 +243,7 @@ function createAddressFiller<Before extends string, After extends string>(
 	)
 
 	/**
-	 * Fills an address's changing pieces in and hands back the address to link to.
+	 * Fills a template's changing pieces in and hands back the address to link to.
 	 *
 	 * Each piece is escaped on the way in. Whether a page has to unescape it on
 	 * the way out is its framework's business: vue-router and SvelteKit hand a
@@ -244,14 +252,14 @@ function createAddressFiller<Before extends string, After extends string>(
 	 * the page to unescape it. Escaping leaves digits alone either way, which is
 	 * why a piece that is always a number reads back the same everywhere.
 	 *
-	 * An address with a changing piece that was given no matching value throws,
+	 * A template with a changing piece that was given no matching value throws,
 	 * and so does one given an empty value, since both build a link that quietly
 	 * points at the wrong page.
 	 */
 	return ({
 		href,
 		hrefParams,
-	}: LinkAddressProps<RouteAddress<Before, After>>): string => {
+	}: LinkAddressProps<RouteTemplate<Before, After>>): string => {
 		// A Map rather than the object itself, so a piece named after something
 		// every object inherits (`constructor`, `toString`) reads as absent rather
 		// than picking up the inherited value.
@@ -272,16 +280,16 @@ function createAddressFiller<Before extends string, After extends string>(
 	}
 }
 
-/** Fills in an address written with a `$` before each changing piece. */
-export const getFullAddressViaDollars: FillAddress<DollarRouteAddress> =
+/** Fills in a template written with a `$` before each changing piece. */
+export const getFullAddressViaDollars: FillAddress<DollarRouteTemplate> =
 	createAddressFiller({ before: '$', after: '' })
 
-/** Fills in an address written with a `:` before each changing piece. */
-export const getFullAddressViaColons: FillAddress<ColonRouteAddress> =
+/** Fills in a template written with a `:` before each changing piece. */
+export const getFullAddressViaColons: FillAddress<ColonRouteTemplate> =
 	createAddressFiller({ before: ':', after: '' })
 
-/** Fills in an address written with each changing piece in brackets. */
-export const getFullAddressViaBrackets: FillAddress<BracketRouteAddress> =
+/** Fills in a template written with each changing piece in brackets. */
+export const getFullAddressViaBrackets: FillAddress<BracketRouteTemplate> =
 	createAddressFiller({ before: '[', after: ']' })
 
 /** What `getUnusablePieceMessage` needs to say which piece went wrong, and how. */
@@ -337,9 +345,9 @@ function getUnusablePieceMessage({
  * something in a search — `$` matches the end of the text, and `[` and `]` bound
  * a set of characters — so without this a filler built for one of them looks for
  * the wrong thing. The two fail differently: an unescaped `$` finds no piece at
- * all, so an address comes back with its marks still in it and the link quietly
+ * all, so a template comes back with its marks still in it and the link quietly
  * points at the wrong page, while an unescaped `[` becomes a set of characters
- * that matches almost anything, so it throws on every address carrying a letter
+ * that matches almost anything, so it throws on every template carrying a letter
  * — every one of them except `/`. A `:` happens to be safe already; passing
  * every mark through here means no caller has to know which are which.
  *

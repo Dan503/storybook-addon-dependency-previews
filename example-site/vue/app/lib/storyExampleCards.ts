@@ -22,7 +22,7 @@ import {
 	mealCardList,
 	mealCards,
 } from 'example-site-shared/data'
-import type { BracketRouteAddress } from 'example-site-shared/utils'
+import type { BracketRouteTemplate } from 'example-site-shared/utils'
 import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
 
 /**
@@ -33,7 +33,7 @@ import type { PropsForCardMolecule } from '../../components/listings/card/CardMo
  */
 function withSiteAddress<TCard>(
 	cards: Array<TCard>,
-	href: BracketRouteAddress,
+	href: BracketRouteTemplate,
 ) {
 	return cards.map((card) => ({ ...card, href }))
 }

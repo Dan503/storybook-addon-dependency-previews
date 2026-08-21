@@ -16,19 +16,19 @@ export {
 } from './mealDbApiUtils'
 
 export {
-	bracketRoutePaths,
-	colonRoutePaths,
-	dollarRoutePaths,
-	generateRoutePathTemplates,
+	bracketRouteTemplates,
+	colonRouteTemplates,
+	dollarRouteTemplates,
+	generateRouteTemplates,
 	getFullAddressViaBrackets,
 	getFullAddressViaColons,
 	getFullAddressViaDollars,
-	type BracketRouteAddress,
-	type ColonRouteAddress,
-	type DollarRouteAddress,
+	type BracketRouteTemplate,
+	type ColonRouteTemplate,
+	type DollarRouteTemplate,
 	type HrefParamName,
 	type HrefParams,
 	type LinkAddressProps,
-	type RouteAddress,
 	type RouteMarks,
+	type RouteTemplate,
 } from './routeAddressUtils'

@@ -7,7 +7,7 @@ import {
 	dependencyPreviewDecorators,
 	type StorybookPreviewConfig,
 } from 'storybook-addon-dependency-previews'
-import { colonRoutePaths } from 'example-site-shared/utils'
+import { colonRouteTemplates } from 'example-site-shared/utils'
 
 import '../app/assets/css/main.css'
 import dependenciesJson from './dependency-previews.json'
@@ -24,7 +24,7 @@ const blankRouteComponent = { template: '<div />' }
 // somewhere the site does not have still shows up as unmatched.
 const router = createRouter({
 	history: createMemoryHistory(),
-	routes: colonRoutePaths.map((path) => ({
+	routes: colonRouteTemplates.map((path) => ({
 		path,
 		component: blankRouteComponent,
 	})),
