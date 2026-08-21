@@ -1,18 +1,56 @@
-<script setup lang="ts">
-export interface PropsForCardMolecule {
+<script lang="ts">
+import type { Meal } from 'example-site-shared/data'
+import type { LinkAddressPropsViaBrackets } from 'example-site-shared/utils'
+
+/**
+ * A card that links to a page inside this site.
+ *
+ * The address arrives as `href` plus `hrefParams` rather than already finished,
+ * so `href` only accepts an address the site actually has and a misspelt one
+ * fails the type check. The card fills the changing piece in itself, because
+ * `NuxtLink` takes a finished address.
+ *
+ * The bracket spelling is the one this site writes: `/meal/[mealId]` is the
+ * address `pages/meal/[mealId].vue` answers. The two address props and what they
+ * mean come from `LinkAddressPropsViaBrackets` rather than being restated here.
+ */
+export interface PropsForCardMolecule extends LinkAddressPropsViaBrackets {
 	title: string
 	imgSrc: string
 	description: string
-	href: string
 }
 
-const { title, imgSrc, description, href } = defineProps<PropsForCardMolecule>()
+/**
+ * Builds the card for one meal.
+ *
+ * Both lists that show meals — the featured ones on the home page and the ones
+ * in a category — draw the same card from the same fields, so they share this
+ * rather than each writing it out.
+ *
+ * @param meal - the meal the card stands for
+ */
+export function getMealCard(meal: Meal): PropsForCardMolecule {
+	return {
+		title: meal.name,
+		description: meal.area,
+		imgSrc: meal.image,
+		href: '/meal/[mealId]',
+		hrefParams: { mealId: meal.id },
+	}
+}
+</script>
+
+<script setup lang="ts">
+import { getFullAddressViaBrackets } from 'example-site-shared/utils'
+
+const { title, imgSrc, description, href, hrefParams } =
+	defineProps<PropsForCardMolecule>()
 </script>
 
 <template>
 	<div class="CardMolecule @container grid">
 		<NuxtLink
-			:to="href"
+			:to="getFullAddressViaBrackets({ href, hrefParams })"
 			class="flex h-full gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
 		>
 			<img :src="imgSrc" alt="" class="aspect-video object-cover" />
