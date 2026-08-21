@@ -1,5 +1,6 @@
 import type { Meta } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import type { OneOrMoreArray } from 'example-site-shared/utils'
 import {
 	ErrorBlockOrganism,
 	type PropsForErrorBlockOrganism,
@@ -18,9 +19,7 @@ const meta: Meta<typeof ErrorBlockOrganism> = {
 
 export default meta
 
-// Typed as a "one or more" list because that is the shape a form field's
-// errors come in — a plain string[] is not accepted.
-const errors: [string, ...Array<string>] = ['Error One', 'Second error']
+const errors: OneOrMoreArray<string> = ['Error One', 'Second error']
 
 export const ErrorStrings = {
 	args: {
