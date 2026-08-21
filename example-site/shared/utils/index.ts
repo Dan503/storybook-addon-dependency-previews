@@ -22,3 +22,5 @@ export {
 	type LinkAddress,
 	type RouteAddress,
 } from './routeAddressUtils'
+
+export { type OneOrMoreArray } from './typeUtils'

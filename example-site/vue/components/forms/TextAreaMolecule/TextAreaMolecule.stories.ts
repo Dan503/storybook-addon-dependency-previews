@@ -7,6 +7,11 @@ import TextAreaMoleculeDecorator from './TextAreaMolecule.decorator.vue'
 
 const meta: Meta<typeof TextAreaMolecule> = {
 	title: 'Forms / Text Area Molecule',
+	// Storybook's Meta only accepts a plain component, and this one is written
+	// with `generic="..."`, which Meta has no way to describe — so it is
+	// rejected here despite working fine at runtime. TypeScript flags the
+	// marker itself once Storybook can type it, so it cannot be left behind.
+	// @ts-expect-error Meta cannot accept a component declared `generic="..."`
 	component: TextAreaMolecule,
 	tags: ['autodocs', 'molecule'],
 	parameters: {
