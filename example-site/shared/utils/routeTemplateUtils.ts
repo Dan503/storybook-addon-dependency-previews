@@ -1,19 +1,29 @@
 /**
- * Every route this site family has, as a template in one framework's spelling.
+ * Every route the example sites share, as a template in one framework's
+ * spelling. A site can still have routes of its own that are not here — Angular
+ * is part-way through moving onto these, and some of the sites carry routes that
+ * serve data or catch a bad address rather than answering one of these.
  *
  * A template is the pattern rather than a finished address: `/meal/$mealId` says
  * where meal pages live, and a filler turns one into `/meal/52772`. Templates
  * with nothing changing in them, like `/contact`, are already addresses.
  *
- * Every type here is derived from the array below: `RouteTemplateArray` reads
- * back what this returns and `RouteTemplate` is one member of that, so adding a
- * route to the array adds it to every type and every site checked against them.
+ * The templates are read back off the array below: `RouteTemplateArray` reads
+ * what this returns and `RouteTemplate` is one member of that, so adding a route
+ * there adds it to every spelling and to every site checked against them.
  *
- * That is not quite the same as the routes being written down only here. The
- * shared example data in `../data/example-meal-data.ts` writes two of them out
- * by hand for the stories to draw from, in object literals nothing checks, so
- * dropping a route from the array leaves those still compiling and still
- * pointing at a page that has gone. Typing that file is a change of its own.
+ * Two things it does not reach, both worth knowing before adding a route.
+ *
+ * A changing piece's *name* is written by hand, in `HrefParamName` below. A
+ * route whose piece is named something no other route uses needs adding there as
+ * well, or the value meant to complete it is refused — and nothing about the
+ * array prompts you to make that second edit.
+ *
+ * The shared example data in `../data/example-meal-data.ts` writes two of the
+ * routes out by hand for the stories to draw from, in object literals nothing
+ * checks, so dropping a route from the array leaves those still compiling and
+ * still pointing at a page that has gone. Typing that file is a change of its
+ * own.
  *
  * A site calls this when it needs the same routes in its own router or
  * route-file spelling, rather than writing them out a second time — though the
@@ -186,7 +196,14 @@ export interface RouteMarks<Before extends string, After extends string> {
 	after: After
 }
 
-/** The name of each changing piece a template can have. */
+/**
+ * The name of each changing piece a template can have.
+ *
+ * Written out rather than read back off `generateRouteTemplates`, so adding a
+ * route there does not update it. A route with a piece named something no other
+ * route uses has to be added here in the same breath, or the value meant to
+ * complete it is refused as a name this does not have.
+ */
 export type HrefParamName = 'category' | 'mealId'
 
 /**
