@@ -43,6 +43,14 @@ type RouteParam<
 	After extends string,
 > = `${Before}${Name}${After}`
 
+function routeParam<
+	Before extends string,
+	Name extends string,
+	After extends string,
+>(before: Before, name: Name, after: After): RouteParam<Before, Name, After> {
+	return `${before}${name}${after}`
+}
+
 /** The addresses with a `:` before each changing piece, as a router matches them. */
 export type ColonRouteAddress = RouteAddress<':', ''>
 
@@ -59,10 +67,7 @@ export type BracketRouteAddress = RouteAddress<'[', ']'>
  * names the one spelling it uses rather than this. Declaration output keeps it
  * without needing it exported.
  */
-type AnyRouteAddressStyle =
-	| ColonRouteAddress
-	| DollarRouteAddress
-	| BracketRouteAddress
+type AnyRouteAddressStyle = RouteAddress<string, string>
 
 /**
  * What one framework puts either side of a changing piece.
@@ -137,7 +142,9 @@ type FillAddress<RouteStyle extends AnyRouteAddressStyle> = (
  *
  * @param marks - what this spelling puts either side of a changing piece
  */
-function createAddressFiller(marks: RouteMarks<string, string>) {
+function createAddressFiller<Before extends string, After extends string>(
+	marks: RouteMarks<Before, After>,
+) {
 	const { before, after } = marks
 	// Built once for the filler rather than per call. The marks are data now, and
 	// some of them mean something in a search, so each is escaped first — left
@@ -162,7 +169,10 @@ function createAddressFiller(marks: RouteMarks<string, string>) {
 	 * and so does one given an empty value, since both build a link that quietly
 	 * points at the wrong page.
 	 */
-	return ({ href, hrefParams }: LinkAddress<AnyRouteAddressStyle>): string => {
+	return ({
+		href,
+		hrefParams,
+	}: LinkAddress<RouteAddress<Before, After>>): string => {
 		// A Map rather than the object itself, so a piece named after something
 		// every object inherits (`constructor`, `toString`) reads as absent rather
 		// than picking up the inherited value.
@@ -196,23 +206,6 @@ export const getFullAddressViaBrackets: FillAddress<BracketRouteAddress> =
 	createAddressFiller({ before: '[', after: ']' })
 
 /**
- * Every address, written in the `$` spelling, as the source `generatePaths`
- * rewrites into whichever spelling is asked for.
- *
- * A record rather than a plain list, so the type check insists on all of them: a
- * list would only check that each entry is one of the addresses, leaving this
- * free to fall behind the moment one is added above. Each value is `true` only
- * because a key needs one; the keys are the point.
- */
-const everyDollarAddress: Record<DollarRouteAddress, true> = {
-	'/': true,
-	'/categories': true,
-	'/categories/$category': true,
-	'/meal/$mealId': true,
-	'/contact': true,
-}
-
-/**
  * Lists every address the sites share, written in one framework's spelling.
  *
  * A site needing the same addresses as its own router or route files write them
@@ -225,16 +218,13 @@ export function generatePaths<Before extends string, After extends string>({
 	before,
 	after,
 }: RouteMarks<Before, After>): Array<RouteAddress<Before, After>> {
-	const dollarPiece = /\$(\w+)/g
-	const addresses = Object.keys(everyDollarAddress).map((address) =>
-		address.replace(dollarPiece, (_marker, pieceName: string) =>
-			[before, pieceName, after].join(''),
-		),
-	)
-	// The replacing is string work, so the compiler cannot see that what comes
-	// out is one of the addresses in the asked-for spelling. The record above is
-	// what makes it true.
-	return addresses as Array<RouteAddress<Before, After>>
+	return [
+		`/`,
+		`/categories`,
+		`/categories/${routeParam(before, 'category', after)}`,
+		`/meal/${routeParam(before, 'mealId', after)}`,
+		`/contact`,
+	]
 }
 
 interface GetUnusablePieceMessageParams {
