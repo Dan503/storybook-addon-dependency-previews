@@ -1,4 +1,4 @@
-import type { StorybookConfig } from '@storybook/sveltekit';
+import type { StorybookConfig } from '@storybook/sveltekit'
 
 const config: StorybookConfig = {
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'],
@@ -7,8 +7,8 @@ const config: StorybookConfig = {
 		'@chromatic-com/storybook',
 		'@storybook/addon-vitest',
 		'@storybook/addon-a11y',
-		'@storybook/addon-docs'
+		'@storybook/addon-docs',
 	],
-	framework: '@storybook/sveltekit'
-};
-export default config;
+	framework: '@storybook/sveltekit',
+}
+export default config

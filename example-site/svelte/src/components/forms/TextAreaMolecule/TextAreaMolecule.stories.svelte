@@ -15,19 +15,13 @@
 	});
 </script>
 
-<Story
-	name="Primary"
-	args={{ label: 'Message', placeholder: 'Enter your message' } satisfies PropsForTextAreaMolecule}
->
+<Story name="Primary" args={{ label: 'Message', placeholder: 'Enter your message' } satisfies PropsForTextAreaMolecule}>
 	{#snippet template(args)}
 		<TextAreaMoleculeDecorator {...args} />
 	{/snippet}
 </Story>
 
-<Story
-	name="Error State"
-	args={{ label: 'Message', placeholder: 'Enter your message' } satisfies PropsForTextAreaMolecule}
->
+<Story name="Error State" args={{ label: 'Message', placeholder: 'Enter your message' } satisfies PropsForTextAreaMolecule}>
 	{#snippet template(args)}
 		<TextAreaMoleculeDecorator {...args} validate="initial" />
 	{/snippet}

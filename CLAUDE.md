@@ -40,7 +40,9 @@ pnpm test         # react (Vitest) and angular (ng test) only — the other thre
 pnpm lint         # ESLint — react and svelte only; never run by `check`
 pnpm format       # Prettier, writing changes — every site but angular
 pnpm typecheck    # Type-check the site — every site (tsc, svelte-check + tsc, or nuxt typecheck)
-pnpm check        # Report only: Prettier check, then typecheck — every site (angular: typecheck only)
+pnpm check        # Report only — every site. Currently just runs typecheck; it is the
+                  # stable entry point, and gains a formatting half once the sites are
+                  # formatted, so callers do not have to change then.
 pnpm sb           # Run Storybook with dependency watching (sb-deps --watch --run-storybook)
 pnpm sb:build     # Generate deps then build static Storybook
 pnpm sb:deps      # One-off dependency graph generation

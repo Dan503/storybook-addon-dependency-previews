@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import HeroBlockOrganism, {
-	type PropsForHeroBlockOrganism,
-} from './HeroBlockOrganism.vue'
+import HeroBlockOrganism, { type PropsForHeroBlockOrganism } from './HeroBlockOrganism.vue'
 
 const meta: Meta<typeof HeroBlockOrganism> = {
 	title: '03 Organisms / Hero Block Organism',

@@ -1,6 +1,6 @@
 <script lang="ts" module>
-	import type { StoryParameters } from 'storybook-addon-dependency-previews';
-	import FooterOrganism from './FooterOrganism.svelte';
+	import type { StoryParameters } from 'storybook-addon-dependency-previews'
+	import FooterOrganism from './FooterOrganism.svelte'
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
@@ -9,9 +9,9 @@
 		tags: ['autodocs', 'organism'],
 		parameters: {
 			layout: 'padded',
-			__filePath: import.meta.url
-		} satisfies StoryParameters
-	});
+			__filePath: import.meta.url,
+		} satisfies StoryParameters,
+	})
 </script>
 
 <Story name="Primary" args={{}}>

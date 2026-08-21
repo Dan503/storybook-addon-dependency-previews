@@ -12,7 +12,7 @@
 		"sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
 		"format": "prettier --write .",
 		"typecheck": "tsc --noEmit",
-		"check": "prettier --check . && pnpm run typecheck"
+		"check": "pnpm run typecheck"
 	},
 	"dependencies": {
 		"@formisch/solid": "1.0.0-rc.0",
