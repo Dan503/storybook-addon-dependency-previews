@@ -63,9 +63,9 @@ export type BracketRouteAddress = RouteAddress<'[', ']'>
 /**
  * Any of the spellings a site may pick.
  *
- * Private: it is only the bound on `LinkAddress` and the fillers, and a site
- * names the one spelling it uses rather than this. Declaration output keeps it
- * without needing it exported.
+ * Private: it is only the bound on `LinkAddressProps` and the fillers, and a
+ * site names the one spelling it uses rather than this. Declaration output keeps
+ * it without needing it exported.
  */
 type AnyRouteAddressStyle = RouteAddress<string, string>
 
@@ -101,10 +101,10 @@ export type HrefParams = Partial<Record<HrefParamName, string>>
  * `mealId`. The filler checks that when it builds the address.
  *
  * The spelling is named rather than assumed, so a site passes the one it writes
- * its addresses in — `LinkAddress<BracketRouteAddress>` for a site whose pages
- * are files named `[mealId]`.
+ * its addresses in — `LinkAddressProps<BracketRouteAddress>` for a site whose
+ * pages are files named `[mealId]`.
  */
-export interface LinkAddress<RouteStyle extends AnyRouteAddressStyle> {
+export interface LinkAddressProps<RouteStyle extends AnyRouteAddressStyle> {
 	/**
 	 * The page to link to, written in this site's spelling. The marked-out name
 	 * in it stands for a piece that changes and has to be supplied in
@@ -122,7 +122,7 @@ export interface LinkAddress<RouteStyle extends AnyRouteAddressStyle> {
 
 /** Fills a link's address in, for addresses written in one particular spelling. */
 type FillAddress<RouteStyle extends AnyRouteAddressStyle> = (
-	linkAddress: LinkAddress<RouteStyle>,
+	linkAddress: LinkAddressProps<RouteStyle>,
 ) => string
 
 /**
@@ -172,7 +172,7 @@ function createAddressFiller<Before extends string, After extends string>(
 	return ({
 		href,
 		hrefParams,
-	}: LinkAddress<RouteAddress<Before, After>>): string => {
+	}: LinkAddressProps<RouteAddress<Before, After>>): string => {
 		// A Map rather than the object itself, so a piece named after something
 		// every object inherits (`constructor`, `toString`) reads as absent rather
 		// than picking up the inherited value.

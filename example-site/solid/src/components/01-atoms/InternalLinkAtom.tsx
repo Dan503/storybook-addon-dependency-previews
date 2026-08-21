@@ -3,7 +3,7 @@ import { splitProps } from 'solid-js'
 import {
 	getFullAddressViaDollars,
 	type DollarRouteAddress,
-	type LinkAddress,
+	type LinkAddressProps,
 } from 'example-site-shared/utils'
 
 /**
@@ -20,7 +20,7 @@ import {
  * straight through.
  */
 export type PropsForInternalLinkAtom = Omit<AnchorProps, 'href'> &
-	LinkAddress<DollarRouteAddress>
+	LinkAddressProps<DollarRouteAddress>
 
 export function InternalLinkAtom(props: PropsForInternalLinkAtom) {
 	// Held back from the anchor: `hrefParams` is not an anchor attribute, and

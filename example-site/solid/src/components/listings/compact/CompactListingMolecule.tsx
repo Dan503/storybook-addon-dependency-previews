@@ -1,5 +1,8 @@
 import { Show } from 'solid-js'
-import type { DollarRouteAddress, LinkAddress } from 'example-site-shared/utils'
+import type {
+	DollarRouteAddress,
+	LinkAddressProps,
+} from 'example-site-shared/utils'
 import { InternalLinkAtom } from '../../01-atoms/InternalLinkAtom'
 
 interface ContentForCompactListing {
@@ -13,7 +16,7 @@ interface ContentForCompactListing {
  * than a link. Addresses outside this site belong in `ExternalLinkAtom`.
  */
 export type PropsForCompactListingMolecule = ContentForCompactListing &
-	Partial<LinkAddress<DollarRouteAddress>>
+	Partial<LinkAddressProps<DollarRouteAddress>>
 
 export function CompactListingMolecule(props: PropsForCompactListingMolecule) {
 	// A function, so that both branches below draw it from the current values

@@ -2,7 +2,7 @@
 import type { Meal } from 'example-site-shared/data'
 import type {
 	BracketRouteAddress,
-	LinkAddress,
+	LinkAddressProps,
 } from 'example-site-shared/utils'
 
 /**
@@ -15,9 +15,9 @@ import type {
  *
  * `BracketRouteAddress` is the spelling this site writes: `/meal/[mealId]` is
  * the address `pages/meal/[mealId].vue` answers. The two address props and what
- * they mean come from `LinkAddress` rather than being restated here.
+ * they mean come from `LinkAddressProps` rather than being restated here.
  */
-export interface PropsForCardMolecule extends LinkAddress<BracketRouteAddress> {
+export interface PropsForCardMolecule extends LinkAddressProps<BracketRouteAddress> {
 	title: string
 	imgSrc: string
 	description: string

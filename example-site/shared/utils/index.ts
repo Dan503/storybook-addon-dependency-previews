@@ -25,7 +25,7 @@ export {
 	type DollarRouteAddress,
 	type HrefParamName,
 	type HrefParams,
-	type LinkAddress,
+	type LinkAddressProps,
 	type RouteAddress,
 	type RouteMarks,
 } from './routeAddressUtils'
