@@ -31,4 +31,4 @@ export {
 	type LinkAddressProps,
 	type RouteMarks,
 	type RouteTemplate,
-} from './routeAddressUtils'
+} from './routeTemplateUtils'
