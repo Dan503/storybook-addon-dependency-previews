@@ -29,6 +29,9 @@ export {
 	type HrefParamName,
 	type HrefParams,
 	type LinkAddressProps,
+	type LinkAddressPropsViaBrackets,
+	type LinkAddressPropsViaColons,
+	type LinkAddressPropsViaDollars,
 	type RouteMarks,
 	type RouteTemplate,
 } from './routeTemplateUtils'

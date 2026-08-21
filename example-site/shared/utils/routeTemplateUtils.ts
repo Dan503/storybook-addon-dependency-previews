@@ -14,7 +14,14 @@
  * three spellings in use are already generated below, so most sites import one
  * of those instead.
  *
- * Two things about the shape are load-bearing rather than incidental:
+ * Three things about the shape are load-bearing rather than incidental:
+ *
+ * The array ends in **`as const`**. Without it a template built from the marks
+ * is just a string as far as the compiler is concerned, so every type below says
+ * `string`, no route is ever offered as a completion, and a template in the
+ * wrong spelling — or one that is not a route at all — is accepted everywhere.
+ * Nothing fails when it is missing, which is what makes it worth saying: the
+ * check simply stops finding anything.
  *
  * There is deliberately **no return type annotation**. The types are read off
  * this function, so annotating it would make the annotation the source of truth
@@ -36,7 +43,7 @@ export function generateRouteTemplates<
 		`/categories/${routeParam(before, 'category', after)}`,
 		`/meal/${routeParam(before, 'mealId', after)}`,
 		`/contact`,
-	]
+	] as const
 }
 
 /**
@@ -100,10 +107,11 @@ type RouteParam<
  * Writes one changing piece the way a framework marks it.
  *
  * The runtime twin of `RouteParam`, and annotated with it so the two are the
- * same shape by construction. That annotation is what lets
- * `generateRouteTemplates` be read as a source of literal templates: without it
- * this returns a plain string, every template built from it widens to `string`,
- * and the types derived from them stop naming anything.
+ * same shape by construction. That annotation is load-bearing, checked by taking
+ * it off: this then hands back a plain string, and every template built from it
+ * says only how it starts — `/meal/${string}` rather than `/meal/$mealId` — so
+ * anything at all after `/meal/` is accepted and nothing is offered to complete
+ * it.
  *
  * @param before - what this spelling puts in front of the name
  * @param name - the piece's name, like `mealId`
@@ -128,9 +136,14 @@ export type BracketRouteTemplate = RouteTemplate<'[', ']'>
 
 /*
  * The three spellings, generated once here so a site imports the set it needs
- * instead of keeping a file of its own to call the generator from. Each is
- * annotated with its own type: without that the list widens to plain strings and
- * stops refusing the other spellings, the same way the fillers below do.
+ * instead of keeping a file of its own to call the generator from.
+ *
+ * Each is annotated with its own type, which is what ties the name to the marks:
+ * the marks are handed over as plain values, so nothing else would notice a list
+ * called `dollarRouteTemplates` being generated with `:` marks. Checked by doing
+ * it — the annotation reports the mismatch template by template. It is not what
+ * keeps the templates from widening to plain strings; the `as const` on the
+ * generated array does that.
  */
 
 /** Every template with a `$` before each changing piece. */
@@ -187,8 +200,10 @@ export type HrefParams = Partial<Record<HrefParamName, string>>
  * `mealId`. The filler checks that when it builds the address.
  *
  * The spelling is named rather than assumed, so a site passes the one it writes
- * its templates in — `LinkAddressProps<BracketRouteTemplate>` for a site whose
- * pages are files named `[mealId]`.
+ * its templates in. Prefer one of the three named below to writing that out:
+ * `LinkAddressPropsViaBrackets` says the same as
+ * `LinkAddressProps<BracketRouteTemplate>` and reads better where a component
+ * states its props.
  */
 export interface LinkAddressProps<RouteStyle extends AnyRouteTemplateStyle> {
 	/**
@@ -206,6 +221,21 @@ export interface LinkAddressProps<RouteStyle extends AnyRouteTemplateStyle> {
 	hrefParams?: HrefParams
 }
 
+/*
+ * The three spellings again, this time as a link's props. Named for the same
+ * reason the fillers are: a site states one of these instead of writing the
+ * spelling out at each component that takes a link.
+ */
+
+/** Where a link points, written with a `$` before each changing piece. */
+export type LinkAddressPropsViaDollars = LinkAddressProps<DollarRouteTemplate>
+
+/** Where a link points, written with a `:` before each changing piece. */
+export type LinkAddressPropsViaColons = LinkAddressProps<ColonRouteTemplate>
+
+/** Where a link points, written with each changing piece in brackets. */
+export type LinkAddressPropsViaBrackets = LinkAddressProps<BracketRouteTemplate>
+
 /** Turns a template into the address a link carries, for one spelling of them. */
 type FillAddress<RouteStyle extends AnyRouteTemplateStyle> = (
 	linkAddress: LinkAddressProps<RouteStyle>,
@@ -221,11 +251,12 @@ type FillAddress<RouteStyle extends AnyRouteTemplateStyle> = (
  * none, changing nothing, and handing back the template with its marks still in
  * it.
  *
- * Keep the `FillAddress` annotation on each of the three fillers below. They
- * look like they merely restate what this function already works out from the
- * marks it is handed, and they do not: taking the annotation off one of them and
- * rebuilding lets that filler accept a template in any spelling, checked by
- * doing it. So the refusal comes from the annotations, not from here.
+ * The refusal itself comes from here: the returned function takes templates in
+ * this filler's own spelling, so one written another way is turned away and the
+ * right spelling named. The `FillAddress` annotation on each of the three
+ * fillers below does the same job as the annotations on the three lists — it
+ * ties the filler's name to the marks it was built with, since nothing else
+ * would notice `getFullAddressViaDollars` being built with `:` marks.
  *
  * @param marks - what this spelling puts either side of a changing piece
  */

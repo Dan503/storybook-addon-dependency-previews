@@ -1,9 +1,6 @@
 <script lang="ts">
 import type { Meal } from 'example-site-shared/data'
-import type {
-	BracketRouteTemplate,
-	LinkAddressProps,
-} from 'example-site-shared/utils'
+import type { LinkAddressPropsViaBrackets } from 'example-site-shared/utils'
 
 /**
  * A card that links to a page inside this site.
@@ -13,11 +10,11 @@ import type {
  * fails the type check. The card fills the changing piece in itself, because
  * `NuxtLink` takes a finished address.
  *
- * `BracketRouteTemplate` is the spelling this site writes: `/meal/[mealId]` is
- * the address `pages/meal/[mealId].vue` answers. The two address props and what
- * they mean come from `LinkAddressProps` rather than being restated here.
+ * The bracket spelling is the one this site writes: `/meal/[mealId]` is the
+ * address `pages/meal/[mealId].vue` answers. The two address props and what they
+ * mean come from `LinkAddressPropsViaBrackets` rather than being restated here.
  */
-export interface PropsForCardMolecule extends LinkAddressProps<BracketRouteTemplate> {
+export interface PropsForCardMolecule extends LinkAddressPropsViaBrackets {
 	title: string
 	imgSrc: string
 	description: string
