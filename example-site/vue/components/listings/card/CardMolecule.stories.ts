@@ -19,6 +19,12 @@ type Story = StoryObj<typeof meta>
 const cardArgs = {
 	title: 'Title of the card',
 	href: '/',
+	// Both pieces, so every address the `href` control offers draws a card. The
+	// card fills its own address in, and a changing piece with no value throws —
+	// so without these, picking `/meal/[mealId]` or `/categories/[category]` from
+	// the control would fail to render rather than link somewhere. The three
+	// addresses with nothing to fill ignore them.
+	hrefParams: { mealId: exampleMeal.id, category: exampleMeal.category },
 	description: `Card description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
 	imgSrc: exampleMeal.image,
 } satisfies PropsForCardMolecule
