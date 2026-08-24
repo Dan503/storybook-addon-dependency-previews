@@ -63,6 +63,20 @@ export function generateRouteTemplates<
 }
 
 /**
+ * All the templates at once, in one spelling, as `generateRouteTemplates`
+ * returns them.
+ *
+ * Read off that function rather than written out, so the two cannot disagree —
+ * which is the whole reason the routes live in a function at all. Useful for
+ * typing a list a site hands to its router; `RouteTemplate` is the type of a
+ * single one.
+ */
+export type RouteTemplateArray<
+	Before extends string,
+	After extends string,
+> = ReturnType<typeof generateRouteTemplates<Before, After>>
+
+/**
  * One route the example sites link to, as a template.
  *
  * One member of the list `generateRouteTemplates` returns, which is where the
@@ -99,20 +113,6 @@ export type RouteTemplate<
 	Before extends string,
 	After extends string,
 > = RouteTemplateArray<Before, After>[number]
-
-/**
- * All the templates at once, in one spelling, as `generateRouteTemplates`
- * returns them.
- *
- * Read off that function rather than written out, so the two cannot disagree —
- * which is the whole reason the routes live in a function at all. Useful for
- * typing a list a site hands to its router; `RouteTemplate` is the type of a
- * single one.
- */
-export type RouteTemplateArray<
-	Before extends string,
-	After extends string,
-> = ReturnType<typeof generateRouteTemplates<Before, After>>
 
 /** A changing piece as one framework writes it: `$mealId`, `:mealId`, `[mealId]`. */
 type RouteParam<
