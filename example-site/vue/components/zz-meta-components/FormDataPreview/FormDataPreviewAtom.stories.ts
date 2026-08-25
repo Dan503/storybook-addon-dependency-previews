@@ -9,6 +9,11 @@ import FormDataPreviewAtom from './FormDataPreviewAtom.vue'
 
 const meta: Meta<typeof FormDataPreviewAtom> = {
 	title: 'Zz Meta Components / Form Data Preview / Form Data Preview Atom',
+	// This component is written with `generic="..."`, and Storybook's `Meta` has no
+	// way to describe one of those, so it is rejected here despite working at
+	// runtime. TypeScript reports this marker if the rejection ever stops, so it
+	// cannot be left behind once Storybook can type these.
+	// @ts-expect-error `Meta` cannot accept a component written with `generic="..."`
 	component: FormDataPreviewAtom,
 	tags: ['autodocs', 'atom'],
 	parameters: {
