@@ -8,9 +8,9 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 pnpm typecheck
 ```
 
-This runs `vue-tsc` over the project Nuxt generates, which covers the site's own code: everything under `app/`, plus every component those pages reach through their imports, plus the `components/` folder — which is where the story files live, along with the few components only a story uses.
+This runs `vue-tsc` over the project Nuxt generates, which covers everything under `app/` — the pages, the components beside them in `app/components/`, the story files sitting next to each component, and the few components only a story uses.
 
-Nuxt would not read `components/` on its own, because it only reads the folders it builds from. `nuxt.config.ts` names the folder so that it does.
+It needs no help from `nuxt.config.ts` to do that. Nuxt treats `app/` as the source root, so everything inside it is read; the reason to say so here at all is that this site used to keep `components/` _outside_ `app/`, which is the Nuxt 3 layout. While it sat there, two things were quietly switched off: the type check never opened a single story file, and Nuxt's component auto-import — which scans `<source root>/components` — was pointed at a folder that did not exist. Moving the folder in fixed both, and is why there is no `include` list here to maintain.
 
 **There are two scripts, and the difference is whether the addon gets built first.** Every story imports a type from `storybook-addon-dependency-previews`, and that package's types only exist once it has been built into its `dist/` folder — which the repository does not carry, and which `pnpm install` does not produce. So `pnpm typecheck` builds the addon and then checks, which is what you want on a fresh clone and what `sb:build` already does for the same reason. `pnpm typecheck:quick` skips the build and checks straight away, for when the addon is known to be built already.
 
