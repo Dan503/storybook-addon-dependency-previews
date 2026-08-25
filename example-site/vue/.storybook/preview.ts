@@ -51,7 +51,7 @@ const previewConfig: StorybookPreviewConfig = {
 		dependencyPreviews: {
 			dependenciesJson,
 			projectRootPath: new URL('..', import.meta.url).pathname,
-			storyModules: import.meta.glob('/components/**/*.stories.{ts,tsx}', {
+			storyModules: import.meta.glob('/app/**/*.stories.{ts,tsx}', {
 				eager: false,
 			}),
 			sourceRootUrl:
