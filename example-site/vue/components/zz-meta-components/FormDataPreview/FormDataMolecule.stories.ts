@@ -10,10 +10,11 @@ import FormDataMolecule from './FormDataMolecule.vue'
 
 const meta: Meta<typeof FormDataMolecule> = {
 	title: 'Zz Meta Components / Form Data Preview / Form Data Molecule',
-	// This component is written with `generic="..."`, and Storybook's `Meta` has no
-	// way to describe one of those, so it is rejected here despite working at
-	// runtime. TypeScript reports this marker if the rejection ever stops, so it
-	// cannot be left behind once Storybook can type these.
+	// This component is written with `generic="..."`, which compiles to a generic
+	// function, and `Meta`'s `component` field only accepts a concrete component —
+	// so it is rejected here despite working at runtime. TypeScript reports this
+	// marker if the rejection ever stops, so it cannot be left behind once
+	// Storybook can type these.
 	// @ts-expect-error `Meta` cannot accept a component written with `generic="..."`
 	component: FormDataMolecule,
 	tags: ['autodocs', 'molecule'],

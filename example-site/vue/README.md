@@ -8,13 +8,13 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 pnpm typecheck
 ```
 
-This runs `vue-tsc` over the project Nuxt generates, which covers the site's own code: everything under `app/`, plus every component those pages reach through their imports, plus every file under `components/` — which is where the story files live, along with the few components only a story uses.
+This runs `vue-tsc` over the project Nuxt generates, which covers the site's own code: everything under `app/`, plus every component those pages reach through their imports, plus the `components/` folder — which is where the story files live, along with the few components only a story uses.
 
 Nuxt would not read `components/` on its own, because it only reads the folders it builds from. `nuxt.config.ts` names the folder so that it does.
 
 **There are two scripts, and the difference is whether the addon gets built first.** Every story imports a type from `storybook-addon-dependency-previews`, and that package's types only exist once it has been built into its `dist/` folder — which the repository does not carry, and which `pnpm install` does not produce. So `pnpm typecheck` builds the addon and then checks, which is what you want on a fresh clone and what `sb:build` already does for the same reason. `pnpm typecheck:quick` skips the build and checks straight away, for when the addon is known to be built already.
 
-Four components are written with `generic="..."`, and Storybook's `Meta` has no way to describe one of those — a disagreement between two type systems rather than a fault in the code, which is why they work at runtime. `TextAreaMolecule`, `TextFieldMolecule`, `FormDataMolecule` and `FormDataPreviewAtom` each carry a marker in their story saying that one line is expected to fail. Every other line of those files is checked as normal, and TypeScript reports the marker itself once Storybook can type these components, so none of the four can outlive its reason.
+Four components are written with `generic="..."`, which compiles to a generic function, and `Meta`'s `component` field only accepts a concrete component — a disagreement between two type systems rather than a fault in the code, which is why they work at runtime. `TextAreaMolecule`, `TextFieldMolecule`, `FormDataMolecule` and `FormDataPreviewAtom` each carry a marker in their story saying that one line is expected to fail. Every other line of those files is checked as normal, and TypeScript reports the marker itself once Storybook can type these components, so none of the four can outlive its reason.
 
 `.storybook/` is outside it, and is left that way on purpose: `preview.ts` imports a dependency graph that `sb-deps` generates and the repository does not carry, so including it would stop this running on a fresh clone. The addresses lose nothing by it — the stand-in router takes them from `example-site-shared`, where they are checked already. `main.ts` and `preview.ts` themselves go unchecked, as they were before.
 
