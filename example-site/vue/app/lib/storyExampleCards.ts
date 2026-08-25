@@ -21,7 +21,7 @@ import {
 	mealCards,
 } from 'example-site-shared/data'
 import type { BracketRouteTemplate } from 'example-site-shared/utils'
-import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
+import type { PropsForCardMolecule } from '../components/listings/card/CardMolecule.vue'
 
 /**
  * Puts one address on every card in a list, leaving the rest of each card alone.

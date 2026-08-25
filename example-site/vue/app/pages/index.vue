@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HomeTemplate from '../../components/04-templates/HomeTemplate.vue'
+import HomeTemplate from '../components/04-templates/HomeTemplate.vue'
 import { fetchRandomMealList } from 'example-site-shared/utils/mealDbApiUtils'
 
 const { data: featuredMeals } = await useAsyncData('featured-meals', () =>

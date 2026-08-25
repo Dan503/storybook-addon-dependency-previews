@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useActiveNavItem } from '../../app/composables/useActiveNavItem'
+import { useActiveNavItem } from '../../composables/useActiveNavItem'
 
 export interface PropsForMainNavMolecule {}
 
