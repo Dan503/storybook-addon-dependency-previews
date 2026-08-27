@@ -10,4 +10,4 @@
  * why the example sites' error stories declare their sample array with this
  * type rather than letting it be inferred.
  */
-export type ArrayWithValue<T> = [T, ...Array<T>]
+export type NonEmptyArray<T> = [T, ...Array<T>]

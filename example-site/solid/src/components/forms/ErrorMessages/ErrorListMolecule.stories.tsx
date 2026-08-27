@@ -1,6 +1,6 @@
 import type { Meta } from 'storybook-solidjs-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import type { ArrayWithValue } from 'example-site-shared/utils'
+import type { NonEmptyArray } from 'example-site-shared/utils'
 import {
 	ErrorListMolecule,
 	type PropsForErrorListMolecule,
@@ -18,7 +18,7 @@ const meta: Meta<typeof ErrorListMolecule> = {
 
 export default meta
 
-const errors: ArrayWithValue<string> = ['Error One', 'Second error']
+const errors: NonEmptyArray<string> = ['Error One', 'Second error']
 
 export const ErrorStrings = {
 	args: {
