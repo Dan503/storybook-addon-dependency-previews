@@ -40,6 +40,7 @@ const { href, hrefParams, activeClass } =
 
 <template>
 	<NuxtLink
+		class="InternalLinkAtom"
 		:to="getFullAddressViaBrackets({ href, hrefParams })"
 		:activeClass="activeClass"
 	>
