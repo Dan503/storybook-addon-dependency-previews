@@ -20,6 +20,7 @@ const { cards } = defineProps<PropsForCardListingOrganism>()
 				:imgSrc="card.imgSrc"
 				:description="card.description"
 				:href="card.href"
+				:hrefParams="card.hrefParams"
 			/>
 		</div>
 	</div>

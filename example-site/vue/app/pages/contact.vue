@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ContactTemplate from '../../components/04-templates/ContactTemplate.vue'
+import ContactTemplate from '../components/04-templates/ContactTemplate.vue'
 
 useHead({ title: 'Contact' })
 useSeoMeta({

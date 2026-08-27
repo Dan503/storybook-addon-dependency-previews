@@ -70,13 +70,14 @@ export type HrefParams = NonNullable<LinkAddress['hrefParams']>;
  *
  * Teaching this site a new piece shape means teaching the escaping about it too.
  *
- * `example-site-shared` exports a `getFullAddress` too, along with `LinkAddress` and `HrefParams`,
- * and all three mean something different there: its list is written by hand and marks a changing
- * piece `$name`, where this one is read from what SvelteKit generates and marks it `[name]`. The
- * names are shared deliberately so the example sites read alike, and nothing imports both of any
- * pair — but a file can import from both packages, which `storyExampleCards.ts` does. This site
- * keeps its own so its addresses stay the generated ones, which is what makes a renamed route
- * folder fail the type check rather than drift.
+ * `example-site-shared` exports a `HrefParams` too, and it means something different there: its
+ * list of addresses is written by hand, and it names each spelling separately — its bracket one is
+ * `getFullAddressViaBrackets`, where this file's `getFullAddress` is read from what SvelteKit
+ * generates. Its address-and-pieces type is called `LinkAddressProps`, so `HrefParams` is the only
+ * name the two share. That much is deliberate, so the example sites read alike, and no file imports
+ * both of them — though a file can import from both packages, which `storyExampleCards.ts` does.
+ * This site keeps its own so its addresses stay the generated ones, which is what makes a renamed
+ * route folder fail the type check rather than drift.
  */
 export function getFullAddress(href: RouteId, hrefParams?: HrefParams): ResolvedPathname {
 	const escapedPieces = Object.entries(hrefParams ?? {}).map(([name, pieceValue]) => [

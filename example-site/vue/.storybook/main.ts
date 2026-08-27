@@ -4,7 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import { mergeConfig } from 'vite'
 
 const config: StorybookConfig = {
-	stories: ['../components/**/*.stories.@(ts|tsx|mdx)'],
+	stories: ['../app/components/**/*.stories.@(ts|tsx|mdx)'],
 	addons: [
 		// register your addon
 		'storybook-addon-dependency-previews/addon',

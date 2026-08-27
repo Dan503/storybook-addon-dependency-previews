@@ -2,6 +2,28 @@
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
+## Type checking
+
+```bash
+pnpm typecheck
+```
+
+This runs `vue-tsc` over the project Nuxt generates, which covers everything under `app/` — the pages, the components beside them in `app/components/`, the story files sitting next to each component, and the few components only a story uses.
+
+It needs no help from `nuxt.config.ts` to do that. Nuxt treats `app/` as the source root, so everything inside it is read; the reason to say so here at all is that this site used to keep `components/` _outside_ `app/`, which is the Nuxt 3 layout. While it sat there the type check never opened a single story file, and Nuxt's component auto-import — which scans `<source root>/components` — was pointed at a folder that did not exist. Moving the folder in fixes the type check, and is why there is no `include` list here to maintain.
+
+Auto-import is a smaller win than it sounds, so it is worth being exact about: the scanner now finds the folder, but it derives each name from the folder path, and four of the folders here start with a digit. So 20 of the generated names come out as `01AtomsButtonAtom` and the like, which is neither a usable identifier nor a usable tag. Nothing here is affected — every component is imported explicitly and nothing imports `#components` — but do not expect the numbered folders to be reachable that way.
+
+**There are two scripts, and the difference is whether the addon gets built first.** Every story imports a type from `storybook-addon-dependency-previews`, and that package's types only exist once it has been built into its `dist/` folder — which the repository does not carry, and which `pnpm install` does not produce. So `pnpm typecheck` runs `prep-sb-addon` and then checks, which is what you want on a fresh clone. `pnpm typecheck:quick` skips the build and checks straight away, for when the addon is known to be built already. `prep-sb-addon` is the addon build under a name, so that `typecheck` and `sb:build` — the two scripts here that _build_ it — share one copy of the command rather than each carrying its own. Angular does the same for the same reason. Most of the scripts here need a built addon without building one: `sb`, `sb:setup` and `sb:deps` all run the `sb-deps` binary, which the addon's `bin` field maps to a file inside that same `dist/`, so they fail with a command-not-found until something has built it.
+
+Four components are written with `generic="..."`, which compiles to a generic function, and `Meta`'s `component` field only accepts a concrete component — a disagreement between two type systems rather than a fault in the code, which is why they work at runtime. `TextAreaMolecule`, `TextFieldMolecule`, `FormDataMolecule` and `FormDataPreviewAtom` each carry a marker in their story saying that one line is expected to fail. Every other line of those files is checked as normal, and TypeScript reports the marker itself once Storybook can type these components, so none of the four can outlive its reason.
+
+`.storybook/` is outside the check, and is left that way on purpose: `preview.ts` imports a dependency graph that `sb-deps` generates and the repository does not carry, so including it would stop this running on a fresh clone. The addresses lose nothing by it — the stand-in router takes them from `example-site-shared`, where they are checked already. `main.ts` and `preview.ts` themselves go unchecked, as they were before.
+
+The example cards the stories draw from are assembled in `app/lib/storyExampleCards.ts` rather than in the stories, so that a card whose address stops matching the card component is caught in one place rather than in each story that happens to use it.
+
+It deliberately does not use `nuxt typecheck`, which would also check `nuxt.config.ts` and report an error there that says nothing about the config being wrong. This workspace ends up with more than one copy of Vite installed, and that file is where two of them meet: `@tailwindcss/vite` is built against a newer copy than the one Nuxt's own config types are built against, so handing `tailwindcss()` to `vite.plugins` is reported as a type mismatch. The two really do differ — each Vite carries its own copy of Rollup, and the newer Rollup added a field to the shape describing a module — but nothing about it stops the config working. Putting it right would mean settling the whole workspace on one Vite version, which is a change of its own.
+
 ## Setup
 
 Make sure to install dependencies:
