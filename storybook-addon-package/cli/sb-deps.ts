@@ -1640,16 +1640,19 @@ function defaultAngularHtmlTemplate(componentName: string) {
  * which is what that option has always meant.
  *
  * `indent` is prepended to every line: the file copy sits at the left margin,
- * the inline copy two tabs deep inside the `@Component` decorator.
+ * the inline copy two tabs deep inside the `@Component` decorator. The markup
+ * itself is written at the margin so it reads as markup rather than as a piece
+ * of source that has to be mentally de-indented.
  */
 function getAngularTemplateBody(indent: string): string {
-	return [
-		'<p>{{ text() }}</p>',
-		'<button type="button" (click)="count.set(count() + 1)">',
-		'\tcount: {{ count() }}',
-		'</button>',
-		'<ng-content />',
-	]
+	const body = `<p>{{ text() }}</p>
+<button type="button" (click)="count.set(count() + 1)">
+	count: {{ count() }}
+</button>
+<ng-content />`
+
+	return body
+		.split('\n')
 		.map((line) => `${indent}${line}`)
 		.join('\n')
 }
