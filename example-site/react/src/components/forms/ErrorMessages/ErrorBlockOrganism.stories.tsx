@@ -1,6 +1,6 @@
 import type { Meta } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import type { OneOrMoreArray } from 'example-site-shared/utils'
+import type { ArrayWithValue } from 'example-site-shared/utils'
 import {
 	ErrorBlockOrganism,
 	type PropsForErrorBlockOrganism,
@@ -19,7 +19,7 @@ const meta: Meta<typeof ErrorBlockOrganism> = {
 
 export default meta
 
-const errors: OneOrMoreArray<string> = ['Error One', 'Second error']
+const errors: ArrayWithValue<string> = ['Error One', 'Second error']
 
 export const ErrorStrings = {
 	args: {
