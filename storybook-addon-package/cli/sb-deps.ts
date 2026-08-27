@@ -1530,6 +1530,31 @@ function gcd(a: number, b: number): number {
 }
 
 /**
+ * An inline `template:` block with the indentation every line shares removed,
+ * and the blank lines at its top and tail dropped.
+ *
+ * The block is written indented inside the `@Component` decorator, so all of
+ * that shared depth has to come off before it can stand on its own in a
+ * `.component.html` file. Trimming instead takes the leading whitespace off the
+ * FIRST line only and leaves every later line as it was — which reads as the
+ * opening element being the parent of the siblings that follow it, and
+ * `normalizeHtmlIndentation` then preserves that reading rather than fixing it.
+ */
+function stripSharedIndentation(html: string): string {
+	const lines = html.split('\n')
+	while (lines.length > 0 && !lines[0].trim()) lines.shift()
+	while (lines.length > 0 && !lines[lines.length - 1].trim()) lines.pop()
+
+	const contentLineIndentWidths = lines
+		.filter((line) => line.trim())
+		.map((line) => (line.match(/^[ \t]*/)?.[0] ?? '').length)
+	if (contentLineIndentWidths.length === 0) return lines.join('\n')
+
+	const sharedIndentWidth = Math.min(...contentLineIndentWidths)
+	return lines.map((line) => line.slice(sharedIndentWidth)).join('\n')
+}
+
+/**
  * Re-indents extracted HTML so that each indent level is exactly one unit deep.
  * Detects whether the content uses tabs or spaces (and how many spaces per level)
  * and enforces that indentation only ever increases by one level at a time.
@@ -1715,7 +1740,8 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 			const tsContent = readFileSync(absTsPath, 'utf8')
 			const match = tsContent.match(/template:\s*`([\s\S]*?)`/)
 			if (match) {
-				const extractedHtml = normalizeHtmlIndentation(match[1].trim()) + '\n'
+				const extractedHtml =
+					normalizeHtmlIndentation(stripSharedIndentation(match[1])) + '\n'
 				// Write the `.html` BEFORE swapping the `.ts` over to templateUrl,
 				// so a failed write at either step still leaves the template in at
 				// least one of the two files. The reverse order would strip it out
