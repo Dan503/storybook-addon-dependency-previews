@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import CardListTemplate from '../../../components/04-templates/CardListTemplate.vue'
-import { getMealCard } from '../../../components/listings/card/CardMolecule.vue'
+import CardListTemplate from '../../components/04-templates/CardListTemplate.vue'
+import { getMealCard } from '../../components/listings/card/CardMolecule.vue'
 import { fetchMealsByCategory } from 'example-site-shared/utils/mealDbApiUtils'
 
 const route = useRoute()

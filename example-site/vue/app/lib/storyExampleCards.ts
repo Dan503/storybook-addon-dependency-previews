@@ -10,11 +10,9 @@
  * names.
  *
  * Only the stories use these — the site's own pages build their cards from live
- * data. That matters, because story files sit outside what `pnpm typecheck`
- * reaches, so a card left unswapped would show up as a link pointing at a
- * literal `/meal/$mealId` rather than as an error. Each list below is checked
- * against the card's own props for that reason: this file is read by the type
- * check even though the stories drawing from it are not.
+ * data. Each list below is checked against the card's own props, so a card left
+ * unswapped is caught here, where the cards are defined, instead of separately
+ * in every story that happens to draw from it.
  */
 
 import {
@@ -23,7 +21,7 @@ import {
 	mealCards,
 } from 'example-site-shared/data'
 import type { BracketRouteTemplate } from 'example-site-shared/utils'
-import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
+import type { PropsForCardMolecule } from '../components/listings/card/CardMolecule.vue'
 
 /**
  * Puts one address on every card in a list, leaving the rest of each card alone.

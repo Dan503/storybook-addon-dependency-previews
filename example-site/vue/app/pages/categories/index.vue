@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import CardListTemplate from '../../../components/04-templates/CardListTemplate.vue'
-import type { PropsForCardMolecule } from '../../../components/listings/card/CardMolecule.vue'
+import CardListTemplate from '../../components/04-templates/CardListTemplate.vue'
+import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
 import { fetchCategories } from 'example-site-shared/utils/mealDbApiUtils'
 
 const introText =

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import DetailPageTemplate from '../../../components/04-templates/DetailPageTemplate.vue'
+import DetailPageTemplate from '../../components/04-templates/DetailPageTemplate.vue'
 import { fetchMealById } from 'example-site-shared/utils/mealDbApiUtils'
 
 const route = useRoute()

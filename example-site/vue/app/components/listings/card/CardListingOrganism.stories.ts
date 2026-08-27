@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
-import { mealCardsForSite } from '../../../app/lib/storyExampleCards'
+import { mealCardsForSite } from '../../../lib/storyExampleCards'
 import CardListingOrganism, {
 	type PropsForCardListingOrganism,
 } from './CardListingOrganism.vue'
