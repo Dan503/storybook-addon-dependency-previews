@@ -22,8 +22,15 @@ import type { LinkAddressPropsViaBrackets } from 'example-site-shared/utils'
  */
 export interface PropsForInternalLinkAtom extends LinkAddressPropsViaBrackets {
 	/**
-	 * Class to add while the page on screen is this link's own page, or one
-	 * inside it. Left off, vue-router still marks the link, with its own
+	 * Class to add while this link points at the page on screen. It also covers a
+	 * page sitting under the same parent page file, which is what keeps
+	 * `/categories` marked while a category is being read, and the whole reason
+	 * `pages/categories.vue` exists.
+	 *
+	 * vue-router goes by which page files answer the address, never by one
+	 * address starting with another's text — so `/` is not marked on `/contact`.
+	 *
+	 * Left off, vue-router still marks the link, with its own
 	 * `router-link-active` name — nothing here styles that, so a link without
 	 * this looks the same on its own page as anywhere else.
 	 */
