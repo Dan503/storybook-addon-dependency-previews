@@ -91,9 +91,9 @@ export type RouteTemplateArray<
  * A site that uses this list has its routes added here by hand, and how much
  * that buys depends on how much of the site goes through it. Solid and Vue both
  * put every internal link through the list, so a link to a route the list does
- * not have is refused. A page nobody links to still slips by either way. Angular
- * will want the same care once it moves onto the list. React and Svelte read
- * their own generated lists, so their pages are not this list's concern.
+ * not have is refused. A page nobody links to still slips by. Angular will want
+ * the same care once it moves onto the list. React and Svelte read their own
+ * generated lists, so their pages are not this list's concern.
  *
  * Each template is spelled out in full rather than written as a fixed start plus
  * free text, because one that is only partly written out is never offered as an
