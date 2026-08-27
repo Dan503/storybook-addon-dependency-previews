@@ -36,3 +36,5 @@ export {
 	type RouteTemplate,
 	type RouteTemplateArray,
 } from './routeTemplateUtils'
+
+export { type NonEmptyArray } from './typeUtils'
