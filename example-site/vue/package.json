@@ -16,7 +16,7 @@
     "sb:setup": "sb-deps setup",
     "sb:deps": "sb-deps",
     "format": "prettier --write .",
-    "check": "prettier --check ."
+    "check": "pnpm run typecheck"
   },
   "dependencies": {
     "@formisch/vue": "^0.7.6",

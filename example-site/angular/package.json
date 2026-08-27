@@ -23,7 +23,9 @@
     "sb": "sb-deps --watch --run-storybook \"ng run taskbox:storybook\"",
     "sb:build": "pnpm run prep-sb-addon && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && ng run taskbox:build-storybook",
     "sb:deps": "sb-deps",
-    "prep-sb-addon": "pnpm --filter storybook-addon-dependency-previews build"
+    "prep-sb-addon": "pnpm --filter storybook-addon-dependency-previews build",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.spec.json",
+    "check": "pnpm run typecheck"
   },
   "private": true,
   "dependencies": {
