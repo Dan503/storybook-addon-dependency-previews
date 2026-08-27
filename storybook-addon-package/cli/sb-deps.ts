@@ -978,19 +978,28 @@ export function ${componentName}(props: ${propsName}) {
 }
 `
 	}
-	return `import type { ReactNode } from 'react'
+	return `import { useState, type ReactNode } from 'react'
 
 export interface ${propsName} {
-  children?: ReactNode
+	text?: string
+	children?: ReactNode
 }
 
-export function ${componentName}({ children }: ${propsName}) {
-  return (
-    <div className="${componentName}">
-      <p>${componentName}</p>
-      {children}
-    </div>
-  )
+export function ${componentName}({
+	text = '${componentName}',
+	children,
+}: ${propsName}) {
+	const [count, setCount] = useState(0)
+
+	return (
+		<div className="${componentName}">
+			<p>{text}</p>
+			<button type="button" onClick={() => setCount(count + 1)}>
+				count: {count}
+			</button>
+			{children}
+		</div>
+	)
 }
 `
 }
@@ -1225,14 +1234,20 @@ function scaffoldSvelteComponent(absCompPath: string) {
 	import type { Snippet } from 'svelte';
 
 	export interface PropsFor${componentName} {
+		text?: string;
 		children?: Snippet;
 	}
 
-	const { children }: PropsFor${componentName} = $props();
+	const { text = '${componentName}', children }: PropsFor${componentName} = $props();
+
+	let count = $state(0);
 </script>
 
 <div class="${componentName}">
-	<p>${componentName}</p>
+	<p>{text}</p>
+	<button type="button" onclick={() => count++}>
+		count: {count}
+	</button>
 	{@render children?.()}
 </div>
 
@@ -1429,14 +1444,21 @@ function scaffoldVueComponent(absCompPath: string) {
 	const tpl =
 		SCAFFOLD_CONFIG?.vue?.component?.({ componentName }) ??
 		`<script setup lang="ts">
+import { ref } from 'vue'
+
 export interface PropsFor${componentName} {
+	text?: string
 }
 
-const {  } = defineProps<PropsFor${componentName}>()
+const { text = '${componentName}' } = defineProps<PropsFor${componentName}>()
+
+const count = ref(0)
 </script>
 
 <template>
 	<div class="${componentName}">
+		<p>{{ text }}</p>
+		<button type="button" @click="count++">count: {{ count }}</button>
 		<slot />
 	</div>
 </template>
@@ -1582,10 +1604,29 @@ function normalizeHtmlIndentation(html: string): string {
 function defaultAngularHtmlTemplate(componentName: string) {
 	return (
 		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ??
-		`<p>${componentName}</p>
-	<ng-content />
-`
+		`${getAngularTemplateBody('')}\n`
 	)
+}
+
+/**
+ * The markup an Angular scaffold renders. Shared by the separate `.html` file
+ * and by the inline `template:` in the component, so the two spell the same
+ * thing — a `componentHtml` override still replaces the `.html` file alone,
+ * which is what that option has always meant.
+ *
+ * `indent` is prepended to every line: the file copy sits at the left margin,
+ * the inline copy two tabs deep inside the `@Component` decorator.
+ */
+function getAngularTemplateBody(indent: string): string {
+	return [
+		'<p>{{ text() }}</p>',
+		'<button type="button" (click)="count.set(count() + 1)">',
+		'\tcount: {{ count() }}',
+		'</button>',
+		'<ng-content />',
+	]
+		.map((line) => `${indent}${line}`)
+		.join('\n')
 }
 
 function scaffoldAngularComponent(
@@ -1600,35 +1641,26 @@ function scaffoldAngularComponent(
 	const tsPath = join(dir, `${base}.component.ts`)
 
 	if (isEmptyOrWhitespace(tsPath)) {
-		const defaultTsTpl =
+		// The two template locations produce the same component apart from this
+		// one property, so the rest of the file is written once.
+		const templateProperty =
 			templateLocation === 'external'
-				? `import { Component, input } from '@angular/core';
+				? `\ttemplateUrl: './${base}.component.html',`
+				: `\ttemplate: \`\n${getAngularTemplateBody('\t\t')}\n\t\`,`
+		const defaultTsTpl = `import { Component, input, signal } from '@angular/core';
 
 @Component({
 	selector: '${selector}',
 	host: { '[class]': '["${componentName}", class()].join(" ")' },
-	templateUrl: './${base}.component.html',
-	standalone: true,
-	imports: [],
-})
-export class ${className} {
-  class = input<string>('');
-}
-`
-				: `import { Component, input } from '@angular/core';
-
-@Component({
-	selector: '${selector}',
-	host: { '[class]': '["${componentName}", class()].join(" ")' },
-	template: \`
-		<p>${componentName}</p>
-		<ng-content />
-	\`,
+${templateProperty}
 	standalone: true,
 	imports: [],
 })
 export class ${className} {
 	class = input<string>('');
+	text = input<string>('${componentName}');
+
+	count = signal(0);
 }
 `
 		const tsTpl =
