@@ -1661,10 +1661,9 @@ function normalizeHtmlIndentation(html: string): string {
  * Only then may the markup read `text()` and `count`, because that same
  * scaffold is what declared them. Anywhere else the markup has to stand on its
  * own, or the file just written fails the build naming members the class never
- * declared — so this is false both where the class is known to be someone
- * else's (a hand-written component whose template file is being filled in, one
- * from a `scaffold.angular.component` override) and where it simply cannot be
- * told, which is the safe answer either way.
+ * declared — so this is false where the class is known to be someone else's,
+ * which means a `scaffold.angular.component` override supplied it, and equally
+ * where it simply cannot be told, which is the safe answer either way.
  */
 function defaultAngularHtmlTemplate(
 	componentName: string,
