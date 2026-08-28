@@ -1028,12 +1028,12 @@ import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${base}'
 
 const meta: Meta<typeof ${componentName}> = {
-  title: '${title}',
-  component: ${componentName},
-  tags: ${JSON.stringify(tags)},
-  parameters: {
-    layout: 'padded',
-  } satisfies StoryParameters,
+	title: '${title}',
+	component: ${componentName},
+	tags: ${JSON.stringify(tags)},
+	parameters: {
+		layout: 'padded',
+	} satisfies StoryParameters,
 }
 
 export default meta
@@ -1041,7 +1041,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Primary: Story = {
-  args: {} satisfies ${propsName},
+	args: {} satisfies ${propsName},
 }
 `
 }
