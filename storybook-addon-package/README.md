@@ -112,6 +112,8 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 
 Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
 
+React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) without being told; anything it does not read as Solid gets React ones. Set `tsxFramework: 'solid'` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
+
 ### What the scaffolded components assume
 
 Each generated component is written the way its framework currently recommends, which means some of them assume a fairly recent version of it:
@@ -123,8 +125,6 @@ Each generated component is written the way its framework currently recommends, 
 React and Solid add no version floor beyond what the addon itself needs. In a **Next.js** project the React component is written with a `'use client'` line at the top, because it holds state and the App Router renders on the server; you will not see that line in any other React project.
 
 None of this affects the dependency graph or anything else `sb-deps` does — it only describes the starter code it writes, so on an older version replace the generated body with whatever your project uses. Or replace the template outright via [`scaffold`](#scaffold), which is what that option is for.
-
-React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) without being told; anything it does not read as Solid gets React ones. Set `tsxFramework: 'solid'` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
 
 ### File names must end in lower case
 

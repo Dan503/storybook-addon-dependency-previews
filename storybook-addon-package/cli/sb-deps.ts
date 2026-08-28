@@ -1843,14 +1843,22 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	// the `.html` was written) — fall back to the default scaffold.
 	//
 	// Binding-free, because nothing here establishes which class the markup will
-	// be rendered by. Most of the ways this is reached are a component written
-	// by hand — one declaring its template with `templateUrl`, or with quotes
-	// rather than a backtick, or in any other shape the regex above does not
-	// match — and markup reading `text()` or `count` would fail their build
-	// naming members they never wrote. The failed-read path above arrives here
-	// too, and that file may well be one this tool wrote, which does declare
-	// them; there the cost is only the demonstration, which is the right way
-	// round for a case that cannot be told apart from the others.
+	// be rendered by, and the ways of arriving pull in both directions.
+	//
+	// A component written by hand reaches this whenever its template is in a
+	// shape the regex above does not match — quoted rather than backticked, say
+	// — and there markup reading `text()` or `count` would fail the build
+	// naming members that class never wrote.
+	//
+	// But a component this tool wrote reaches it too, and its class declares
+	// both: an external scaffold is given `templateUrl` from the start, a
+	// migration rewrites an inline template to `templateUrl`, and either leaves
+	// nothing for the regex to find — so deleting the `.html` to start the
+	// markup over lands here. The failed-read path above arrives the same way.
+	//
+	// Nothing distinguishes them at this point, so both get the safe answer.
+	// The cost where the class did declare the members is the demonstration
+	// only, which is the right way round.
 	if (!isHtmlWritten) {
 		writeFileSync(
 			absHtmlPath,
