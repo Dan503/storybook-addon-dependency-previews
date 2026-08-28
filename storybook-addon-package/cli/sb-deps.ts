@@ -1652,10 +1652,12 @@ function defaultAngularHtmlTemplate(
 }
 
 /**
- * The markup an Angular scaffold renders. Shared by the separate `.html` file
- * and by the inline `template:` in the component, so the two spell the same
- * thing — a `componentHtml` override still replaces the `.html` file alone,
- * which is what that option has always meant.
+ * The markup an Angular scaffold renders for a component it wrote itself.
+ * Shared by the inline `template:` and by the separate `.html` file when that
+ * file is written beside the default class, so those two spell the same thing
+ * — a `componentHtml` override still replaces the `.html` file alone, which is
+ * what that option has always meant. Beside any other class the `.html` file
+ * gets binding-free markup instead; see `defaultAngularHtmlTemplate`.
  *
  * `indent` is prepended to every line: the file copy sits at the left margin,
  * the inline copy two tabs deep inside the `@Component` decorator. The markup
@@ -1722,7 +1724,11 @@ export class ${className} {
 		// markup reads, so the template written below can only bind when this
 		// wrote it. An override's class is the user's own, and a `.ts` that was
 		// already on disk was never written here at all.
-		isDefaultClassWritten = !overrideTsTpl
+		//
+		// Compared against null rather than tested for truthiness, to match the
+		// `??` above: an override returning an empty string supplied the file,
+		// so the class is still not ours.
+		isDefaultClassWritten = overrideTsTpl == null
 		info(`scaffolded angular component → ${rel(tsPath)}`)
 	}
 
