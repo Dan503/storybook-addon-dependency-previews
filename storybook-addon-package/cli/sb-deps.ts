@@ -1545,13 +1545,31 @@ function stripSharedIndentation(html: string): string {
 	while (lines.length > 0 && !lines[0].trim()) lines.shift()
 	while (lines.length > 0 && !lines[lines.length - 1].trim()) lines.pop()
 
-	const contentLineIndentWidths = lines
+	const contentLineIndents = lines
 		.filter((line) => line.trim())
-		.map((line) => (line.match(/^[ \t]*/)?.[0] ?? '').length)
-	if (contentLineIndentWidths.length === 0) return lines.join('\n')
+		.map((line) => line.match(/^[ \t]*/)?.[0] ?? '')
+	if (contentLineIndents.length === 0) return lines.join('\n')
 
-	const sharedIndentWidth = Math.min(...contentLineIndentWidths)
-	return lines.map((line) => line.slice(sharedIndentWidth)).join('\n')
+	// The prefix every line literally begins with, not the shortest indent by
+	// length. A block mixing tabs and spaces has lines whose indents are the
+	// same length while sharing no characters, so measuring by length picks one
+	// of them and slices that many characters off the others — cutting into
+	// indentation the line needed, and nesting an element under a sibling.
+	const sharedIndent = contentLineIndents.reduce(getSharedPrefix)
+	return lines.map((line) => line.slice(sharedIndent.length)).join('\n')
+}
+
+/** The leading characters that both strings begin with. */
+function getSharedPrefix(a: string, b: string): string {
+	let sharedLength = 0
+	while (
+		sharedLength < a.length &&
+		sharedLength < b.length &&
+		a[sharedLength] === b[sharedLength]
+	) {
+		sharedLength++
+	}
+	return a.slice(0, sharedLength)
 }
 
 /**
@@ -1814,12 +1832,15 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 	// No inline template migrated (none found, or the read/write failed before
 	// the `.html` was written) — fall back to the default scaffold.
 	//
-	// Binding-free, because the class this renders against is the user's own:
-	// reaching here means a `.component.ts` was already on disk, whether it
-	// declares its template with `templateUrl`, with quotes rather than a
-	// backtick, or in some other shape the regex above does not match. Markup
-	// reading `text()` or `count` would fail their build naming members they
-	// never wrote.
+	// Binding-free, because nothing here establishes which class the markup will
+	// be rendered by. Most of the ways this is reached are a component written
+	// by hand — one declaring its template with `templateUrl`, or with quotes
+	// rather than a backtick, or in any other shape the regex above does not
+	// match — and markup reading `text()` or `count` would fail their build
+	// naming members they never wrote. The failed-read path above arrives here
+	// too, and that file may well be one this tool wrote, which does declare
+	// them; there the cost is only the demonstration, which is the right way
+	// round for a case that cannot be told apart from the others.
 	if (!isHtmlWritten) {
 		writeFileSync(
 			absHtmlPath,
