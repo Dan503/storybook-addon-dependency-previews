@@ -1626,10 +1626,28 @@ function normalizeHtmlIndentation(html: string): string {
 		.join('\n')
 }
 
-function defaultAngularHtmlTemplate(componentName: string) {
+/**
+ * The markup for a scaffolded `.component.html`.
+ *
+ * `isWrittenBesideDefaultClass` says whether the class this file will be
+ * rendered by is the one this tool just wrote from its own default template.
+ * Only then may the markup read `text()` and `count`, because that same
+ * scaffold is what declared them. Beside a class this tool did not author — a
+ * hand-written component whose template file is being filled in, or one from a
+ * `scaffold.angular.component` override — the markup has to stand on its own,
+ * or the file just written fails the build naming members the class never
+ * declared.
+ */
+function defaultAngularHtmlTemplate(
+	componentName: string,
+	isWrittenBesideDefaultClass: boolean,
+) {
+	const defaultBody = isWrittenBesideDefaultClass
+		? `${getAngularTemplateBody('')}\n`
+		: `<p>${componentName}</p>\n<ng-content />\n`
+
 	return (
-		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ??
-		`${getAngularTemplateBody('')}\n`
+		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ?? defaultBody
 	)
 }
 
@@ -1667,6 +1685,7 @@ function scaffoldAngularComponent(
 	const selector = ANGULAR_SELECTOR_PREFIX + toKebabCase(componentName)
 	const dir = dirname(absCompPath)
 	const tsPath = join(dir, `${base}.component.ts`)
+	let isDefaultClassWritten = false
 
 	if (isEmptyOrWhitespace(tsPath)) {
 		// The two template locations produce the same component apart from this
@@ -1691,15 +1710,19 @@ export class ${className} {
 	count = signal(0);
 }
 `
-		const tsTpl =
-			SCAFFOLD_CONFIG?.angular?.component?.({
-				componentName,
-				className,
-				selector,
-				base,
-				templateLocation,
-			}) ?? defaultTsTpl
-		writeFileSync(tsPath, tsTpl, 'utf8')
+		const overrideTsTpl = SCAFFOLD_CONFIG?.angular?.component?.({
+			componentName,
+			className,
+			selector,
+			base,
+			templateLocation,
+		})
+		writeFileSync(tsPath, overrideTsTpl ?? defaultTsTpl, 'utf8')
+		// Only the default class declares the `text` and `count` the default
+		// markup reads, so the template written below can only bind when this
+		// wrote it. An override's class is the user's own, and a `.ts` that was
+		// already on disk was never written here at all.
+		isDefaultClassWritten = !overrideTsTpl
 		info(`scaffolded angular component → ${rel(tsPath)}`)
 	}
 
@@ -1718,7 +1741,11 @@ export class ${className} {
 	if (templateLocation === 'external') {
 		const htmlPath = join(dir, `${base}.component.html`)
 		if (isEmptyOrWhitespace(htmlPath)) {
-			writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
+			writeFileSync(
+				htmlPath,
+				defaultAngularHtmlTemplate(componentName, isDefaultClassWritten),
+				'utf8',
+			)
 			info(`scaffolded angular template → ${rel(htmlPath)}`)
 		}
 	}
@@ -1743,8 +1770,9 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 			const tsContent = readFileSync(absTsPath, 'utf8')
 			const match = tsContent.match(/template:\s*`([\s\S]*?)`/)
 			if (match) {
+				const deIndentedTemplate = stripSharedIndentation(match[1])
 				const extractedHtml =
-					normalizeHtmlIndentation(stripSharedIndentation(match[1])) + '\n'
+					normalizeHtmlIndentation(deIndentedTemplate) + '\n'
 				// Write the `.html` BEFORE swapping the `.ts` over to templateUrl,
 				// so a failed write at either step still leaves the template in at
 				// least one of the two files. The reverse order would strip it out
@@ -1779,8 +1807,19 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 
 	// No inline template migrated (none found, or the read/write failed before
 	// the `.html` was written) — fall back to the default scaffold.
+	//
+	// Binding-free, because the class this renders against is the user's own:
+	// reaching here means a `.component.ts` was already on disk, whether it
+	// declares its template with `templateUrl`, with quotes rather than a
+	// backtick, or in some other shape the regex above does not match. Markup
+	// reading `text()` or `count` would fail their build naming members they
+	// never wrote.
 	if (!isHtmlWritten) {
-		writeFileSync(absHtmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
+		writeFileSync(
+			absHtmlPath,
+			defaultAngularHtmlTemplate(componentName, false),
+			'utf8',
+		)
 		info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 	}
 }
