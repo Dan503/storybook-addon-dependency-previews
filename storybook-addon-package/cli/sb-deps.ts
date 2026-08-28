@@ -1684,8 +1684,9 @@ function defaultAngularHtmlTemplate(
  * Shared by the inline `template:` and by the separate `.html` file when that
  * file is written beside the default class, so those two spell the same thing
  * — a `componentHtml` override still replaces the `.html` file alone, which is
- * what that option has always meant. Beside any other class the `.html` file
- * gets binding-free markup instead; see `defaultAngularHtmlTemplate`.
+ * what that option has always meant. Failing such an override, an `.html` file
+ * written beside any other class gets binding-free markup instead; see
+ * `defaultAngularHtmlTemplate`.
  *
  * `indent` is prepended to every line: the file copy sits at the left margin,
  * the inline copy two tabs deep inside the `@Component` decorator. The markup
@@ -1748,10 +1749,11 @@ export class ${className} {
 			templateLocation,
 		})
 		writeFileSync(tsPath, overrideTsTpl ?? defaultTsTpl, 'utf8')
-		// Only the default class declares the `text` and `count` the default
-		// markup reads, so the template written below can only bind when this
-		// wrote it. An override's class is the user's own, and a `.ts` that was
-		// already on disk was never written here at all.
+		// The default class is the only one this call KNOWS declares the `text`
+		// and `count` the default markup reads, so the template written below
+		// can only bind when this wrote it. An override's class is the user's
+		// own, and a `.ts` already on disk was not written here — either may
+		// happen to declare them, and nothing here can tell.
 		//
 		// Compared against null rather than tested for truthiness, to match the
 		// `??` above: an override returning an empty string supplied the file,
