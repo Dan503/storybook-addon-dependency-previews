@@ -978,7 +978,16 @@ export function ${componentName}(props: ${propsName}) {
 }
 `
 	}
-	return `import { useState, type ReactNode } from 'react'
+	// Next.js renders the App Router tree on the server, and this tool scaffolds
+	// straight into it. A module holding state has to say it is a client
+	// component or the build refuses it as soon as a server component imports
+	// it, so a Next.js project gets the directive and every other React project
+	// gets a file without one. It is inert under the Pages Router, which is why
+	// the framework alone decides it.
+	const clientDirective =
+		getProjectFramework() === 'nextjs-webpack' ? "'use client'\n\n" : ''
+
+	return `${clientDirective}import { useState, type ReactNode } from 'react'
 
 export interface ${propsName} {
 	text?: string
