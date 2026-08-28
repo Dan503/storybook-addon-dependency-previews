@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InternalLinkAtom from '../01-atoms/InternalLinkAtom.vue'
 import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.vue'
 import MainNavMolecule from '../02-molecules/MainNavMolecule.vue'
 // @ts-ignore
@@ -17,10 +18,10 @@ const {} = defineProps<PropsForHeaderOrganism>()
 			<div
 				class="flex w-full items-center justify-between gap-2 max-md:flex-col max-md:justify-center"
 			>
-				<NuxtLink to="/" class="flex items-center gap-2">
+				<InternalLinkAtom href="/" class="flex items-center gap-2">
 					<img :src="logo" alt="Logo" :height="50" :width="50" />
 					<p class="text-3xl font-extrabold">The Meal Place</p>
-				</NuxtLink>
+				</InternalLinkAtom>
 				<MainNavMolecule />
 			</div>
 		</ScreenPaddingAtom>

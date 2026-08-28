@@ -7,8 +7,8 @@ import type { LinkAddressPropsViaBrackets } from 'example-site-shared/utils'
  *
  * The address arrives as `href` plus `hrefParams` rather than already finished,
  * so `href` only accepts an address the site actually has and a misspelt one
- * fails the type check. The card fills the changing piece in itself, because
- * `NuxtLink` takes a finished address.
+ * fails the type check. Both props are handed straight to `InternalLinkAtom`,
+ * which is where the changing piece is filled in.
  *
  * The bracket spelling is the one this site writes: `/meal/[mealId]` is the
  * address `pages/meal/[mealId].vue` answers. The two address props and what they
@@ -41,7 +41,7 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
 </script>
 
 <script setup lang="ts">
-import { getFullAddressViaBrackets } from 'example-site-shared/utils'
+import InternalLinkAtom from '../../01-atoms/InternalLinkAtom.vue'
 
 const { title, imgSrc, description, href, hrefParams } =
 	defineProps<PropsForCardMolecule>()
@@ -49,8 +49,9 @@ const { title, imgSrc, description, href, hrefParams } =
 
 <template>
 	<div class="CardMolecule @container grid">
-		<NuxtLink
-			:to="getFullAddressViaBrackets({ href, hrefParams })"
+		<InternalLinkAtom
+			:href="href"
+			:hrefParams="hrefParams"
 			class="flex h-full gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
 		>
 			<img :src="imgSrc" alt="" class="aspect-video object-cover" />
@@ -58,7 +59,7 @@ const { title, imgSrc, description, href, hrefParams } =
 				<h2 class="text-xl font-bold">{{ title }}</h2>
 				<p class="line-clamp-4">{{ description }}</p>
 			</div>
-		</NuxtLink>
+		</InternalLinkAtom>
 	</div>
 </template>
 
