@@ -1,10 +1,10 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import {
-	getFullAddress,
+	getFullAddressViaColons,
+	type ColonRouteTemplate,
 	type HrefParams,
-	type LinkAddress,
-	type RouteAddress,
+	type LinkAddressPropsViaColons,
 } from 'example-site-shared/utils';
 import type { AngularComponentProps } from 'storybook-addon-dependency-previews';
 
@@ -43,14 +43,14 @@ export class CompactListingMoleculeComponent {
 	imageSrc = input<string>('');
 	title = input<string>('');
 	description = input<string>('');
-	href = input<RouteAddress>();
+	href = input<ColonRouteTemplate>();
 	hrefParams = input<HrefParams>();
 	protected fullAddress = computed(() => {
 		const href = this.href();
 		// Read only by the branch that has an address, so this empty text never
 		// reaches a link.
 		if (!href) return '';
-		return getFullAddress({ href, hrefParams: this.hrefParams() });
+		return getFullAddressViaColons({ href, hrefParams: this.hrefParams() });
 	});
 }
 
@@ -65,4 +65,4 @@ export type PropsForCompactListingMolecule = AngularComponentProps<
 	CompactListingMoleculeComponent,
 	'class' | 'href' | 'hrefParams'
 > &
-	Partial<LinkAddress>;
+	Partial<LinkAddressPropsViaColons>;

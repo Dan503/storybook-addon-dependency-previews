@@ -17,7 +17,7 @@ export class CategoriesPageComponent {
 		const categoriesForCard: PropsForCardMolecule[] = categoriesData.map((category) => {
 			return {
 				title: category.strCategory,
-				href: '/categories/$category',
+				href: '/categories/:category',
 				hrefParams: { category: category.strCategory },
 				imgSrc: category.strCategoryThumb,
 				description: category.strCategoryDescription,

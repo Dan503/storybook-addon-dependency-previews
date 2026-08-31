@@ -12,7 +12,7 @@ import type { PropsForCardMolecule } from '../listings/card/CardMolecule.compone
 // over the whole array would have switched off.
 const mealCardsWithSharedAddress: Array<PropsForCardMolecule> = mealCardList.map((card) => ({
 	...card,
-	href: '/meal/$mealId',
+	href: '/meal/:mealId',
 }));
 
 const meta: Meta<CardListTemplateComponent> = {

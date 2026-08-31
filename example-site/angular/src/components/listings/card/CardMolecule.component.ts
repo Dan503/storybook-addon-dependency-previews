@@ -1,10 +1,10 @@
 import { Component, computed, input } from '@angular/core';
 import type { Meal } from 'example-site-shared/data';
 import {
-	getFullAddress,
+	getFullAddressViaColons,
+	type ColonRouteTemplate,
 	type HrefParams,
-	type LinkAddress,
-	type RouteAddress,
+	type LinkAddressPropsViaColons,
 } from 'example-site-shared/utils';
 import type { AngularComponentProps } from 'storybook-addon-dependency-previews';
 
@@ -32,12 +32,14 @@ export class CardMoleculeComponent {
 	title = input<string>('');
 	imgSrc = input<string>('');
 	description = input<string>('');
-	href = input.required<RouteAddress>();
+	href = input.required<ColonRouteTemplate>();
 	hrefParams = input<HrefParams>();
-	// A `$name` inside the address stands for a piece that changes; this fills it
-	// in from `hrefParams`.
+	// A `:name` inside the template stands for a piece that changes; this fills it
+	// in from `hrefParams`. The site takes the shared routes in the colon spelling
+	// its own router already writes, so a link and `app.routes.ts` say the same
+	// thing.
 	protected fullAddress = computed(() =>
-		getFullAddress({ href: this.href(), hrefParams: this.hrefParams() }),
+		getFullAddressViaColons({ href: this.href(), hrefParams: this.hrefParams() }),
 	);
 }
 
@@ -53,7 +55,7 @@ export type PropsForCardMolecule = AngularComponentProps<
 	CardMoleculeComponent,
 	'class' | 'href' | 'hrefParams'
 > &
-	LinkAddress;
+	LinkAddressPropsViaColons;
 
 /**
  * Builds the card for one meal.
@@ -69,7 +71,7 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
 		title: meal.name,
 		description: meal.area,
 		imgSrc: meal.image,
-		href: '/meal/$mealId',
+		href: '/meal/:mealId',
 		hrefParams: { mealId: meal.id },
 	};
 }

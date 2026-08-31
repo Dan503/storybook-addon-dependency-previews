@@ -35,7 +35,7 @@ export const WithLink: Story = {
 		title: 'Title of the listing',
 		description: `Listing description`,
 		imageSrc: exampleIngredient.imageUrl.small,
-		href: '/categories/$category',
+		href: '/categories/:category',
 		hrefParams: { category: 'Beef' },
 	},
 };
