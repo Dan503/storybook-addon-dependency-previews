@@ -11,7 +11,8 @@
 		"sb:deps": "sb-deps",
 		"sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
 		"format": "prettier --write .",
-		"check": "prettier --check ."
+		"typecheck": "tsc --noEmit",
+		"check": "pnpm run typecheck"
 	},
 	"dependencies": {
 		"@formisch/solid": "1.0.0-rc.0",
@@ -43,6 +44,7 @@
 		"storybook": "^10.4.6",
 		"storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
 		"storybook-solidjs-vite": "^10.6.0",
+		"typescript": "~5.9.3",
 		"vitest": "^4.1.10"
 	}
 }

@@ -12,9 +12,11 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForButtonAtom, 'children'>;
 </script>
 
-<Story name="Primary" args={{ onClick: () => alert('Button clicked!') } satisfies Args}>
+<Story
+	name="Primary"
+	args={{ onClick: () => alert('Button clicked!') } satisfies PropsForButtonAtom}
+>
 	Click me
 </Story>

@@ -4,7 +4,7 @@
 		type PropsForCardListingOrganism
 	} from './CardListingOrganism.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { mealCards } from 'example-site-shared/data';
+	import { mealCardsForSvelte } from '$lib/storyExampleCards';
 
 	const { Story } = defineMeta({
 		title: 'Listings / Card / Card Listing Organism',
@@ -17,7 +17,7 @@
 		argTypes: {
 			cards: {
 				mapping: {
-					meals: mealCards
+					meals: mealCardsForSvelte
 				},
 				control: {
 					type: 'select'
@@ -26,10 +26,9 @@
 			}
 		}
 	});
-	type Args = Omit<PropsForCardListingOrganism, 'children'>;
 </script>
 
-<Story name="Primary" args={{ cards: 'meals' } as unknown as Args}>
+<Story name="Primary" args={{ cards: 'meals' } as unknown as PropsForCardListingOrganism}>
 	{#snippet template(args)}
 		<CardListingOrganism {...args} />
 	{/snippet}

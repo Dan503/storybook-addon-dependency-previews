@@ -10,10 +10,19 @@
 		"allowJs": true,
 		"strict": true,
 		"noEmit": true,
+		"skipLibCheck": true,
 		"types": ["vite/client"],
 		"isolatedModules": true,
 		"paths": {
 			"~/*": ["./src/*"]
 		}
-	}
+	},
+	// Without this the type check walks whatever build output happens to be on
+	// disk — `allowJs` above pulls in every emitted chunk — so `pnpm check` would
+	// read a different set of files on a fresh clone than on a machine that had
+	// run `build` or `sb:build`. Both folders are gitignored. Listing `exclude`
+	// replaces TypeScript's default, which is why `node_modules` is named here
+	// too. Build folders whose name begins with a dot need no entry — the
+	// default file matching already skips those.
+	"exclude": ["node_modules", "dist", "storybook-static"]
 }

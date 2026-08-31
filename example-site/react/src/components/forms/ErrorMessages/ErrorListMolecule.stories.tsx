@@ -1,5 +1,6 @@
 import type { Meta } from '@storybook/react-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import type { NonEmptyArray } from 'example-site-shared/utils'
 import {
 	ErrorListMolecule,
 	type PropsForErrorListMolecule,
@@ -18,7 +19,7 @@ const meta: Meta<typeof ErrorListMolecule> = {
 
 export default meta
 
-const errors = ['Error One', 'Second error']
+const errors: NonEmptyArray<string> = ['Error One', 'Second error']
 
 export const ErrorStrings = {
 	args: {

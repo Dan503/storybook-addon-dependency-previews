@@ -1,33 +1,17 @@
-<script setup lang="ts">
-import { computed } from 'vue'
-import CardListTemplate from '../../components/04-templates/CardListTemplate.vue'
-import type { PropsForCardMolecule } from '../../components/listings/card/CardMolecule.vue'
-import { fetchCategories } from 'example-site-shared/utils/mealDbApiUtils'
+<!--
+	Draws nothing of its own — the page inside it is the whole of what appears.
 
-const introText =
-	'Explore a variety of food categories at The Meal Place! Discover new recipes, ingredients, and culinary inspiration.'
+	It exists so that Nuxt treats `/categories` as the parent of both the list of
+	categories and a single category's page, rather than as their sibling. That is
+	what keeps the "Food categories" link underlined while a category is being
+	read: vue-router marks a link as the current page by which page files answer
+	the address on screen, so a link to `/categories` reaches `/categories/Beef`
+	only once the two are parent and child.
 
-const { data: categories } = await useAsyncData('categories', () =>
-	fetchCategories(),
-)
-
-const cardList = computed<Array<PropsForCardMolecule>>(() =>
-	(categories.value ?? []).map((category) => ({
-		title: category.strCategory,
-		description: category.strCategoryDescription,
-		imgSrc: category.strCategoryThumb,
-		href: `/category/${category.strCategory}`,
-	})),
-)
-
-useHead({ title: 'Categories' })
-useSeoMeta({ description: introText })
-</script>
+	A page file sitting beside a folder of the same name becomes that folder's
+	parent page, which is how Nuxt spells this.
+-->
 
 <template>
-	<CardListTemplate
-		title="Food Categories"
-		:introText="introText"
-		:cardList="cardList"
-	/>
+	<NuxtPage />
 </template>

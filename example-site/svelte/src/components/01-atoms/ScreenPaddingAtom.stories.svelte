@@ -13,13 +13,15 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForScreenPaddingAtom, 'children'>;
 </script>
 
 <Story name="Primary">
 	<ChildContentAtom />
 </Story>
 
-<Story name="With Vertical Padding" args={{ padVertical: true } satisfies Args}>
+<Story
+	name="With Vertical Padding"
+	args={{ padVertical: true } satisfies PropsForScreenPaddingAtom}
+>
 	<ChildContentAtom />
 </Story>

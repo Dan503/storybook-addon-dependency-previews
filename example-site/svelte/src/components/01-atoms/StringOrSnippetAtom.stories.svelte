@@ -14,10 +14,12 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForStringOrSnippetAtom, 'children'>;
 </script>
 
-<Story name="String" args={{ value: 'This text is a basic string' } satisfies Args} />
+<Story
+	name="String"
+	args={{ value: 'This text is a basic string' } satisfies PropsForStringOrSnippetAtom}
+/>
 
 <Story name="Snippet">
 	{#snippet template()}

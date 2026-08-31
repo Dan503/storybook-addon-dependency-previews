@@ -13,7 +13,6 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForCardMolecule, 'children'>;
 </script>
 
 <Story
@@ -23,7 +22,7 @@
 		href: '/',
 		description: `Card description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
 		imgSrc: exampleMeal.image
-	} satisfies Args}
+	} satisfies PropsForCardMolecule}
 >
 	{#snippet template(args)}
 		<div style:width="400px" class="mx-auto border border-dashed border-gray-500 p-4">
@@ -39,5 +38,5 @@
 		href: '/',
 		description: `Card description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`,
 		imgSrc: exampleMeal.image
-	} satisfies Args}
+	} satisfies PropsForCardMolecule}
 />

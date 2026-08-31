@@ -1,5 +1,6 @@
 import type { Meta } from 'storybook-solidjs-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import type { NonEmptyArray } from 'example-site-shared/utils'
 import {
 	ErrorListMolecule,
 	type PropsForErrorListMolecule,
@@ -17,9 +18,7 @@ const meta: Meta<typeof ErrorListMolecule> = {
 
 export default meta
 
-// Typed as a "one or more" list because that is the shape a form field's
-// errors come in — a plain string[] is not accepted.
-const errors: [string, ...Array<string>] = ['Error One', 'Second error']
+const errors: NonEmptyArray<string> = ['Error One', 'Second error']
 
 export const ErrorStrings = {
 	args: {

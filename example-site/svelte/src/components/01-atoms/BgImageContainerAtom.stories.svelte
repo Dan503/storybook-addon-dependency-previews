@@ -14,7 +14,6 @@
 			__filePath: import.meta.url
 		} satisfies StoryParameters
 	});
-	type Args = Omit<PropsForBgImageContainerAtom, 'children'>;
 </script>
 
 <Story
@@ -22,7 +21,7 @@
 	args={{
 		imgSrc: 'https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg',
 		altText: 'Placeholder Image'
-	} satisfies Args}
+	} satisfies PropsForBgImageContainerAtom}
 >
 	<p class="border-2 border-dashed border-red-500 p-4 text-2xl font-bold text-black">
 		Content inside BgImageContainer

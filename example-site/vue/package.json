@@ -8,12 +8,15 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "prep-sb-addon": "pnpm --filter storybook-addon-dependency-previews build",
+    "typecheck": "pnpm run prep-sb-addon && pnpm run typecheck:quick",
+    "typecheck:quick": "nuxt prepare && vue-tsc --noEmit -p .nuxt/tsconfig.app.json",
     "sb": "sb-deps --watch --run-storybook",
-    "sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
+    "sb:build": "pnpm run prep-sb-addon && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
     "sb:setup": "sb-deps setup",
     "sb:deps": "sb-deps",
     "format": "prettier --write .",
-    "check": "prettier --check ."
+    "check": "pnpm run typecheck"
   },
   "dependencies": {
     "@formisch/vue": "^0.7.6",
@@ -35,6 +38,8 @@
     "storybook": "^10.4.1",
     "storybook-addon-dependency-previews": "workspace:storybook-addon-dependency-previews",
     "tailwindcss": "^4.0.6",
-    "vite": "^7.1.7"
+    "typescript": "~5.9.2",
+    "vite": "^7.1.7",
+    "vue-tsc": "^3.3.9"
   }
 }

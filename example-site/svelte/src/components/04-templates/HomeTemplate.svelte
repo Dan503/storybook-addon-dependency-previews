@@ -7,7 +7,7 @@
 	import ScreenPaddingAtom from '../01-atoms/ScreenPaddingAtom.svelte';
 	import CardListingOrganism from '../listings/card/CardListingOrganism.svelte';
 	import { activeNavItem } from '../../lib/store';
-	import type { PropsForCardMolecule } from '../listings/card/CardMolecule.svelte';
+	import { getMealCard } from '../listings/card/CardMolecule.svelte';
 
 	export interface PropsForHomeTemplate {
 		featuredMeals: Array<Meal>;
@@ -40,17 +40,7 @@
 		<ScreenPaddingAtom padVertical>
 			<Level>
 				<H class="mb-4 text-2xl font-bold">Featured meals:</H>
-				<CardListingOrganism
-					cards={otherMeals.map(
-						(c) =>
-							({
-								title: c.name,
-								description: c.area,
-								imgSrc: c.image,
-								href: `/meal/${c.id}`
-							}) satisfies PropsForCardMolecule
-					)}
-				/>
+				<CardListingOrganism cards={otherMeals.map(getMealCard)} />
 			</Level>
 		</ScreenPaddingAtom>
 	</div>
