@@ -1,19 +1,20 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import type { Meal } from 'example-site-shared/data';
 import {
-	getFullAddressViaColons,
 	type ColonRouteTemplate,
 	type HrefParams,
 	type LinkAddressPropsViaColons,
 } from 'example-site-shared/utils';
 import type { AngularComponentProps } from 'storybook-addon-dependency-previews';
+import { InternalLinkAtomDirective } from '../../01-atoms/InternalLinkAtom.directive';
 
 @Component({
 	selector: 'card-molecule',
 	host: { '[class]': '["CardMolecule", "@container", "h-full", "grid", class()].join(" ")' },
 	template: `
 		<a
-			[href]="fullAddress()"
+			[internalLink]="href()"
+			[hrefParams]="hrefParams()"
 			class="grid @max-sm:grid-rows-[auto_1fr] @min-sm:grid-cols-[200px_1fr] h-full @min-sm:gap-2 overflow-hidden rounded-2xl border bg-white transition-all hover:transform-[scale(1.02)] hover:bg-teal-200 hover:shadow-lg focus:bg-teal-200"
 		>
 			<img [src]="imgSrc()" alt="" class="aspect-video object-cover h-full" />
@@ -24,7 +25,7 @@ import type { AngularComponentProps } from 'storybook-addon-dependency-previews'
 		</a>
 	`,
 	standalone: true,
-	imports: [],
+	imports: [InternalLinkAtomDirective],
 	styles: ``,
 })
 export class CardMoleculeComponent {
@@ -32,15 +33,11 @@ export class CardMoleculeComponent {
 	title = input<string>('');
 	imgSrc = input<string>('');
 	description = input<string>('');
+	// The site takes the shared routes in the colon spelling its own router already
+	// writes, so a card's link and `app.routes.ts` say the same thing. The piece
+	// that completes the route is filled in by `InternalLinkAtom` on the anchor.
 	href = input.required<ColonRouteTemplate>();
 	hrefParams = input<HrefParams>();
-	// A `:name` inside the template stands for a piece that changes; this fills it
-	// in from `hrefParams`. The site takes the shared routes in the colon spelling
-	// its own router already writes, so a link and `app.routes.ts` say the same
-	// thing.
-	protected fullAddress = computed(() =>
-		getFullAddressViaColons({ href: this.href(), hrefParams: this.hrefParams() }),
-	);
 }
 
 /**
@@ -62,8 +59,9 @@ export type PropsForCardMolecule = AngularComponentProps<
  *
  * Named once because both builders below point at it, and the whole change exists
  * so that a route is written down in one place rather than restated wherever it is
- * needed. `satisfies` keeps it the exact template rather than widening it to plain
- * text, which is what lets it still be checked against the shared routes.
+ * needed. `satisfies` checks it is one of the shared routes without widening it —
+ * `const` is what keeps it the exact template, so an annotation here would lose
+ * the very narrowing the check is protecting.
  */
 const mealRoute = '/meal/:mealId' satisfies ColonRouteTemplate;
 

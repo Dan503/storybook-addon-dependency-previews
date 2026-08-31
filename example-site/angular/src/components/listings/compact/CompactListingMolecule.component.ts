@@ -1,12 +1,12 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import {
-	getFullAddressViaColons,
 	type ColonRouteTemplate,
 	type HrefParams,
 	type LinkAddressPropsViaColons,
 } from 'example-site-shared/utils';
 import type { AngularComponentProps } from 'storybook-addon-dependency-previews';
+import { InternalLinkAtomDirective } from '../../01-atoms/InternalLinkAtom.directive';
 
 @Component({
 	selector: 'compact-listing-molecule',
@@ -27,8 +27,8 @@ import type { AngularComponentProps } from 'storybook-addon-dependency-previews'
 				</div>
 			</div>
 		</ng-template>
-		@if (href()) {
-			<a [href]="fullAddress()" class="block hover:underline">
+		@if (href(); as route) {
+			<a [internalLink]="route" [hrefParams]="hrefParams()" class="block hover:underline">
 				<ng-container [ngTemplateOutlet]="row" />
 			</a>
 		} @else {
@@ -36,22 +36,18 @@ import type { AngularComponentProps } from 'storybook-addon-dependency-previews'
 		}
 	`,
 	standalone: true,
-	imports: [NgTemplateOutlet],
+	imports: [NgTemplateOutlet, InternalLinkAtomDirective],
 })
 export class CompactListingMoleculeComponent {
 	class = input<string>('');
 	imageSrc = input<string>('');
 	title = input<string>('');
 	description = input<string>('');
+	// Naming the route through `as` hands the branch below the value without the
+	// "no route" case still in its type, which is what lets it reach a link that
+	// insists on having one.
 	href = input<ColonRouteTemplate>();
 	hrefParams = input<HrefParams>();
-	protected fullAddress = computed(() => {
-		const href = this.href();
-		// Read only by the branch that has an address, so this empty text never
-		// reaches a link.
-		if (!href) return '';
-		return getFullAddressViaColons({ href, hrefParams: this.hrefParams() });
-	});
 }
 
 /**

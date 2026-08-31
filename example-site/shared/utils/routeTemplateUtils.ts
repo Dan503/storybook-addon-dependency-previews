@@ -1,8 +1,8 @@
 /**
  * Every route the example sites share, as a template in one framework's
- * spelling. A site can still have routes of its own that are not here — Angular
- * is part-way through moving onto these, and some of the sites carry routes that
- * serve data or catch a bad address rather than answering one of these.
+ * spelling. A site can still have routes of its own that are not here — some of
+ * the sites carry routes that serve data or catch a bad address rather than
+ * answering one of these.
  *
  * A template is the pattern rather than a finished address: `/meal/$mealId` says
  * where meal pages live, and a filler turns one into `/meal/52772`. Templates
@@ -80,20 +80,19 @@ export type RouteTemplateArray<
  * One route the example sites link to, as a template.
  *
  * One member of the list `generateRouteTemplates` returns, which is where the
- * routes themselves are written down. Solid and Vue are the sites that read
- * these, though neither names this type: each takes one of the named spellings
+ * routes themselves are written down. Solid, Vue and Angular are the sites that
+ * read these, though none names this type: each takes one of the named spellings
  * below, or the link props built from it. React and Svelte sit on the same
- * routes but each reads them from the
- * list its own router generates, so neither needs anything from here. Angular is
- * still being moved onto them, so for now a few of its pages are at routes that
- * are not in this list.
+ * routes but each reads them from the list its own router generates, so neither
+ * needs anything from here.
  *
  * A site that uses this list has its routes added here by hand, and how much
  * that buys depends on how much of the site goes through it. Solid and Vue both
  * put every internal link through the list, so a link to a route the list does
- * not have is refused. A page nobody links to still slips by. Angular will want
- * the same care once it moves onto the list. React and Svelte read their own
- * generated lists, so their pages are not this list's concern.
+ * not have is refused. A page nobody links to still slips by. Angular's cards go
+ * through it, but its three nav links are written as plain text inside component
+ * markup, so those go through nothing. React and Svelte read their own generated
+ * lists, so their pages are not this list's concern.
  *
  * Each template is spelled out in full rather than written as a fixed start plus
  * free text, because one that is only partly written out is never offered as an
