@@ -16,9 +16,8 @@ import {
  * this arrived in.
  *
  * It is a directive on the anchor rather than a component wrapped around one, so
- * it adds no element of its own. Both components that use it put their anchor
- * directly inside a grid, where an extra wrapper would become the only grid item
- * and collapse the layout.
+ * it adds no element of its own and no layout has to be rearranged to take it.
+ * Every use of it here is on an anchor the surrounding markup already had.
  *
  * The links it draws are plain ones, so following a card reloads the whole page
  * rather than moving within the site. That is how the site already behaved, and
