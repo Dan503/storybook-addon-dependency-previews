@@ -58,6 +58,16 @@ export type PropsForCardMolecule = AngularComponentProps<
 	LinkAddressPropsViaColons;
 
 /**
+ * Where a meal's page lives, in this site's spelling.
+ *
+ * Named once because both builders below point at it, and the whole change exists
+ * so that a route is written down in one place rather than restated wherever it is
+ * needed. `satisfies` keeps it the exact template rather than widening it to plain
+ * text, which is what lets it still be checked against the shared routes.
+ */
+const mealRoute = '/meal/:mealId' satisfies ColonRouteTemplate;
+
+/**
  * Builds the card for one meal.
  *
  * Both lists that show meals — the featured ones on the home page and the ones in
@@ -71,9 +81,26 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
 		title: meal.name,
 		description: meal.area,
 		imgSrc: meal.image,
-		href: '/meal/:mealId',
+		href: mealRoute,
 		hrefParams: { mealId: meal.id },
 	};
+}
+
+/**
+ * Points the shared example cards at this site's spelling of the meal route.
+ *
+ * The example data writes its routes in the dollar spelling, which this site does
+ * not use. Handing those cards over as they are would not fail: the colon filler
+ * finds no `:name` to replace and returns the template untouched, so every card
+ * would link to the same unfilled address. The two stories that draw meal cards
+ * from that data pass it through here first.
+ *
+ * @param cards - example cards whose route needs restating in this spelling
+ */
+export function getMealCardsForThisSite(
+	cards: Array<Omit<PropsForCardMolecule, 'href'>>,
+): Array<PropsForCardMolecule> {
+	return cards.map((card) => ({ ...card, href: mealRoute }));
 }
 
 /**
