@@ -114,6 +114,18 @@ Either way you end up with a working component + story pair. Only empty files ar
 
 React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) without being told; anything it does not read as Solid gets React ones. Set `tsxFramework: 'solid'` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
 
+### What the scaffolded components assume
+
+Each generated component is written the way its framework currently recommends, which means some of them assume a fairly recent version of it:
+
+- **Vue 3.5+** — the component gives a prop its default value inside the `defineProps` destructure. Vue only keeps a destructured prop reactive from 3.5, so on an earlier version the component stops updating when a parent changes that prop. The starting value still shows.
+- **Svelte 5** — `$props()`, `$state()` and the `Snippet` type.
+- **Angular 17.1+** — `input()` signals.
+
+React and Solid add no version floor beyond what the addon itself needs. In a **Next.js** project the React component is written with a `'use client'` line at the top, because it holds state and the App Router renders on the server; you will not see that line in any other React project.
+
+None of this affects the dependency graph or anything else `sb-deps` does — it only describes the starter code it writes, so on an older version replace the generated body with whatever your project uses. Or replace the template outright via [`scaffold`](#scaffold), which is what that option is for.
+
 ### File names must end in lower case
 
 `sb-deps` matches file endings exactly, so an extension has to be spelled in lower case, and so do the `.stories` and `.story` parts. `Button.stories.tsx` works; `Button.Stories.tsx` and `Button.TSX` do not. Storybook matches its own `stories` setting exactly too, so a story file spelled with capitals would never show up there whatever this tool did with it.

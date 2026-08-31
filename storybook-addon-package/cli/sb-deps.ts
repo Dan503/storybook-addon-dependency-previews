@@ -978,19 +978,37 @@ export function ${componentName}(props: ${propsName}) {
 }
 `
 	}
-	return `import type { ReactNode } from 'react'
+	// Next.js renders the App Router tree on the server, and this tool scaffolds
+	// straight into it. A module holding state has to say it is a client
+	// component or the build refuses it as soon as a server component imports
+	// it, so a Next.js project gets the directive and every other React project
+	// gets a file without one. It is inert under the Pages Router, which is why
+	// the framework alone decides it.
+	const clientDirective =
+		getProjectFramework() === 'nextjs-webpack' ? "'use client'\n\n" : ''
+
+	return `${clientDirective}import { useState, type ReactNode } from 'react'
 
 export interface ${propsName} {
-  children?: ReactNode
+	text?: string
+	children?: ReactNode
 }
 
-export function ${componentName}({ children }: ${propsName}) {
-  return (
-    <div className="${componentName}">
-      <p>${componentName}</p>
-      {children}
-    </div>
-  )
+export function ${componentName}({
+	text = '${componentName}',
+	children,
+}: ${propsName}) {
+	const [count, setCount] = useState(0)
+
+	return (
+		<div className="${componentName}">
+			<p>{text}</p>
+			<button type="button" onClick={() => setCount(count + 1)}>
+				count: {count}
+			</button>
+			{children}
+		</div>
+	)
 }
 `
 }
@@ -1019,12 +1037,12 @@ import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { ${componentName}, type ${propsName} } from './${base}'
 
 const meta: Meta<typeof ${componentName}> = {
-  title: '${title}',
-  component: ${componentName},
-  tags: ${JSON.stringify(tags)},
-  parameters: {
-    layout: 'padded',
-  } satisfies StoryParameters,
+	title: '${title}',
+	component: ${componentName},
+	tags: ${JSON.stringify(tags)},
+	parameters: {
+		layout: 'padded',
+	} satisfies StoryParameters,
 }
 
 export default meta
@@ -1032,7 +1050,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Primary: Story = {
-  args: {} satisfies ${propsName},
+	args: {} satisfies ${propsName},
 }
 `
 }
@@ -1225,14 +1243,20 @@ function scaffoldSvelteComponent(absCompPath: string) {
 	import type { Snippet } from 'svelte';
 
 	export interface PropsFor${componentName} {
+		text?: string;
 		children?: Snippet;
 	}
 
-	const { children }: PropsFor${componentName} = $props();
+	const { text = '${componentName}', children }: PropsFor${componentName} = $props();
+
+	let count = $state(0);
 </script>
 
 <div class="${componentName}">
-	<p>${componentName}</p>
+	<p>{text}</p>
+	<button type="button" onclick={() => count++}>
+		count: {count}
+	</button>
 	{@render children?.()}
 </div>
 
@@ -1429,14 +1453,21 @@ function scaffoldVueComponent(absCompPath: string) {
 	const tpl =
 		SCAFFOLD_CONFIG?.vue?.component?.({ componentName }) ??
 		`<script setup lang="ts">
+import { ref } from 'vue'
+
 export interface PropsFor${componentName} {
+	text?: string
 }
 
-const {  } = defineProps<PropsFor${componentName}>()
+const { text = '${componentName}' } = defineProps<PropsFor${componentName}>()
+
+const count = ref(0)
 </script>
 
 <template>
 	<div class="${componentName}">
+		<p>{{ text }}</p>
+		<button type="button" @click="count++">count: {{ count }}</button>
 		<slot />
 	</div>
 </template>
@@ -1505,6 +1536,49 @@ function storyPathForAngularComponent(absCompPath: string) {
 
 function gcd(a: number, b: number): number {
 	return b === 0 ? a : gcd(b, a % b)
+}
+
+/**
+ * An inline `template:` block with the indentation every line shares removed,
+ * and the blank lines at its top and tail dropped.
+ *
+ * The block is written indented inside the `@Component` decorator, so all of
+ * that shared depth has to come off before it can stand on its own in a
+ * `.component.html` file. Trimming instead takes the leading whitespace off the
+ * FIRST line only and leaves every later line as it was — which reads as the
+ * opening element being the parent of the siblings that follow it, and
+ * `normalizeHtmlIndentation` then preserves that reading rather than fixing it.
+ */
+function stripSharedIndentation(html: string): string {
+	const lines = html.split('\n')
+	while (lines.length > 0 && !lines[0].trim()) lines.shift()
+	while (lines.length > 0 && !lines[lines.length - 1].trim()) lines.pop()
+
+	const contentLineIndents = lines
+		.filter((line) => line.trim())
+		.map((line) => line.match(/^[ \t]*/)?.[0] ?? '')
+	if (contentLineIndents.length === 0) return lines.join('\n')
+
+	// The prefix every line literally begins with, not the shortest indent by
+	// length. A block mixing tabs and spaces has lines whose indents are the
+	// same length while sharing no characters, so measuring by length picks one
+	// of them and slices that many characters off the others — cutting into
+	// indentation the line needed, and nesting an element under a sibling.
+	const sharedIndent = contentLineIndents.reduce(getSharedPrefix)
+	return lines.map((line) => line.slice(sharedIndent.length)).join('\n')
+}
+
+/** The leading characters that both strings begin with. */
+function getSharedPrefix(a: string, b: string): string {
+	let sharedLength = 0
+	while (
+		sharedLength < a.length &&
+		sharedLength < b.length &&
+		a[sharedLength] === b[sharedLength]
+	) {
+		sharedLength++
+	}
+	return a.slice(0, sharedLength)
 }
 
 /**
@@ -1579,13 +1653,56 @@ function normalizeHtmlIndentation(html: string): string {
 		.join('\n')
 }
 
-function defaultAngularHtmlTemplate(componentName: string) {
+/**
+ * The markup for a scaffolded `.component.html`.
+ *
+ * `isWrittenBesideDefaultClass` says whether the class this file will be
+ * rendered by is the one this tool just wrote from its own default template.
+ * Only then may the markup read `text()` and `count`, because that same
+ * scaffold is what declared them. Anywhere else the markup has to stand on its
+ * own, or the file just written fails the build naming members the class never
+ * declared — so this is false where the class is known to be someone else's,
+ * which means a `scaffold.angular.component` override supplied it, and equally
+ * where it simply cannot be told, which is the safe answer either way.
+ */
+function defaultAngularHtmlTemplate(
+	componentName: string,
+	isWrittenBesideDefaultClass: boolean,
+) {
+	const defaultBody = isWrittenBesideDefaultClass
+		? `${getAngularTemplateBody('')}\n`
+		: `<p>${componentName}</p>\n<ng-content />\n`
+
 	return (
-		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ??
-		`<p>${componentName}</p>
-	<ng-content />
-`
+		SCAFFOLD_CONFIG?.angular?.componentHtml?.({ componentName }) ?? defaultBody
 	)
+}
+
+/**
+ * The markup an Angular scaffold renders for a component it wrote itself.
+ * Shared by the inline `template:` and by the separate `.html` file when that
+ * file is written beside the default class, so those two spell the same thing
+ * — a `componentHtml` override still replaces the `.html` file alone, which is
+ * what that option has always meant. Failing such an override, an `.html` file
+ * written beside any other class gets binding-free markup instead; see
+ * `defaultAngularHtmlTemplate`.
+ *
+ * `indent` is prepended to every line: the file copy sits at the left margin,
+ * the inline copy two tabs deep inside the `@Component` decorator. The markup
+ * itself is written at the margin so it reads as markup rather than as a piece
+ * of source that has to be mentally de-indented.
+ */
+function getAngularTemplateBody(indent: string): string {
+	const body = `<p>{{ text() }}</p>
+<button type="button" (click)="count.set(count() + 1)">
+	count: {{ count() }}
+</button>
+<ng-content />`
+
+	return body
+		.split('\n')
+		.map((line) => `${indent}${line}`)
+		.join('\n')
 }
 
 function scaffoldAngularComponent(
@@ -1598,48 +1715,49 @@ function scaffoldAngularComponent(
 	const selector = ANGULAR_SELECTOR_PREFIX + toKebabCase(componentName)
 	const dir = dirname(absCompPath)
 	const tsPath = join(dir, `${base}.component.ts`)
+	let isDefaultClassWritten = false
 
 	if (isEmptyOrWhitespace(tsPath)) {
-		const defaultTsTpl =
+		// The two template locations produce the same component apart from this
+		// one property, so the rest of the file is written once.
+		const templateProperty =
 			templateLocation === 'external'
-				? `import { Component, input } from '@angular/core';
+				? `\ttemplateUrl: './${base}.component.html',`
+				: `\ttemplate: \`\n${getAngularTemplateBody('\t\t')}\n\t\`,`
+		const defaultTsTpl = `import { Component, input, signal } from '@angular/core';
 
 @Component({
 	selector: '${selector}',
 	host: { '[class]': '["${componentName}", class()].join(" ")' },
-	templateUrl: './${base}.component.html',
-	standalone: true,
-	imports: [],
-})
-export class ${className} {
-  class = input<string>('');
-}
-`
-				: `import { Component, input } from '@angular/core';
-
-@Component({
-	selector: '${selector}',
-	host: { '[class]': '["${componentName}", class()].join(" ")' },
-	template: \`
-		<p>${componentName}</p>
-		<ng-content />
-	\`,
+${templateProperty}
 	standalone: true,
 	imports: [],
 })
 export class ${className} {
 	class = input<string>('');
+	text = input<string>('${componentName}');
+
+	count = signal(0);
 }
 `
-		const tsTpl =
-			SCAFFOLD_CONFIG?.angular?.component?.({
-				componentName,
-				className,
-				selector,
-				base,
-				templateLocation,
-			}) ?? defaultTsTpl
-		writeFileSync(tsPath, tsTpl, 'utf8')
+		const overrideTsTpl = SCAFFOLD_CONFIG?.angular?.component?.({
+			componentName,
+			className,
+			selector,
+			base,
+			templateLocation,
+		})
+		writeFileSync(tsPath, overrideTsTpl ?? defaultTsTpl, 'utf8')
+		// The default class is the only one this call KNOWS declares the `text`
+		// and `count` the default markup reads, so the template written below
+		// can only bind when this wrote it. An override's class is the user's
+		// own, and a `.ts` already on disk was not written here — either may
+		// happen to declare them, and nothing here can tell.
+		//
+		// Compared against null rather than tested for truthiness, to match the
+		// `??` above: an override returning an empty string supplied the file,
+		// so the class is still not ours.
+		isDefaultClassWritten = overrideTsTpl == null
 		info(`scaffolded angular component → ${rel(tsPath)}`)
 	}
 
@@ -1658,7 +1776,11 @@ export class ${className} {
 	if (templateLocation === 'external') {
 		const htmlPath = join(dir, `${base}.component.html`)
 		if (isEmptyOrWhitespace(htmlPath)) {
-			writeFileSync(htmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
+			writeFileSync(
+				htmlPath,
+				defaultAngularHtmlTemplate(componentName, isDefaultClassWritten),
+				'utf8',
+			)
 			info(`scaffolded angular template → ${rel(htmlPath)}`)
 		}
 	}
@@ -1683,7 +1805,9 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 			const tsContent = readFileSync(absTsPath, 'utf8')
 			const match = tsContent.match(/template:\s*`([\s\S]*?)`/)
 			if (match) {
-				const extractedHtml = normalizeHtmlIndentation(match[1].trim()) + '\n'
+				const deIndentedTemplate = stripSharedIndentation(match[1])
+				const extractedHtml =
+					normalizeHtmlIndentation(deIndentedTemplate) + '\n'
 				// Write the `.html` BEFORE swapping the `.ts` over to templateUrl,
 				// so a failed write at either step still leaves the template in at
 				// least one of the two files. The reverse order would strip it out
@@ -1718,8 +1842,30 @@ function scaffoldAngularHtmlFromTs(absHtmlPath: string, absTsPath: string) {
 
 	// No inline template migrated (none found, or the read/write failed before
 	// the `.html` was written) — fall back to the default scaffold.
+	//
+	// Binding-free, because nothing here establishes which class the markup will
+	// be rendered by, and the ways of arriving pull in both directions.
+	//
+	// A component written by hand reaches this whenever its template is in a
+	// shape the regex above does not match — quoted rather than backticked, say
+	// — and there markup reading `text()` or `count` would fail the build
+	// naming members that class never wrote.
+	//
+	// But a component this tool wrote reaches it too, and its class declares
+	// both: an external scaffold is given `templateUrl` from the start, a
+	// migration rewrites an inline template to `templateUrl`, and either leaves
+	// nothing for the regex to find — so deleting the `.html` to start the
+	// markup over lands here. The failed-read path above arrives the same way.
+	//
+	// Nothing distinguishes them at this point, so both get the safe answer.
+	// The cost where the class did declare the members is the demonstration
+	// only, which is the right way round.
 	if (!isHtmlWritten) {
-		writeFileSync(absHtmlPath, defaultAngularHtmlTemplate(componentName), 'utf8')
+		writeFileSync(
+			absHtmlPath,
+			defaultAngularHtmlTemplate(componentName, false),
+			'utf8',
+		)
 		info(`scaffolded angular template → ${rel(absHtmlPath)}`)
 	}
 }
