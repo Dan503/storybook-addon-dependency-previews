@@ -90,8 +90,8 @@ export function getMealCard(meal: Meal): PropsForCardMolecule {
  * The example data writes its routes in the dollar spelling, which this site does
  * not use. Handing those cards over as they are would not fail: the colon filler
  * finds no `:name` to replace and returns the template untouched, so every card
- * would link to the same unfilled address. The two stories that draw meal cards
- * from that data pass it through here first.
+ * would link to the same unfilled address. The stories that draw meal cards from
+ * that data pass it through here first.
  *
  * @param cards - example cards whose route needs restating in this spelling
  */

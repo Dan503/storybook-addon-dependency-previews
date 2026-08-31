@@ -16,8 +16,7 @@ import {
  * this arrived in.
  *
  * It is a directive on the anchor rather than a component wrapped around one, so
- * it adds no element of its own and no layout has to be rearranged to take it.
- * Every use of it here is on an anchor the surrounding markup already had.
+ * it costs no element of its own.
  *
  * The links it draws are plain ones, so following a card reloads the whole page
  * rather than moving within the site. That is how the site already behaved, and
