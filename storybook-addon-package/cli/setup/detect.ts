@@ -3,8 +3,11 @@ import { dirname, resolve } from 'node:path'
 
 import { stripCommentsRespectingStrings } from './util.js'
 
+import type { SbDepsConfig } from '../../src/config.js'
+
 export type Framework =
 	| 'react-vite'
+	| 'preact-vite'
 	| 'sveltekit'
 	| 'svelte-vite'
 	| 'vue3-vite'
@@ -157,6 +160,14 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	// `subsumes` field is what makes Nuxt win over Vue when both are present.
 	{ corePackage: 'vue', framework: '@storybook/vue3-vite' },
 	{ corePackage: 'react', framework: '@storybook/react-vite' },
+	// Preact subsumes nothing and is subsumed by nothing: it does not build on
+	// React the way Next.js does, so a project holding both `preact` and `react`
+	// is genuinely ambiguous rather than one framework wrapping the other, and
+	// falls through to the `.storybook/main.*` regex — which is the reliable
+	// answer there. Projects that point React imports at Preact do it in their
+	// build config rather than by installing React, so they have only `preact`
+	// here and this stays unambiguous for them.
+	{ corePackage: 'preact', framework: '@storybook/preact-vite' },
 	// Solid's Storybook framework is the community package `storybook-solidjs-vite`
 	// (not under the `@storybook/` scope). It's an independent framework — nothing
 	// subsumes it and it subsumes nothing.
@@ -166,6 +177,7 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 function frameworkFromRaw(raw: string | null): Framework {
 	if (!raw) return 'unknown'
 	if (raw === '@storybook/react-vite') return 'react-vite'
+	if (raw === '@storybook/preact-vite') return 'preact-vite'
 	if (raw === '@storybook/sveltekit') return 'sveltekit'
 	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
 	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
@@ -223,6 +235,7 @@ function findFrameworkInDeps(
 function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 	switch (framework) {
 		case 'react-vite':
+		case 'preact-vite':
 		case 'sveltekit':
 		case 'svelte-vite':
 		case 'vue3-vite':
@@ -237,6 +250,33 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 }
 
 /**
+ * Which set of `.tsx` templates a project wants — the value of the
+ * `tsxFramework` config key. Derived from the config schema so the two can't
+ * drift apart.
+ */
+export type TsxFramework = NonNullable<SbDepsConfig['tsxFramework']>
+
+/**
+ * Which `.tsx` templates a detected framework wants. React, Solid and Preact
+ * all author components in `.tsx`, so the file extension alone can't tell them
+ * apart and the framework has to answer for it.
+ *
+ * The single place that answer lives. The scaffolder uses it for the value it
+ * falls back to when the `tsxFramework` config key is absent, and the setup
+ * wizard uses it for the value it writes into that key — a copy each is how the
+ * two would come to disagree about the same project.
+ *
+ * Everything else is React: it's the right answer for React itself and for
+ * Next.js, and it's the safe one for a framework this tool doesn't recognise,
+ * since a `.tsx` file in an unrecognised project is never scaffolded anyway.
+ */
+export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
+	if (framework === 'solid-vite') return 'solid'
+	if (framework === 'preact-vite') return 'preact'
+	return 'react'
+}
+
+/**
  * The Vite-based frameworks the wizard fully supports (detection + preview
  * patching). A type predicate so callers narrow `Framework` to this set — the
  * single source of truth the preview patcher's support guard reuses instead of
@@ -244,6 +284,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
  */
 export type SupportedFramework =
 	| 'react-vite'
+	| 'preact-vite'
 	| 'sveltekit'
 	| 'svelte-vite'
 	| 'vue3-vite'
@@ -254,6 +295,7 @@ export function isFrameworkSupported(
 ): framework is SupportedFramework {
 	return (
 		framework === 'react-vite' ||
+		framework === 'preact-vite' ||
 		framework === 'sveltekit' ||
 		framework === 'svelte-vite' ||
 		framework === 'vue3-vite' ||

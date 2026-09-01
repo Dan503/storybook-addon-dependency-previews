@@ -1920,13 +1920,16 @@ export const Primary: Story = {
 // Story-file creation (mirror of component creation)
 // ───────────────────────────────────────────────────────────────────────────────
 // The scaffold "families" that own their own story file, keyed into
-// STORY_SCAFFOLDERS below. Derived from the scaffold-config keys minus `solid`:
-// Solid shares the `.tsx` extension with React, so it has no story-file family
-// of its own — it rides the `react` family and only its template text differs
-// (see `getFrameworkFamily` and `TSX_FRAMEWORK`). Adding a genuinely new
-// framework to the scaffold config expands this union and makes STORY_SCAFFOLDERS
-// fail to compile until its scaffolder trio is added.
-type StoryFramework = Exclude<keyof NonNullable<SbDepsConfig['scaffold']>, 'solid'>
+// STORY_SCAFFOLDERS below. Derived from the scaffold-config keys minus `solid`
+// and `preact`: both share the `.tsx` extension with React, so neither has a
+// story-file family of its own — they ride the `react` family and only their
+// template text differs (see `getFrameworkFamily` and `TSX_FRAMEWORK`). Adding a
+// genuinely new framework to the scaffold config expands this union and makes
+// STORY_SCAFFOLDERS fail to compile until its scaffolder trio is added.
+type StoryFramework = Exclude<
+	keyof NonNullable<SbDepsConfig['scaffold']>,
+	'solid' | 'preact'
+>
 
 /**
  * True when a created file's framework `family` matches the project's detected

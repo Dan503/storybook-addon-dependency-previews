@@ -54,6 +54,22 @@ export interface SolidStoryScaffoldContext extends SolidComponentScaffoldContext
 	base: string
 }
 
+export interface PreactComponentScaffoldContext {
+	/** PascalCase component name, e.g. `"ButtonAtom"` */
+	componentName: string
+	/** Props interface name, e.g. `"PropsForButtonAtom"` */
+	propsName: string
+}
+
+export interface PreactStoryScaffoldContext extends PreactComponentScaffoldContext {
+	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
+	title: string
+	/** Story tags, e.g. `["autodocs", "atom"]` */
+	tags: string[]
+	/** Base file name without extension, e.g. `"ButtonAtom"` */
+	base: string
+}
+
 export interface SvelteDecoratorScaffoldContext {
 	/**
 	 * PascalCase name of the **wrapped** component (the segment of the
@@ -157,22 +173,25 @@ export interface SbDepsConfig {
 	/**
 	 * Which flavor to scaffold for `.tsx` component and story files.
 	 *
-	 * React and Solid both author components in `.tsx`, so the file extension
-	 * alone can't tell them apart. Set this to `'solid'` in a Solid project so
-	 * the watch-mode scaffolder emits Solid templates (`createSignal`,
-	 * `mergeProps`, `storybook-solidjs-vite` story imports) instead of React
-	 * ones. The `sb-deps setup` wizard writes this automatically for detected
-	 * Solid projects.
+	 * React, Solid and Preact all author components in `.tsx`, so the file
+	 * extension alone can't tell them apart. Set this to `'solid'` in a Solid
+	 * project, so the watch-mode scaffolder emits Solid templates
+	 * (`createSignal`, `mergeProps`, `storybook-solidjs-vite` story imports),
+	 * or to `'preact'` in a Preact project (`preact/hooks`,
+	 * `@storybook/preact-vite` story imports), instead of React ones. The
+	 * `sb-deps setup` wizard writes this automatically for a detected Solid or
+	 * Preact project.
 	 *
-	 * Leave it out and detection decides: a project `sb-deps` reads as Solid
-	 * gets Solid templates anyway, and anything else gets React ones. So the
-	 * key is worth setting when your project's framework isn't obvious from
-	 * its files.
+	 * Leave it out and detection decides: a project `sb-deps` reads as Solid or
+	 * Preact gets that framework's templates anyway, and anything else gets
+	 * React ones. So the key is worth setting when your project's framework
+	 * isn't obvious from its files.
 	 *
 	 * @example 'react'
 	 * @example 'solid'
+	 * @example 'preact'
 	 */
-	tsxFramework?: 'react' | 'solid'
+	tsxFramework?: 'react' | 'solid' | 'preact'
 
 	/**
 	 * Extension used when the scaffolder generates a story file for a new
@@ -255,6 +274,12 @@ export interface SbDepsConfig {
 			component?: (ctx: SolidComponentScaffoldContext) => string
 			/** Template for the `.stories.tsx` story file (Solid projects) */
 			story?: (ctx: SolidStoryScaffoldContext) => string
+		}
+		preact?: {
+			/** Template for the `.tsx` component file (Preact projects) */
+			component?: (ctx: PreactComponentScaffoldContext) => string
+			/** Template for the `.stories.tsx` story file (Preact projects) */
+			story?: (ctx: PreactStoryScaffoldContext) => string
 		}
 		angular?: {
 			/** Template for the `.component.ts` file */
