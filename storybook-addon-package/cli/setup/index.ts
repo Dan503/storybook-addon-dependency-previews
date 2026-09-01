@@ -51,8 +51,9 @@ const FRAMEWORK_PICKER_LABELS: Record<SupportedFramework, string> = {
 }
 
 // The story-file extension the scaffolder generates for each framework — used
-// only to render a concrete example next to the story-extension preference
-// (Vue stories are `.stories.ts`, Svelte `.stories.svelte`, React `.stories.tsx`).
+// only to render a concrete example next to the story-extension preference.
+// The arms below carry the reasoning for each group; restating them here would
+// be a second answer to the same question, free to drift from the first.
 function exampleStoryFileExtension(framework: Framework): string {
 	switch (framework) {
 		case 'sveltekit':
