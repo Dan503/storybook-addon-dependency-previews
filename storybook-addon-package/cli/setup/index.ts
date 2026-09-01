@@ -66,9 +66,12 @@ function exampleStoryFileExtension(framework: Framework): string {
 		case 'solid-vite':
 		case 'nextjs-webpack':
 			return 'tsx'
-		// Angular, Vue, and unknown fall through to `ts` — the Angular scaffolder
-		// strips `.component` and emits `<Name>.stories.ts`, and Vue emits
-		// `<Name>.stories.ts`, so `ComponentName.stories.ts` is the accurate example.
+		// Angular and Vue fall through to `ts` — the Angular scaffolder strips
+		// `.component` and emits `<Name>.stories.ts`, and Vue emits
+		// `<Name>.stories.ts`, so `ComponentName.stories.ts` is the accurate
+		// example. `unsupported` and `unknown` land here too, and for those it is
+		// a guess rather than an answer — which is why the caller asks whether the
+		// extension is known before printing an example at all.
 		default:
 			return 'ts'
 	}
@@ -174,13 +177,16 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	log(`Source folder       : ${displaySrcDir}`)
 	// Assumed default; the user can change it in the edit flow below. The
 	// example filename uses the story extension the scaffolder emits for the
-	// detected framework — so it is left off entirely where the framework is
-	// not known yet, since the user picks it further down and any example
-	// printed here would be a guess this block never comes back to correct.
-	const storyFileExample =
-		framework === 'unknown'
-			? ''
-			: ` (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`
+	// detected framework, so it is printed only where that extension is known.
+	// It isn't for the two values that name no framework: `unknown` is picked
+	// further down, and `unsupported` is one this tool has no templates for at
+	// all. Either would print the fall-through `.ts`, and this block never
+	// comes back to correct it.
+	const isStoryExtensionKnown =
+		framework !== 'unknown' && framework !== 'unsupported'
+	const storyFileExample = isStoryExtensionKnown
+		? ` (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`
+		: ''
 	log(`Storybook Extension : stories${storyFileExample}`)
 
 	// Show file paths relative to cwd so the detection block stays compact —

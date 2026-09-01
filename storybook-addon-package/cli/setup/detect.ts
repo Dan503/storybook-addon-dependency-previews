@@ -266,9 +266,11 @@ export type TsxFramework = NonNullable<SbDepsConfig['tsxFramework']>
  * wizard uses it for the value it writes into that key — a copy each is how the
  * two would come to disagree about the same project.
  *
- * Everything else is React: it's the right answer for React itself and for
- * Next.js, and it's the safe one for a framework this tool doesn't recognise,
- * since a `.tsx` file in an unrecognised project is never scaffolded anyway.
+ * Everything else is React. That is the right answer for React itself and for
+ * Next.js, the only others here that author `.tsx` at all. For the rest the
+ * value is never consulted: a `.tsx` file in a Svelte, Vue or Angular project
+ * is turned away before any template is chosen, and one in a project whose
+ * framework was never recognised is not scaffolded either.
  */
 export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
 	if (framework === 'solid-vite') return 'solid'

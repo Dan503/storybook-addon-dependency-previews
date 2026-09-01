@@ -144,11 +144,23 @@ function validateConfigChoice<T extends string>(
 ): T {
 	if (value === undefined) return fallback
 	if (allowed.includes(value as T)) return value as T
-	const choices = allowed.map((choice) => `'${choice}'`).join(' or ')
 	error(
-		`${fieldName} "${value}" is invalid — must be ${choices}. Falling back to '${fallback}'.`,
+		`${fieldName} "${value}" is invalid — must be ${getChoicesPhrase(allowed)}. Falling back to '${fallback}'.`,
 	)
 	return fallback
+}
+
+/**
+ * The allowed values as they read in a sentence: `'a'`, `'a' or 'b'`, or
+ * `'a', 'b' or 'c'`. Joining every pair with "or" reads as a stutter past two
+ * values, which `tsxFramework` now has.
+ */
+function getChoicesPhrase(choices: ReadonlyArray<string>): string {
+	const quotedChoices = choices.map((choice) => `'${choice}'`)
+	const lastChoice = quotedChoices.at(-1)
+	if (quotedChoices.length < 2 || !lastChoice) return quotedChoices.join('')
+	const earlierChoices = quotedChoices.slice(0, -1).join(', ')
+	return `${earlierChoices} or ${lastChoice}`
 }
 
 let ANGULAR_SELECTOR_PREFIX = 'app-'
