@@ -2115,8 +2115,8 @@ function ensureStoryFor(
  * Work out the component a created story file belongs to, and which framework's
  * scaffolders to use. `.tsx` → React, Solid or Preact, `.svelte` → Svelte,
  * `.ts` → React, Solid, Preact, Vue, or Angular (disambiguated in
- * `resolveTsStoryComponent`). The three `.tsx` frameworks share that route and
- * are told apart by `tsxFramework`.
+ * `resolveTsStoryComponent`). Every framework that writes `.tsx` shares that
+ * route, and they are told apart by `tsxFramework`.
  * Any extension with no entry in `STORY_COMPONENT_RESOLVERS` returns `null` —
  * not something we scaffold.
  */

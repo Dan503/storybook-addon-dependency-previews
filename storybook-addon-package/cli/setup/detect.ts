@@ -164,9 +164,9 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	// React the way Next.js does, so a project holding both `preact` and `react`
 	// is genuinely ambiguous rather than one framework wrapping the other, and
 	// falls through to the `.storybook/main.*` regex — which is the reliable
-	// answer there. Projects that point React imports at Preact do it in their
-	// build config rather than by installing React, so they have only `preact`
-	// here and this stays unambiguous for them.
+	// answer there. A Preact project that redirects React imports to Preact by
+	// aliasing the `react` dependency lands in exactly that case, and the regex
+	// settles it.
 	{ corePackage: 'preact', framework: '@storybook/preact-vite' },
 	// Solid's Storybook framework is the community package `storybook-solidjs-vite`
 	// (not under the `@storybook/` scope). It's an independent framework — nothing
