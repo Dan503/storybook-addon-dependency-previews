@@ -1,9 +1,13 @@
 /**
  * What a `.tsx` component template is given. React, Preact and Solid all author
  * components in `.tsx` and all take the same two names, so the shape is written
- * once here and each framework's own name below points at it. A framework that
- * later needs something of its own stops being a name for this and gets its own
- * interface back.
+ * once here and each framework's own interface below extends it without adding
+ * anything. A framework that later needs something of its own adds it to that
+ * interface.
+ *
+ * They stay separate interfaces rather than one shared name for two reasons:
+ * each keeps its own name where a template author reads it, and an interface
+ * can be augmented by declaration merging where a name for another type cannot.
  */
 export interface TsxComponentScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
