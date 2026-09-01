@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import type { Meal } from 'example-site-shared/data';
 import {
+	getFullAddressViaColons,
 	type ColonRouteTemplate,
 	type HrefParams,
 	type LinkAddressPropsViaColons,
@@ -105,23 +106,22 @@ export function getMealCardsForThisSite(
  * The value that tells one card in a list apart from the others, for Angular's
  * `track`.
  *
- * The cards in a list share one address and differ only in its changing piece, so
- * that piece is what identifies a card. Repeated values make Angular reuse the
- * wrong card when a list changes, and a meal's title is a weaker thing to go on
- * than its id — two meals can be called the same thing, while their ids differ.
- * For a category the piece is the category's name, so that list is exactly as well
- * off as it was — it is the meals list that needed this, once every meal card came
- * to share one address, and one helper covers both. A card with no changing piece
- * falls back to its address, which is then all there is.
+ * The finished address. The cards in a list share one route and differ only in the
+ * piece that completes it, so filling the route in is what separates them — and it
+ * separates them by the piece the route actually names, rather than by whichever
+ * piece happens to be present. That distinction is not idle: `hrefParams` can carry
+ * both names, so picking the first one there would hand two cards the same value
+ * whenever they shared a piece their own route does not use.
+ *
+ * A title cannot do the job either. Nothing stops two meals or two categories being
+ * called the same thing, and repeated values make Angular reuse the wrong card when
+ * a list changes.
+ *
+ * This is the same call the card's own link makes, so it introduces no failure a
+ * drawn card would not already have hit.
  *
  * @param card - the card being drawn
  */
 export function getCardTrackValue(card: PropsForCardMolecule): string {
-	// Whichever piece carries a value is the identifying one, since an address takes
-	// at most one — so this does not name the pieces, and picks up any later one for
-	// free. Naming them here would leave a new piece falling back to the address,
-	// which is the same string for every card in a list. A name written with no
-	// value is skipped rather than winning by being first.
-	const pieceValue = Object.values(card.hrefParams ?? {}).find(Boolean);
-	return pieceValue ?? card.href;
+	return getFullAddressViaColons(card);
 }
