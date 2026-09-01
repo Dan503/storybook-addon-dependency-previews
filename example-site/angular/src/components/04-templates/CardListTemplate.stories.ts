@@ -3,6 +3,9 @@ import type { StoryParameters } from 'storybook-addon-dependency-previews';
 import { CardListTemplateComponent } from './CardListTemplate.component';
 import { withSiteProviders } from '../../app/siteProviders';
 import { mealCardList } from 'example-site-shared/data';
+import { getMealCardsForThisSite } from '../listings/card/CardMolecule.component';
+
+const mealCardsInThisSpelling = getMealCardsForThisSite(mealCardList);
 
 const meta: Meta<CardListTemplateComponent> = {
 	title: '04 Templates / Card List Template',
@@ -24,7 +27,7 @@ export const GridView: Story = {
 		title: 'Chicken Meals',
 		introText:
 			'Discover our delicious chicken meals, crafted with fresh ingredients and bursting with flavor. Perfect for any occasion, our chicken dishes are sure to satisfy your cravings.',
-		cardList: mealCardList,
+		cardList: mealCardsInThisSpelling,
 	},
 };
 
@@ -33,7 +36,7 @@ export const ListView: Story = {
 		title: 'Chicken Meals',
 		introText:
 			'Discover our delicious chicken meals, crafted with fresh ingredients and bursting with flavor. Perfect for any occasion, our chicken dishes are sure to satisfy your cravings.',
-		cardList: mealCardList,
+		cardList: mealCardsInThisSpelling,
 		view: 'list',
 	},
 };

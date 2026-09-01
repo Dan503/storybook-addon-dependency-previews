@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { MainNavMoleculeComponent } from '../02-molecules/MainNavMolecule.component';
 import { ScreenPaddingAtomComponent } from '../01-atoms/ScreenPaddingAtom.component';
+import { InternalLinkAtomDirective } from '../01-atoms/InternalLinkAtom.directive';
 
 @Component({
 	selector: 'header-organism',
@@ -13,7 +14,7 @@ import { ScreenPaddingAtomComponent } from '../01-atoms/ScreenPaddingAtom.compon
 				<div
 					class="flex w-full items-center justify-between gap-2 max-md:flex-col max-md:justify-center"
 				>
-					<a href="/" class="flex items-center gap-2">
+					<a [internalLink]="'/'" class="flex items-center gap-2">
 						<img src="/simplified-logo.png" alt="Logo" height="50" width="50" />
 						<p class="text-3xl font-extrabold">The Meal Place</p>
 					</a>
@@ -23,7 +24,7 @@ import { ScreenPaddingAtomComponent } from '../01-atoms/ScreenPaddingAtom.compon
 		</header>
 	`,
 	standalone: true,
-	imports: [MainNavMoleculeComponent, ScreenPaddingAtomComponent],
+	imports: [MainNavMoleculeComponent, ScreenPaddingAtomComponent, InternalLinkAtomDirective],
 })
 export class HeaderOrganismComponent {
 	class = input<string>('');

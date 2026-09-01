@@ -155,9 +155,17 @@ type _InputSignalKeys<T> = {
  * signals and zero-arg methods. Use `ExcludeKeys` to omit any non-input
  * properties (e.g. `'class'`, lifecycle hooks).
  *
+ * The example uses a made-up component on purpose, so it cannot go stale when a
+ * real one changes its inputs.
+ *
  * @example
- * export type PropsForCardMolecule = AngularComponentProps<CardMoleculeComponent, 'class'>
- * // → { title: string; href: string; description: string; imgSrc: string }
+ * class GreetingComponent {
+ *   class = input<string>('')
+ *   name = input<string>('')
+ *   timesGreeted = input<number>(0)
+ * }
+ * export type PropsForGreeting = AngularComponentProps<GreetingComponent, 'class'>
+ * // → { name: string; timesGreeted: number }
  */
 export type AngularComponentProps<T, ExcludeKeys extends keyof T = never> = {
 	[K in Exclude<_InputSignalKeys<T>, ExcludeKeys>]: _InputSignalValue<T[K]>

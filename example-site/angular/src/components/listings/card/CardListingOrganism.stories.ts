@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import type { StoryParameters } from 'storybook-addon-dependency-previews';
 import { mealCards } from 'example-site-shared/data';
 import { CardListingOrganismComponent } from './CardListingOrganism.component';
-import { type PropsForCardMolecule } from './CardMolecule.component';
+import { getMealCardsForThisSite, type PropsForCardMolecule } from './CardMolecule.component';
+
+const mealCardsInThisSpelling = getMealCardsForThisSite(mealCards);
 
 const meta: Meta<CardListingOrganismComponent> = {
 	title: 'Listings / Card / Card Listing Organism',
@@ -15,7 +17,7 @@ const meta: Meta<CardListingOrganismComponent> = {
 	argTypes: {
 		cards: {
 			mapping: {
-				meals: mealCards,
+				meals: mealCardsInThisSpelling,
 			},
 			control: { type: 'select' },
 			options: ['meals'],

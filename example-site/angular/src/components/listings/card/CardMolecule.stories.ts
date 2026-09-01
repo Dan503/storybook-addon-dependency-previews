@@ -28,7 +28,13 @@ export const Primary: Story = {
 		props: args,
 		template: `
 		<div class="mx-auto border border-dashed border-gray-500 p-4 w-60">
-			<card-molecule [title]="title" [href]="href" [description]="description" [imgSrc]="imgSrc" />
+			<card-molecule
+				[title]="title"
+				[href]="href"
+				[hrefParams]="hrefParams"
+				[description]="description"
+				[imgSrc]="imgSrc"
+			/>
 		</div>
 		`,
 	}),

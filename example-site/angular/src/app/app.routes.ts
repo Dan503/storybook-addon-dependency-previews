@@ -13,7 +13,7 @@ export const routes: Routes = [
 	},
 	{
 		title: 'Contact',
-		path: 'contact-us',
+		path: 'contact',
 		component: ContactPageComponent,
 	},
 	{
@@ -22,7 +22,7 @@ export const routes: Routes = [
 		component: CategoriesPageComponent,
 	},
 	{
-		path: 'categories/:categoryName',
+		path: 'categories/:category',
 		component: CategoryListingPageComponent,
 	},
 	{
