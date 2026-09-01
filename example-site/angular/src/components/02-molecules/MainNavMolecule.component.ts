@@ -28,14 +28,16 @@ export class MainNavMoleculeComponent {
 	/**
 	 * The pages this nav links to.
 	 *
-	 * They sit here as values so that `routerLink` can be written as a binding and
-	 * checked against the shared routes. Written as plain text in the markup —
-	 * `routerLink="/contact"` — a misspelt page is accepted and only shows itself
-	 * when someone clicks the link.
+	 * They sit here as values so that the markup can bind to something typed. It is
+	 * this list that does the checking, not the binding: the router's own input
+	 * accepts any string, so `routerLink="/contact"` written as plain text — or
+	 * bound to a plain string — takes a misspelt page happily, and it shows itself
+	 * only when someone clicks the link.
 	 *
-	 * Only routes with nothing changing in them can be listed. One like
-	 * `/meal/:mealId` is a pattern rather than an address, so it would have to have
-	 * its piece filled in before the router could follow it.
+	 * Only routes with nothing changing in them belong here. One like
+	 * `/meal/:mealId` is a pattern rather than an address, so it would need its
+	 * piece filled in before the router could follow it — but that is a convention,
+	 * not something the type below refuses.
 	 */
 	protected readonly routes = {
 		home: '/',
