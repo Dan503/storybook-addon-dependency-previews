@@ -113,12 +113,13 @@ export function getMealCardsForThisSite(
  * both names, so picking the first one there would hand two cards the same value
  * whenever they shared a piece their own route does not use.
  *
- * A title cannot do the job either. Nothing stops two meals or two categories being
- * called the same thing, and repeated values make Angular reuse the wrong card when
- * a list changes.
+ * A card on a route with nothing changing in it — `/` or `/contact` — comes back as
+ * that route itself, so two of those in one list would share a value. No list the
+ * site draws mixes them in, and the version before this one had the same gap.
  *
- * This is the same call the card's own link makes, so it introduces no failure a
- * drawn card would not already have hit.
+ * This is the same call the card's own link makes, on the same card, so it widens
+ * nothing: what changes is when it happens, since the list is reconciled before the
+ * cards exist and a bad card would fail the list rather than only itself.
  *
  * @param card - the card being drawn
  */
