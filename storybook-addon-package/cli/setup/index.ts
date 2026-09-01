@@ -6,7 +6,9 @@ import { relative as pathRelative } from 'node:path'
 import {
 	detectProject,
 	isFrameworkSupported,
+	tsxFrameworkFromFramework,
 	type Framework,
+	type TsxFramework,
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
 import { installMissingPackages } from './install.js'
@@ -39,6 +41,7 @@ function exampleStoryFileExtension(framework: Framework): string {
 		case 'svelte-vite':
 			return 'svelte'
 		case 'react-vite':
+		case 'preact-vite':
 		case 'nextjs-webpack':
 			return 'tsx'
 		// Angular, Vue, and unknown fall through to `ts` — the Angular scaffolder
@@ -204,7 +207,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This setup wizard currently supports React, Svelte, Vue 3, and Solid (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
+			`This setup wizard currently supports React, Preact, Svelte, Vue 3, and Solid (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
 			'The addon itself also supports Angular and Next.js with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
@@ -216,15 +219,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Whether the framework was worked out from the project's own files, or
-	// supplied by the user below. It decides whether the Solid note further down
-	// is worth printing: the scaffolder runs the same detection, so it only
-	// needs telling about Solid when that detection came up empty.
+	// supplied by the user below. It decides whether the `tsxFramework` note
+	// further down is worth printing: the scaffolder runs the same detection, so
+	// it only needs telling which `.tsx` templates to use when that detection
+	// came up empty.
 	const wasFrameworkDetected = framework !== 'unknown'
 
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
 		const choice = await choose<
 			| 'react-vite'
+			| 'preact-vite'
 			| 'sveltekit'
 			| 'svelte-vite'
 			| 'vue3-vite'
@@ -232,6 +237,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			| 'cancel'
 		>('Which framework is this project using?', [
 			{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
+			{ label: 'Preact (@storybook/preact-vite)', value: 'preact-vite' },
 			{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
 			{
 				label: 'Svelte with SvelteKit (@storybook/sveltekit)',
@@ -501,30 +507,31 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
-	// default `'src'`, when the project is Solid (the config records
-	// `tsxFramework: 'solid'` outright, so the scaffolder emits Solid — not
-	// React — templates for `.tsx` files even where its own detection of the
+	// default `'src'`, when the project's `.tsx` files aren't React's (the config
+	// records `tsxFramework` outright, so the scaffolder emits Solid or Preact —
+	// not React — templates for `.tsx` files even where its own detection of the
 	// framework comes up empty), or when the user chose a non-default
 	// story-file extension. Must happen before Step 5 so the sb-deps build below
 	// picks up the configured values on its first run. Silent no-op when
 	// everything is default so setups without overrides don't see an extra log
 	// line. Uses `effectiveSrcDir` so a user-edited value via the edit flow is
 	// what gets persisted, not the auto-detected one.
-	const isSolidProject = framework === 'solid-vite'
+	const tsxFramework = tsxFrameworkFromFramework(framework)
 	// Only worth saying where the scaffolder's own detection will come up empty
-	// too. Where it can see the project is Solid, it emits Solid templates with
-	// or without the config key, so the note would be telling the user to guard
-	// against something that cannot happen to them.
-	const doesSolidNeedTheKey = isSolidProject && !wasFrameworkDetected
+	// too. Where it can see which framework the project is, it emits that
+	// framework's templates with or without the config key, so the note would be
+	// telling the user to guard against something that cannot happen to them.
+	const doesTsxFrameworkNeedTheKey =
+		tsxFramework !== 'react' && !wasFrameworkDetected
 	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
 		cwd,
 		srcDir: effectiveSrcDir,
 		isEsm: detection.isEsm,
-		isSolid: isSolidProject,
+		tsxFramework,
 		storybookFileExtension: effectiveStorybookFileExtension,
 	})
-	const doesSkippedConfigNeedSolidNote =
-		sbDepsConfigResult.kind === 'skipped' && doesSolidNeedTheKey
+	const doesSkippedConfigNeedTsxFrameworkNote =
+		sbDepsConfigResult.kind === 'skipped' && doesTsxFrameworkNeedTheKey
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
 		log(
@@ -536,11 +543,11 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(
 			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
 		)
-		if (doesSolidNeedTheKey) logSolidTsxFrameworkNote()
-	} else if (doesSkippedConfigNeedSolidNote) {
+		if (doesTsxFrameworkNeedTheKey) logTsxFrameworkNote(tsxFramework)
+	} else if (doesSkippedConfigNeedTsxFrameworkNote) {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		logSolidTsxFrameworkNote()
+		logTsxFrameworkNote(tsxFramework)
 	}
 
 	rule()
@@ -589,23 +596,35 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 }
 
 /**
- * Tell a Solid user to set `tsxFramework` themselves.
+ * How each `.tsx` flavor is spelled in the note below. A lookup rather than a
+ * capitalisation of the config value, so nothing has to work out where the
+ * capitals go.
+ */
+const TSX_FRAMEWORK_NAMES: Record<TsxFramework, string> = {
+	react: 'React',
+	solid: 'Solid',
+	preact: 'Preact',
+}
+
+/**
+ * Tell a Solid or Preact user to set `tsxFramework` themselves.
  *
  * Printed when the wizard finished without writing the key — the write failed,
  * or an existing config blocked it — AND the wizard could not work the
  * framework out from the project's own files, so the user supplied it. The
- * scaffolder repeats that same detection, so where it succeeds it emits Solid
- * templates whether or not the key is there; where it came up empty, the key is
- * the only thing left saying so, and a missing one is silent. The wizard does
- * not read an existing config, so this asks the user to check rather than
- * claiming the key is absent.
+ * scaffolder repeats that same detection, so where it succeeds it emits that
+ * framework's templates whether or not the key is there; where it came up
+ * empty, the key is the only thing left saying so, and a missing one is silent.
+ * The wizard does not read an existing config, so this asks the user to check
+ * rather than claiming the key is absent.
  */
-function logSolidTsxFrameworkNote() {
+function logTsxFrameworkNote(tsxFramework: TsxFramework) {
+	const frameworkName = TSX_FRAMEWORK_NAMES[tsxFramework]
 	log(
-		`    Ensure your sb-deps.config sets \`tsxFramework: 'solid'\` — the scaffolder`,
+		`    Ensure your sb-deps.config sets \`tsxFramework: '${tsxFramework}'\` — the scaffolder`,
 	)
 	log(
-		`    could not tell this is a Solid project, so without that key it emits`,
+		`    could not tell this is a ${frameworkName} project, so without that key it emits`,
 	)
-	log(`    React (not Solid) templates for .tsx files.`)
+	log(`    React (not ${frameworkName}) templates for .tsx files.`)
 }
