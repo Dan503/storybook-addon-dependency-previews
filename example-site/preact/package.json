@@ -1,10 +1,13 @@
 {
+	"name": "example-site-preact",
 	"private": true,
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"storybook": "storybook dev -p 6006",
+		"build-storybook": "storybook build"
 	},
 	"dependencies": {
 		"preact": "^10.26.9",
@@ -15,10 +18,18 @@
 		"@preact/preset-vite": "^2.10.6",
 		"eslint": "^9.39.2",
 		"eslint-config-preact": "^2.0.0",
-		"typescript": "^7.0.2",
-		"vite": "^7.0.4"
+		"typescript": "~5.9.3",
+		"vite": "^7.0.4",
+		"storybook": "^10.5.10",
+		"@storybook/preact-vite": "^10.5.10",
+		"@chromatic-com/storybook": "latest",
+		"@storybook/addon-docs": "^10.5.10",
+		"eslint-plugin-storybook": "^10.5.10"
 	},
 	"eslintConfig": {
-		"extends": "preact"
+		"extends": [
+			"preact",
+			"plugin:storybook/recommended"
+		]
 	}
 }
