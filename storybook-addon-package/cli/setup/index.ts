@@ -174,10 +174,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	log(`Source folder       : ${displaySrcDir}`)
 	// Assumed default; the user can change it in the edit flow below. The
 	// example filename uses the story extension the scaffolder emits for the
-	// detected framework.
-	log(
-		`Storybook Extension : stories (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`,
-	)
+	// detected framework — so it is left off entirely where the framework is
+	// not known yet, since the user picks it further down and any example
+	// printed here would be a guess this block never comes back to correct.
+	const storyFileExample =
+		framework === 'unknown'
+			? ''
+			: ` (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`
+	log(`Storybook Extension : stories${storyFileExample}`)
 
 	// Show file paths relative to cwd so the detection block stays compact —
 	// absolute Windows paths in particular are noisy and push the actually-
