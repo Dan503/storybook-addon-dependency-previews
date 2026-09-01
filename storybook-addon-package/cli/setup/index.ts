@@ -8,6 +8,7 @@ import {
 	isFrameworkSupported,
 	tsxFrameworkFromFramework,
 	type Framework,
+	type SupportedFramework,
 	type TsxFramework,
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
@@ -227,29 +228,26 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
-		const choice = await choose<
-			| 'react-vite'
-			| 'preact-vite'
-			| 'sveltekit'
-			| 'svelte-vite'
-			| 'vue3-vite'
-			| 'solid-vite'
-			| 'cancel'
-		>('Which framework is this project using?', [
-			{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
-			{ label: 'Preact (@storybook/preact-vite)', value: 'preact-vite' },
-			{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
-			{
-				label: 'Svelte with SvelteKit (@storybook/sveltekit)',
-				value: 'sveltekit',
-			},
-			{
-				label: 'Svelte without SvelteKit (@storybook/svelte-vite)',
-				value: 'svelte-vite',
-			},
-			{ label: 'Solid (storybook-solidjs-vite)', value: 'solid-vite' },
-			{ label: 'Cancel', value: 'cancel' },
-		])
+		// The offered values are exactly the frameworks the wizard supports, plus
+		// a way out, so the type says that rather than listing them again.
+		const choice = await choose<SupportedFramework | 'cancel'>(
+			'Which framework is this project using?',
+			[
+				{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
+				{ label: 'Preact (@storybook/preact-vite)', value: 'preact-vite' },
+				{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
+				{
+					label: 'Svelte with SvelteKit (@storybook/sveltekit)',
+					value: 'sveltekit',
+				},
+				{
+					label: 'Svelte without SvelteKit (@storybook/svelte-vite)',
+					value: 'svelte-vite',
+				},
+				{ label: 'Solid (storybook-solidjs-vite)', value: 'solid-vite' },
+				{ label: 'Cancel', value: 'cancel' },
+			],
+		)
 		if (choice === 'cancel') {
 			log('Setup cancelled.')
 			return

@@ -278,29 +278,38 @@ export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
 
 /**
  * The Vite-based frameworks the wizard fully supports (detection + preview
- * patching). A type predicate so callers narrow `Framework` to this set — the
- * single source of truth the preview patcher's support guard reuses instead of
- * re-listing the members.
+ * patching). The list itself, written once — the type below is derived from it
+ * and the predicate reads it, so adding a framework is one line here rather
+ * than the same set restated wherever it is needed and kept in step by hand.
+ *
+ * `as const` is what gives the members their literal types so the union can be
+ * derived; `satisfies` is what still checks each one against `Framework`, so a
+ * typo here is a compile error rather than a new member of the union.
  */
-export type SupportedFramework =
-	| 'react-vite'
-	| 'preact-vite'
-	| 'sveltekit'
-	| 'svelte-vite'
-	| 'vue3-vite'
-	| 'solid-vite'
+const SUPPORTED_FRAMEWORKS = [
+	'react-vite',
+	'preact-vite',
+	'sveltekit',
+	'svelte-vite',
+	'vue3-vite',
+	'solid-vite',
+] as const satisfies ReadonlyArray<Framework>
+
+/**
+ * A framework the wizard fully supports. A type predicate below narrows
+ * `Framework` to this set — the single source of truth the preview patcher's
+ * support guard reuses instead of re-listing the members.
+ */
+export type SupportedFramework = (typeof SUPPORTED_FRAMEWORKS)[number]
 
 export function isFrameworkSupported(
 	framework: Framework,
 ): framework is SupportedFramework {
-	return (
-		framework === 'react-vite' ||
-		framework === 'preact-vite' ||
-		framework === 'sveltekit' ||
-		framework === 'svelte-vite' ||
-		framework === 'vue3-vite' ||
-		framework === 'solid-vite'
-	)
+	// Widened to read the caller's type: `includes` on the literal array would
+	// only accept a value already known to be one of its members, which is the
+	// question being asked rather than something the caller can promise.
+	const supportedFrameworks: ReadonlyArray<Framework> = SUPPORTED_FRAMEWORKS
+	return supportedFrameworks.includes(framework)
 }
 
 export function detectProject(cwd: string): Detection {
@@ -340,11 +349,12 @@ export function detectProject(cwd: string): Detection {
 	let frameworkDetectionSource: FrameworkDetectionSource =
 		frameworkRaw ? 'package.json' : 'none'
 
-	// Fallback: regex-match the `.storybook/main.*` config file. Runs only
-	// when no recognised core framework package was found in the dependency
-	// scan above — multi-match cases don't get here because the priority
-	// order in `CORE_FRAMEWORK_DETECTORS` (e.g. `next` before `react`,
-	// `@sveltejs/kit` before `svelte`) is the disambiguation mechanism.
+	// Fallback: regex-match the `.storybook/main.*` config file. Runs when the
+	// dependency scan above found nothing it recognised, and also when it could
+	// not choose between independent matches — `findFrameworkInDeps` returns
+	// null for both, and the explicit `framework:` declaration is the reliable
+	// answer in the second case. A meta-framework and the base it
+	// `subsumes` are not one of those cases: that pair resolves in the scan.
 	if (frameworkRaw === null && mainFile) {
 		try {
 			const content = readFileSync(mainFile.path, 'utf8')

@@ -982,51 +982,74 @@ export function ${componentName}(props: ${propsName}) {
 }
 `
 	}
-	// Preact props destructure exactly like React's, so the two templates differ
-	// only where Preact itself does: state comes from `preact/hooks`, the
-	// children type is `ComponentChildren`, and the attribute is `class` — which
-	// is what Preact's own starter project writes.
+	// Preact props destructure exactly like React's, so both come from the one
+	// template below.
 	if (flavor === 'preact') {
-		return `import type { ComponentChildren } from 'preact'
-import { useState } from 'preact/hooks'
-
-export interface ${propsName} {
-	text?: string
-	children?: ComponentChildren
-}
-
-export function ${componentName}({
-	text = '${componentName}',
-	children,
-}: ${propsName}) {
-	const [count, setCount] = useState(0)
-
-	return (
-		<div class="${componentName}">
-			<p>{text}</p>
-			<button type="button" onClick={() => setCount(count + 1)}>
-				count: {count}
-			</button>
-			{children}
-		</div>
-	)
-}
-`
+		return reactLikeComponentTemplate({
+			componentName,
+			propsName,
+			imports: `import type { ComponentChildren } from 'preact'\nimport { useState } from 'preact/hooks'\n`,
+			childrenType: 'ComponentChildren',
+			classAttribute: 'class',
+		})
 	}
 	// Next.js renders the App Router tree on the server, and this tool scaffolds
 	// straight into it. A module holding state has to say it is a client
 	// component or the build refuses it as soon as a server component imports
 	// it, so a Next.js project gets the directive and every other React project
 	// gets a file without one. It is inert under the Pages Router, which is why
-	// the framework alone decides it.
+	// the framework alone decides it. Preact never reaches this line, so its
+	// template above carries no directive.
 	const clientDirective =
 		getProjectFramework() === 'nextjs-webpack' ? "'use client'\n\n" : ''
 
-	return `${clientDirective}import { useState, type ReactNode } from 'react'
+	return reactLikeComponentTemplate({
+		componentName,
+		propsName,
+		imports: `${clientDirective}import { useState, type ReactNode } from 'react'\n`,
+		childrenType: 'ReactNode',
+		classAttribute: 'className',
+	})
+}
 
+interface ReactLikeComponentTemplateParams {
+	/** PascalCase component name, e.g. `"ButtonAtom"` */
+	componentName: string
+	/** Props interface name, e.g. `"PropsForButtonAtom"` */
+	propsName: string
+	/**
+	 * The import lines the file opens with, ending in a newline. React's is one
+	 * line and may carry a leading `'use client'` directive; Preact's is two,
+	 * because its state hook and its types come from different modules.
+	 */
+	imports: string
+	/** What the `children` prop is typed as. */
+	childrenType: string
+	/** The attribute a class name goes in — React writes `className`, Preact `class`. */
+	classAttribute: string
+}
+
+/**
+ * The `.tsx` component template React and Preact both emit. The two frameworks
+ * write the same component — destructured props with defaults, a counter, a
+ * children slot — and differ only in the pieces named above, so the body is
+ * written once here rather than twice.
+ *
+ * Solid is not written from this. Its component reads its props through
+ * `mergeProps` instead of destructuring them, so it shares no body to speak of
+ * and keeps its own template.
+ */
+function reactLikeComponentTemplate({
+	componentName,
+	propsName,
+	imports,
+	childrenType,
+	classAttribute,
+}: ReactLikeComponentTemplateParams): string {
+	return `${imports}
 export interface ${propsName} {
 	text?: string
-	children?: ReactNode
+	children?: ${childrenType}
 }
 
 export function ${componentName}({
@@ -1036,7 +1059,7 @@ export function ${componentName}({
 	const [count, setCount] = useState(0)
 
 	return (
-		<div className="${componentName}">
+		<div ${classAttribute}="${componentName}">
 			<p>{text}</p>
 			<button type="button" onClick={() => setCount(count + 1)}>
 				count: {count}
