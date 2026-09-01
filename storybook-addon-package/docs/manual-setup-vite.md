@@ -1,4 +1,4 @@
-# Manual setup — Vite (React, Svelte, Vue 3, Solid)
+# Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
 >
@@ -8,7 +8,7 @@
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.
 >
-> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Svelte` / `// if using Vue` / `// if using Solid` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/vue3-vite` or `storybook-solidjs-vite`) and the component import for your `.vue` SFC or Solid `.tsx`).
+> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Preact, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Preact` / `// if using Svelte` / `// if using Vue` / `// if using Solid` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Preact, Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/preact-vite`, `@storybook/vue3-vite` or `storybook-solidjs-vite`) and the component import for your Preact `.tsx`, `.vue` SFC or Solid `.tsx`).
 
 ## 1. Install the addon
 
@@ -37,23 +37,25 @@ bun add -d storybook-addon-dependency-previews dependency-cruiser
 
 ```ts
 import type { StorybookConfig } from '@storybook/react-vite' // if using React
+import type { StorybookConfig } from '@storybook/preact-vite' // if using Preact
 import type { StorybookConfig } from '@storybook/sveltekit' // if using Svelte (SvelteKit)
 import type { StorybookConfig } from '@storybook/svelte-vite' // if using Svelte (without SvelteKit)
 import type { StorybookConfig } from '@storybook/vue3-vite' // if using Vue 3
 import type { StorybookConfig } from 'storybook-solidjs-vite' // if using Solid
 
 const config: StorybookConfig = {
-	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React, Vue, or Solid
+	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React, Preact, Vue, or Solid
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'], // if using Svelte
 	addons: [
 		// autodocs is required for this addon to work
 		'@storybook/addon-docs',
-		// required for .stories.svelte CSF format (Svelte projects only — delete if using React, Vue, or Solid)
+		// required for .stories.svelte CSF format (Svelte projects only — delete if using React, Preact, Vue, or Solid)
 		'@storybook/addon-svelte-csf',
 		// the storybook dependency previews addon registration
 		'storybook-addon-dependency-previews/addon',
 	],
 	framework: { name: '@storybook/react-vite', options: {} }, // if using React
+	framework: '@storybook/preact-vite', // if using Preact
 	framework: '@storybook/sveltekit', // if using Svelte (SvelteKit)
 	framework: '@storybook/svelte-vite', // if using Svelte (without SvelteKit)
 	framework: '@storybook/vue3-vite', // if using Vue 3
@@ -217,4 +219,4 @@ npm run sb
 
 As you create new component files the wizard auto-scaffolds matching story files and the dependency-previews JSON updates on the fly.
 
-See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file. **Solid projects:** `sb-deps` works the framework out from your project, so it scaffolds Solid `.tsx` templates without being told. Setting [`tsxFramework: 'solid'`](../README.md#tsxframework) there says so outright, which is worth doing where your project's framework isn't obvious from its files — both frameworks use `.tsx`, so the extension alone can't settle it.
+See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file. **Solid and Preact projects:** `sb-deps` works the framework out from your project, so it scaffolds that framework's `.tsx` templates without being told. Setting [`tsxFramework`](../README.md#tsxframework) there says so outright, which is worth doing where your project's framework isn't obvious from its files — React, Solid and Preact all use `.tsx`, so the extension alone can't settle it.
