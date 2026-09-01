@@ -3,8 +3,11 @@ import { dirname, resolve } from 'node:path'
 
 import { stripCommentsRespectingStrings } from './util.js'
 
+import type { SbDepsConfig } from '../../src/config.js'
+
 export type Framework =
 	| 'react-vite'
+	| 'preact-vite'
 	| 'sveltekit'
 	| 'svelte-vite'
 	| 'vue3-vite'
@@ -157,6 +160,14 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	// `subsumes` field is what makes Nuxt win over Vue when both are present.
 	{ corePackage: 'vue', framework: '@storybook/vue3-vite' },
 	{ corePackage: 'react', framework: '@storybook/react-vite' },
+	// Preact subsumes nothing and is subsumed by nothing: it does not build on
+	// React the way Next.js does, so a project holding both `preact` and `react`
+	// is genuinely ambiguous rather than one framework wrapping the other, and
+	// falls through to the `.storybook/main.*` regex — which is the reliable
+	// answer there. A Preact project that redirects React imports to Preact by
+	// aliasing the `react` dependency lands in exactly that case, and the regex
+	// settles it.
+	{ corePackage: 'preact', framework: '@storybook/preact-vite' },
 	// Solid's Storybook framework is the community package `storybook-solidjs-vite`
 	// (not under the `@storybook/` scope). It's an independent framework — nothing
 	// subsumes it and it subsumes nothing.
@@ -166,6 +177,7 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 function frameworkFromRaw(raw: string | null): Framework {
 	if (!raw) return 'unknown'
 	if (raw === '@storybook/react-vite') return 'react-vite'
+	if (raw === '@storybook/preact-vite') return 'preact-vite'
 	if (raw === '@storybook/sveltekit') return 'sveltekit'
 	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
 	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
@@ -223,6 +235,7 @@ function findFrameworkInDeps(
 function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 	switch (framework) {
 		case 'react-vite':
+		case 'preact-vite':
 		case 'sveltekit':
 		case 'svelte-vite':
 		case 'vue3-vite':
@@ -237,28 +250,71 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 }
 
 /**
- * The Vite-based frameworks the wizard fully supports (detection + preview
- * patching). A type predicate so callers narrow `Framework` to this set — the
- * single source of truth the preview patcher's support guard reuses instead of
- * re-listing the members.
+ * Which set of `.tsx` templates a project wants — the value of the
+ * `tsxFramework` config key. Derived from the config schema so the two can't
+ * drift apart.
  */
-export type SupportedFramework =
-	| 'react-vite'
-	| 'sveltekit'
-	| 'svelte-vite'
-	| 'vue3-vite'
-	| 'solid-vite'
+export type TsxFramework = NonNullable<SbDepsConfig['tsxFramework']>
+
+/**
+ * Which `.tsx` templates a detected framework wants. React, Solid and Preact
+ * all author components in `.tsx`, so the file extension alone can't tell them
+ * apart and the framework has to answer for it.
+ *
+ * The single place that answer lives. The scaffolder uses it for the value it
+ * falls back to when the `tsxFramework` config key is absent, and the setup
+ * wizard uses it for the value it writes into that key — a copy each is how the
+ * two would come to disagree about the same project.
+ *
+ * Everything else is React. That is the right answer for React itself and for
+ * Next.js, the only others here that author `.tsx` at all. For the rest the
+ * value is never consulted: a `.tsx` file in a Svelte, Vue or Angular project
+ * is turned away before any template is chosen, and one in a project whose
+ * framework was never recognised is not scaffolded either.
+ */
+export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
+	if (framework === 'solid-vite') return 'solid'
+	if (framework === 'preact-vite') return 'preact'
+	return 'react'
+}
+
+/**
+ * The Vite-based frameworks the wizard fully supports (detection + preview
+ * patching). The list itself, written once — the type below is derived from it
+ * and the predicate reads it, so adding a framework is one line here rather
+ * than the same set restated wherever it is needed and kept in step by hand.
+ *
+ * `as const` is what gives the members their literal types so the union can be
+ * derived; `satisfies` is what still checks each one against `Framework`, so a
+ * typo here is a compile error rather than a new member of the union.
+ *
+ * The order is the order the wizard offers them in when it has to ask, since
+ * that is the only place a reader meets them as a list.
+ */
+export const SUPPORTED_FRAMEWORKS = [
+	'react-vite',
+	'preact-vite',
+	'vue3-vite',
+	'sveltekit',
+	'svelte-vite',
+	'solid-vite',
+] as const satisfies ReadonlyArray<Framework>
+
+/**
+ * A framework the wizard fully supports. A type predicate below narrows
+ * `Framework` to this set — the single source of truth the preview patcher's
+ * support guard reuses instead of re-listing the members.
+ */
+export type SupportedFramework = (typeof SUPPORTED_FRAMEWORKS)[number]
 
 export function isFrameworkSupported(
 	framework: Framework,
 ): framework is SupportedFramework {
-	return (
-		framework === 'react-vite' ||
-		framework === 'sveltekit' ||
-		framework === 'svelte-vite' ||
-		framework === 'vue3-vite' ||
-		framework === 'solid-vite'
-	)
+	// Widened to read the caller's type: `includes` on the literal array would
+	// only accept a value already known to be one of its members, which is the
+	// question being asked rather than something the caller can promise.
+	const supportedFrameworks: ReadonlyArray<Framework> = SUPPORTED_FRAMEWORKS
+	return supportedFrameworks.includes(framework)
 }
 
 export function detectProject(cwd: string): Detection {
@@ -298,11 +354,12 @@ export function detectProject(cwd: string): Detection {
 	let frameworkDetectionSource: FrameworkDetectionSource =
 		frameworkRaw ? 'package.json' : 'none'
 
-	// Fallback: regex-match the `.storybook/main.*` config file. Runs only
-	// when no recognised core framework package was found in the dependency
-	// scan above — multi-match cases don't get here because the priority
-	// order in `CORE_FRAMEWORK_DETECTORS` (e.g. `next` before `react`,
-	// `@sveltejs/kit` before `svelte`) is the disambiguation mechanism.
+	// Fallback: regex-match the `.storybook/main.*` config file. Runs when the
+	// dependency scan above found nothing it recognised, and also when it could
+	// not choose between independent matches — `findFrameworkInDeps` returns
+	// null for both, and the explicit `framework:` declaration is the reliable
+	// answer in the second case. A meta-framework and the base it
+	// `subsumes` are not one of those cases: that pair resolves in the scan.
 	if (frameworkRaw === null && mainFile) {
 		try {
 			const content = readFileSync(mainFile.path, 'utf8')
