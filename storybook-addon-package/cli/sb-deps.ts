@@ -20,7 +20,12 @@ import {
 	getNameWithLowerCasedEndings,
 	readFolderEntriesOrNull,
 } from './scripts/fileNames.js'
-import { detectProject, type Framework } from './setup/detect.js'
+import {
+	detectProject,
+	tsxFrameworkFromFramework,
+	type Framework,
+	type TsxFramework,
+} from './setup/detect.js'
 import { runSetup } from './setup/index.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -158,17 +163,16 @@ let STORYBOOK_FILE_EXTENSION: StorybookFileExtension = 'stories'
 // default, so a project that says nothing keeps the behaviour it has.
 let SCAFFOLD_IGNORE: Array<string> = []
 
-// React and Solid both author `.tsx` components, so the extension alone can't
-// tell them apart. `tsxFramework` picks which templates a `.tsx` component or
-// story gets — Solid emits a `solid-js` `createSignal`/`mergeProps` component
-// and a `storybook-solidjs-vite` story import. The config key wins where it is
-// set; where it is absent the detected framework decides, so a Solid project
-// without the key still gets Solid templates. A Solid project still routes
-// through the `react` scaffold family (see `getFrameworkFamily`); only the
-// emitted template text differs. Derived from the config schema so it can't
-// drift.
-type TsxFlavor = NonNullable<SbDepsConfig['tsxFramework']>
-let TSX_FRAMEWORK: TsxFlavor = 'react'
+// React, Solid and Preact all author `.tsx` components, so the extension alone
+// can't tell them apart. `tsxFramework` picks which templates a `.tsx`
+// component or story gets — Solid emits a `solid-js` `createSignal`/`mergeProps`
+// component and a `storybook-solidjs-vite` story import, Preact a
+// `preact/hooks` component and a `@storybook/preact-vite` story import. The
+// config key wins where it is set; where it is absent the detected framework
+// decides, so a Solid or Preact project without the key still gets its own
+// templates. Both still route through the `react` scaffold family (see
+// `getFrameworkFamily`); only the emitted template text differs.
+let TSX_FRAMEWORK: TsxFramework = 'react'
 
 // Framework of the project the CLI is running in — needed to disambiguate a
 // `.stories.ts` story with no sibling component (Vue vs Angular both use `.ts`).
@@ -942,10 +946,10 @@ function makeTitleFromComponent(absCompPath: string, base: string) {
 // ───────────────────────────────────────────────────────────────────────────────
 /**
  * The default `.tsx` component template, in the flavor `TSX_FRAMEWORK` selects.
- * React and Solid share the `.tsx` extension but need different code.
+ * React, Solid and Preact share the `.tsx` extension but need different code.
  */
 function tsxComponentTemplate(
-	flavor: TsxFlavor,
+	flavor: TsxFramework,
 	componentName: string,
 	propsName: string,
 ): string {
@@ -973,6 +977,37 @@ export function ${componentName}(props: ${propsName}) {
 				count: {count()}
 			</button>
 			{mergedProps.children}
+		</div>
+	)
+}
+`
+	}
+	// Preact props destructure exactly like React's, so the two templates differ
+	// only where Preact itself does: state comes from `preact/hooks`, the
+	// children type is `ComponentChildren`, and the attribute is `class` — which
+	// is what Preact's own starter project writes.
+	if (flavor === 'preact') {
+		return `import type { ComponentChildren } from 'preact'
+import { useState } from 'preact/hooks'
+
+export interface ${propsName} {
+	text?: string
+	children?: ComponentChildren
+}
+
+export function ${componentName}({
+	text = '${componentName}',
+	children,
+}: ${propsName}) {
+	const [count, setCount] = useState(0)
+
+	return (
+		<div class="${componentName}">
+			<p>{text}</p>
+			<button type="button" onClick={() => setCount(count + 1)}>
+				count: {count}
+			</button>
+			{children}
 		</div>
 	)
 }
@@ -1014,8 +1049,8 @@ export function ${componentName}({
 }
 
 /**
- * The default `.tsx` story template. React and Solid stories are identical apart
- * from which package the Storybook types come from (see
+ * The default `.tsx` story template. React, Solid and Preact stories are
+ * identical apart from which package the Storybook types come from (see
  * `getTsxStoryTypesPackage`).
  *
  * The component is imported from `./${base}` (the actual filename), not
@@ -1024,7 +1059,7 @@ export function ${componentName}({
  * symbol name would generate a broken import.
  */
 function tsxStoryTemplate(
-	flavor: TsxFlavor,
+	flavor: TsxFramework,
 	componentName: string,
 	propsName: string,
 	base: string,
@@ -1057,13 +1092,14 @@ export const Primary: Story = {
 
 /**
  * The package a scaffolded `.tsx` story imports its Storybook types from. Solid
- * has its own package. React's depends on how the project builds: a Next.js
- * project's Storybook types live in `@storybook/nextjs`, not in the Vite
+ * and Preact each have their own. React's depends on how the project builds: a
+ * Next.js project's Storybook types live in `@storybook/nextjs`, not in the Vite
  * package, so importing the Vite one there produces a story that doesn't
  * type-check.
  */
-function getTsxStoryTypesPackage(flavor: TsxFlavor): string {
+function getTsxStoryTypesPackage(flavor: TsxFramework): string {
 	if (flavor === 'solid') return 'storybook-solidjs-vite'
+	if (flavor === 'preact') return '@storybook/preact-vite'
 	if (getProjectFramework() === 'nextjs-webpack') return '@storybook/nextjs'
 	return '@storybook/react-vite'
 }
@@ -1970,10 +2006,11 @@ function getFrameworkFamily(framework: Framework): StoryFramework | null {
 	switch (framework) {
 		case 'react-vite':
 		case 'nextjs-webpack':
-		// Solid components are `.tsx` too, so a Solid project resolves and builds
-		// component paths exactly like React — it rides the `react` family. Only
+		// Solid and Preact components are `.tsx` too, so both resolve and build
+		// component paths exactly like React — they ride the `react` family. Only
 		// the emitted template text differs, chosen by `TSX_FRAMEWORK`.
 		case 'solid-vite':
+		case 'preact-vite':
 			return 'react'
 		case 'vue3-vite':
 			return 'vue'
@@ -2076,9 +2113,10 @@ function ensureStoryFor(
 
 /**
  * Work out the component a created story file belongs to, and which framework's
- * scaffolders to use. `.tsx` → React or Solid, `.svelte` → Svelte, `.ts` →
- * React, Solid, Vue, or Angular (disambiguated in `resolveTsStoryComponent`).
- * React and Solid share the `.tsx` route and are told apart by `tsxFramework`.
+ * scaffolders to use. `.tsx` → React, Solid or Preact, `.svelte` → Svelte,
+ * `.ts` → React, Solid, Preact, Vue, or Angular (disambiguated in
+ * `resolveTsStoryComponent`). The three `.tsx` frameworks share that route and
+ * are told apart by `tsxFramework`.
  * Any extension with no entry in `STORY_COMPONENT_RESOLVERS` returns `null` —
  * not something we scaffold.
  */
@@ -2209,11 +2247,11 @@ function getComponentForStoryByExtension(
 }
 
 /**
- * A `.stories.ts` story can be React, Solid, Vue, or Angular — all of them use
- * `.ts` story files (the React and Solid scaffolded templates are JSX-free, so
- * they're valid as `.ts` even though both write stories as `.tsx` by
- * convention). Prefer an existing sibling component to decide
- * (`<base>.tsx` → React or Solid, told apart by `tsxFramework`;
+ * A `.stories.ts` story can be React, Solid, Preact, Vue, or Angular — all of
+ * them use `.ts` story files (the React, Solid and Preact scaffolded templates
+ * are JSX-free, so they're valid as `.ts` even though all three write stories as
+ * `.tsx` by convention). Prefer an existing sibling component to decide
+ * (`<base>.tsx` → React, Solid or Preact, told apart by `tsxFramework`;
  * `<base>.vue` → Vue; `<base>.component.ts` → Angular); with none present,
  * fall back to the project's detected framework. Svelte is intentionally excluded: its story
  * template is `.svelte`-specific, so a `.ts` Svelte story can't be scaffolded
@@ -2916,13 +2954,13 @@ async function startStorybook() {
 		'stories',
 	)
 	// The fallback follows the detected framework rather than always being
-	// `react`, so a Solid project that never got the config key still scaffolds
-	// Solid templates instead of silently writing React ones into it.
-	TSX_FRAMEWORK = validateConfigChoice<TsxFlavor>(
+	// `react`, so a Solid or Preact project that never got the config key still
+	// scaffolds its own templates instead of silently writing React ones into it.
+	TSX_FRAMEWORK = validateConfigChoice<TsxFramework>(
 		'tsxFramework',
 		cfg.tsxFramework,
-		['react', 'solid'],
-		getProjectFramework() === 'solid-vite' ? 'solid' : 'react',
+		['react', 'solid', 'preact'],
+		tsxFrameworkFromFramework(getProjectFramework()),
 	)
 
 	// Same treatment as the two options above, for the same reason: a JS config
