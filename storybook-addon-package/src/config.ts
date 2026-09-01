@@ -23,10 +23,10 @@ export interface TsxStoryScaffoldContext extends TsxComponentScaffoldContext {
 }
 
 /** Context for `scaffold.react.component` — see `TsxComponentScaffoldContext`. */
-export type ReactComponentScaffoldContext = TsxComponentScaffoldContext
+export interface ReactComponentScaffoldContext extends TsxComponentScaffoldContext {}
 
 /** Context for `scaffold.react.story` — see `TsxStoryScaffoldContext`. */
-export type ReactStoryScaffoldContext = TsxStoryScaffoldContext
+export interface ReactStoryScaffoldContext extends TsxStoryScaffoldContext {}
 
 export interface SvelteComponentScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
@@ -53,16 +53,16 @@ export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
 }
 
 /** Context for `scaffold.solid.component` — see `TsxComponentScaffoldContext`. */
-export type SolidComponentScaffoldContext = TsxComponentScaffoldContext
+export interface SolidComponentScaffoldContext extends TsxComponentScaffoldContext {}
 
 /** Context for `scaffold.solid.story` — see `TsxStoryScaffoldContext`. */
-export type SolidStoryScaffoldContext = TsxStoryScaffoldContext
+export interface SolidStoryScaffoldContext extends TsxStoryScaffoldContext {}
 
 /** Context for `scaffold.preact.component` — see `TsxComponentScaffoldContext`. */
-export type PreactComponentScaffoldContext = TsxComponentScaffoldContext
+export interface PreactComponentScaffoldContext extends TsxComponentScaffoldContext {}
 
 /** Context for `scaffold.preact.story` — see `TsxStoryScaffoldContext`. */
-export type PreactStoryScaffoldContext = TsxStoryScaffoldContext
+export interface PreactStoryScaffoldContext extends TsxStoryScaffoldContext {}
 
 export interface SvelteDecoratorScaffoldContext {
 	/**
