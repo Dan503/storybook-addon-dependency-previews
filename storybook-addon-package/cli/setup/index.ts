@@ -6,6 +6,7 @@ import { relative as pathRelative } from 'node:path'
 import {
 	detectProject,
 	isFrameworkSupported,
+	SUPPORTED_FRAMEWORKS,
 	tsxFrameworkFromFramework,
 	type Framework,
 	type SupportedFramework,
@@ -33,6 +34,22 @@ function rule() {
 	console.log('────────────────────────────────────────────')
 }
 
+/**
+ * How each supported framework is offered in the wizard's framework picker,
+ * naming the Storybook package so the user can match it against their own
+ * config. A `Record`, so the compiler requires a label for every framework in
+ * `SUPPORTED_FRAMEWORKS` — that is what stops a newly supported framework
+ * being absent from the picker and unselectable.
+ */
+const FRAMEWORK_PICKER_LABELS: Record<SupportedFramework, string> = {
+	'react-vite': 'React (@storybook/react-vite)',
+	'preact-vite': 'Preact (@storybook/preact-vite)',
+	'vue3-vite': 'Vue 3 (@storybook/vue3-vite)',
+	sveltekit: 'Svelte with SvelteKit (@storybook/sveltekit)',
+	'svelte-vite': 'Svelte without SvelteKit (@storybook/svelte-vite)',
+	'solid-vite': 'Solid (storybook-solidjs-vite)',
+}
+
 // The story-file extension the scaffolder generates for each framework — used
 // only to render a concrete example next to the story-extension preference
 // (Vue stories are `.stories.ts`, Svelte `.stories.svelte`, React `.stories.tsx`).
@@ -41,8 +58,12 @@ function exampleStoryFileExtension(framework: Framework): string {
 		case 'sveltekit':
 		case 'svelte-vite':
 			return 'svelte'
+		// Every framework that writes `.tsx` components goes through
+		// `storyPathForComponent`, which always spells the story `.tsx` — so the
+		// example has to say `.tsx` for all of them, Solid and Preact included.
 		case 'react-vite':
 		case 'preact-vite':
+		case 'solid-vite':
 		case 'nextjs-webpack':
 			return 'tsx'
 		// Angular, Vue, and unknown fall through to `ts` — the Angular scaffolder
@@ -228,25 +249,22 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unknown') {
 		log('Could not detect a framework from the main config file.')
-		// The offered values are exactly the frameworks the wizard supports, plus
-		// a way out, so the type says that rather than listing them again.
+		// Built from the supported-framework list rather than written out again,
+		// so a framework added there and not given a label here is a compile
+		// error instead of an option the user silently cannot pick.
+		const frameworkOptions: ReadonlyArray<{
+			label: string
+			value: SupportedFramework | 'cancel'
+		}> = [
+			...SUPPORTED_FRAMEWORKS.map((value) => ({
+				label: FRAMEWORK_PICKER_LABELS[value],
+				value,
+			})),
+			{ label: 'Cancel', value: 'cancel' },
+		]
 		const choice = await choose<SupportedFramework | 'cancel'>(
 			'Which framework is this project using?',
-			[
-				{ label: 'React (@storybook/react-vite)', value: 'react-vite' },
-				{ label: 'Preact (@storybook/preact-vite)', value: 'preact-vite' },
-				{ label: 'Vue 3 (@storybook/vue3-vite)', value: 'vue3-vite' },
-				{
-					label: 'Svelte with SvelteKit (@storybook/sveltekit)',
-					value: 'sveltekit',
-				},
-				{
-					label: 'Svelte without SvelteKit (@storybook/svelte-vite)',
-					value: 'svelte-vite',
-				},
-				{ label: 'Solid (storybook-solidjs-vite)', value: 'solid-vite' },
-				{ label: 'Cancel', value: 'cancel' },
-			],
+			frameworkOptions,
 		)
 		if (choice === 'cancel') {
 			log('Setup cancelled.')

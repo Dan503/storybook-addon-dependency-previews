@@ -285,13 +285,16 @@ export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
  * `as const` is what gives the members their literal types so the union can be
  * derived; `satisfies` is what still checks each one against `Framework`, so a
  * typo here is a compile error rather than a new member of the union.
+ *
+ * The order is the order the wizard offers them in when it has to ask, since
+ * that is the only place a reader meets them as a list.
  */
-const SUPPORTED_FRAMEWORKS = [
+export const SUPPORTED_FRAMEWORKS = [
 	'react-vite',
 	'preact-vite',
+	'vue3-vite',
 	'sveltekit',
 	'svelte-vite',
-	'vue3-vite',
 	'solid-vite',
 ] as const satisfies ReadonlyArray<Framework>
 

@@ -1,11 +1,19 @@
-export interface ReactComponentScaffoldContext {
+/**
+ * What a `.tsx` component template is given. React, Preact and Solid all author
+ * components in `.tsx` and all take the same two names, so the shape is written
+ * once here and each framework's own name below points at it. A framework that
+ * later needs something of its own stops being a name for this and gets its own
+ * interface back.
+ */
+export interface TsxComponentScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
 	componentName: string
 	/** Props interface name, e.g. `"PropsForButtonAtom"` */
 	propsName: string
 }
 
-export interface ReactStoryScaffoldContext extends ReactComponentScaffoldContext {
+/** What a `.tsx` story template is given — see `TsxComponentScaffoldContext`. */
+export interface TsxStoryScaffoldContext extends TsxComponentScaffoldContext {
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
@@ -13,6 +21,12 @@ export interface ReactStoryScaffoldContext extends ReactComponentScaffoldContext
 	/** Base file name without extension, e.g. `"ButtonAtom"` */
 	base: string
 }
+
+/** Context for `scaffold.react.component` — see `TsxComponentScaffoldContext`. */
+export type ReactComponentScaffoldContext = TsxComponentScaffoldContext
+
+/** Context for `scaffold.react.story` — see `TsxStoryScaffoldContext`. */
+export type ReactStoryScaffoldContext = TsxStoryScaffoldContext
 
 export interface SvelteComponentScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
@@ -38,37 +52,17 @@ export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
 	tags: string[]
 }
 
-export interface SolidComponentScaffoldContext {
-	/** PascalCase component name, e.g. `"ButtonAtom"` */
-	componentName: string
-	/** Props interface name, e.g. `"PropsForButtonAtom"` */
-	propsName: string
-}
+/** Context for `scaffold.solid.component` — see `TsxComponentScaffoldContext`. */
+export type SolidComponentScaffoldContext = TsxComponentScaffoldContext
 
-export interface SolidStoryScaffoldContext extends SolidComponentScaffoldContext {
-	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
-	title: string
-	/** Story tags, e.g. `["autodocs", "atom"]` */
-	tags: string[]
-	/** Base file name without extension, e.g. `"ButtonAtom"` */
-	base: string
-}
+/** Context for `scaffold.solid.story` — see `TsxStoryScaffoldContext`. */
+export type SolidStoryScaffoldContext = TsxStoryScaffoldContext
 
-export interface PreactComponentScaffoldContext {
-	/** PascalCase component name, e.g. `"ButtonAtom"` */
-	componentName: string
-	/** Props interface name, e.g. `"PropsForButtonAtom"` */
-	propsName: string
-}
+/** Context for `scaffold.preact.component` — see `TsxComponentScaffoldContext`. */
+export type PreactComponentScaffoldContext = TsxComponentScaffoldContext
 
-export interface PreactStoryScaffoldContext extends PreactComponentScaffoldContext {
-	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
-	title: string
-	/** Story tags, e.g. `["autodocs", "atom"]` */
-	tags: string[]
-	/** Base file name without extension, e.g. `"ButtonAtom"` */
-	base: string
-}
+/** Context for `scaffold.preact.story` — see `TsxStoryScaffoldContext`. */
+export type PreactStoryScaffoldContext = TsxStoryScaffoldContext
 
 export interface SvelteDecoratorScaffoldContext {
 	/**
