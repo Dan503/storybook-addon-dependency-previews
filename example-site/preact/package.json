@@ -24,7 +24,8 @@
 		"@storybook/preact-vite": "^10.5.10",
 		"@chromatic-com/storybook": "latest",
 		"@storybook/addon-docs": "^10.5.10",
-		"eslint-plugin-storybook": "^10.5.10"
+		"eslint-plugin-storybook": "^10.5.10",
+		"storybook-addon-dependency-previews": "workspace:*"
 	},
 	"eslintConfig": {
 		"extends": [
