@@ -24,11 +24,13 @@ interface StateForPageFailureBoundary {
 /**
  * Catches a page that could not get its meals, and draws the failure page.
  *
- * Written as a class with `componentDidCatch` because that is the only thing
- * preact accepts as an error boundary — it walks up from the throw looking for
- * a component that has one. preact-iso's own `ErrorBoundary` builds that method
- * from an `onError` prop, so without one it catches a *paused* page and nothing
- * else, which is why it cannot do this job.
+ * Written as a class because preact walks up from the throw looking for a
+ * component carrying either `componentDidCatch` or a `getDerivedStateFromError`
+ * on its constructor, and only a class can carry either. This one uses
+ * `componentDidCatch`; either would do. preact-iso's own `ErrorBoundary` is a
+ * plain function that builds `componentDidCatch` from an `onError` prop, so
+ * without one it catches a *paused* page and nothing else, which is why it
+ * cannot do this job.
  *
  * It is deliberately absent while the pages are being built: `App` is what the
  * build draws, and this only wraps the browser's copy, so a failing request

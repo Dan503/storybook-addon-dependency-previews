@@ -65,8 +65,9 @@ function AppInBrowser() {
  *
  * It catches only a *paused* page, not a failed one. preact-iso builds its
  * `componentDidCatch` from an `onError` prop, and preact treats a component as
- * an error boundary only when it has that method — so with no `onError` a
- * failed request walks straight past this. `PageFailureCatcher` is what catches
+ * an error boundary only when it carries that method or a
+ * `getDerivedStateFromError` — so with no `onError` this has neither, and a
+ * failed request walks straight past it. `PageFailureCatcher` is what catches
  * that, and only in the browser.
  */
 function SiteRoutes() {

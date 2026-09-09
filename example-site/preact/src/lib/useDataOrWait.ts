@@ -37,7 +37,8 @@ const stillWaiting = new Map<string, Promise<unknown>>()
  * and neither half is the `ErrorBoundary` in `src/index.tsx` — that one only
  * catches a *paused* page, because preact-iso builds it with no
  * `componentDidCatch` unless it is handed an `onError`, and preact treats a
- * component as an error boundary only when it has one.
+ * component as an error boundary only when it carries that method or a
+ * `getDerivedStateFromError`.
  *
  * While the pages are being built there is deliberately nothing to catch it:
  * the throw leaves `prerender` and the build stops and names the meal database,

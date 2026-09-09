@@ -1,5 +1,16 @@
 {
-	"include": ["**/*.ts", "**/*.tsx", "prettier.config.js", "sb-deps.config.js"],
+	// The `.storybook` folder is listed on its own because a wildcard segment
+	// will not enter a folder whose name begins with a dot, so the plain
+	// whole-project patterns above it leave the Storybook setup unchecked —
+	// including the click guard in `preview.tsx`.
+	"include": [
+		"**/*.ts",
+		"**/*.tsx",
+		".storybook/**/*.ts",
+		".storybook/**/*.tsx",
+		"prettier.config.js",
+		"sb-deps.config.js"
+	],
 
 	"compilerOptions": {
 		"target": "ES2022",

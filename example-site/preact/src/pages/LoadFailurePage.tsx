@@ -19,8 +19,14 @@ export interface PropsForLoadFailurePage {
  * by pausing, so a failure there never reaches this page — it simply draws
  * with no meals.
  *
- * Meal pages are the likeliest to meet this, because they are the only ones
- * not written out ahead of time, so every visit to one asks.
+ * Being written out ahead of time does not spare a page from this. Nothing
+ * carries the build's answers into the browser — the three stores in
+ * `useDataOrWait` start empty on every fresh load — so opening or reloading a
+ * written-out category page asks the meal database again, and a failure then
+ * lands here just as it would from a meal page. What being written ahead buys
+ * is the order of events rather than safety from it: the reader sees the page
+ * first, and this one then replaces content that was already on screen and
+ * correct.
  */
 export function LoadFailurePage({ onTryAgain }: PropsForLoadFailurePage) {
 	setPageTitle('Something went wrong | The Meal Place')
