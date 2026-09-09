@@ -24,18 +24,9 @@
 		"@storybook/addon-links": "^10.6.0",
 		"@storybook/preact-vite": "^10.5.10",
 		"dependency-cruiser": "^18.2.0",
-		"eslint": "^9.39.2",
-		"eslint-config-preact": "^2.0.0",
-		"eslint-plugin-storybook": "^10.5.10",
 		"storybook": "^10.5.10",
 		"storybook-addon-dependency-previews": "workspace:*",
 		"typescript": "~5.9.3",
 		"vite": "^7.0.4"
-	},
-	"eslintConfig": {
-		"extends": [
-			"preact",
-			"plugin:storybook/recommended"
-		]
 	}
 }
