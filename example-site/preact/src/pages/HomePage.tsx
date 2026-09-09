@@ -12,8 +12,8 @@ const featuredMealCount = 7
  * visit rather than through `useDataOrWait`. Going through that would have the
  * build ask for them once and write the answer into the file every visitor is
  * served, which would hand everyone the same seven forever. The Angular site's
- * home page does the same thing for the same reason; the three sites that fetch
- * theirs per visit have a server to do it on, and a set of built files does not.
+ * home page does the same thing for the same reason; the sites that fetch
+ * theirs on a server do it there, and a set of built files has no server.
  *
  * `HomeTemplate` draws its frame, welcome text and heading from an empty list,
  * so the written-out file is the page minus its hero picture and cards.

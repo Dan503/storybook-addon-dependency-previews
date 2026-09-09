@@ -94,9 +94,10 @@ if (appRoot) {
  * The build finds the pages it has not written yet by reading the links in the
  * ones it has, so the list handed back here is what decides how far it goes.
  *
- * The address is not passed in: the build sets it on the global `location`
- * before calling this, which is where preact-iso's location provider reads it
- * from.
+ * This takes no argument. The build does hand one over — the address, as `url`
+ * and again inside `route` — but it also writes that address onto the global
+ * `location` immediately beforehand, and that is where preact-iso's location
+ * provider reads it from, so there is nothing to pass on.
  */
 export async function prerender() {
 	const page = await ssr(<App />)

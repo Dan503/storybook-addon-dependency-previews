@@ -26,11 +26,10 @@ interface StateForPageFailureBoundary {
  *
  * Written as a class because preact walks up from the throw looking for a
  * component carrying either `componentDidCatch` or a `getDerivedStateFromError`
- * on its constructor, and only a class can carry either. This one uses
- * `componentDidCatch`; either would do. preact-iso's own `ErrorBoundary` is a
- * plain function that builds `componentDidCatch` from an `onError` prop, so
- * without one it catches a *paused* page and nothing else, which is why it
- * cannot do this job.
+ * on its constructor, and a class is the plain way to carry one. This one uses
+ * `componentDidCatch`; either would do. preact-iso's own `ErrorBoundary` builds
+ * `componentDidCatch` from an `onError` prop, so without one it catches a
+ * *paused* page and nothing else, which is why it cannot do this job.
  *
  * It is deliberately absent while the pages are being built: `App` is what the
  * build draws, and this only wraps the browser's copy, so a failing request
@@ -54,12 +53,21 @@ class PageFailureBoundary extends Component<
 		// Stop showing a failure once the reader has moved to another page, so
 		// one page's failure does not follow them around the site.
 		//
-		// Done by clearing the state rather than by rebuilding this component
-		// from scratch. Rebuilding takes the router below it down as well, and
-		// the router is what keeps the previous page on screen while the next
-		// one waits for its meals — so a fresh one has no previous page to
-		// hold, and every move to a page whose meals are not already known
-		// blanks the site until they arrive.
+		// Done by clearing the state rather than by giving this component a
+		// `key` that changes with the address. That is about ordinary
+		// navigation: a changing key rebuilds this component on *every* move,
+		// and rebuilding takes the router below it with it — and the router is
+		// what holds the previous page on screen while the next one waits, so
+		// a fresh one has nothing to hold and every move blanks the site.
+		//
+		// It does not save the router from being rebuilt when the failure state
+		// itself changes, and nothing here could: showing the failure page
+		// means drawing something else in place of the router, which unmounts
+		// it either way. So both ways out of a failure — trying again, and
+		// leaving for a page whose meals are not already known — blank the site
+		// for as long as the request takes, measured at over half a second on a
+		// slow one. It puts itself right, and it costs a rebuild only after a
+		// failure rather than on every move, which is why it is left as it is.
 		const hasMovedOn = previousProps.path !== this.props.path
 		if (hasMovedOn && this.state.hasFailed) {
 			this.setState({ hasFailed: false })

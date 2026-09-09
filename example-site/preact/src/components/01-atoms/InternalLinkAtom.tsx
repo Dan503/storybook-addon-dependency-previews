@@ -28,9 +28,10 @@ export interface PropsForInternalLinkAtom extends LinkAddressPropsViaColons {
 	 * a page sitting underneath, which is what keeps `/categories` marked while
 	 * a category is being read.
 	 *
-	 * The routers on the sibling sites work this out themselves; preact-iso
-	 * only reports the current address, so `checkIsCurrentPage` below does it
-	 * here.
+	 * Some of the sibling sites get this from their router — Solid, Vue and
+	 * Angular each have a link that marks itself. preact-iso only reports the
+	 * current address, so `checkIsCurrentPage` below works it out instead,
+	 * which is what Svelte does too.
 	 */
 	activeClass?: string
 	children?: ComponentChildren
