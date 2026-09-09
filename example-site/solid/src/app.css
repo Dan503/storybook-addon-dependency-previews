@@ -11,7 +11,7 @@ body,
 	min-height: 100%;
 }
 
-/* Both of these are set by all four sibling sites and by nothing else —
+/* Both of these are set by every sibling site and by nothing else —
    Tailwind's base styles cover neither, so without them the buttons here show
    an arrow where the other demos show a hand, and the text sits heavier. */
 body {
@@ -23,11 +23,11 @@ button {
 	cursor: pointer;
 }
 
-/* Tailwind does supply a monospace stack, but a different one from the React,
-   Svelte and Vue sites, so the values preview under each form would read in
-   another font here. Pinned to the stack those three use. The Angular site
-   pins nothing and stays on the Tailwind default, so this site now matches
-   three of the four and differs from that one. */
+/* Tailwind does supply a monospace stack, but a different one from the sibling
+   sites that pin theirs, so the values preview under each form would read in
+   another font here. Pinned to the same stack they use. The Angular site pins
+   nothing and stays on the Tailwind default, so this site differs from that
+   one. */
 code {
 	font-family:
 		source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;

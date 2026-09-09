@@ -32,8 +32,21 @@ const stillWaiting = new Map<string, Promise<unknown>>()
  * harmless there, because the page is finished by the time it could fire.
  *
  * A request that fails is remembered as a failure and thrown again on the next
- * ask, rather than being retried. That is what makes a build stop and report an
- * unreachable meal database instead of asking it forever.
+ * ask, rather than being retried, so nothing keeps asking a meal database that
+ * is not answering. What catches that throw differs by where the page is drawn,
+ * and neither half is the `ErrorBoundary` in `src/index.tsx` — that one only
+ * catches a *paused* page, because preact-iso builds it with no
+ * `componentDidCatch` unless it is handed an `onError`, and preact treats a
+ * component as an error boundary only when it has one.
+ *
+ * While the pages are being built there is deliberately nothing to catch it:
+ * the throw leaves `prerender` and the build stops and names the meal database,
+ * rather than writing out a page saying the meals could not be loaded.
+ *
+ * In the browser `PageFailureBoundary` catches it and draws the failure page,
+ * which offers to try again — and trying again calls `forgetFailedRequests`
+ * below, because a remembered failure would otherwise outlast the visit and a
+ * reload would be the only way back.
  *
  * The two hooks are called before anything can throw, so a page always calls
  * the same hooks in the same order whether it is waiting or finished.
@@ -86,4 +99,15 @@ export function useDataOrWait<TData>(
 	}
 
 	throw pending
+}
+
+/**
+ * Forgets every request that failed, so the next ask tries again.
+ *
+ * Called by the failure page's try-again button. Without it a failed request is
+ * remembered for the rest of the visit, so going back to the page would show
+ * the same failure and only a reload would clear it.
+ */
+export function forgetFailedRequests() {
+	failures.clear()
 }

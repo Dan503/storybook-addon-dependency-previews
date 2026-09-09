@@ -6,7 +6,7 @@ import type { LinkAddress } from '$lib/getFullAddress';
  * The shared example cards, with their addresses put in Svelte's marking, for the stories to
  * draw from.
  *
- * The five example sites share one set of example cards, and those cards write an address the way
+ * The example sites share one set of example cards, and those cards write an address the way
  * the React site's router does — `/meal/$mealId`. That is not an address this site has, so a card
  * handed straight to a listing here is refused. Swapping the address is all that is needed: the
  * pieces that complete it already travel alongside under the same name.

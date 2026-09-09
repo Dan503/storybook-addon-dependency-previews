@@ -14,7 +14,42 @@ import { MealDetailPage } from './pages/MealDetailPage'
 import { ContactPage } from './pages/ContactPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { getTitleForPageBeingBuilt } from './lib/pageTitle'
+import { PageFailureCatcher } from './lib/PageFailureBoundary'
 import './app.css'
+
+/**
+ * The site as the build draws it.
+ *
+ * Deliberately without the failure catcher: a request that fails while the
+ * pages are being written should stop the build and name the meal database,
+ * rather than writing out a page that says the meals could not be loaded.
+ */
+export function App() {
+	return (
+		<LocationProvider>
+			<SiteRoutes />
+		</LocationProvider>
+	)
+}
+
+/**
+ * The site as the browser draws it — the same thing, plus the failure page.
+ *
+ * Here a failed request must not take the whole site down to nothing, which is
+ * what happens without a catcher. It sits inside the location provider so the
+ * failure page's own links still move around the site. It draws nothing of its
+ * own, so what reaches the page is the same as what the build wrote and the
+ * two still line up when the browser takes over.
+ */
+function AppInBrowser() {
+	return (
+		<LocationProvider>
+			<PageFailureCatcher>
+				<SiteRoutes />
+			</PageFailureCatcher>
+		</LocationProvider>
+	)
+}
 
 /*
  * The five addresses every example site carries, written the way preact-iso
@@ -27,28 +62,32 @@ import './app.css'
  * keeps what is on screen there in the meantime. The other half is the page
  * asking for its own redraw, which `useDataOrWait` does. Both were checked by
  * taking each away in turn: without either one the page stays blank for good.
+ *
+ * It catches only a *paused* page, not a failed one. preact-iso builds its
+ * `componentDidCatch` from an `onError` prop, and preact treats a component as
+ * an error boundary only when it has that method — so with no `onError` a
+ * failed request walks straight past this. `PageFailureCatcher` is what catches
+ * that, and only in the browser.
  */
-export function App() {
+function SiteRoutes() {
 	return (
-		<LocationProvider>
-			<ErrorBoundary>
-				<Router>
-					<Route path="/" component={HomePage} />
-					<Route path="/categories" component={CategoriesPage} />
-					<Route path="/categories/:category" component={CategoryMealsPage} />
-					<Route path="/meal/:mealId" component={MealDetailPage} />
-					<Route path="/contact" component={ContactPage} />
-					<Route default component={NotFoundPage} />
-				</Router>
-			</ErrorBoundary>
-		</LocationProvider>
+		<ErrorBoundary>
+			<Router>
+				<Route path="/" component={HomePage} />
+				<Route path="/categories" component={CategoriesPage} />
+				<Route path="/categories/:category" component={CategoryMealsPage} />
+				<Route path="/meal/:mealId" component={MealDetailPage} />
+				<Route path="/contact" component={ContactPage} />
+				<Route default component={NotFoundPage} />
+			</Router>
+		</ErrorBoundary>
 	)
 }
 
 const appRoot =
 	typeof window === 'undefined' ? null : document.getElementById('app')
 if (appRoot) {
-	hydrate(<App />, appRoot)
+	hydrate(<AppInBrowser />, appRoot)
 }
 
 /**
