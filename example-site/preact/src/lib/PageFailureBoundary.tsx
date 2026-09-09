@@ -4,8 +4,17 @@ import { useLocation } from 'preact-iso'
 import { LoadFailurePage } from '../pages/LoadFailurePage'
 import { forgetFailedRequests } from './useDataOrWait'
 
-interface PropsForPageFailureBoundary {
+interface PropsForPageFailureCatcher {
 	children?: ComponentChildren
+}
+
+interface PropsForPageFailureBoundary extends PropsForPageFailureCatcher {
+	/**
+	 * The address on screen. Not drawn — it is here so the boundary can tell
+	 * that the reader has moved on and stop showing the previous page's
+	 * failure.
+	 */
+	path: string
 }
 
 interface StateForPageFailureBoundary {
@@ -39,6 +48,22 @@ class PageFailureBoundary extends Component<
 		this.setState({ hasFailed: true })
 	}
 
+	componentDidUpdate(previousProps: PropsForPageFailureBoundary) {
+		// Stop showing a failure once the reader has moved to another page, so
+		// one page's failure does not follow them around the site.
+		//
+		// Done by clearing the state rather than by rebuilding this component
+		// from scratch. Rebuilding takes the router below it down as well, and
+		// the router is what keeps the previous page on screen while the next
+		// one waits for its meals — so a fresh one has no previous page to
+		// hold, and every move to a page whose meals are not already known
+		// blanks the site until they arrive.
+		const hasMovedOn = previousProps.path !== this.props.path
+		if (hasMovedOn && this.state.hasFailed) {
+			this.setState({ hasFailed: false })
+		}
+	}
+
 	tryAgain = () => {
 		forgetFailedRequests()
 		this.setState({ hasFailed: false })
@@ -53,14 +78,15 @@ class PageFailureBoundary extends Component<
 }
 
 /**
- * The boundary above, rebuilt whenever the address changes.
+ * Hands the boundary above the address on screen.
  *
  * A boundary that has caught something stays caught until it is told
- * otherwise, so without the key a reader who left the failed page behind would
- * carry its failure page onto the next one. Keying it on the address builds a
- * fresh boundary per page instead.
+ * otherwise, so it needs to know when the reader has moved on. The address is
+ * passed as an ordinary prop rather than as a `key`, because a changed key
+ * would rebuild the boundary and take the router with it — see
+ * `componentDidUpdate` above for what that costs.
  */
-export function PageFailureCatcher({ children }: PropsForPageFailureBoundary) {
+export function PageFailureCatcher({ children }: PropsForPageFailureCatcher) {
 	const { path } = useLocation()
-	return <PageFailureBoundary key={path}>{children}</PageFailureBoundary>
+	return <PageFailureBoundary path={path}>{children}</PageFailureBoundary>
 }

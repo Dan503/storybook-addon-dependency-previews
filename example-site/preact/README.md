@@ -2,7 +2,7 @@
 
 The Preact demo site for `storybook-addon-dependency-previews`, built with [Preact](https://preactjs.com), [Vite](https://vitejs.dev) and [`preact-iso`](https://github.com/preactjs/preact-iso) for routing.
 
-It shows the same meal-browsing site as the React, Svelte, Vue, Angular and Solid demos, built from the same shared components and the same shared data package, so the addon can be seen working in a realistic project.
+It shows the same meal-browsing site as the React, Svelte, Vue, Angular and Solid demos, drawing on the same shared data and utilities, so the addon can be seen working in a realistic project. The components themselves are this site's own — every demo keeps a framework-specific set under `src/components`, and that per-site tree is what the addon graphs.
 
 ## Developing
 

@@ -11,7 +11,35 @@ import dependenciesJson from './dependency-previews.json'
 
 import '../src/app.css'
 
+import type { JSX } from 'preact'
 import type { Preview } from '@storybook/preact-vite'
+
+/**
+ * Stops a link clicked inside a story from going anywhere.
+ *
+ * preact-iso listens for clicks on the window, and for any link to this same
+ * address it blocks the browser's own navigation and rewrites the address
+ * instead. Inside a story that address is the story's own, so following a link
+ * would replace it with the link's — the story keeps drawing, but reloading
+ * the canvas or opening it in its own tab would no longer land on that story.
+ *
+ * The Solid site avoids this by giving its stories a router that keeps its
+ * address in memory and goes nowhere. preact-iso has no such mode, so the
+ * click is stopped here before it reaches the window instead.
+ *
+ * Links to other sites are left alone: they carry `target="_blank"`, and
+ * preact-iso ignores them too, so they open the way they should.
+ */
+function stopLinksLeavingTheStory(
+	event: JSX.TargetedMouseEvent<HTMLDivElement>,
+) {
+	const clickedLink = (event.target as HTMLElement | null)?.closest('a')
+	if (!clickedLink) return
+	const isInsideThisSite = clickedLink.origin === location.origin
+	if (!isInsideThisSite) return
+	event.preventDefault()
+	event.stopPropagation()
+}
 
 const preview: Preview = {
 	decorators: [
@@ -21,7 +49,9 @@ const preview: Preview = {
 		// needed by the addon itself.
 		(Story) => (
 			<LocationProvider>
-				<Story />
+				<div onClick={stopLinksLeavingTheStory}>
+					<Story />
+				</div>
 			</LocationProvider>
 		),
 	],
