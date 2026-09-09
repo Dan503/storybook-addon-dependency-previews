@@ -7,7 +7,7 @@ const config: StorybookConfig = {
   ],
   "addons": [
     "@chromatic-com/storybook",
-    "@storybook/addon-docs"
+    "storybook-addon-dependency-previews/addon",
   ],
   "framework": "@storybook/preact-vite"
 };
