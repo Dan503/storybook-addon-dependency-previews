@@ -36,8 +36,10 @@ const stillWaiting = new Map<string, Promise<unknown>>()
  * because preact-iso hands it a thrown promise and nothing else.
  *
  * While the pages are being built there is deliberately nothing to catch it:
- * the throw leaves `prerender` and the build stops and names the meal database,
- * rather than writing out a page saying the meals could not be loaded.
+ * the throw leaves `prerender`, and the tool writing the pages reports it and
+ * stops, rather than writing out a page saying the meals could not be loaded.
+ * Checked by making one page's request fail during a build — it ends with the
+ * failure reported and a non-zero exit.
  *
  * In the browser `PageFailureBoundary` catches it and draws the failure page,
  * which offers to try again — and trying again calls `forgetFailedRequests`
