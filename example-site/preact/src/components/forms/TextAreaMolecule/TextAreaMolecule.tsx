@@ -21,8 +21,6 @@ export function TextAreaMolecule<
 	label,
 	placeholder,
 }: FieldPropsForTextAreaMolecule<TSchema, TPath>) {
-	// Built from a counter rather than the label, so that two fields sharing a
-	// label — which the stories for this component do — still get an id each.
 	const id = useId()
 	// Read through `.value` because Formisch's Preact build hands a field's
 	// errors and its typed-in text over as signals — small boxes holding a

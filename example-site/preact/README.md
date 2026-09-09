@@ -24,7 +24,7 @@ Starts Storybook, watching for new components and keeping the dependency graph u
 pnpm build
 ```
 
-Writes the site into `dist/`. Each page is written out as a finished HTML file, and the pages to write are found by reading the links in the ones already written — starting at the home page.
+Writes the site into `dist/`. Each page is written out as a finished HTML file, and the pages to write are found by reading the links in the ones already written — starting at the home page and at `/404`, which `vite.config.ts` names because nothing links to it.
 
 That crawl is deliberately stopped before the individual meal pages. Left alone it would follow every meal link it found and ask the meal database for one meal at a time until it had fetched the lot. `checkShouldBuildPageAhead` in `src/index.tsx` is what stops it, and its comment carries the measured figure — kept in that one place, because it grows as the database does. Meal pages fetch their meal when opened instead, and `public/_redirects` tells a static host to serve the site for an address that has no file.
 

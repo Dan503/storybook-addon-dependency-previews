@@ -70,8 +70,9 @@ function AppInBrowser() {
  * the same file `ErrorBoundary` comes from. `preact-iso` is published as having
  * no side effects, so once nothing imports that file the build is free to drop
  * it, and it does. Then a waiting page's request reaches `PageFailureBoundary`
- * instead, and every page that asks for meals draws the failure page on a
- * perfectly good connection.
+ * instead, and every page that pauses for its meals draws the failure page on a
+ * perfectly good connection. The home page asks for meals too, but through an
+ * effect rather than by pausing, so it is untouched either way.
  *
  * It only shows in a built site, because the dev server does not drop unused
  * modules — so `pnpm dev` looks right either way. This was removed once, on
