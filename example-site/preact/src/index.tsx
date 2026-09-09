@@ -76,11 +76,14 @@ function AppInBrowser() {
  * It only shows in a built site, because the dev server does not drop unused
  * modules — so `pnpm dev` looks right either way. This was removed once, on
  * the strength of a dev-server test, and put back after `pnpm preview` showed
- * every category page failing. The check is one grep of the built bundle for
- * `_forwarded`, a name only that file uses: no match means the hook is gone.
+ * every category page failing.
  *
- * preact-iso's own examples all wrap the router in it, which is the other
- * reason to leave it alone.
+ * To check it: grep the whole of `dist/assets/*.js` for `_forwarded`, and no
+ * match means the hook is gone. That direction is the reliable one. A match on
+ * its own proves less, because preact's React compatibility layer sets the same
+ * name — it is not in this bundle today, but pulling it in would satisfy the
+ * grep on its own. Cover every file in that folder, too: the prerender chunk
+ * finds none by itself, since the marker sits in the shared chunk it imports.
  */
 function SiteRoutes() {
 	return (
