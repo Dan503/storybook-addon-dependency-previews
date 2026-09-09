@@ -11,10 +11,11 @@ export interface PropsForLoadFailurePage {
 /**
  * Shown when a page could not get its meals.
  *
- * Every page but the home one asks the meal database for something before it
- * can draw, so a dropped connection or a bad answer would otherwise leave the
- * whole site blank. Meal pages are the likeliest to meet it, because they are
- * the only ones not written out ahead of time — every visit to one asks.
+ * The pages that ask the meal database — categories, a single category, and a
+ * meal — pause until it answers, so a dropped connection or a bad answer would
+ * otherwise leave the whole site blank. Meal pages are the likeliest to meet
+ * it, because they are the only ones not written out ahead of time, so every
+ * visit to one asks.
  */
 export function LoadFailurePage({ onTryAgain }: PropsForLoadFailurePage) {
 	setPageTitle('Something went wrong | The Meal Place')
