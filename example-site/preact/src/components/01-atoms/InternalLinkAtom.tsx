@@ -44,9 +44,12 @@ export function InternalLinkAtom({
 	children,
 }: PropsForInternalLinkAtom) {
 	const fullAddress = getFullAddressViaColons({ href, hrefParams })
-	// Empty outside a location provider, which is every story that does not
-	// wrap itself in one. A link still draws and still works; it just never
-	// reads as the current page.
+	// preact-iso hands back an empty object outside a location provider, so
+	// this is undefined there despite what its type says. The site wraps the
+	// whole router in one and Storybook wraps every story in one, so that is
+	// not a case either has today; it is checked because the type would not
+	// catch it if one ever appeared, and a link that cannot tell which page it
+	// is on should still draw.
 	const { path } = useLocation()
 	const isCurrentPage = checkIsCurrentPage(path, fullAddress)
 	const classes = [ownClass, isCurrentPage ? activeClass : ''].filter(Boolean)

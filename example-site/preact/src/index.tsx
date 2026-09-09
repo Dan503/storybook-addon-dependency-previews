@@ -75,12 +75,13 @@ export async function prerender() {
  * Whether the build should write this page out ahead of anyone asking for it.
  *
  * Every page but a single meal's is written ahead. Meal pages are left out
- * deliberately: the home page links to featured meals, the categories page
- * links to all fourteen categories, and each of those links to every meal in
- * it, so following them all would ask the meal database for around three
- * hundred meals, one after another, on every build. A meal page fetches its own
- * meal when opened instead, and `public/_redirects` tells a static host to
- * serve the site for an address with no file behind it.
+ * deliberately: the categories page links to every category, and each of those
+ * links to every meal in it, so following them all would ask the meal database
+ * for one meal at a time until it had fetched the lot — measured at roughly
+ * 800 by counting the meal links across the written-out category pages, and
+ * growing as the database does. A meal page fetches its own meal when opened
+ * instead, and `public/_redirects` tells a static host to serve the site for an
+ * address with no file behind it.
  *
  * @param address - a link found in a page the build has just written
  */

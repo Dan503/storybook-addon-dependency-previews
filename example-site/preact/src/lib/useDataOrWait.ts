@@ -38,6 +38,12 @@ const stillWaiting = new Map<string, Promise<unknown>>()
  * The two hooks are called before anything can throw, so a page always calls
  * the same hooks in the same order whether it is waiting or finished.
  *
+ * Moving between two pages of the same shape — one category to the next — keeps
+ * the same component on screen rather than building a new one, so the redraw is
+ * tracked against the key it was asked for. Tracking merely *that* one was
+ * asked for leaves the second category waiting forever behind the first one's
+ * meals.
+ *
  * @param key - names what is being asked for, so two pages wanting the same
  *   thing share one request; include anything that changes the answer
  * @param load - fetches it, called only when nothing is known yet
@@ -47,7 +53,12 @@ export function useDataOrWait<TData>(
 	load: () => Promise<TData>,
 ): TData {
 	const [, redraw] = useState(0)
-	const hasAskedForRedraw = useRef(false)
+	// Which key a redraw has been asked for, rather than merely whether one
+	// has. Moving from one category to the next keeps the same page component
+	// on screen — preact-iso reuses it when only the changing piece differs —
+	// so a plain yes/no would be left over from the previous category and the
+	// new one would never draw.
+	const keyAwaitingRedraw = useRef<string | null>(null)
 
 	if (failures.has(key)) throw failures.get(key)
 	if (answers.has(key)) return answers.get(key) as TData
@@ -67,10 +78,10 @@ export function useDataOrWait<TData>(
 		stillWaiting.set(key, pending)
 	}
 
-	// Asked for once per page, not once per draw, so a page that throws again
+	// Asked for once per key, not once per draw, so a page that throws again
 	// before its request finishes does not queue up a redraw each time.
-	if (!hasAskedForRedraw.current) {
-		hasAskedForRedraw.current = true
+	if (keyAwaitingRedraw.current !== key) {
+		keyAwaitingRedraw.current = key
 		pending.then(() => redraw((drawCount) => drawCount + 1))
 	}
 

@@ -6,11 +6,12 @@ import { setPageTitle } from '../lib/pageTitle'
 import { useDataOrWait } from '../lib/useDataOrWait'
 
 export function CategoryMealsPage() {
-	// preact-iso hands the piece over exactly as it was written into the
-	// address, so a name carrying a space or an ampersand has to be read back
-	// out here — the link that built the address escaped it going in.
+	// Read back plainly: the link that built the address escaped the name going
+	// in, and preact-iso unescapes it again on the way out, so it arrives here
+	// as it was written. Unescaping it a second time would throw on a name
+	// carrying a literal percent sign.
 	const { params } = useRoute()
-	const categoryName = decodeURIComponent(params.category ?? '')
+	const categoryName = params.category ?? ''
 
 	setPageTitle(`${categoryName} Meals | The Meal Place`)
 	const meals = useDataOrWait(`meals-in-category:${categoryName}`, () =>

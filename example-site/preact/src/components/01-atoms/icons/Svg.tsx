@@ -22,7 +22,7 @@ const staticAttrs: SvgAttributes = {
 
 export function Svg({ altText, className, children }: SvgProps) {
 	return (
-		<svg {...defaultIconAttributes(altText)} class={className}>
+		<svg {...getDefaultIconAttributes(altText)} class={className}>
 			{children}
 		</svg>
 	)
@@ -38,7 +38,7 @@ export function Svg({ altText, className, children }: SvgProps) {
  *
  * @param altText - what a screen reader should say, or nothing to hide the icon
  */
-function defaultIconAttributes(altText?: string): SvgAttributes {
+function getDefaultIconAttributes(altText?: string): SvgAttributes {
 	return {
 		...staticAttrs,
 		role: 'img',

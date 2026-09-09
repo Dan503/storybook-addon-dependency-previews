@@ -26,7 +26,7 @@ pnpm build
 
 Writes the site into `dist/`. Each page is written out as a finished HTML file, and the pages to write are found by reading the links in the ones already written — starting at the home page.
 
-That crawl is deliberately stopped before the individual meal pages. Left alone it would follow every meal link it found and ask the meal database for around 300 meals, one after another, on every build. `checkShouldBuildPageAhead` in `src/index.tsx` is what stops it; meal pages fetch their meal when opened instead, and `public/_redirects` tells a static host to serve the site for an address that has no file.
+That crawl is deliberately stopped before the individual meal pages. Left alone it would follow every meal link it found and ask the meal database for one meal at a time until it had fetched the lot — roughly 800 of them, counted from the meal links across the written-out category pages, and growing as the database does. `checkShouldBuildPageAhead` in `src/index.tsx` is what stops it; meal pages fetch their meal when opened instead, and `public/_redirects` tells a static host to serve the site for an address that has no file.
 
 The home page is also left to fetch its own meals in the browser, because they are a random seven per visit and building them would hand the same seven to everyone.
 
