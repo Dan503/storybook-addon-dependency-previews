@@ -1,5 +1,4 @@
 import {
-	ErrorBoundary,
 	LocationProvider,
 	Router,
 	Route,
@@ -57,31 +56,29 @@ function AppInBrowser() {
  * five the shared package lists as `colonRouteTemplates`, which is what
  * `InternalLinkAtom` checks a link against.
  *
- * `ErrorBoundary` is half of what lets a page pause while it waits for its
- * meals. A page waiting throws its unfinished request, and this catches it and
- * keeps what is on screen there in the meantime. The other half is the page
- * asking for its own redraw, which `useDataOrWait` does. Both were checked by
- * taking each away in turn: without either one the page stays blank for good.
+ * The `Router` is what lets a page pause while it waits for its meals: a
+ * waiting page throws its unfinished request, and the router catches it and
+ * holds the previous page on screen until it settles. The other half is the
+ * page asking for its own redraw, which `useDataOrWait` does.
  *
- * It catches only a *paused* page, not a failed one. preact-iso builds its
- * `componentDidCatch` from an `onError` prop, and preact treats a component as
- * an error boundary only when it carries that method or a
- * `getDerivedStateFromError` — so with no `onError` this has neither, and a
- * failed request walks straight past it. `PageFailureCatcher` is what catches
- * that, and only in the browser.
+ * There is no `ErrorBoundary` here on purpose. One was tried, on the belief
+ * that it was the thing catching the pause; taking it away and measuring
+ * showed the router does that on its own, so it was dead weight. Note it also
+ * could not have caught a *failed* request even if it had been reached —
+ * preact-iso builds its `componentDidCatch` from an `onError` prop, so with
+ * none it is not an error boundary at all. `PageFailureCatcher` is what
+ * catches a failure, and only in the browser.
  */
 function SiteRoutes() {
 	return (
-		<ErrorBoundary>
-			<Router>
-				<Route path="/" component={HomePage} />
-				<Route path="/categories" component={CategoriesPage} />
-				<Route path="/categories/:category" component={CategoryMealsPage} />
-				<Route path="/meal/:mealId" component={MealDetailPage} />
-				<Route path="/contact" component={ContactPage} />
-				<Route default component={NotFoundPage} />
-			</Router>
-		</ErrorBoundary>
+		<Router>
+			<Route path="/" component={HomePage} />
+			<Route path="/categories" component={CategoriesPage} />
+			<Route path="/categories/:category" component={CategoryMealsPage} />
+			<Route path="/meal/:mealId" component={MealDetailPage} />
+			<Route path="/contact" component={ContactPage} />
+			<Route default component={NotFoundPage} />
+		</Router>
 	)
 }
 

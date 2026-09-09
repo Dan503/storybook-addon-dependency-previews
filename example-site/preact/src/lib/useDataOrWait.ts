@@ -17,15 +17,13 @@ const stillWaiting = new Map<string, Promise<unknown>>()
 /**
  * Hands back what was asked for, or pauses the page until it arrives.
  *
- * Pausing is done by throwing the unfinished request, and **two** separate
- * things have to be in place for the page to come back afterwards. Both were
- * checked by taking each away in turn, and the page stays blank either way:
- *
- * 1. The page asks for its own redraw when the request finishes — the
- *    `useState` below. preact-iso's own `lazy` does exactly this, and without
- *    it nothing ever draws the page a second time.
- * 2. An `ErrorBoundary` sits above the router in `src/index.tsx`. It catches
- *    the thrown request and keeps what is on screen there in the meantime.
+ * Pausing is done by throwing the unfinished request. preact-iso's `Router`
+ * catches it — it is the nearest ancestor that can — and holds the previous
+ * page on screen until it settles. What it does *not* do is draw the page
+ * again afterwards, so the page has to ask for its own redraw when the request
+ * finishes: that is the `useState` below, and preact-iso's own `lazy` does
+ * exactly the same thing. Without it nothing ever draws the page a second
+ * time, which was measured by taking it away.
  *
  * While the pages are being built neither matters: `renderToStringAsync` waits
  * for a thrown request and draws again by itself. The redraw asked for here is
@@ -34,11 +32,8 @@ const stillWaiting = new Map<string, Promise<unknown>>()
  * A request that fails is remembered as a failure and thrown again on the next
  * ask, rather than being retried, so nothing keeps asking a meal database that
  * is not answering. What catches that throw differs by where the page is drawn,
- * and neither half is the `ErrorBoundary` in `src/index.tsx` — that one only
- * catches a *paused* page, because preact-iso builds it with no
- * `componentDidCatch` unless it is handed an `onError`, and preact treats a
- * component as an error boundary only when it carries that method or a
- * `getDerivedStateFromError`.
+ * and in neither case is it the router — the router only takes a *paused* page,
+ * because preact-iso hands it a thrown promise and nothing else.
  *
  * While the pages are being built there is deliberately nothing to catch it:
  * the throw leaves `prerender` and the build stops and names the meal database,

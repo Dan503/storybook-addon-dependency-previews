@@ -1,16 +1,11 @@
 {
-	// The `.storybook` folder is listed on its own because a wildcard segment
-	// will not enter a folder whose name begins with a dot, so the plain
-	// whole-project patterns above it leave the Storybook setup unchecked —
-	// including the click guard in `preview.tsx`.
-	"include": [
-		"**/*.ts",
-		"**/*.tsx",
-		".storybook/**/*.ts",
-		".storybook/**/*.tsx",
-		"prettier.config.js",
-		"sb-deps.config.js"
-	],
+	// A wildcard segment will not enter a folder whose name begins with a dot,
+	// so the Storybook setup is deliberately outside this list, as it is on
+	// every sibling site. Adding it was tried and reverted: `preview.tsx`
+	// imports the dependency graph, which `sb-deps` generates and git ignores,
+	// so the check then failed on a fresh clone — and this is the command a
+	// newcomer runs first.
+	"include": ["**/*.ts", "**/*.tsx", "prettier.config.js", "sb-deps.config.js"],
 
 	"compilerOptions": {
 		"target": "ES2022",
