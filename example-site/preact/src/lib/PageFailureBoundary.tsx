@@ -61,13 +61,22 @@ class PageFailureBoundary extends Component<
 		// a fresh one has nothing to hold and every move blanks the site.
 		//
 		// It does not save the router from being rebuilt when the failure state
-		// itself changes, and nothing here could: showing the failure page
-		// means drawing something else in place of the router, which unmounts
-		// it either way. So both ways out of a failure — trying again, and
-		// leaving for a page whose meals are not already known — blank the site
-		// for as long as the request takes, measured at over half a second on a
-		// slow one. It puts itself right, and it costs a rebuild only after a
-		// failure rather than on every move, which is why it is left as it is.
+		// itself changes: this boundary sits above the router, so showing the
+		// failure page draws something else where the router was. Both ways out
+		// of a failure — trying again, and leaving for a page whose meals are
+		// not already known — therefore blank the site for as long as the
+		// request takes, measured at over half a second on a slow one.
+		//
+		// That is a consequence of where this sits, not something unavoidable.
+		// A boundary below the router, around each route's own page, would
+		// replace only the page and leave the router alone — a pause would step
+		// over an ordinary class on its way up and still reach the router,
+		// while a failure would stop at the nearer boundary. It is left as it
+		// is because the blank puts itself right, it costs a rebuild only after
+		// a failure rather than on every move, and the per-route shape brings
+		// back the same-page-different-piece case that has already been the
+		// source of two defects here. Worth revisiting if the blank ever
+		// matters; nobody has run that shape.
 		const hasMovedOn = previousProps.path !== this.props.path
 		if (hasMovedOn && this.state.hasFailed) {
 			this.setState({ hasFailed: false })

@@ -1,4 +1,5 @@
 import {
+	ErrorBoundary,
 	LocationProvider,
 	Router,
 	Route,
@@ -57,28 +58,42 @@ function AppInBrowser() {
  * `InternalLinkAtom` checks a link against.
  *
  * The `Router` is what lets a page pause while it waits for its meals: a
- * waiting page throws its unfinished request, and the router catches it and
- * holds the previous page on screen until it settles. The other half is the
- * page asking for its own redraw, which `useDataOrWait` does.
+ * waiting page throws its unfinished request, the router catches it and holds
+ * the previous page on screen until it settles. The other half is the page
+ * asking for its own redraw, which `useDataOrWait` does.
  *
- * There is no `ErrorBoundary` here on purpose. One was tried, on the belief
- * that it was the thing catching the pause; taking it away and measuring
- * showed the router does that on its own, so it was dead weight. Note it also
- * could not have caught a *failed* request even if it had been reached —
- * preact-iso builds its `componentDidCatch` from an `onError` prop, so with
- * none it is not an error boundary at all. `PageFailureCatcher` is what
- * catches a failure, and only in the browser.
+ * `ErrorBoundary` earns its place through the import rather than through
+ * anything it draws, and it must not be removed. Preact hands *every* throw to
+ * one hook, and that hook only knows how to look for an error boundary —
+ * telling a thrown request apart from a thrown failure, and handing the first
+ * to the router, is done by a replacement hook that preact-iso installs from
+ * the same file `ErrorBoundary` comes from. `preact-iso` is published as having
+ * no side effects, so once nothing imports that file the build is free to drop
+ * it, and it does. Then a waiting page's request reaches `PageFailureBoundary`
+ * instead, and every page that asks for meals draws the failure page on a
+ * perfectly good connection.
+ *
+ * It only shows in a built site, because the dev server does not drop unused
+ * modules — so `pnpm dev` looks right either way. This was removed once, on
+ * the strength of a dev-server test, and put back after `pnpm preview` showed
+ * every category page failing. The check is one grep of the built bundle for
+ * `_forwarded`, a name only that file uses: no match means the hook is gone.
+ *
+ * preact-iso's own examples all wrap the router in it, which is the other
+ * reason to leave it alone.
  */
 function SiteRoutes() {
 	return (
-		<Router>
-			<Route path="/" component={HomePage} />
-			<Route path="/categories" component={CategoriesPage} />
-			<Route path="/categories/:category" component={CategoryMealsPage} />
-			<Route path="/meal/:mealId" component={MealDetailPage} />
-			<Route path="/contact" component={ContactPage} />
-			<Route default component={NotFoundPage} />
-		</Router>
+		<ErrorBoundary>
+			<Router>
+				<Route path="/" component={HomePage} />
+				<Route path="/categories" component={CategoriesPage} />
+				<Route path="/categories/:category" component={CategoryMealsPage} />
+				<Route path="/meal/:mealId" component={MealDetailPage} />
+				<Route path="/contact" component={ContactPage} />
+				<Route default component={NotFoundPage} />
+			</Router>
+		</ErrorBoundary>
 	)
 }
 
