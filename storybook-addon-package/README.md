@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Svelte, Vue 3, Solid) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
+Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -56,7 +56,7 @@ Vue version built for Vue 3.
 
 ## Installation guide
 
-### Quick start (React, Svelte, Vue 3, and Solid)
+### Quick start (React, Preact, Svelte, Vue 3, and Solid)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
@@ -98,9 +98,9 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), and Solid (`storybook-solidjs-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), and Solid (`storybook-solidjs-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
 
-- [Manual setup — Vite (React, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
+- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
 ## Auto-scaffolding new components and stories
@@ -110,9 +110,9 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 - **Create a component file** (`Button.tsx`, `Button.svelte`, `Button.vue`, `Button.component.ts`) → the component body is scaffolded **and** a matching story file is generated next to it.
 - **Create a story file** (`Button.stories.tsx`, or the singular `Button.story.tsx`) → the story is scaffolded into that exact file, and if the sibling component doesn't exist yet it is created and scaffolded too.
 
-Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Preact, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
 
-React and Solid both author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) without being told; anything it does not read as Solid gets React ones. Set `tsxFramework: 'solid'` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
+React, Preact and Solid all author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) and a Preact project gets Preact ones (`preact/hooks`, `@storybook/preact-vite`) without being told; anything it reads as neither gets React templates. Set `tsxFramework` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
 
 ### What the scaffolded components assume
 
@@ -122,7 +122,7 @@ Each generated component is written the way its framework currently recommends, 
 - **Svelte 5** — `$props()`, `$state()` and the `Snippet` type.
 - **Angular 17.1+** — `input()` signals.
 
-React and Solid add no version floor beyond what the addon itself needs. In a **Next.js** project the React component is written with a `'use client'` line at the top, because it holds state and the App Router renders on the server; you will not see that line in any other React project.
+React, Preact and Solid add no version floor beyond what the addon itself needs. In a **Next.js** project the React component is written with a `'use client'` line at the top, because it holds state and the App Router renders on the server; you will not see that line in any other React project.
 
 None of this affects the dependency graph or anything else `sb-deps` does — it only describes the starter code it writes, so on an older version replace the generated body with whatever your project uses. Or replace the template outright via [`scaffold`](#scaffold), which is what that option is for.
 
@@ -250,9 +250,9 @@ export default defineSbDepsConfig({
 
 ### `tsxFramework`
 
-Which flavor to scaffold for `.tsx` component and story files — `'react'` or `'solid'`. React and Solid both author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports) instead of React. The setup wizard sets it for you when it detects a Solid project. Per-template overrides for Solid go under [`scaffold.solid`](#scaffold).
+Which flavor to scaffold for `.tsx` component and story files — `'react'`, `'solid'` or `'preact'`. All three author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports), or to `'preact'` in a Preact project for Preact ones (`preact/hooks` `useState`, `@storybook/preact-vite` story imports), instead of React. The setup wizard sets it for you when it detects a Solid or Preact project. Per-template overrides go under the matching [`scaffold.solid` / `scaffold.preact`](#scaffold) key.
 
-**Default:** `'solid'` when `sb-deps` detects a Solid project, `'react'` otherwise — so a Solid project gets Solid templates without the key being set. Setting the key is worth it where the framework isn't obvious from your project's files.
+**Default:** `'solid'` when `sb-deps` detects a Solid project, `'preact'` when it detects a Preact one, `'react'` otherwise — so either gets its own templates without the key being set. Setting the key is worth it where the framework isn't obvious from your project's files.
 
 ```js
 // sb-deps.config.mjs
@@ -303,7 +303,7 @@ An entry that isn't a non-empty string makes the whole option invalid — the CL
 
 Override the templates used when `sb-deps` auto-scaffolds new component and story files. Each template function receives a context object with relevant variables and must return the full file content as a string.
 
-For `.tsx` files the override key follows [`tsxFramework`](#tsxframework): a React project reads `scaffold.react`, a Solid project reads `scaffold.solid` — overrides placed under the wrong key are silently ignored.
+For `.tsx` files the override key follows [`tsxFramework`](#tsxframework): a React project reads `scaffold.react`, a Solid project reads `scaffold.solid`, a Preact project reads `scaffold.preact` — overrides placed under the wrong key are silently ignored.
 
 ```js
 // sb-deps.config.mjs
@@ -344,6 +344,12 @@ export function ${componentName}({}: ${propsName}) {
 			story: ({ componentName, title, tags }) => '...',
 		},
 		solid: {
+			/** Customize the generated .tsx component file */
+			component: ({ componentName, propsName }) => '...',
+			/** Customize the generated .stories.tsx file */
+			story: ({ componentName, propsName, title, tags, base }) => '...',
+		},
+		preact: {
 			/** Customize the generated .tsx component file */
 			component: ({ componentName, propsName }) => '...',
 			/** Customize the generated .stories.tsx file */

@@ -1,11 +1,23 @@
-export interface ReactComponentScaffoldContext {
+/**
+ * What a `.tsx` component template is given. React, Preact and Solid all author
+ * components in `.tsx` and all take the same two names, so the shape is written
+ * once here and each framework's own interface below extends it without adding
+ * anything. A framework that later needs something of its own adds it to that
+ * interface.
+ *
+ * They stay separate interfaces rather than one shared name for two reasons:
+ * each keeps its own name where a template author reads it, and an interface
+ * can be augmented by declaration merging where a name for another type cannot.
+ */
+export interface TsxComponentScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
 	componentName: string
 	/** Props interface name, e.g. `"PropsForButtonAtom"` */
 	propsName: string
 }
 
-export interface ReactStoryScaffoldContext extends ReactComponentScaffoldContext {
+/** What a `.tsx` story template is given — see `TsxComponentScaffoldContext`. */
+export interface TsxStoryScaffoldContext extends TsxComponentScaffoldContext {
 	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
@@ -13,6 +25,12 @@ export interface ReactStoryScaffoldContext extends ReactComponentScaffoldContext
 	/** Base file name without extension, e.g. `"ButtonAtom"` */
 	base: string
 }
+
+/** Context for `scaffold.react.component` — see `TsxComponentScaffoldContext`. */
+export interface ReactComponentScaffoldContext extends TsxComponentScaffoldContext {}
+
+/** Context for `scaffold.react.story` — see `TsxStoryScaffoldContext`. */
+export interface ReactStoryScaffoldContext extends TsxStoryScaffoldContext {}
 
 export interface SvelteComponentScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
@@ -38,21 +56,17 @@ export interface VueStoryScaffoldContext extends VueComponentScaffoldContext {
 	tags: string[]
 }
 
-export interface SolidComponentScaffoldContext {
-	/** PascalCase component name, e.g. `"ButtonAtom"` */
-	componentName: string
-	/** Props interface name, e.g. `"PropsForButtonAtom"` */
-	propsName: string
-}
+/** Context for `scaffold.solid.component` — see `TsxComponentScaffoldContext`. */
+export interface SolidComponentScaffoldContext extends TsxComponentScaffoldContext {}
 
-export interface SolidStoryScaffoldContext extends SolidComponentScaffoldContext {
-	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
-	title: string
-	/** Story tags, e.g. `["autodocs", "atom"]` */
-	tags: string[]
-	/** Base file name without extension, e.g. `"ButtonAtom"` */
-	base: string
-}
+/** Context for `scaffold.solid.story` — see `TsxStoryScaffoldContext`. */
+export interface SolidStoryScaffoldContext extends TsxStoryScaffoldContext {}
+
+/** Context for `scaffold.preact.component` — see `TsxComponentScaffoldContext`. */
+export interface PreactComponentScaffoldContext extends TsxComponentScaffoldContext {}
+
+/** Context for `scaffold.preact.story` — see `TsxStoryScaffoldContext`. */
+export interface PreactStoryScaffoldContext extends TsxStoryScaffoldContext {}
 
 export interface SvelteDecoratorScaffoldContext {
 	/**
@@ -157,22 +171,25 @@ export interface SbDepsConfig {
 	/**
 	 * Which flavor to scaffold for `.tsx` component and story files.
 	 *
-	 * React and Solid both author components in `.tsx`, so the file extension
-	 * alone can't tell them apart. Set this to `'solid'` in a Solid project so
-	 * the watch-mode scaffolder emits Solid templates (`createSignal`,
-	 * `mergeProps`, `storybook-solidjs-vite` story imports) instead of React
-	 * ones. The `sb-deps setup` wizard writes this automatically for detected
-	 * Solid projects.
+	 * React, Solid and Preact all author components in `.tsx`, so the file
+	 * extension alone can't tell them apart. Set this to `'solid'` in a Solid
+	 * project, so the watch-mode scaffolder emits Solid templates
+	 * (`createSignal`, `mergeProps`, `storybook-solidjs-vite` story imports),
+	 * or to `'preact'` in a Preact project (`preact/hooks`,
+	 * `@storybook/preact-vite` story imports), instead of React ones. The
+	 * `sb-deps setup` wizard writes this automatically for a detected Solid or
+	 * Preact project.
 	 *
-	 * Leave it out and detection decides: a project `sb-deps` reads as Solid
-	 * gets Solid templates anyway, and anything else gets React ones. So the
-	 * key is worth setting when your project's framework isn't obvious from
-	 * its files.
+	 * Leave it out and detection decides: a project `sb-deps` reads as Solid or
+	 * Preact gets that framework's templates anyway, and anything else gets
+	 * React ones. So the key is worth setting when your project's framework
+	 * isn't obvious from its files.
 	 *
 	 * @example 'react'
 	 * @example 'solid'
+	 * @example 'preact'
 	 */
-	tsxFramework?: 'react' | 'solid'
+	tsxFramework?: 'react' | 'solid' | 'preact'
 
 	/**
 	 * Extension used when the scaffolder generates a story file for a new
@@ -255,6 +272,12 @@ export interface SbDepsConfig {
 			component?: (ctx: SolidComponentScaffoldContext) => string
 			/** Template for the `.stories.tsx` story file (Solid projects) */
 			story?: (ctx: SolidStoryScaffoldContext) => string
+		}
+		preact?: {
+			/** Template for the `.tsx` component file (Preact projects) */
+			component?: (ctx: PreactComponentScaffoldContext) => string
+			/** Template for the `.stories.tsx` story file (Preact projects) */
+			story?: (ctx: PreactStoryScaffoldContext) => string
 		}
 		angular?: {
 			/** Template for the `.component.ts` file */
