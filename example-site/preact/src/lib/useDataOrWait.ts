@@ -1,3 +1,5 @@
+import { useRef, useState } from 'preact/hooks'
+
 /*
  * One place for a page to ask for something it needs before it can draw.
  *
@@ -15,25 +17,38 @@ const stillWaiting = new Map<string, Promise<unknown>>()
 /**
  * Hands back what was asked for, or pauses the page until it arrives.
  *
- * Pausing is done by throwing the unfinished request, which is the signal both
- * halves of this site already understand. While the pages are being built,
- * preact-iso draws through `renderToStringAsync`, which waits for a thrown
- * request and then draws again. In the browser, preact-iso's own `Router`
- * catches it, keeps the previous page on screen, and draws again once the
- * request finishes. So neither side needs anything wrapped around it.
+ * Pausing is done by throwing the unfinished request, and **two** separate
+ * things have to be in place for the page to come back afterwards. Both were
+ * checked by taking each away in turn, and the page stays blank either way:
+ *
+ * 1. The page asks for its own redraw when the request finishes — the
+ *    `useState` below. preact-iso's own `lazy` does exactly this, and without
+ *    it nothing ever draws the page a second time.
+ * 2. An `ErrorBoundary` sits above the router in `src/index.tsx`. It catches
+ *    the thrown request and keeps what is on screen there in the meantime.
+ *
+ * While the pages are being built neither matters: `renderToStringAsync` waits
+ * for a thrown request and draws again by itself. The redraw asked for here is
+ * harmless there, because the page is finished by the time it could fire.
  *
  * A request that fails is remembered as a failure and thrown again on the next
  * ask, rather than being retried. That is what makes a build stop and report an
  * unreachable meal database instead of asking it forever.
  *
+ * The two hooks are called before anything can throw, so a page always calls
+ * the same hooks in the same order whether it is waiting or finished.
+ *
  * @param key - names what is being asked for, so two pages wanting the same
  *   thing share one request; include anything that changes the answer
  * @param load - fetches it, called only when nothing is known yet
  */
-export function getDataOrWait<TData>(
+export function useDataOrWait<TData>(
 	key: string,
 	load: () => Promise<TData>,
 ): TData {
+	const [, redraw] = useState(0)
+	const hasAskedForRedraw = useRef(false)
+
 	if (failures.has(key)) throw failures.get(key)
 	if (answers.has(key)) return answers.get(key) as TData
 
@@ -51,5 +66,13 @@ export function getDataOrWait<TData>(
 		)
 		stillWaiting.set(key, pending)
 	}
+
+	// Asked for once per page, not once per draw, so a page that throws again
+	// before its request finishes does not queue up a redraw each time.
+	if (!hasAskedForRedraw.current) {
+		hasAskedForRedraw.current = true
+		pending.then(() => redraw((drawCount) => drawCount + 1))
+	}
+
 	throw pending
 }

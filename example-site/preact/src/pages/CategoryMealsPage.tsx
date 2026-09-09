@@ -2,8 +2,8 @@ import { useRoute } from 'preact-iso'
 import { fetchMealsByCategory } from 'example-site-shared/utils'
 import { CardListTemplate } from '../components/04-templates/CardListTemplate'
 import { getMealCard } from '../components/listings/card/CardMolecule'
-import { getDataOrWait } from '../lib/getDataOrWait'
 import { setPageTitle } from '../lib/pageTitle'
+import { useDataOrWait } from '../lib/useDataOrWait'
 
 export function CategoryMealsPage() {
 	// preact-iso hands the piece over exactly as it was written into the
@@ -13,7 +13,7 @@ export function CategoryMealsPage() {
 	const categoryName = decodeURIComponent(params.category ?? '')
 
 	setPageTitle(`${categoryName} Meals | The Meal Place`)
-	const meals = getDataOrWait(`meals-in-category:${categoryName}`, () =>
+	const meals = useDataOrWait(`meals-in-category:${categoryName}`, () =>
 		fetchMealsByCategory(categoryName),
 	)
 

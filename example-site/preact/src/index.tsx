@@ -1,4 +1,5 @@
 import {
+	ErrorBoundary,
 	LocationProvider,
 	Router,
 	Route,
@@ -20,18 +21,26 @@ import './app.css'
  * matches them — a colon in front of the piece that changes. They are the same
  * five the shared package lists as `colonRouteTemplates`, which is what
  * `InternalLinkAtom` checks a link against.
+ *
+ * `ErrorBoundary` is half of what lets a page pause while it waits for its
+ * meals. A page waiting throws its unfinished request, and this catches it and
+ * keeps what is on screen there in the meantime. The other half is the page
+ * asking for its own redraw, which `useDataOrWait` does. Both were checked by
+ * taking each away in turn: without either one the page stays blank for good.
  */
 export function App() {
 	return (
 		<LocationProvider>
-			<Router>
-				<Route path="/" component={HomePage} />
-				<Route path="/categories" component={CategoriesPage} />
-				<Route path="/categories/:category" component={CategoryMealsPage} />
-				<Route path="/meal/:mealId" component={MealDetailPage} />
-				<Route path="/contact" component={ContactPage} />
-				<Route default component={NotFoundPage} />
-			</Router>
+			<ErrorBoundary>
+				<Router>
+					<Route path="/" component={HomePage} />
+					<Route path="/categories" component={CategoriesPage} />
+					<Route path="/categories/:category" component={CategoryMealsPage} />
+					<Route path="/meal/:mealId" component={MealDetailPage} />
+					<Route path="/contact" component={ContactPage} />
+					<Route default component={NotFoundPage} />
+				</Router>
+			</ErrorBoundary>
 		</LocationProvider>
 	)
 }

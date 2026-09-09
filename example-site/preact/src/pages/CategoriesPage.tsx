@@ -1,11 +1,11 @@
 import { fetchCategories } from 'example-site-shared/utils'
 import { CardListTemplate } from '../components/04-templates/CardListTemplate'
-import { getDataOrWait } from '../lib/getDataOrWait'
 import { setPageTitle } from '../lib/pageTitle'
+import { useDataOrWait } from '../lib/useDataOrWait'
 
 export function CategoriesPage() {
 	setPageTitle('Meal Categories | The Meal Place')
-	const categories = getDataOrWait('categories', fetchCategories)
+	const categories = useDataOrWait('categories', fetchCategories)
 
 	return (
 		<CardListTemplate
