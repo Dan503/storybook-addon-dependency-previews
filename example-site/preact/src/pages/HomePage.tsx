@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
-import {
-	fetchRandomMealList,
-	type Meal,
-} from 'example-site-shared/utils'
+import { fetchRandomMealList, type Meal } from 'example-site-shared/utils'
 import { HomeTemplate } from '../components/04-templates/HomeTemplate'
 import { setPageTitle } from '../lib/pageTitle'
 

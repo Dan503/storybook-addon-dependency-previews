@@ -11,7 +11,9 @@ export function CardListingOrganism({ cards }: PropsForCardListingOrganism) {
 			<div
 				class={`${s.CardListingOrganism} grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-6`}
 			>
-				{cards?.map((card) => <CardMolecule {...card} key={card.title} />)}
+				{cards?.map((card) => (
+					<CardMolecule {...card} key={card.title} />
+				))}
 			</div>
 		</div>
 	)

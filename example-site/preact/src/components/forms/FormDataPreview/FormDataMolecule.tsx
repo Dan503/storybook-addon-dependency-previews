@@ -3,8 +3,9 @@ import type { FormSchema } from '@formisch/preact'
 import type { ComponentChildren } from 'preact'
 import type { WithForm } from '../FormTypes'
 
-interface PropsForFormDataWrapper<TSchema extends FormSchema>
-	extends WithForm<TSchema> {
+interface PropsForFormDataWrapper<
+	TSchema extends FormSchema,
+> extends WithForm<TSchema> {
 	children?: ComponentChildren
 }
 

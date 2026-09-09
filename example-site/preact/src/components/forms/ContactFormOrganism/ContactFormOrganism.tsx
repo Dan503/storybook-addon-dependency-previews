@@ -19,7 +19,11 @@ export function ContactFormOrganism({
 	return (
 		<div class="grid gap-4">
 			<ErrorBlockOrganism errors={errors} />
-			<Form class="ContactFormOrganism grid gap-4" of={form} onSubmit={onSubmit}>
+			<Form
+				class="ContactFormOrganism grid gap-4"
+				of={form}
+				onSubmit={onSubmit}
+			>
 				<Field of={form} path={['name']}>
 					{(field) => (
 						<TextFieldMolecule
