@@ -303,11 +303,13 @@ function createAddressFiller<Before extends string, After extends string>(
 	 * Fills a template's changing pieces in and hands back the address to link to.
 	 *
 	 * Each piece is escaped on the way in. Whether a page has to unescape it on
-	 * the way out is its framework's business: vue-router and SvelteKit hand a
-	 * page the original text already, so the Vue category page reads its piece
-	 * straight, while a framework that passes the address through untouched needs
-	 * the page to unescape it. Escaping leaves digits alone either way, which is
-	 * why a piece that is always a number reads back the same everywhere.
+	 * the way out is its framework's business: vue-router, SvelteKit and
+	 * preact-iso all hand a page the original text already, so the Vue and
+	 * Preact category pages read their piece straight — and unescaping it a
+	 * second time there would throw on a name carrying a percent sign — while a
+	 * framework that passes the address through untouched needs the page to
+	 * unescape it. Escaping leaves digits alone either way, which is why a piece
+	 * that is always a number reads back the same everywhere.
 	 *
 	 * A template with a changing piece that was given no matching value throws,
 	 * and so does one given an empty value, since both build a link that quietly
