@@ -6,6 +6,11 @@ import {
 	hydrate,
 	prerender as ssr,
 } from 'preact-iso'
+import type { AnyComponent } from 'preact'
+import {
+	colonRouteTemplates,
+	type ColonRouteTemplate,
+} from 'example-site-shared/utils'
 
 import { HomePage } from './pages/HomePage'
 import { CategoriesPage } from './pages/CategoriesPage'
@@ -51,11 +56,27 @@ function AppInBrowser() {
 	)
 }
 
+/**
+ * The page that answers each address, keyed by the address as preact-iso
+ * matches it — a colon in front of the piece that changes.
+ *
+ * Typed against the shared list rather than written out beside the routes, so
+ * the routes below are the same five `InternalLinkAtom` checks a link against
+ * by construction: a page missing for one of them, or one listed for an address
+ * the shared package does not have, fails the type check. A route added to the
+ * shared package fails this site's check until a page is named for it here.
+ */
+const pageForAddress: Record<ColonRouteTemplate, AnyComponent> = {
+	'/': HomePage,
+	'/categories': CategoriesPage,
+	'/categories/:category': CategoryMealsPage,
+	'/meal/:mealId': MealDetailPage,
+	'/contact': ContactPage,
+}
+
 /*
- * The five addresses every example site carries, written the way preact-iso
- * matches them — a colon in front of the piece that changes. They are the same
- * five the shared package lists as `colonRouteTemplates`, which is what
- * `InternalLinkAtom` checks a link against.
+ * One route per shared address, read off the shared list itself so the routes
+ * a site answers and the links it draws cannot drift apart.
  *
  * The `Router` is what lets a page pause while it waits for its meals: a
  * waiting page throws its unfinished request, the router catches it and holds
@@ -90,11 +111,13 @@ function SiteRoutes() {
 	return (
 		<ErrorBoundary>
 			<Router>
-				<Route path="/" component={HomePage} />
-				<Route path="/categories" component={CategoriesPage} />
-				<Route path="/categories/:category" component={CategoryMealsPage} />
-				<Route path="/meal/:mealId" component={MealDetailPage} />
-				<Route path="/contact" component={ContactPage} />
+				{colonRouteTemplates.map((address) => (
+					<Route
+						key={address}
+						path={address}
+						component={pageForAddress[address]}
+					/>
+				))}
 				<Route default component={NotFoundPage} />
 			</Router>
 		</ErrorBoundary>
