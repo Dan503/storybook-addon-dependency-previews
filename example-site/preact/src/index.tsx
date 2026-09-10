@@ -64,7 +64,9 @@ function AppInBrowser() {
  * the routes below are the same five `InternalLinkAtom` checks a link against
  * by construction: a page missing for one of them, or one listed for an address
  * the shared package does not have, fails the type check. A route added to the
- * shared package fails this site's check until a page is named for it here.
+ * shared package fails this site's check until a page is named for it here —
+ * once that package has been rebuilt, since the check reads its built types and
+ * `pnpm check` here does not build them.
  */
 const pageForAddress: Record<ColonRouteTemplate, AnyComponent> = {
 	'/': HomePage,
