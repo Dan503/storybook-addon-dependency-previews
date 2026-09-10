@@ -14,7 +14,7 @@ export function ContentRestraintAtom({
 	return (
 		<ScreenPaddingAtom padVertical={padVertical}>
 			<div class="ContentRestraintAtom grid grid-cols-[1fr_minmax(auto,800px)_1fr]">
-				<div class="col-start-2 width-full h-full">{children}</div>
+				<div class="col-start-2 w-full h-full">{children}</div>
 			</div>
 		</ScreenPaddingAtom>
 	)
