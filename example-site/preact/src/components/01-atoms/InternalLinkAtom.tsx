@@ -40,7 +40,7 @@ export interface PropsForInternalLinkAtom extends LinkAddressPropsViaColons {
 export function InternalLinkAtom({
 	href,
 	hrefParams,
-	class: ownClass = '',
+	class: ownClass = 'text-teal-700 hover:text-teal-900',
 	activeClass = '',
 	children,
 }: PropsForInternalLinkAtom) {
@@ -53,7 +53,12 @@ export function InternalLinkAtom({
 	// is on should still draw.
 	const { path } = useLocation()
 	const isCurrentPage = checkIsCurrentPage(path, fullAddress)
-	const classes = [ownClass, isCurrentPage ? activeClass : ''].filter(Boolean)
+	const baseStyleClasses = 'hover:underline'
+	const classes = [
+		baseStyleClasses,
+		ownClass,
+		isCurrentPage ? activeClass : '',
+	].filter(Boolean)
 	return (
 		<a class={classes.join(' ')} href={fullAddress}>
 			{children}
