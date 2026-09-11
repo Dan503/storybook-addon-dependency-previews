@@ -1,11 +1,27 @@
 {
+	// A wildcard segment will not enter a folder whose name begins with a dot,
+	// so the Storybook setup is deliberately outside this list. Adding it was
+	// tried and reverted: `preview.tsx` imports the dependency graph, which
+	// `sb-deps` generates and git ignores, so the check then failed on a fresh
+	// clone — and this is the command a newcomer runs first.
+	//
+	// What that costs, since it is a trade rather than a free choice: nothing
+	// checks `preview.tsx`, and the click guard in it is the one piece of
+	// hand-written logic on this site with no check over it at all — there is
+	// no ESLint here, and Storybook strips its types rather than checking them.
+	// Four of the five sibling sites make the same choice; Svelte instead lists
+	// its Storybook folder and lives with the fresh-clone failure, so the other
+	// side of this trade does have a taker.
+	"include": ["**/*.ts", "**/*.tsx", "prettier.config.js", "sb-deps.config.js"],
+
 	"compilerOptions": {
-		"target": "ES2020",
+		"target": "ES2022",
 		"module": "ESNext",
 		"moduleResolution": "bundler",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["vite/client"],
 		"noEmit": true,
 		"allowJs": true,
-		"checkJs": true,
 
 		/* Preact Config */
 		"jsx": "react-jsx",
@@ -14,7 +30,12 @@
 		"paths": {
 			"react": ["./node_modules/preact/compat/"],
 			"react-dom": ["./node_modules/preact/compat/"]
-		}
-	},
-	"include": ["node_modules/vite/client.d.ts", "**/*"]
+		},
+
+		/* Linting */
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true
+	}
 }

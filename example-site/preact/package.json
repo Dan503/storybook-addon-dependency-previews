@@ -6,31 +6,34 @@
 		"dev": "vite",
 		"build": "vite build",
 		"preview": "vite preview",
-		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"sb": "sb-deps --watch --run-storybook",
+		"sb:deps": "sb-deps",
+		"sb:build": "pnpm --filter storybook-addon-dependency-previews build && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
+		"format": "prettier --write .",
+		"typecheck": "tsc --noEmit",
+		"check": "pnpm run typecheck"
 	},
 	"dependencies": {
+		"@formisch/preact": "^1.1.0",
+		"@tailwindcss/vite": "^4.3.3",
+		"example-site-shared": "workspace:*",
 		"preact": "^10.26.9",
 		"preact-iso": "^2.12.2",
-		"preact-render-to-string": "^6.7.0"
+		"preact-render-to-string": "^6.7.0",
+		"tailwindcss": "^4.3.3",
+		"valibot": "^1.4.2"
 	},
 	"devDependencies": {
-		"@preact/preset-vite": "^2.10.6",
-		"eslint": "^9.39.2",
-		"eslint-config-preact": "^2.0.0",
-		"typescript": "~5.9.3",
-		"vite": "^7.0.4",
-		"storybook": "^10.5.10",
-		"@storybook/preact-vite": "^10.5.10",
 		"@chromatic-com/storybook": "latest",
+		"@preact/preset-vite": "^2.10.6",
 		"@storybook/addon-docs": "^10.5.10",
-		"eslint-plugin-storybook": "^10.5.10",
-		"storybook-addon-dependency-previews": "workspace:*"
-	},
-	"eslintConfig": {
-		"extends": [
-			"preact",
-			"plugin:storybook/recommended"
-		]
+		"@storybook/addon-links": "^10.6.0",
+		"@storybook/preact-vite": "^10.5.10",
+		"dependency-cruiser": "^18.2.0",
+		"prettier": "^3.8.1",
+		"storybook": "^10.5.10",
+		"storybook-addon-dependency-previews": "workspace:*",
+		"typescript": "~5.9.3",
+		"vite": "^7.0.4"
 	}
 }

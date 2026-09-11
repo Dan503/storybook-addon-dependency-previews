@@ -80,22 +80,22 @@ export type RouteTemplateArray<
  * One route the example sites link to, as a template.
  *
  * One member of the list `generateRouteTemplates` returns, which is where the
- * routes themselves are written down. Solid, Vue and Angular are the sites that
- * read these, though none names this type: each takes one of the named spellings
- * below, or the link props built from it. React and Svelte sit on the same
- * routes but each reads them from the list its own router generates, so neither
- * needs anything from here.
+ * routes themselves are written down. Solid, Vue, Angular and Preact are the
+ * sites that read these, though none names this type: each takes one of the
+ * named spellings below, or the link props built from it. React and Svelte sit
+ * on the same routes but each reads them from the list its own router
+ * generates, so neither needs anything from here.
  *
  * A site that uses this list has its routes added here by hand, and how much
- * that buys depends on how much of the site goes through it. Solid and Vue both
- * put every internal link through the list, so a link to a route the list does
- * not have is refused. A page nobody links to still slips by. Angular puts every
- * internal link through the list as well, its nav included — though there the
- * check comes from the value, not from the markup: a `routerLink` bound to a value
- * typed against this list is checked, while one written as plain text, or bound to
- * a plain string, is not, since the router's own input accepts any string. React
- * and Svelte read their own generated lists, so their pages are not this list's
- * concern.
+ * that buys depends on how much of the site goes through it. Solid, Vue and
+ * Preact all put every internal link through the list, so a link to a route the
+ * list does not have is refused. A page nobody links to still slips by. Angular
+ * puts every internal link through the list as well, its nav included — though
+ * there the check comes from the value, not from the markup: a `routerLink`
+ * bound to a value typed against this list is checked, while one written as
+ * plain text, or bound to a plain string, is not, since the router's own input
+ * accepts any string. React and Svelte read their own generated lists, so their
+ * pages are not this list's concern.
  *
  * Each template is spelled out in full rather than written as a fixed start plus
  * free text, because one that is only partly written out is never offered as an
@@ -303,11 +303,13 @@ function createAddressFiller<Before extends string, After extends string>(
 	 * Fills a template's changing pieces in and hands back the address to link to.
 	 *
 	 * Each piece is escaped on the way in. Whether a page has to unescape it on
-	 * the way out is its framework's business: vue-router and SvelteKit hand a
-	 * page the original text already, so the Vue category page reads its piece
-	 * straight, while a framework that passes the address through untouched needs
-	 * the page to unescape it. Escaping leaves digits alone either way, which is
-	 * why a piece that is always a number reads back the same everywhere.
+	 * the way out is its framework's business, and here every router but
+	 * SolidStart's hands the page the original text already — so those category
+	 * pages read their piece straight, and unescaping it a second time would
+	 * throw on a name carrying a percent sign. The Solid category page is the
+	 * one that unescapes, because SolidStart passes the address through
+	 * untouched. Escaping leaves digits alone either way, which is why a piece
+	 * that is always a number reads back the same everywhere.
 	 *
 	 * A template with a changing piece that was given no matching value throws,
 	 * and so does one given an empty value, since both build a link that quietly
