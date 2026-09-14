@@ -114,15 +114,27 @@ The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-
 From Storybook 11 the default `.storybook/preview.ts` style is CSF Next — a `definePreview({ ... })` call with an `addons` list. Register the addon there by calling the `dependencyPreviews()` function the package exports, alongside `@storybook/addon-docs`:
 
 ```ts
+/// <reference types="vite/client" />
+
 import { definePreview } from '@storybook/react-vite'
 import addonDocs from '@storybook/addon-docs'
 import dependencyPreviews from 'storybook-addon-dependency-previews'
 
+import dependenciesJson from './dependency-previews.json'
+
 export default definePreview({
 	addons: [addonDocs(), dependencyPreviews()],
 	parameters: {
+		// The same settings block as the hand-spread form — the manual setup
+		// guides explain each value.
 		dependencyPreviews: {
-			// same settings as the hand-spread form — see the manual setup guides
+			dependenciesJson,
+			storyModules: import.meta.glob(
+				'/src/**/*.{story,stories}.{tsx,ts,jsx,js,svelte}',
+				{ eager: false },
+			),
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main',
+			projectRootPath: new URL('..', import.meta.url).pathname,
 		},
 	},
 })

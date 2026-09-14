@@ -56,9 +56,9 @@ export type Detection = {
 	 * Version to install the `@storybook/*` addons at so they match the
 	 * project's Storybook core — the exact version of the `storybook` package
 	 * the project resolves (e.g. `10.2.17`), or, when it cannot be resolved
-	 * from the project, the dist-tag declared in `package.json` (e.g. `next`) or
-	 * a range built from the declared major (e.g. `^11.0.0-0`, which also
-	 * matches 11 prereleases). `null` when none of those can be read.
+	 * from the project, the specifier `package.json` declares for `storybook`
+	 * (e.g. `^10.2.0` or `next`), which resolves to the same version for the
+	 * addons as it does for the core. `null` when neither can be read.
 	 */
 	storybookAddonVersionSpec: string | null
 }
@@ -334,7 +334,9 @@ export function isFrameworkSupported(
  * different major from the one the project runs, and npm then refuses the
  * install. Prefers the exact core version the project resolves; when the core
  * cannot be resolved from the project (not installed yet) falls back to the
- * declared dist-tag, or to a range on the declared major.
+ * specifier `package.json` declares for `storybook`. The `@storybook/*` addons
+ * are published at every version the core is, so the same specifier — a
+ * version, a range, or a dist-tag — resolves to the same version for both.
  */
 function getStorybookAddonVersionSpec(
 	cwd: string,
@@ -352,17 +354,12 @@ function getStorybookAddonVersionSpec(
 		// cannot be resolved from the project — fall through to the declared range
 	}
 	if (!declaredStorybookRange) return null
-	// A bare npm dist-tag (`next`, `latest`, `beta`) names a release channel
-	// rather than a version, so the addons are installed from that same channel.
-	const isDistTag = /^[a-z][\w.-]*$/i.test(declaredStorybookRange)
-	if (isDistTag) return declaredStorybookRange
-	// Otherwise the first run of digits in the declared range is the major
-	// (`^10.0.2` → 10, `11.0.0-alpha.0` → 11). Anything with no digits and no
-	// tag shape (`workspace:*`, `catalog:`) gives nothing to pin to.
-	const declaredMajor = declaredStorybookRange.match(/\d+/)?.[0]
-	if (!declaredMajor) return null
-	// `-0` lets the range match that major's prereleases as well as its releases.
-	return `^${declaredMajor}.0.0-0`
+	// A specifier with a protocol (`workspace:*`, `catalog:`, `npm:…`, `file:…`,
+	// `github:…`, a URL) points somewhere other than the registry entry of the
+	// same name, so it gives nothing the addons can be pinned to.
+	const isNonRegistrySpecifier = declaredStorybookRange.includes(':')
+	if (isNonRegistrySpecifier) return null
+	return declaredStorybookRange
 }
 
 export function detectProject(cwd: string): Detection {

@@ -454,10 +454,13 @@ export function stripCommentsRespectingStrings(content: string): string {
  * args to cmd.exe a second time, so doubling the caret (`^^`) is stripped
  * again on that second pass. Wrapping the argument in double quotes survives
  * both passes: cmd.exe keeps the quotes and leaves their contents alone, and
- * the program's own argument parser removes them. Arguments without a caret
- * are returned unchanged.
+ * the program's own argument parser removes them. The same quoting protects
+ * the other characters cmd.exe acts on — spaces, `&`, `|`, `<`, `>`, `(`,
+ * `)`, `!`, `%` — which a version range like `>=10 <12` can carry. Arguments
+ * with none of those are returned unchanged.
  */
 export function escapeForCmdExe(arg: string): string {
-	if (!arg.includes('^')) return arg
+	const hasCmdExeSpecialCharacter = /[\s^&|<>()!%]/.test(arg)
+	if (!hasCmdExeSpecialCharacter) return arg
 	return `"${arg}"`
 }
