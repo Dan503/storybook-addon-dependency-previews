@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
 import { stripCommentsRespectingStrings } from './util.js'
 
@@ -55,8 +54,8 @@ export type Detection = {
 	/**
 	 * Version to install the `@storybook/*` addons at so they match the
 	 * project's Storybook core — the exact version of the `storybook` package
-	 * the project resolves (e.g. `10.2.17`), or, when it cannot be resolved
-	 * from the project, the specifier `package.json` declares for `storybook`
+	 * installed in the project's `node_modules` chain (e.g. `10.2.17`), or, when
+	 * none is installed, the specifier `package.json` declares for `storybook`
 	 * (e.g. `^10.2.0` or `next`), which resolves to the same version for the
 	 * addons as it does for the core. `null` when neither can be read, or when
 	 * the declared specifier is not a registry version, range or dist-tag (a
@@ -330,31 +329,51 @@ export function isFrameworkSupported(
 }
 
 /**
+ * Read the version of the `storybook` package installed for the project, by
+ * walking the `node_modules` folders from `cwd` up to the filesystem root the
+ * way Node's own lookup does — npm and yarn workspaces hoist the core to the
+ * repository root, where a fixed `<cwd>/node_modules/storybook` path never
+ * finds it. Deliberately NOT `require.resolve`: that also searches
+ * `NODE_PATH`, which the shim `pnpm dlx` runs this wizard through points at
+ * the wizard's own dependency folder, so a project without Storybook
+ * installed would read the wizard's copy instead of falling back to what the
+ * project declares. `null` when no folder on the way up holds the package.
+ */
+function getInstalledStorybookVersion(cwd: string): string | null {
+	let dir = resolve(cwd)
+	while (true) {
+		const corePkgPath = join(dir, 'node_modules', 'storybook', 'package.json')
+		if (existsSync(corePkgPath)) {
+			try {
+				const corePkg = JSON.parse(readFileSync(corePkgPath, 'utf8'))
+				if (typeof corePkg.version === 'string') return corePkg.version
+			} catch {
+				// unreadable package.json — keep walking up
+			}
+		}
+		const parent = dirname(dir)
+		if (parent === dir) return null
+		dir = parent
+	}
+}
+
+/**
  * Work out which version the `@storybook/*` addons should be installed at, so
  * they line up with the project's Storybook core rather than with whatever
  * `@latest` happens to be — with two supported majors, `@latest` can be a
  * different major from the one the project runs, and npm then refuses the
- * install. Prefers the exact core version the project resolves; when the core
- * cannot be resolved from the project (not installed yet) falls back to the
- * specifier `package.json` declares for `storybook`. The `@storybook/*` addons
- * are published at every version the core is, so the same specifier — a
- * version, a range, or a dist-tag — resolves to the same version for both.
+ * install. Prefers the exact core version installed for the project; when
+ * none is installed falls back to the specifier `package.json` declares for
+ * `storybook`. The `@storybook/*` addons are published at every version the
+ * core is, so the same specifier — a version, a range, or a dist-tag —
+ * resolves to the same version for both.
  */
 function getStorybookAddonVersionSpec(
 	cwd: string,
 	declaredStorybookRange: string | undefined,
 ): string | null {
-	try {
-		// Resolve the way the project's own code would, rather than at a fixed
-		// `<cwd>/node_modules/storybook` path: npm and yarn workspaces hoist the
-		// core to the repository root, where a fixed path never finds it.
-		const requireFromProject = createRequire(resolve(cwd, 'package.json'))
-		const corePkgPath = requireFromProject.resolve('storybook/package.json')
-		const corePkg = JSON.parse(readFileSync(corePkgPath, 'utf8'))
-		if (typeof corePkg.version === 'string') return corePkg.version
-	} catch {
-		// cannot be resolved from the project — fall through to the declared range
-	}
+	const installedVersion = getInstalledStorybookVersion(cwd)
+	if (installedVersion) return installedVersion
 	if (!declaredStorybookRange) return null
 	// A specifier that points somewhere other than the registry entry of the
 	// same name gives nothing the addons can be pinned to: one with a protocol
