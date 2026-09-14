@@ -457,9 +457,12 @@ export function stripCommentsRespectingStrings(content: string): string {
  * the program's own argument parser removes them. The same quoting protects
  * spaces and the `&`, `|`, `<`, `>`, `(` and `)` characters cmd.exe acts on,
  * which a version range like `>=10 <12` can carry. (`%` and `!` are in the
- * check too, but quoting does not stop cmd.exe expanding `%NAME%`; no
- * argument either caller builds contains them.) Arguments with none of those
- * characters are returned unchanged.
+ * check too. Quoting does not stop cmd.exe expanding `%NAME%`, but no
+ * argument either caller builds contains `%`. The empty-srcDir
+ * `--include-only` regex does contain `!`, which cmd.exe only acts on under
+ * delayed expansion — something the `.cmd` shims never switch on — so it
+ * arrives intact.) Arguments with none of those characters are returned
+ * unchanged.
  */
 export function escapeForCmdExe(arg: string): string {
 	const hasCmdExeSpecialCharacter = /[\s^&|<>()!%]/.test(arg)
