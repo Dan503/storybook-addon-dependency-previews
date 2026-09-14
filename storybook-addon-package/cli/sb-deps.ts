@@ -277,9 +277,10 @@ function runDepCruiseOnce() {
 	// `.cmd` shims on Windows need `shell: true` to launch, BUT once shell is
 	// on, cmd.exe re-interprets `^` as an escape character — which would strip
 	// the anchor from our regex. Workaround: spawn the `.cmd` itself with
-	// shell:true (cmd.exe wraps the call) and pre-escape `^` for cmd.exe by
-	// doubling it. On Unix the binary is a real ELF/script (no shim), shell:false
-	// is the default, args pass through unmolested.
+	// shell:true (cmd.exe wraps the call) and run the args through
+	// escapeForCmdExe, which quotes any that carry a `^`. On Unix the binary is
+	// a real ELF/script (no shim), shell:false is the default, args pass
+	// through unmolested.
 	const stdout = execFileSync(
 		depcruiseBin,
 		IS_WIN ? args.map(escapeForCmdExe) : args,

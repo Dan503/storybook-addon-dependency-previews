@@ -447,14 +447,17 @@ export function stripCommentsRespectingStrings(content: string): string {
 }
 
 /**
- * Escape an argument so that it survives `cmd.exe` parsing when a child
- * process is spawned with `shell: true` on Windows. `^` is the cmd.exe escape
- * character, even inside double quotes — doubling it makes cmd.exe pass through
- * a literal `^`. Other shell metacharacters (`&`, `|`, `<`, `>`, `(`, `)`, `%`,
- * `!`) are already wrapped in double quotes by Node's internal arg-quoter when
- * `shell: true`, so only `^` needs handling here. Used wherever a version range
- * like `^10.0.0-0` or a regex anchor is handed to a `.cmd` shim.
+ * Make an argument survive `cmd.exe` when a child process is spawned with
+ * `shell: true` on Windows. `^` is the cmd.exe escape character, so a bare
+ * `^src/` or `^10.0.0-0` loses its caret — and when the target is a `.cmd`
+ * shim (npm, yarn, a `node_modules/.bin` tool) the batch file's `%*` hands the
+ * args to cmd.exe a second time, so doubling the caret (`^^`) is stripped
+ * again on that second pass. Wrapping the argument in double quotes survives
+ * both passes: cmd.exe keeps the quotes and leaves their contents alone, and
+ * the program's own argument parser removes them. Arguments without a caret
+ * are returned unchanged.
  */
 export function escapeForCmdExe(arg: string): string {
-	return arg.replace(/\^/g, '^^')
+	if (!arg.includes('^')) return arg
+	return `"${arg}"`
 }

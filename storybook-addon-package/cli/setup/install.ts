@@ -122,8 +122,8 @@ export function installMissingPackages(
 	const args = buildArgs(opts.packageManager, installSpecs)
 	// On Windows the package manager is usually a `.cmd` shim, which needs
 	// `shell: true` — and cmd.exe then strips the `^` from a range like
-	// `^11.0.0-0`, so the args are escaped for it. On other platforms they pass
-	// through untouched.
+	// `^11.0.0-0`, so the args go through escapeForCmdExe (which quotes them).
+	// On other platforms they pass through untouched.
 	const result = spawnSync(
 		opts.packageManager,
 		IS_WIN ? args.map(escapeForCmdExe) : args,
