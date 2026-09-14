@@ -21,8 +21,9 @@ export type InstallResult =
  *   `StoryLink` component (the "navigate to another story" links inside the
  *   dependency tree).
  *
- * No version specifiers — the package manager picks `@latest` for each, which
- * naturally aligns with whatever Storybook major version the user has.
+ * The two `@storybook/*` addons are installed at the project's own Storybook
+ * version (see `storybookAddonVersionSpec` below); the other two have no
+ * version specifier, so the package manager picks `@latest`.
  */
 const REQUIRED_PACKAGES = [
 	'storybook-addon-dependency-previews',
@@ -30,6 +31,20 @@ const REQUIRED_PACKAGES = [
 	'@storybook/addon-docs',
 	'@storybook/addon-links',
 ] as const
+
+type RequiredPackage = (typeof REQUIRED_PACKAGES)[number]
+
+/**
+ * Packages that ship in lockstep with the `storybook` core and declare a peer
+ * range on it. Installing them at `@latest` only works while `@latest` is the
+ * same major as the project's core — with Storybook 10 and 11 both supported,
+ * a 10 project would get the 11 addons (or an 11 project the 10 ones) and npm
+ * would refuse the install, so these are pinned to the project's own version.
+ */
+const STORYBOOK_CORE_ALIGNED_PACKAGES: ReadonlyArray<RequiredPackage> = [
+	'@storybook/addon-docs',
+	'@storybook/addon-links',
+]
 
 function buildArgs(
 	pm: PackageManager,
@@ -60,6 +75,22 @@ export interface InstallMissingPackagesOptions {
 	 * `'@storybook/addon-docs'`), without version specifiers.
 	 */
 	installedPackages: ReadonlySet<string>
+	/**
+	 * Version to install the `@storybook/*` addons at so they match the
+	 * project's Storybook core (`Detection.storybookAddonVersionSpec`). When
+	 * `null` they are installed without a version, i.e. at `@latest`.
+	 */
+	storybookAddonVersionSpec: string | null
+}
+
+/** `@storybook/addon-docs` + `10.2.17` → `@storybook/addon-docs@10.2.17`. */
+function getInstallSpec(
+	pkg: RequiredPackage,
+	storybookAddonVersionSpec: string | null,
+): string {
+	const isCoreAligned = STORYBOOK_CORE_ALIGNED_PACKAGES.includes(pkg)
+	if (!isCoreAligned || !storybookAddonVersionSpec) return pkg
+	return `${pkg}@${storybookAddonVersionSpec}`
 }
 
 /**
@@ -82,7 +113,10 @@ export function installMissingPackages(
 		}
 	}
 
-	const args = buildArgs(opts.packageManager, missing)
+	const installSpecs = missing.map((pkg) =>
+		getInstallSpec(pkg, opts.storybookAddonVersionSpec),
+	)
+	const args = buildArgs(opts.packageManager, installSpecs)
 	const result = spawnSync(opts.packageManager, args, {
 		cwd: opts.cwd,
 		stdio: 'inherit',

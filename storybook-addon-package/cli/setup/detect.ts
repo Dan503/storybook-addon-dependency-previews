@@ -51,6 +51,15 @@ export type Detection = {
 	 * consumer is *supposed* to provide, not something already installed.
 	 */
 	installedPackages: ReadonlySet<string>
+	/**
+	 * Version to install the `@storybook/*` addons at so they match the
+	 * project's Storybook core — the exact version found in
+	 * `node_modules/storybook/package.json` (e.g. `10.2.17`), or, when it is not
+	 * installed yet, a range built from the major declared in `package.json`
+	 * (e.g. `^11.0.0-0`, which also matches 11 prereleases). `null` when neither
+	 * can be read.
+	 */
+	storybookAddonVersionSpec: string | null
 }
 
 const MAIN_CANDIDATES: ReadonlyArray<MainFile['lang']> = [
@@ -317,6 +326,37 @@ export function isFrameworkSupported(
 	return supportedFrameworks.includes(framework)
 }
 
+/**
+ * Work out which version the `@storybook/*` addons should be installed at, so
+ * they line up with the project's Storybook core rather than with whatever
+ * `@latest` happens to be — with two supported majors, `@latest` can be a
+ * different major from the one the project runs, and npm then refuses the
+ * install. Prefers the exact installed core version; falls back to a range on
+ * the declared major when Storybook is declared but not installed yet.
+ */
+function getStorybookAddonVersionSpec(
+	cwd: string,
+	declaredStorybookRange: string | undefined,
+): string | null {
+	try {
+		const corePkg = JSON.parse(
+			readFileSync(
+				resolve(cwd, 'node_modules', 'storybook', 'package.json'),
+				'utf8',
+			),
+		)
+		if (typeof corePkg.version === 'string') return corePkg.version
+	} catch {
+		// not installed yet — fall through to the declared range
+	}
+	// First run of digits in the declared range is the major (`^10.0.2` → 10,
+	// `11.0.0-alpha.0` → 11). A dist-tag like `next` has none.
+	const declaredMajor = declaredStorybookRange?.match(/\d+/)?.[0]
+	if (!declaredMajor) return null
+	// `-0` lets the range match that major's prereleases as well as its releases.
+	return `^${declaredMajor}.0.0-0`
+}
+
 export function detectProject(cwd: string): Detection {
 	const storybookDir = resolve(cwd, '.storybook')
 	const mainFile = findMainFile(storybookDir)
@@ -325,6 +365,7 @@ export function detectProject(cwd: string): Detection {
 	let isEsm = false
 	let installedPackages: ReadonlySet<string> = new Set<string>()
 	let allDependencyKeys: ReadonlySet<string> = new Set<string>()
+	let storybookAddonVersionSpec: string | null = null
 	try {
 		const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf8'))
 		isEsm = pkg.type === 'module'
@@ -333,6 +374,10 @@ export function detectProject(cwd: string): Detection {
 			...(pkg.devDependencies ?? {}),
 		}
 		installedPackages = new Set(Object.keys(installed))
+		storybookAddonVersionSpec = getStorybookAddonVersionSpec(
+			cwd,
+			installed.storybook,
+		)
 		// `allDependencyKeys` additionally includes peerDependencies — used only
 		// for framework detection. Apps typically declare their core framework
 		// (`react`, `@angular/core`, etc.) in deps/devDeps, but intermediate
@@ -392,5 +437,6 @@ export function detectProject(cwd: string): Detection {
 		packageManager: detectPackageManager(cwd),
 		isEsm,
 		installedPackages,
+		storybookAddonVersionSpec,
 	}
 }
