@@ -128,7 +128,7 @@ export default definePreview({
 })
 ```
 
-The hand-spread `preview.ts` the wizard generates (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`) remains supported. The wizard does not patch an existing `definePreview({ ... })` preview — on such a file it stops with "Could not locate the preview config object" — so for a CSF Next project add the addon by hand using the config below. Both manual setup guides show the full CSF Next config for their frameworks.
+The hand-spread `preview.ts` the wizard generates (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`) remains supported. The wizard does not patch an existing `definePreview({ ... })` preview — on such a file it stops with "Could not locate the preview config object" — so for a CSF Next project add the addon by hand using the config above. Both manual setup guides show the full CSF Next config for their frameworks.
 
 ## Auto-scaffolding new components and stories
 

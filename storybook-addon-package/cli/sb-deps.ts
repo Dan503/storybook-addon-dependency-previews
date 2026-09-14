@@ -209,14 +209,12 @@ const IS_WIN = process.platform === 'win32'
  * shim on Windows, bare name elsewhere). Falls back to `null` if it can't be
  * found — caller decides what to do.
  *
- * Going through the resolved binary lets us call `execFileSync` directly
- * (with `shell: false`) and pass each flag as its own array element — no
- * shell quoting, no `cmd.exe` metacharacter mangling (`^` is a `cmd.exe`
- * escape character, which would silently strip the `^` anchor from our
- * `--include-only` regex if we went through a shell). It also avoids spawning
- * `npx`, which on Windows is a `.cmd` shim that requires `shell: true` to
- * launch — which would reintroduce the very quoting problem we're trying to
- * avoid.
+ * Going through the resolved binary means `execFileSync` runs the exact
+ * `dependency-cruiser` the project installed, with each flag as its own array
+ * element, instead of asking `npx` to find one. On Unix that is a real
+ * binary and no shell is involved. On Windows it is a `.cmd` shim, which
+ * needs `shell: true` — see the comment in `runDepCruiseOnce` for how the
+ * `^` in the `--include-only` regex is kept intact through cmd.exe.
  */
 function resolveDepCruiseBin(): string | null {
 	const bin = join(
