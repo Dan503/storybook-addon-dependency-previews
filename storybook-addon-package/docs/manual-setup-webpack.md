@@ -265,7 +265,7 @@ export default definePreview({
 })
 ```
 
-Unlike the hand-spread form, `definePreview` type-checks the `dependencyPreviews` settings against the addon's own type, which is why `storyModules` appears here. The hand-spread form above works on Storybook 10 and 11 alike.
+Unlike the hand-spread form, `definePreview` type-checks the `dependencyPreviews` settings against the addon's own type, which is why `storyModules` appears here. The hand-spread form above remains supported.
 
 ## 7. Run it
 
