@@ -256,7 +256,9 @@ export default definePreview({
 		dependencyPreviews: {
 			dependenciesJson,
 			// Webpack has no `import.meta.glob`, and the settings type requires
-			// this key, so pass an empty object.
+			// this key, so pass an empty object. The dependency tree still
+			// renders; the nested "Preview … component" panels inside it need
+			// `storyModules` and show "No story module found" instead.
 			storyModules: {},
 			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main',
 			projectRootPath: __PROJECT_ROOT__,
