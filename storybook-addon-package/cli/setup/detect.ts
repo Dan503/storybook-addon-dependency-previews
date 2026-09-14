@@ -58,7 +58,8 @@ export type Detection = {
 	 * the project resolves (e.g. `10.2.17`), or, when it cannot be resolved
 	 * from the project, the specifier `package.json` declares for `storybook`
 	 * (e.g. `^10.2.0` or `next`), which resolves to the same version for the
-	 * addons as it does for the core. `null` when neither can be read.
+	 * addons as it does for the core. `null` when neither can be read, or when
+	 * the declared specifier is not a registry version, range or dist-tag.
 	 */
 	storybookAddonVersionSpec: string | null
 }
@@ -354,10 +355,12 @@ function getStorybookAddonVersionSpec(
 		// cannot be resolved from the project — fall through to the declared range
 	}
 	if (!declaredStorybookRange) return null
-	// A specifier with a protocol (`workspace:*`, `catalog:`, `npm:…`, `file:…`,
-	// `github:…`, a URL) points somewhere other than the registry entry of the
-	// same name, so it gives nothing the addons can be pinned to.
-	const isNonRegistrySpecifier = declaredStorybookRange.includes(':')
+	// A specifier that points somewhere other than the registry entry of the
+	// same name gives nothing the addons can be pinned to: one with a protocol
+	// (`workspace:*`, `catalog:`, `npm:…`, `file:…`, `github:…`, a URL), a
+	// GitHub shorthand (`owner/repo`) or a folder path (`./sb`). A version, a
+	// range or a dist-tag never contains a colon or a slash.
+	const isNonRegistrySpecifier = /[:/\\]/.test(declaredStorybookRange)
 	if (isNonRegistrySpecifier) return null
 	return declaredStorybookRange
 }

@@ -449,15 +449,17 @@ export function stripCommentsRespectingStrings(content: string): string {
 /**
  * Make an argument survive `cmd.exe` when a child process is spawned with
  * `shell: true` on Windows. `^` is the cmd.exe escape character, so a bare
- * `^src/` or `^10.0.0-0` loses its caret — and when the target is a `.cmd`
+ * `^src/` or `^10.2.0` loses its caret — and when the target is a `.cmd`
  * shim (npm, yarn, a `node_modules/.bin` tool) the batch file's `%*` hands the
  * args to cmd.exe a second time, so doubling the caret (`^^`) is stripped
  * again on that second pass. Wrapping the argument in double quotes survives
  * both passes: cmd.exe keeps the quotes and leaves their contents alone, and
  * the program's own argument parser removes them. The same quoting protects
- * the other characters cmd.exe acts on — spaces, `&`, `|`, `<`, `>`, `(`,
- * `)`, `!`, `%` — which a version range like `>=10 <12` can carry. Arguments
- * with none of those are returned unchanged.
+ * spaces and the `&`, `|`, `<`, `>`, `(` and `)` characters cmd.exe acts on,
+ * which a version range like `>=10 <12` can carry. (`%` and `!` are in the
+ * check too, but quoting does not stop cmd.exe expanding `%NAME%`; no
+ * argument either caller builds contains them.) Arguments with none of those
+ * characters are returned unchanged.
  */
 export function escapeForCmdExe(arg: string): string {
 	const hasCmdExeSpecialCharacter = /[\s^&|<>()!%]/.test(arg)
