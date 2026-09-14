@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+
 /**
  * Detect the file's leading indent unit (one level deep) — first indented line
  * wins. Defaults to a tab so a file with no existing indent doesn't end up
@@ -456,17 +459,56 @@ export function stripCommentsRespectingStrings(content: string): string {
  * both passes: cmd.exe keeps the quotes and leaves their contents alone, and
  * the program's own argument parser removes them. The same quoting protects
  * spaces and the `&`, `|`, `<`, `>`, `(` and `)` characters cmd.exe acts on,
- * which a version range like `>=10 <12` can carry. (`%` and `!` are in the
- * check too. Quoting does not stop cmd.exe expanding `%NAME%`, so a project
- * path containing such a pair that names a set environment variable is not
- * supported through the `.cmd` shim — the only way round that is a spawn
- * with no shell at all. The empty-srcDir `--include-only` regex does contain
- * `!`, which cmd.exe only acts on under delayed expansion — something the
- * `.cmd` shims never switch on — so it arrives intact.) Arguments with none
- * of those characters are returned unchanged.
+ * which a version range like `>=10 <12` can carry. Quoting does not stop
+ * cmd.exe expanding `%NAME%`, so this is only suitable for arguments that
+ * cannot carry a percent sign — its one caller, the wizard's package-manager
+ * install, passes package names and version specifiers. Anything that takes a
+ * user path should spawn without a shell instead (see `runDepCruiseOnce` in
+ * `sb-deps`). Arguments with none of those characters are returned unchanged.
  */
 export function escapeForCmdExe(arg: string): string {
 	const hasCmdExeSpecialCharacter = /[\s^&|<>()!%]/.test(arg)
 	if (!hasCmdExeSpecialCharacter) return arg
 	return `"${arg}"`
+}
+
+/** A package found by `findInstalledPackage`: where it lives and its parsed `package.json`. */
+export interface InstalledPackage {
+	/** Absolute path of the package's folder (the one holding its `package.json`). */
+	dir: string
+	/** The parsed `package.json`. */
+	pkg: Record<string, unknown>
+}
+
+/**
+ * Find a package installed for the project by walking the `node_modules`
+ * folders from `startDir` up to the filesystem root, the way Node's own
+ * lookup does — npm and yarn workspaces hoist packages to the repository
+ * root, where a fixed `<project>/node_modules/<name>` path never finds them.
+ * Deliberately NOT `require.resolve`: that also searches `NODE_PATH`, which
+ * the shim `pnpm dlx` runs this CLI through points at the CLI's own
+ * dependency folder, so a project without the package installed would find
+ * the CLI's copy instead. Returns `null` when no folder on the way up holds
+ * a readable `package.json` for it.
+ */
+export function findInstalledPackage(
+	startDir: string,
+	packageName: string,
+): InstalledPackage | null {
+	let dir = resolve(startDir)
+	while (true) {
+		const pkgDir = join(dir, 'node_modules', packageName)
+		const pkgJsonPath = join(pkgDir, 'package.json')
+		if (existsSync(pkgJsonPath)) {
+			try {
+				const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf8'))
+				return { dir: pkgDir, pkg }
+			} catch {
+				// unreadable package.json — keep walking up
+			}
+		}
+		const parent = dirname(dir)
+		if (parent === dir) return null
+		dir = parent
+	}
 }

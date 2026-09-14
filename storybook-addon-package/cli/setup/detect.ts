@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 
-import { stripCommentsRespectingStrings } from './util.js'
+import { findInstalledPackage, stripCommentsRespectingStrings } from './util.js'
 
 import type { SbDepsConfig } from '../../src/config.js'
 
@@ -329,32 +329,13 @@ export function isFrameworkSupported(
 }
 
 /**
- * Read the version of the `storybook` package installed for the project, by
- * walking the `node_modules` folders from `cwd` up to the filesystem root the
- * way Node's own lookup does — npm and yarn workspaces hoist the core to the
- * repository root, where a fixed `<cwd>/node_modules/storybook` path never
- * finds it. Deliberately NOT `require.resolve`: that also searches
- * `NODE_PATH`, which the shim `pnpm dlx` runs this wizard through points at
- * the wizard's own dependency folder, so a project without Storybook
- * installed would read the wizard's copy instead of falling back to what the
- * project declares. `null` when no folder on the way up holds the package.
+ * Read the version of the `storybook` package installed for the project (see
+ * `findInstalledPackage` for why the lookup walks `node_modules` itself
+ * rather than using `require.resolve`). `null` when it is not installed.
  */
 function getInstalledStorybookVersion(cwd: string): string | null {
-	let dir = resolve(cwd)
-	while (true) {
-		const corePkgPath = join(dir, 'node_modules', 'storybook', 'package.json')
-		if (existsSync(corePkgPath)) {
-			try {
-				const corePkg = JSON.parse(readFileSync(corePkgPath, 'utf8'))
-				if (typeof corePkg.version === 'string') return corePkg.version
-			} catch {
-				// unreadable package.json — keep walking up
-			}
-		}
-		const parent = dirname(dir)
-		if (parent === dir) return null
-		dir = parent
-	}
+	const version = findInstalledPackage(cwd, 'storybook')?.pkg.version
+	return typeof version === 'string' ? version : null
 }
 
 /**
