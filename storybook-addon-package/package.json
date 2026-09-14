@@ -1,6 +1,6 @@
 {
 	"name": "storybook-addon-dependency-previews",
-	"description": "A Storybook 10 addon to automatically generate a visual dependency tree for your components.",
+	"description": "A Storybook 10 and 11 addon to automatically generate a visual dependency tree for your components.",
 	"version": "0.9.0",
 	"private": false,
 	"license": "Apache-2.0",
@@ -84,12 +84,12 @@
 		}
 	},
 	"peerDependencies": {
-		"@storybook/addon-docs": "^10.0.2",
-		"@storybook/addon-links": "^10.0.2",
+		"@storybook/addon-docs": "^10.0.2 || ^11.0.0",
+		"@storybook/addon-links": "^10.0.2 || ^11.0.0",
 		"dependency-cruiser": "^17.3.8",
 		"react": ">=18",
 		"react-dom": ">=18",
-		"storybook": "^10.0.2"
+		"storybook": "^10.0.2 || ^11.0.0"
 	},
 	"devDependencies": {
 		"@types/cross-spawn": "^6.0.6",

@@ -4,7 +4,7 @@
 
 ## What is this?
 
-> **This plugin is built for Storybook 10**
+> **This plugin is built for Storybook 10 and 11**
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
