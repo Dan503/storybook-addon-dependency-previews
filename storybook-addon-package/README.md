@@ -26,6 +26,12 @@ The below image demonstrates what you will see when you open up some of the depe
 - [React rendered example website](https://dependency-previews-demo-site-react.netlify.app/)
 - [React demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/react)
 
+#### Preact demos
+
+- [Preact Storybook demo site](https://dependency-previews-storybook-preact.netlify.app/?path=/docs/04-templates-home-template--docs)
+- [Preact rendered example website](https://dependency-previews-demo-site-preact.netlify.app/)
+- [Preact demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/preact)
+
 #### Svelte demos
 
 - [Svelte Storybook demo site](https://dependency-previews-storybook-svelte.netlify.app/?path=/docs/04-templates-home-template--docs)
