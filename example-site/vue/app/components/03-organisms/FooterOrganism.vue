@@ -8,7 +8,7 @@ const {} = defineProps<PropsForFooterOrganism>()
 
 <template>
 	<div
-		class="FooterOrganism border-t-2 border-teal-900 bg-teal-200 p-4 text-center text-black"
+		class="FooterOrganism border-t-2 border-teal-900 bg-teal-100 p-4 text-center text-black"
 	>
 		<p>
 			Meal data provided by{{ ' ' }}

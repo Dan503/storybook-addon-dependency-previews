@@ -8,7 +8,7 @@ import { ExternalLinkAtomComponent } from '../01-atoms/ExternalLinkAtom.componen
 			"FooterOrganism",
 			"border-t-2",
 			"border-teal-900",
-			"bg-teal-200",
+			"bg-teal-100",
 			"p-4",
 			"text-center",
 			"text-black",
