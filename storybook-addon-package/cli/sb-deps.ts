@@ -2924,9 +2924,10 @@ async function startStorybook() {
 	//   - rejects path separators (`/`, `\`) — srcDir must be a single segment
 	//     (`projects/foo/src` style multi-project Angular workspaces aren't
 	//     supported; use the empty-string project-root mode instead)
-	//   - rejects cmd.exe metacharacters including `%` (which triggers `%VAR%`
-	//     env expansion when the args go through a `cmd.exe`-invoked `.cmd`
-	//     shim on Windows) and `^` / `&` / `|` / `<` / `>` / `(` / `)` / `!`
+	//   - rejects the shell metacharacters `%`, `^`, `&`, `|`, `<`, `>`, `(`,
+	//     `)` and `!` — nothing built from srcDir crosses a shell any more
+	//     (the dependency scan runs under node directly), but keeping them
+	//     out means no future spawn site has to think about it either
 	//
 	// Bounding the input here means downstream interpolation sites can trust
 	// their `SRC_DIR` source and don't each need their own escape pass.

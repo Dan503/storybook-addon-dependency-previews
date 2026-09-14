@@ -464,7 +464,9 @@ export function stripCommentsRespectingStrings(content: string): string {
  * cannot carry a percent sign — its one caller, the wizard's package-manager
  * install, passes package names and version specifiers. Anything that takes a
  * user path should spawn without a shell instead (see `runDepCruiseOnce` in
- * `sb-deps`). Arguments with none of those characters are returned unchanged.
+ * `sb-deps`). `!` is quoted too, though cmd.exe only acts on it under delayed
+ * expansion, which the package managers' `.cmd` shims never switch on.
+ * Arguments with none of those characters are returned unchanged.
  */
 export function escapeForCmdExe(arg: string): string {
 	const hasCmdExeSpecialCharacter = /[\s^&|<>()!%]/.test(arg)
