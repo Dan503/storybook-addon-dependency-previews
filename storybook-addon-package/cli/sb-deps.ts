@@ -27,6 +27,7 @@ import {
 	type TsxFramework,
 } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
+import { escapeForCmdExe } from './setup/util.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
@@ -354,18 +355,6 @@ function escapeForRegexIgnoringCase(text: string): string {
 /** Backslash-escape every character that has a special meaning in a regex, so the text only matches itself. */
 function escapeForRegex(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/**
- * Escape an argument so that it survives `cmd.exe` parsing when `execFileSync`
- * is invoked with `shell: true` on Windows. `^` is the cmd.exe escape character,
- * even inside double quotes — doubling it makes cmd.exe pass through a literal
- * `^`. Other shell metacharacters (`&`, `|`, `<`, `>`, `(`, `)`, `%`, `!`) are
- * already wrapped in double quotes by Node's internal arg-quoter when
- * `shell: true`, so we only need to handle `^` ourselves.
- */
-function escapeForCmdExe(arg: string): string {
-	return arg.replace(/\^/g, '^^')
 }
 
 function buildOnce() {

@@ -245,7 +245,7 @@ export default definePreview({
 })
 ```
 
-`definePreview` comes from your framework package. Not every framework package exports it yet (at the time of writing `@storybook/preact-vite`, `@storybook/sveltekit` and `@storybook/svelte-vite` do not) — for those, keep the hand-spread form. The hand-spread form works on Storybook 10 and 11 alike, and is what the setup wizard generates.
+`definePreview` comes from your framework package. Not every framework package exports it yet (at the time of writing `@storybook/preact-vite`, `@storybook/sveltekit` and `@storybook/svelte-vite` do not) — for those, keep the hand-spread form. The hand-spread form remains supported on Storybook 11 (checked with the React example site on the 11 alpha), and is what the setup wizard generates.
 
 ## 7. Run it
 

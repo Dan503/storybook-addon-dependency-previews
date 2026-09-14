@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 
 import { stripCommentsRespectingStrings } from './util.js'
@@ -53,9 +54,9 @@ export type Detection = {
 	installedPackages: ReadonlySet<string>
 	/**
 	 * Version to install the `@storybook/*` addons at so they match the
-	 * project's Storybook core — the exact version found in
-	 * `node_modules/storybook/package.json` (e.g. `10.2.17`), or, when it is not
-	 * installed yet, a range built from the major declared in `package.json`
+	 * project's Storybook core — the exact version of the `storybook` package
+	 * the project resolves (e.g. `10.2.17`), or, when it cannot be resolved
+	 * from the project, a range built from the major declared in `package.json`
 	 * (e.g. `^11.0.0-0`, which also matches 11 prereleases). `null` when neither
 	 * can be read.
 	 */
@@ -331,23 +332,24 @@ export function isFrameworkSupported(
  * they line up with the project's Storybook core rather than with whatever
  * `@latest` happens to be — with two supported majors, `@latest` can be a
  * different major from the one the project runs, and npm then refuses the
- * install. Prefers the exact installed core version; falls back to a range on
- * the declared major when Storybook is declared but not installed yet.
+ * install. Prefers the exact core version the project resolves; falls back to
+ * a range on the declared major when the core cannot be resolved from the
+ * project (not installed yet).
  */
 function getStorybookAddonVersionSpec(
 	cwd: string,
 	declaredStorybookRange: string | undefined,
 ): string | null {
 	try {
-		const corePkg = JSON.parse(
-			readFileSync(
-				resolve(cwd, 'node_modules', 'storybook', 'package.json'),
-				'utf8',
-			),
-		)
+		// Resolve the way the project's own code would, rather than at a fixed
+		// `<cwd>/node_modules/storybook` path: npm and yarn workspaces hoist the
+		// core to the repository root, where a fixed path never finds it.
+		const requireFromProject = createRequire(resolve(cwd, 'package.json'))
+		const corePkgPath = requireFromProject.resolve('storybook/package.json')
+		const corePkg = JSON.parse(readFileSync(corePkgPath, 'utf8'))
 		if (typeof corePkg.version === 'string') return corePkg.version
 	} catch {
-		// not installed yet — fall through to the declared range
+		// cannot be resolved from the project — fall through to the declared range
 	}
 	// First run of digits in the declared range is the major (`^10.0.2` → 10,
 	// `11.0.0-alpha.0` → 11). A dist-tag like `next` has none.

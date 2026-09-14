@@ -445,3 +445,16 @@ export function stripCommentsRespectingStrings(content: string): string {
 	}
 	return out
 }
+
+/**
+ * Escape an argument so that it survives `cmd.exe` parsing when a child
+ * process is spawned with `shell: true` on Windows. `^` is the cmd.exe escape
+ * character, even inside double quotes — doubling it makes cmd.exe pass through
+ * a literal `^`. Other shell metacharacters (`&`, `|`, `<`, `>`, `(`, `)`, `%`,
+ * `!`) are already wrapped in double quotes by Node's internal arg-quoter when
+ * `shell: true`, so only `^` needs handling here. Used wherever a version range
+ * like `^10.0.0-0` or a regex anchor is handed to a `.cmd` shim.
+ */
+export function escapeForCmdExe(arg: string): string {
+	return arg.replace(/\^/g, '^^')
+}

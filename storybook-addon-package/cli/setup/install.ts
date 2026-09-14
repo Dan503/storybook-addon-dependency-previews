@@ -1,6 +1,9 @@
 import { spawnSync } from 'node:child_process'
 
 import type { PackageManager } from './detect.js'
+import { escapeForCmdExe } from './util.js'
+
+const IS_WIN = process.platform === 'win32'
 
 export type InstallResult =
 	| { kind: 'skipped'; reason: string }
@@ -117,11 +120,19 @@ export function installMissingPackages(
 		getInstallSpec(pkg, opts.storybookAddonVersionSpec),
 	)
 	const args = buildArgs(opts.packageManager, installSpecs)
-	const result = spawnSync(opts.packageManager, args, {
-		cwd: opts.cwd,
-		stdio: 'inherit',
-		shell: process.platform === 'win32',
-	})
+	// On Windows the package manager is usually a `.cmd` shim, which needs
+	// `shell: true` — and cmd.exe then strips the `^` from a range like
+	// `^11.0.0-0`, so the args are escaped for it. On other platforms they pass
+	// through untouched.
+	const result = spawnSync(
+		opts.packageManager,
+		IS_WIN ? args.map(escapeForCmdExe) : args,
+		{
+			cwd: opts.cwd,
+			stdio: 'inherit',
+			shell: IS_WIN,
+		},
+	)
 
 	if (result.error) {
 		return {

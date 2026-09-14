@@ -128,7 +128,7 @@ export default definePreview({
 })
 ```
 
-The hand-spread `preview.ts` the wizard generates (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`) keeps working on Storybook 10 and 11. Both manual setup guides show the full CSF Next config for their frameworks.
+The hand-spread `preview.ts` the wizard generates (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`) remains supported. Both manual setup guides show the full CSF Next config for their frameworks.
 
 ## Auto-scaffolding new components and stories
 
