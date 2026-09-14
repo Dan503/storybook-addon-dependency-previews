@@ -84,12 +84,12 @@
 		}
 	},
 	"peerDependencies": {
-		"@storybook/addon-docs": "^10.0.2 || ^11.0.0",
-		"@storybook/addon-links": "^10.0.2 || ^11.0.0",
+		"@storybook/addon-docs": "^10.0.2 || ^11.0.0-0",
+		"@storybook/addon-links": "^10.0.2 || ^11.0.0-0",
 		"dependency-cruiser": "^17.3.8",
 		"react": ">=18",
 		"react-dom": ">=18",
-		"storybook": "^10.0.2 || ^11.0.0"
+		"storybook": "^10.0.2 || ^11.0.0-0"
 	},
 	"devDependencies": {
 		"@types/cross-spawn": "^6.0.6",
