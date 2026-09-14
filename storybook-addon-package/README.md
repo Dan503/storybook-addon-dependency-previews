@@ -109,6 +109,27 @@ The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-
 - [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
+### Storybook 11 / CSF Next preview configs
+
+From Storybook 11 the default `.storybook/preview.ts` style is CSF Next — a `definePreview({ ... })` call with an `addons` list. Register the addon there by calling the `dependencyPreviews()` function the package exports, alongside `@storybook/addon-docs`:
+
+```ts
+import { definePreview } from '@storybook/react-vite'
+import addonDocs from '@storybook/addon-docs'
+import dependencyPreviews from 'storybook-addon-dependency-previews'
+
+export default definePreview({
+	addons: [addonDocs(), dependencyPreviews()],
+	parameters: {
+		dependencyPreviews: {
+			// same settings as the hand-spread form — see the manual setup guides
+		},
+	},
+})
+```
+
+The hand-spread `preview.ts` the wizard generates (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`) keeps working on Storybook 10 and 11. Both manual setup guides show the full CSF Next config for their frameworks.
+
 ## Auto-scaffolding new components and stories
 
 While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fills it in from a template — and creates its matching sibling too. It works from either side:

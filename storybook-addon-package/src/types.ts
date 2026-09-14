@@ -95,6 +95,20 @@ export type StorybookPreviewConfig = ProjectAnnotations<Renderer> & {
 	parameters: DependencyPreviewStorybookParameters
 }
 
+/**
+ * The parameter types the addon adds to a CSF Next preview when it is
+ * registered with `dependencyPreviews()` (see `definePreviewAddon` in
+ * Storybook). Storybook merges these into the `parameters` type of the
+ * preview config **and** of every `meta()` / story, so `dependencyPreviews`
+ * has to be optional here even though the addon needs it set once in
+ * `preview.ts` — a required key would make every story's `parameters` fail
+ * to type-check.
+ */
+export type DependencyPreviewsAddonTypes = {
+	parameters: Pick<StoryParameters, '__filePath'> &
+		Partial<Pick<DependencyPreviewStorybookParameters, 'dependencyPreviews'>>
+}
+
 export type Graph = Record<string, Deps>
 
 export interface Deps extends StoryInfo {
