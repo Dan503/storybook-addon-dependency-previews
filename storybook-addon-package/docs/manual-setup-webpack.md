@@ -242,7 +242,7 @@ From Storybook 11 the default `preview.ts` style is CSF Next — a `definePrevie
 import { definePreview } from '@storybook/angular' // if using Angular
 import { definePreview } from '@storybook/nextjs' // if using Next.js
 import addonDocs from '@storybook/addon-docs'
-import dependencyPreviews from 'storybook-addon-dependency-previews'
+import { dependencyPreviews } from 'storybook-addon-dependency-previews'
 import dependenciesJson from './dependency-previews.json'
 
 declare const __PROJECT_ROOT__: string

@@ -16,7 +16,7 @@ export * from './preview'
  * ```ts
  * import { definePreview } from '@storybook/react-vite'
  * import addonDocs from '@storybook/addon-docs'
- * import dependencyPreviews from 'storybook-addon-dependency-previews'
+ * import { dependencyPreviews } from 'storybook-addon-dependency-previews'
  *
  * export default definePreview({
  *   addons: [addonDocs(), dependencyPreviews()],

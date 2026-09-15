@@ -118,7 +118,7 @@ From Storybook 11 the default `.storybook/preview.ts` style is CSF Next — a `d
 
 import { definePreview } from '@storybook/react-vite'
 import addonDocs from '@storybook/addon-docs'
-import dependencyPreviews from 'storybook-addon-dependency-previews'
+import { dependencyPreviews } from 'storybook-addon-dependency-previews'
 
 import dependenciesJson from './dependency-previews.json'
 
@@ -140,7 +140,7 @@ export default definePreview({
 })
 ```
 
-The hand-spread `preview.ts` the wizard generates (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`) remains supported. The wizard does not patch an existing `definePreview({ ... })` preview — on such a file it stops with "Could not locate the preview config object" — so for a CSF Next project add the addon by hand using the config above. Both manual setup guides show the full CSF Next config for their frameworks.
+The setup wizard recognises both preview styles: an existing `definePreview({ ... })` file gets `addonDocs()` and `dependencyPreviews()` added to its `addons` list and the settings block added to its `parameters`, and a classic `const preview = { ... }` file gets the hand-spread form (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`), which remains supported. When there is no preview file yet, the wizard writes the `definePreview` style on Storybook 11 for frameworks whose package exports `definePreview` (React, Vue 3 and Solid), and the hand-spread style everywhere else — it works on both majors. Both manual setup guides show the full CSF Next config for their frameworks.
 
 ## Auto-scaffolding new components and stories
 
