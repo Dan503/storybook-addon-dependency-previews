@@ -165,6 +165,12 @@ const REGEX_LITERAL_PRECEDING_KEYWORDS =
  * quote inside a regex (`/['"]/`) then never opens a string, which is what
  * every scanner in this file relies on.
  *
+ * The boundary of a scanner that does not parse JSX: a `/` in JSX text whose
+ * preceding text ends in one of the preceders — `&nbsp;/`, `Questions? /`,
+ * `Tags: /` — is still read as a literal opener when a second `/` sits later
+ * on the same line, and the span between them is then stepped over. A
+ * separator written as `{a} / {b}` or `{a}/{b}` is not affected.
+ *
  * @param text - the text being scanned
  * @param slashIndex - position of the candidate opening `/`
  */

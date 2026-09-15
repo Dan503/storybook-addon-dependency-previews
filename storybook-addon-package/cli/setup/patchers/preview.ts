@@ -687,8 +687,9 @@ function findDefinePreviewBody(
 	const direct = objectBodyAfterMatch(text, directMatch)
 	if (direct) return direct
 
+	// `(?:as\s+[^,)]+)?` allows a cast on the argument, `,?` a trailing comma.
 	const configIdent = stripped.match(
-		/export\s+default\s+definePreview\s*\(\s*([A-Za-z_$][\w$]*)\s*\)/,
+		/export\s+default\s+definePreview\s*\(\s*([A-Za-z_$][\w$]*)\s*(?:as\s+[^,)]+)?\s*,?\s*\)/,
 	)?.[1]
 	if (configIdent) {
 		// `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping
@@ -885,6 +886,61 @@ function layOutSingleLineObject({
 	return content.slice(0, bodyStart) + newBody + content.slice(bodyEnd)
 }
 
+interface CreateKeyInBodyParams {
+	/** The file content. */
+	content: string
+	/** The range inside the config object's braces. */
+	body: { from: number; to: number }
+	/** The key and value to write, as one entry ending in its comma. */
+	entry: string
+	/**
+	 * Whether the entry has to run after the body's top-level spreads — at
+	 * the end of the body rather than its start — so nothing spread in later
+	 * overrides it.
+	 */
+	isAfterSpreads: boolean
+	/** The file's formatting. */
+	style: PreviewFileStyle
+}
+
+/**
+ * Write a new key into the config object: at the start of its body, or at
+ * the end when the body spreads other objects (a comma is added after the
+ * last existing entry when it has none). Returns the content and the offset
+ * just after the entry, so a second created key can follow it.
+ */
+function createKeyInBody({
+	content,
+	body,
+	entry,
+	isAfterSpreads,
+	style,
+}: CreateKeyInBodyParams): { content: string; endOffset: number } {
+	const { indent, eol } = style
+	const l1 = indent
+	if (!isAfterSpreads) {
+		const insertion = `${eol}${l1}${entry}`
+		const insertAt = body.from
+		return {
+			content: content.slice(0, insertAt) + insertion + content.slice(insertAt),
+			endOffset: insertAt + insertion.length,
+		}
+	}
+	// Measured on the comment-stripped body, so a trailing comment on the
+	// last entry is not what the comma lands after.
+	const existingCode = stripCommentsRespectingStrings(
+		content.slice(body.from, body.to),
+	)
+	const trimmedEnd = existingCode.trimEnd()
+	const doesEndWithComma = trimmedEnd === '' || trimmedEnd.endsWith(',')
+	const insertAt = body.from + trimmedEnd.length
+	const insertion = `${doesEndWithComma ? '' : ','}${eol}${l1}${entry}`
+	return {
+		content: content.slice(0, insertAt) + insertion + content.slice(insertAt),
+		endOffset: insertAt + insertion.length,
+	}
+}
+
 const ALREADY_CONFIGURED_REASON = 'addon already configured in preview'
 const COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON =
 	'Could not locate the definePreview config object — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.'
@@ -931,15 +987,47 @@ function getValueCode({
 		if (end === null) return ''
 		const contents = codeOnly.slice(valueStart + 1, end)
 		const contentsStructure = structureOnly.slice(valueStart + 1, end)
-		const spreadNames = findSpreadNamesAtTopLevel(contentsStructure)
-		const spreadCodes = spreadNames.map((name) =>
-			getInitializerCode({ views, name, visited }),
+		const spreads = findSpreadsAtTopLevel(contentsStructure)
+		const spreadCodes = spreads.map((spread) =>
+			spread.isPlainName
+				? getInitializerCode({ views, name: spread.name, visited })
+				: '',
 		)
 		return [contents, ...spreadCodes].join(',\n')
 	}
 	const identifier = structureOnly.slice(valueStart).match(/^[A-Za-z_$][\w$]*/)
 	if (!identifier) return ''
 	return getInitializerCode({ views, name: identifier[0], visited })
+}
+
+/**
+ * The range inside the brackets of an identifier's same-file `const` / `let`
+ * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }` —
+ * `null` otherwise (no declaration, no initializer, a call, an import).
+ * `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping at
+ * the statement end so a declaration with no initializer cannot reach the
+ * next `=` in the file.
+ *
+ * @param views - the file views
+ * @param name - the identifier whose initializer is wanted
+ */
+function findInitializerLiteralRange(
+	views: CodeViews,
+	name: string,
+): { from: number; to: number } | null {
+	const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const declaration = views.structureOnly.match(
+		new RegExp(
+			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*`,
+		),
+	)
+	if (!declaration || declaration.index === undefined) return null
+	const valueStart = declaration.index + declaration[0].length
+	const opener = views.structureOnly[valueStart]
+	if (opener !== '[' && opener !== '{') return null
+	const end = findMatchingBrace(views.structureOnly, valueStart)
+	if (end === null) return null
+	return { from: valueStart + 1, to: end }
 }
 
 interface GetInitializerCodeParams {
@@ -953,9 +1041,6 @@ interface GetInitializerCodeParams {
 /**
  * The code of an identifier's same-file initializer, resolved like any other
  * value (`getValueCode`), or `''` when the file declares no literal for it.
- * `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping at
- * the statement end so a declaration with no initializer cannot reach the
- * next `=` in the file.
  */
 function getInitializerCode({
 	views,
@@ -964,28 +1049,36 @@ function getInitializerCode({
 }: GetInitializerCodeParams): string {
 	if (visited.has(name)) return ''
 	visited.add(name)
-	const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	const declaration = views.structureOnly.match(
-		new RegExp(
-			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*`,
-		),
-	)
-	if (!declaration || declaration.index === undefined) return ''
-	const valueStart = declaration.index + declaration[0].length
-	return getValueCode({ views, valueStart, visited })
+	const range = findInitializerLiteralRange(views, name)
+	if (!range) return ''
+	// `from` is just inside the bracket; the value starts at the bracket.
+	return getValueCode({ views, valueStart: range.from - 1, visited })
 }
 
 const SPREAD_TOKEN = '...'
 
+/** One `...` spread at the top level of a literal. */
+interface TopLevelSpread {
+	/** The identifier straight after the `...`. */
+	name: string
+	/**
+	 * Whether the spread is that bare identifier and nothing more. A member
+	 * expression (`...shared.docs`) or a call spreads something the file's
+	 * declarations cannot account for, so it must not be credited with the
+	 * whole of `shared`.
+	 */
+	isPlainName: boolean
+}
+
 /**
- * The names spread at the top level of a literal's contents — `shared` in
+ * The spreads at the top level of a literal's contents — `...shared` in
  * `[a(), ...shared]` or `{ ...shared, docs: {} }` — not those inside nested
  * literals, which belong to the nested value.
  *
  * @param contents - the text between the literal's brackets, structure only
  */
-function findSpreadNamesAtTopLevel(contents: string): Array<string> {
-	const names: Array<string> = []
+function findSpreadsAtTopLevel(contents: string): Array<TopLevelSpread> {
+	const spreads: Array<TopLevelSpread> = []
 	let depth = 0
 	for (let i = 0; i < contents.length; i++) {
 		const c = contents[i]!
@@ -993,11 +1086,14 @@ function findSpreadNamesAtTopLevel(contents: string): Array<string> {
 		else if (c === '}' || c === ']' || c === ')') depth--
 		else if (depth === 0 && contents.startsWith(SPREAD_TOKEN, i)) {
 			const afterToken = contents.slice(i + SPREAD_TOKEN.length)
-			const name = afterToken.match(/^\s*([A-Za-z_$][\w$]*)/)?.[1]
-			if (name) names.push(name)
+			const spread = afterToken.match(/^\s*([A-Za-z_$][\w$]*)\s*([^\s,}\]]?)/)
+			if (spread) {
+				const [, name, charAfterName] = spread
+				spreads.push({ name: name!, isPlainName: charAfterName === '' })
+			}
 		}
 	}
-	return names
+	return spreads
 }
 
 interface GetKeyValueCodeParams {
@@ -1008,19 +1104,79 @@ interface GetKeyValueCodeParams {
 	body: { from: number; to: number }
 }
 
+/** Where a key was found, and the code its value stands for. */
+interface KeyValueCode {
+	/** `''` when the key is nowhere the file can account for. */
+	code: string
+	/**
+	 * `body` — written in the config object itself; `spread` — carried by a
+	 * same-file `const` the body spreads at its top level (`definePreview({
+	 * ...base })` with `base.addons`); `missing` — neither.
+	 */
+	location: 'body' | 'spread' | 'missing'
+	/** The spread's name when `location` is `spread`. */
+	spreadName?: string
+}
+
 /**
  * The code a key's value stands for (see `getValueCode`), scoped to one
- * object's body — `''` when the key is missing or its value cannot be
- * accounted for from the file.
+ * object's body — or, when the body does not write the key itself, to the
+ * same-file `const` the body spreads at its top level.
  */
 function getKeyValueCode({
 	views,
 	keyword,
 	body,
-}: GetKeyValueCodeParams): string {
+}: GetKeyValueCodeParams): KeyValueCode {
 	const key = findTopLevelKey(views.codeOnly, keyword, body)
-	if (!key) return ''
-	return getValueCode({ views, valueStart: key.valueStart, visited: new Set() })
+	if (key) {
+		const code = getValueCode({
+			views,
+			valueStart: key.valueStart,
+			visited: new Set(),
+		})
+		return { code, location: 'body' }
+	}
+	const bodyStructure = views.structureOnly.slice(body.from, body.to)
+	for (const spread of findSpreadsAtTopLevel(bodyStructure)) {
+		if (!spread.isPlainName) continue
+		const range = findInitializerLiteralRange(views, spread.name)
+		if (!range) continue
+		const keyInSpread = findTopLevelKey(views.codeOnly, keyword, range)
+		if (keyInSpread) {
+			const code = getValueCode({
+				views,
+				valueStart: keyInSpread.valueStart,
+				visited: new Set([spread.name]),
+			})
+			return { code, location: 'spread', spreadName: spread.name }
+		}
+	}
+	return { code: '', location: 'missing' }
+}
+
+/**
+ * The name of the first thing spread at the top level of the config body
+ * that the file cannot account for — an import, a call, a member expression
+ * — or `null` when every body-level spread is a same-file literal. A key the
+ * patcher would create after such a spread might be overriding one the
+ * spread carries, so it refuses instead.
+ *
+ * @param views - the file views
+ * @param body - the range inside the config object's braces
+ */
+function findOpaqueBodySpread(
+	views: CodeViews,
+	body: { from: number; to: number },
+): string | null {
+	const bodyStructure = views.structureOnly.slice(body.from, body.to)
+	for (const spread of findSpreadsAtTopLevel(bodyStructure)) {
+		const isSameFileLiteral =
+			spread.isPlainName &&
+			findInitializerLiteralRange(views, spread.name) !== null
+		if (!isSameFileLiteral) return spread.name
+	}
+	return null
 }
 
 /**
@@ -1130,18 +1286,40 @@ function patchDefinePreview({
 	// a spread or a bare identifier points at — so a half that sits in a value
 	// the patcher cannot edit still counts as present, while a value the file
 	// cannot account for (a call, an import) counts as holding nothing.
-	const addonsCode = getKeyValueCode({ views, keyword: 'addons', body })
-	const parametersCode = getKeyValueCode({ views, keyword: 'parameters', body })
+	const addonsValue = getKeyValueCode({ views, keyword: 'addons', body })
+	const parametersValue = getKeyValueCode({
+		views,
+		keyword: 'parameters',
+		body,
+	})
 	const isDependencyPreviewsInList = checkDoesListCall(
-		addonsCode,
+		addonsValue.code,
 		dependencyPreviewsLocal,
 	)
-	const isAddonDocsInList = checkDoesListCall(addonsCode, addonDocsLocal)
+	const isAddonDocsInList = checkDoesListCall(addonsValue.code, addonDocsLocal)
 	const isRegisteredInAddons = isDependencyPreviewsInList && isAddonDocsInList
-	const hasSettingsBlock = checkHasSettingsKeyAtTopLevel(parametersCode)
+	const hasSettingsBlock = checkHasSettingsKeyAtTopLevel(parametersValue.code)
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
+	// A key the body does not write itself may be carried by something the
+	// body spreads at its top level (`definePreview({ ...shared })`). A key
+	// created here would run after such a spread and override it, so: a key
+	// carried by a same-file spread is not created beside it, and when the
+	// spread is something the file cannot see inside nothing is created at
+	// all — the user is told what to add instead. A key nobody carries is
+	// created after the spreads, so that it runs.
+	const opaqueBodySpread = findOpaqueBodySpread(views, body)
+	const hasBodySpread =
+		findSpreadsAtTopLevel(views.structureOnly.slice(body.from, body.to))
+			.length > 0
+	const spreadRefusal = (
+		keyword: string,
+		spreadName: string,
+	): PreviewPatchResult => ({
+		kind: 'failed',
+		reason: `Preview config takes \`${keyword}\` from \`...${spreadName}\`, which the wizard does not edit — please add \`addonDocs()\` and \`dependencyPreviews()\` to \`addons\` and the \`dependencyPreviews\` parameters manually.`,
+	})
 	// What the body edits inserted — decides the imports at the end, and
 	// whether anything is written at all (nothing inserted means every half
 	// was already present, in a literal or a non-literal value).
@@ -1203,12 +1381,24 @@ function patchDefinePreview({
 					'Preview config defines `addons` in a non-literal-array form — please add `addonDocs()` and `dependencyPreviews()` to it manually.',
 			}
 		}
+	} else if (addonsValue.location === 'spread') {
+		// The list lives in a same-file spread. Complete there, nothing to do;
+		// short there, the wizard will not create a second list over it.
+		if (!isRegisteredInAddons) {
+			return spreadRefusal('addons', addonsValue.spreadName!)
+		}
+	} else if (opaqueBodySpread !== null) {
+		return spreadRefusal('addons', opaqueBodySpread)
 	} else {
-		const insertAt = bodyRange.from
-		const insertion = `${eol}${l1}addons: [${addonDocsLocal}(), ${dependencyPreviewsLocal}()],`
-		newContent =
-			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
-		addonsCreatedEndOffset = insertAt + insertion.length
+		const created = createKeyInBody({
+			content: newContent,
+			body: bodyRange,
+			entry: `addons: [${addonDocsLocal}(), ${dependencyPreviewsLocal}()],`,
+			isAfterSpreads: hasBodySpread,
+			style,
+		})
+		newContent = created.content
+		addonsCreatedEndOffset = created.endOffset
 		inserted.addonDocsCall = true
 		inserted.dependencyPreviewsCall = true
 	}
@@ -1265,11 +1455,28 @@ function patchDefinePreview({
 					'Preview config already defines `parameters` in a non-literal-object form — please manually add the `dependencyPreviews` block to the existing parameters definition.',
 			}
 		}
-	} else {
-		const insertAt = addonsCreatedEndOffset ?? bodyRangeAfterAddons.from
+	} else if (parametersValue.location === 'spread') {
+		if (!hasSettingsBlock) {
+			return spreadRefusal('parameters', parametersValue.spreadName!)
+		}
+	} else if (opaqueBodySpread !== null) {
+		return spreadRefusal('parameters', opaqueBodySpread)
+	} else if (addonsCreatedEndOffset !== null) {
+		// Straight after the `addons:` created above, wherever that landed.
+		const insertAt = addonsCreatedEndOffset
 		const insertion = `${eol}${l1}parameters: {${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		inserted.settingsBlock = true
+	} else {
+		const created = createKeyInBody({
+			content: newContent,
+			body: bodyRangeAfterAddons,
+			entry: `parameters: {${eol}${block}${eol}${l1}},`,
+			isAfterSpreads: hasBodySpread,
+			style,
+		})
+		newContent = created.content
 		inserted.settingsBlock = true
 	}
 
@@ -1353,6 +1560,20 @@ function patchExistingPreview(
 	const isUnresolvedDefinePreview =
 		!isCsfNext && /\bdefinePreview\s*\(/.test(views.structureOnly)
 	if (isUnresolvedDefinePreview) {
+		// A hand-configured file the finder cannot read is not refused on every
+		// run: when the file carries both registrations somewhere, it is
+		// reported as configured — with the caveat that, unread, the config is
+		// only presumed to hold them.
+		const doesCarryBothHalves =
+			checkDoesListCall(views.structureOnly, 'dependencyPreviews') &&
+			checkHasSettingsBlock(codeOnly)
+		if (doesCarryBothHalves) {
+			return {
+				kind: 'skipped',
+				reason:
+					'addon appears already configured in preview (the definePreview config could not be read — check that `addonDocs()` and `dependencyPreviews()` are in its `addons`)',
+			}
+		}
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}
 
