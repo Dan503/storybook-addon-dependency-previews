@@ -1195,10 +1195,10 @@ interface GetKeyValueCodeParams {
  * Where a key's value comes from at runtime, and the code it stands for.
  * `body` — the config object's own key; `spread` — a same-file `const` the
  * body spreads at its top level (`definePreview({ ...base })` with
- * `base.addons`), or one that such a const spreads in turn; `unreadable` —
- * something spread at either level that the file cannot see inside (an
- * import, a call, an expression), which may or may not carry the key;
- * `missing` — nothing in the body writes it.
+ * `base.addons`), or one reached through any chain of such consts;
+ * `unreadable` — something spread at any depth that the file cannot see
+ * inside (an import, a call, an expression), which may or may not carry the
+ * key; `missing` — nothing in the body writes it.
  */
 type KeyValueCode =
 	| {
