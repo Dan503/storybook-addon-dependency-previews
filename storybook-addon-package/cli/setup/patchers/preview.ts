@@ -149,11 +149,15 @@ const DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK: Partial<
 const FIRST_STORYBOOK_MAJOR_WITH_CSF_NEXT = 11
 
 interface BuildDefinePreviewTemplateParams {
+	/** Decides the story glob in the settings block. */
 	framework: SupportedFramework
 	/** The package `definePreview` is imported from (see `DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK`). */
 	definePreviewPackage: string
+	/** The project's source-root URL, written into the settings block. */
 	sourceRootUrl: string
+	/** The resolved source folder, written into the story glob. */
 	srcDir: string
+	/** Indent and line ending for the new file. */
 	style: TemplateStyle
 	/** Whether the file is TypeScript — decides the `vite/client` reference line. */
 	isTs: boolean
@@ -209,10 +213,15 @@ function previewLangForMainLang(
 }
 
 interface TemplateForFrameworkParams {
+	/** Decides the story glob, and whether a CSF Next template is available. */
 	framework: SupportedFramework
+	/** The project's source-root URL, written into the settings block. */
 	sourceRootUrl: string
+	/** The resolved source folder, written into the story glob. */
 	srcDir: string
+	/** Indent and line ending for the new file. */
 	style: TemplateStyle
+	/** The main file's extension — decides whether the preview is `.ts` or `.js`. */
 	mainLang: MainFile['lang']
 	/** Major version of the installed `storybook` package; `null` when unknown. */
 	storybookMajor: number | null
@@ -308,15 +317,18 @@ interface PreviewFileStyle {
 }
 
 interface MergeAddonImportParams {
+	/** The file's current content. */
 	content: string
 	/** The value names the patched file must import from the addon package. */
 	requiredValueNames: ReadonlyArray<string>
 	/** The type names it must import — TypeScript only, and empty otherwise. */
 	requiredTypeNames: ReadonlyArray<string>
+	/** The file's formatting, for the rewritten or fresh import statement. */
 	style: PreviewFileStyle
 }
 
 interface MergedAddonImport {
+	/** The content with the existing addon imports merged into one, else unchanged. */
 	content: string
 	/**
 	 * The local binding name for each required value name — the alias when the
@@ -510,9 +522,11 @@ function dependenciesJsonImportToInsert(
 }
 
 interface InsertImportsParams {
+	/** The file's current content. */
 	content: string
 	/** Whole import statements, each already in the file's style. */
 	statements: ReadonlyArray<string>
+	/** The file's line ending. */
 	eol: string
 }
 
@@ -656,6 +670,7 @@ interface ListInsertionParams {
 	listText: string
 	/** The entries to add at the front of the list. */
 	entries: ReadonlyArray<string>
+	/** The file's formatting, for the multi-line case. */
 	style: PreviewFileStyle
 }
 
@@ -681,14 +696,19 @@ function listInsertion({
 }
 
 interface PatchDefinePreviewParams {
+	/** The file being patched — written back at the end. */
 	previewFile: PreviewFile
 	/** The file's current content. */
 	content: string
 	/** `content` with comments stripped, for the identifier checks. */
 	codeOnly: string
+	/** The file's formatting, matched by everything inserted. */
 	style: PreviewFileStyle
+	/** Decides the story glob in the settings block. */
 	framework: SupportedFramework
+	/** The project's source-root URL, written into the settings block. */
 	sourceRootUrl: string
+	/** The resolved source folder, written into the story glob. */
 	srcDir: string
 }
 
@@ -1127,8 +1147,10 @@ export interface PatchPreviewFileOptions {
 
 /**
  * Patch (or create) the project's `.storybook/preview.{ts,tsx,js,jsx}` so
- * the addon's parameters and decorators are wired in. Idempotent —
- * re-runs against an already-configured preview return `{ kind: 'skipped' }`.
+ * the addon is wired in — through `dependencyPreviews()` in a CSF Next
+ * `definePreview({ ... })` file, or the parameters and decorators spreads in a
+ * classic one. Idempotent — re-runs against an already-configured preview
+ * return `{ kind: 'skipped' }`.
  */
 export function patchPreviewFile(
 	opts: PatchPreviewFileOptions,
