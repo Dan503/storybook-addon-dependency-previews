@@ -119,7 +119,9 @@ export function findClosingQuote(
 /**
  * Characters after which a `/` starts a regex literal rather than dividing —
  * the start of an expression. After a name, a number, a `)` or a `]` it is
- * division.
+ * division. `<` is deliberately absent: in the `.tsx` / `.jsx` files the
+ * wizard patches, a `/` straight after `<` is a JSX closing tag (`</div>`),
+ * and a regex directly after a `<` comparison is rare enough to give up.
  */
 const REGEX_LITERAL_PRECEDERS: ReadonlyArray<string> = [
 	'(',
@@ -138,7 +140,6 @@ const REGEX_LITERAL_PRECEDERS: ReadonlyArray<string> = [
 	'-',
 	'*',
 	'%',
-	'<',
 	'>',
 	'~',
 	'^',
@@ -529,10 +530,12 @@ export function stripCommentsRespectingStrings(content: string): string {
  * string (`const example = 'definePreview({})'`) then cannot be mistaken for
  * the real thing.
  *
- * A quote only opens a string when its closing twin can be found: on the same
- * line for `'` and `"`, anywhere later in the text for a backtick. A quote
- * with no twin — a regex literal like `/['"]/`, an apostrophe in JSX text —
- * is left as it is, so it cannot blank the rest of the file. Run it on
+ * A quote only opens a string when its closing twin can be found (the shared
+ * `findClosingQuote` rule): on the same line for `'` and `"`, anywhere later
+ * in the text for a backtick. A quote with no twin — an apostrophe in JSX
+ * text — is left as it is, so it cannot blank the rest of the file. A regex
+ * literal (`/['"]/`) is stepped over whole, and its pattern is blanked
+ * whenever `'…'` strings are, so its quotes never count. Run it on
  * comment-stripped text; a quote inside a comment would otherwise count.
  *
  * @param codeOnly - text with comments already stripped
