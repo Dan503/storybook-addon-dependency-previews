@@ -793,6 +793,42 @@ function findAddonNamedImportLocalName(
 	return entry?.alias ?? exportedName
 }
 
+/** How a file binds the addon's `dependencyPreviews` registration function. */
+interface DependencyPreviewsBinding {
+	/** The name the file calls it by. */
+	localName: string
+	/**
+	 * Whether that name is the package's default import — one a named import
+	 * must not be merged beside, since it would declare the name twice.
+	 */
+	isDefaultImport: boolean
+}
+
+/**
+ * The local name a file gives `dependencyPreviews`. It is also the package's
+ * default export, and the docs used to show it imported that way — `import
+ * dependencyPreviews from '…'` — so a default import (possibly with a named
+ * list after it) is checked first, then the named import under any alias
+ * (`findAddonNamedImportLocalName`), which also gives the name a fresh
+ * import would bind when the file has neither.
+ *
+ * @param content - the file content
+ * @param codeOnly - the same content with comments stripped
+ */
+function findDependencyPreviewsBinding(
+	content: string,
+	codeOnly: string,
+): DependencyPreviewsBinding {
+	const defaultImportLocal = findDefaultImportLocalName(codeOnly, PKG)
+	if (defaultImportLocal) {
+		return { localName: defaultImportLocal, isDefaultImport: true }
+	}
+	return {
+		localName: findAddonNamedImportLocalName(content, 'dependencyPreviews'),
+		isDefaultImport: false,
+	}
+}
+
 interface AddListEntriesParams {
 	/** The file content. */
 	content: string
@@ -891,8 +927,13 @@ interface CreateKeyInBodyParams {
 	content: string
 	/** The range inside the config object's braces. */
 	body: { from: number; to: number }
-	/** The key and value to write, as one entry ending in its comma. */
+	/**
+	 * The key and value to write, as one entry ending in its comma, without
+	 * the indent of its first line (later lines carry their own).
+	 */
 	entry: string
+	/** The indent of the entry's first line — one level for a config key. */
+	entryIndent: string
 	/**
 	 * Whether the entry has to run after the body's top-level spreads — at
 	 * the end of the body rather than its start — so nothing spread in later
@@ -904,22 +945,23 @@ interface CreateKeyInBodyParams {
 }
 
 /**
- * Write a new key into the config object: at the start of its body, or at
+ * Write a new key into an object literal: at the start of its body, or at
  * the end when the body spreads other objects (a comma is added after the
- * last existing entry when it has none). Returns the content and the offset
- * just after the entry, so a second created key can follow it.
+ * last existing entry when it has none, and the new key goes below any
+ * comment on that entry's line). Returns the content and the offset just
+ * after the entry, so a second created key can follow it.
  */
 function createKeyInBody({
 	content,
 	body,
 	entry,
+	entryIndent,
 	isAfterSpreads,
 	style,
 }: CreateKeyInBodyParams): { content: string; endOffset: number } {
-	const { indent, eol } = style
-	const l1 = indent
+	const { eol } = style
 	if (!isAfterSpreads) {
-		const insertion = `${eol}${l1}${entry}`
+		const insertion = `${eol}${entryIndent}${entry}`
 		const insertAt = body.from
 		return {
 			content: content.slice(0, insertAt) + insertion + content.slice(insertAt),
@@ -933,10 +975,19 @@ function createKeyInBody({
 	)
 	const trimmedEnd = existingCode.trimEnd()
 	const doesEndWithComma = trimmedEnd === '' || trimmedEnd.endsWith(',')
-	const insertAt = body.from + trimmedEnd.length
-	const insertion = `${doesEndWithComma ? '' : ','}${eol}${l1}${entry}`
+	const commaAt = body.from + trimmedEnd.length
+	const comma = doesEndWithComma ? '' : ','
+	const withComma = content.slice(0, commaAt) + comma + content.slice(commaAt)
+	// A comment sharing the last entry's line stays on that line: the new
+	// entry goes in after it, not between the entry and its comment.
+	const sameLineComment = withComma
+		.slice(commaAt + comma.length)
+		.match(/^(?:[ \t]*(?:\/\/[^\r\n]*|\/\*(?:(?!\*\/)[^\r\n])*\*\/))*/)
+	const insertAt = commaAt + comma.length + (sameLineComment?.[0].length ?? 0)
+	const insertion = `${eol}${entryIndent}${entry}`
 	return {
-		content: content.slice(0, insertAt) + insertion + content.slice(insertAt),
+		content:
+			withComma.slice(0, insertAt) + insertion + withComma.slice(insertAt),
 		endOffset: insertAt + insertion.length,
 	}
 }
@@ -986,8 +1037,10 @@ function getValueCode({
 		const end = findMatchingBrace(structureOnly, valueStart)
 		if (end === null) return ''
 		const contents = codeOnly.slice(valueStart + 1, end)
-		const contentsStructure = structureOnly.slice(valueStart + 1, end)
-		const spreads = findSpreadsAtTopLevel(contentsStructure)
+		const spreads = findSpreadsAtTopLevel(views, {
+			from: valueStart + 1,
+			to: end,
+		})
 		const spreadCodes = spreads.map((spread) =>
 			spread.isPlainName
 				? getInitializerCode({ views, name: spread.name, visited })
@@ -1059,25 +1112,37 @@ const SPREAD_TOKEN = '...'
 
 /** One `...` spread at the top level of a literal. */
 interface TopLevelSpread {
-	/** The identifier straight after the `...`. */
+	/**
+	 * What is spread: the bare identifier (`shared`), or otherwise the whole
+	 * expression as written (`shared.docs`, `getAddons()`, `(cond ? a : {})`)
+	 * for naming it in a message.
+	 */
 	name: string
 	/**
-	 * Whether the spread is that bare identifier and nothing more. A member
-	 * expression (`...shared.docs`) or a call spreads something the file's
-	 * declarations cannot account for, so it must not be credited with the
-	 * whole of `shared`.
+	 * Whether the spread is a bare identifier and nothing more. Anything else
+	 * spreads something the file's declarations cannot account for, so it must
+	 * not be credited with the whole of `shared`.
 	 */
 	isPlainName: boolean
+	/** Position of the `...` in the file. */
+	position: number
 }
 
 /**
  * The spreads at the top level of a literal's contents — `...shared` in
  * `[a(), ...shared]` or `{ ...shared, docs: {} }` — not those inside nested
- * literals, which belong to the nested value.
+ * literals, which belong to the nested value. Every `...` is recorded,
+ * whatever follows it, so a spread of an expression is never invisible to a
+ * caller deciding where a created key has to go.
  *
- * @param contents - the text between the literal's brackets, structure only
+ * @param views - the file views
+ * @param range - the range between the literal's brackets
  */
-function findSpreadsAtTopLevel(contents: string): Array<TopLevelSpread> {
+function findSpreadsAtTopLevel(
+	views: CodeViews,
+	range: { from: number; to: number },
+): Array<TopLevelSpread> {
+	const contents = views.structureOnly.slice(range.from, range.to)
 	const spreads: Array<TopLevelSpread> = []
 	let depth = 0
 	for (let i = 0; i < contents.length; i++) {
@@ -1085,12 +1150,29 @@ function findSpreadsAtTopLevel(contents: string): Array<TopLevelSpread> {
 		if (c === '{' || c === '[' || c === '(') depth++
 		else if (c === '}' || c === ']' || c === ')') depth--
 		else if (depth === 0 && contents.startsWith(SPREAD_TOKEN, i)) {
-			const afterToken = contents.slice(i + SPREAD_TOKEN.length)
-			const spread = afterToken.match(/^\s*([A-Za-z_$][\w$]*)\s*([^\s,}\]]?)/)
-			if (spread) {
-				const [, name, charAfterName] = spread
-				spreads.push({ name: name!, isPlainName: charAfterName === '' })
+			// The operand runs to the next comma at this level, or to the end.
+			const operandStart = i + SPREAD_TOKEN.length
+			let operandEnd = operandStart
+			let operandDepth = 0
+			while (operandEnd < contents.length) {
+				const oc = contents[operandEnd]!
+				if (oc === '{' || oc === '[' || oc === '(') operandDepth++
+				else if (oc === '}' || oc === ']' || oc === ')') operandDepth--
+				else if (oc === ',' && operandDepth === 0) break
+				operandEnd++
 			}
+			const operandStructure = contents.slice(operandStart, operandEnd).trim()
+			const isPlainName = /^[A-Za-z_$][\w$]*$/.test(operandStructure)
+			// The structure view has string contents blanked, so the display
+			// name of an expression is read from the code view.
+			const name = isPlainName
+				? operandStructure
+				: views.codeOnly
+						.slice(range.from + operandStart, range.from + operandEnd)
+						.trim()
+			spreads.push({ name, isPlainName, position: range.from + i })
+			// The operand's brackets balanced, so the depth is unchanged.
+			i = operandEnd - 1
 		}
 	}
 	return spreads
@@ -1104,24 +1186,35 @@ interface GetKeyValueCodeParams {
 	body: { from: number; to: number }
 }
 
-/** Where a key was found, and the code its value stands for. */
-interface KeyValueCode {
-	/** `''` when the key is nowhere the file can account for. */
-	code: string
-	/**
-	 * `body` — written in the config object itself; `spread` — carried by a
-	 * same-file `const` the body spreads at its top level (`definePreview({
-	 * ...base })` with `base.addons`); `missing` — neither.
-	 */
-	location: 'body' | 'spread' | 'missing'
-	/** The spread's name when `location` is `spread`. */
-	spreadName?: string
-}
+/**
+ * Where a key's value comes from at runtime, and the code it stands for.
+ * `body` — the config object's own key; `spread` — a same-file `const` the
+ * body spreads at its top level (`definePreview({ ...base })` with
+ * `base.addons`); `unreadable` — something spread there that the file cannot
+ * see inside (an import, a call, an expression), which may or may not carry
+ * the key; `missing` — nothing in the body writes it.
+ */
+type KeyValueCode =
+	| {
+			location: 'body' | 'missing'
+			/** `''` when the key is nowhere the file can account for. */
+			code: string
+	  }
+	| {
+			location: 'spread' | 'unreadable'
+			/** `''` for `unreadable`: what the spread carries is not readable. */
+			code: string
+			/** The spread, as written after its `...`. */
+			spreadName: string
+	  }
 
 /**
  * The code a key's value stands for (see `getValueCode`), scoped to one
- * object's body — or, when the body does not write the key itself, to the
- * same-file `const` the body spreads at its top level.
+ * object's body. The body's own key and its top-level spreads are all
+ * writers of the key, and at runtime the last one in source order wins, so
+ * they are walked last to first: a same-file spread that carries the key or
+ * the body's own key is the value; a spread the file cannot read is reached
+ * before either of those makes the value unknowable.
  */
 function getKeyValueCode({
 	views,
@@ -1129,19 +1222,17 @@ function getKeyValueCode({
 	body,
 }: GetKeyValueCodeParams): KeyValueCode {
 	const key = findTopLevelKey(views.codeOnly, keyword, body)
-	if (key) {
-		const code = getValueCode({
-			views,
-			valueStart: key.valueStart,
-			visited: new Set(),
-		})
-		return { code, location: 'body' }
-	}
-	const bodyStructure = views.structureOnly.slice(body.from, body.to)
-	for (const spread of findSpreadsAtTopLevel(bodyStructure)) {
-		if (!spread.isPlainName) continue
-		const range = findInitializerLiteralRange(views, spread.name)
-		if (!range) continue
+	const spreads = findSpreadsAtTopLevel(views, body)
+	const spreadsAfterKey = key
+		? spreads.filter((spread) => spread.position > key.valueStart)
+		: spreads
+	for (const spread of spreadsAfterKey.reverse()) {
+		const range = spread.isPlainName
+			? findInitializerLiteralRange(views, spread.name)
+			: null
+		if (!range) {
+			return { code: '', location: 'unreadable', spreadName: spread.name }
+		}
 		const keyInSpread = findTopLevelKey(views.codeOnly, keyword, range)
 		if (keyInSpread) {
 			const code = getValueCode({
@@ -1152,31 +1243,38 @@ function getKeyValueCode({
 			return { code, location: 'spread', spreadName: spread.name }
 		}
 	}
+	if (key) {
+		const code = getValueCode({
+			views,
+			valueStart: key.valueStart,
+			visited: new Set(),
+		})
+		return { code, location: 'body' }
+	}
 	return { code: '', location: 'missing' }
 }
 
 /**
- * The name of the first thing spread at the top level of the config body
- * that the file cannot account for — an import, a call, a member expression
- * — or `null` when every body-level spread is a same-file literal. A key the
- * patcher would create after such a spread might be overriding one the
- * spread carries, so it refuses instead.
+ * Whether a key's value, written in the body as an object literal, spreads
+ * anything at its own top level (`parameters: { ...base }`) — so a key
+ * created inside it has to go after the spread. `false` when the key is
+ * absent or its value is not a `{ … }` literal.
  *
  * @param views - the file views
- * @param body - the range inside the config object's braces
+ * @param keyword - the key whose literal value is checked
+ * @param body - the range inside the braces of the object holding the key
  */
-function findOpaqueBodySpread(
+function checkHasSpreadInLiteralValue(
 	views: CodeViews,
+	keyword: string,
 	body: { from: number; to: number },
-): string | null {
-	const bodyStructure = views.structureOnly.slice(body.from, body.to)
-	for (const spread of findSpreadsAtTopLevel(bodyStructure)) {
-		const isSameFileLiteral =
-			spread.isPlainName &&
-			findInitializerLiteralRange(views, spread.name) !== null
-		if (!isSameFileLiteral) return spread.name
-	}
-	return null
+): boolean {
+	const key = findTopLevelKey(views.codeOnly, keyword, body)
+	if (!key || views.structureOnly[key.valueStart] !== '{') return false
+	const end = findMatchingBrace(views.structureOnly, key.valueStart)
+	if (end === null) return false
+	const literal = { from: key.valueStart + 1, to: end }
+	return findSpreadsAtTopLevel(views, literal).length > 0
 }
 
 /**
@@ -1259,15 +1357,11 @@ function patchDefinePreview({
 
 	// ─── Local names. The body edits come first and the imports last, so an
 	// import is only ever added for something the edits actually inserted.
-	// `dependencyPreviews` is also the package's default export, and the docs
-	// used to show it imported that way — `import dependencyPreviews from '…'`
-	// — so a file may already bind it under a default import (possibly with a
-	// named list after it). That binding is used as is; merging a named import
-	// on top would declare the same name twice.
-	const defaultAddonImportLocal = findDefaultImportLocalName(codeOnly, PKG)
-	const dependencyPreviewsLocal =
-		defaultAddonImportLocal ??
-		findAddonNamedImportLocalName(content, 'dependencyPreviews')
+	const dependencyPreviewsBinding = findDependencyPreviewsBinding(
+		content,
+		codeOnly,
+	)
+	const dependencyPreviewsLocal = dependencyPreviewsBinding.localName
 	// The docs addon may already be registered under any local name
 	// (`import docs from '@storybook/addon-docs'`); when it is, that name is
 	// what the `addons` scan below looks for.
@@ -1302,24 +1396,31 @@ function patchDefinePreview({
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
-	// A key the body does not write itself may be carried by something the
-	// body spreads at its top level (`definePreview({ ...shared })`). A key
-	// created here would run after such a spread and override it, so: a key
-	// carried by a same-file spread is not created beside it, and when the
-	// spread is something the file cannot see inside nothing is created at
-	// all — the user is told what to add instead. A key nobody carries is
-	// created after the spreads, so that it runs.
-	const opaqueBodySpread = findOpaqueBodySpread(views, body)
-	const hasBodySpread =
-		findSpreadsAtTopLevel(views.structureOnly.slice(body.from, body.to))
-			.length > 0
+	// Each key is handled by where its runtime value comes from
+	// (`getKeyValueCode`): the body's own key is edited in place; a key a
+	// same-file spread carries is left alone when complete and not overridden
+	// with a second key when short; a spread the file cannot see inside, which
+	// may carry the key, stops the run with the manual message; and a key
+	// nobody writes is created after the body's spreads, so that it runs.
+	const hasBodySpread = findSpreadsAtTopLevel(views, body).length > 0
+	const hasParametersSpread = checkHasSpreadInLiteralValue(
+		views,
+		'parameters',
+		body,
+	)
 	const spreadRefusal = (
 		keyword: string,
-		spreadName: string,
-	): PreviewPatchResult => ({
-		kind: 'failed',
-		reason: `Preview config takes \`${keyword}\` from \`...${spreadName}\`, which the wizard does not edit — please add \`addonDocs()\` and \`dependencyPreviews()\` to \`addons\` and the \`dependencyPreviews\` parameters manually.`,
-	})
+		value: Extract<KeyValueCode, { spreadName: string }>,
+	): PreviewPatchResult => {
+		const source =
+			value.location === 'spread'
+				? `takes \`${keyword}\` from \`...${value.spreadName}\`, which the wizard does not edit`
+				: `may take \`${keyword}\` from \`...${value.spreadName}\`, which the wizard cannot read`
+		return {
+			kind: 'failed',
+			reason: `Preview config ${source} — please add \`addonDocs()\` and \`dependencyPreviews()\` to \`addons\` and the \`dependencyPreviews\` parameters manually.`,
+		}
+	}
 	// What the body edits inserted — decides the imports at the end, and
 	// whether anything is written at all (nothing inserted means every half
 	// was already present, in a literal or a non-literal value).
@@ -1347,7 +1448,17 @@ function patchDefinePreview({
 	// lands after it rather than at the same body-start position.
 	let addonsCreatedEndOffset: number | null = null
 	const addonsKey = findTopLevelKey(newContent, 'addons', bodyRange)
-	if (addonsKey && newContent[addonsKey.valueStart] === '[') {
+	if (
+		addonsValue.location === 'spread' ||
+		addonsValue.location === 'unreadable'
+	) {
+		// A spread after the body's own key (if any) decides the value: complete
+		// in a same-file spread, nothing to do; short there, or unreadable, the
+		// wizard will not write a list that does not run.
+		if (!isRegisteredInAddons) {
+			return spreadRefusal('addons', addonsValue)
+		}
+	} else if (addonsKey && newContent[addonsKey.valueStart] === '[') {
 		const listStart = addonsKey.valueStart + 1
 		const listEnd =
 			findMatchingBrace(newContent, addonsKey.valueStart) ?? listStart
@@ -1381,19 +1492,12 @@ function patchDefinePreview({
 					'Preview config defines `addons` in a non-literal-array form — please add `addonDocs()` and `dependencyPreviews()` to it manually.',
 			}
 		}
-	} else if (addonsValue.location === 'spread') {
-		// The list lives in a same-file spread. Complete there, nothing to do;
-		// short there, the wizard will not create a second list over it.
-		if (!isRegisteredInAddons) {
-			return spreadRefusal('addons', addonsValue.spreadName!)
-		}
-	} else if (opaqueBodySpread !== null) {
-		return spreadRefusal('addons', opaqueBodySpread)
 	} else {
 		const created = createKeyInBody({
 			content: newContent,
 			body: bodyRange,
 			entry: `addons: [${addonDocsLocal}(), ${dependencyPreviewsLocal}()],`,
+			entryIndent: l1,
 			isAfterSpreads: hasBodySpread,
 			style,
 		})
@@ -1419,7 +1523,14 @@ function patchDefinePreview({
 		'parameters',
 		bodyRangeAfterAddons,
 	)
-	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
+	if (
+		parametersValue.location === 'spread' ||
+		parametersValue.location === 'unreadable'
+	) {
+		if (!hasSettingsBlock) {
+			return spreadRefusal('parameters', parametersValue)
+		}
+	} else if (paramsKey && newContent[paramsKey.valueStart] === '{') {
 		// Nothing to do when the block is already there — only `addons` needed
 		// the edit.
 		if (!hasSettingsBlock) {
@@ -1437,11 +1548,21 @@ function patchDefinePreview({
 				closeIndent: l1,
 				style,
 			})
-			const insertion = `${eol}${block}`
-			newContent =
-				newContent.slice(0, paramsStart) +
-				insertion +
-				newContent.slice(paramsStart)
+			// The same care as for the config body, one level down: a spread
+			// inside `parameters` could carry the settings key, so the block goes
+			// after any spread there. The literal only moved in the layout pass,
+			// so the spreads read from the original views still describe it.
+			const paramsEndAfterLayout =
+				findMatchingBrace(newContent, paramsKey.valueStart) ?? paramsStart
+			const created = createKeyInBody({
+				content: newContent,
+				body: { from: paramsStart, to: paramsEndAfterLayout },
+				entry: block.slice(l2.length),
+				entryIndent: l2,
+				isAfterSpreads: hasParametersSpread,
+				style,
+			})
+			newContent = created.content
 			inserted.settingsBlock = true
 		}
 	} else if (paramsKey) {
@@ -1455,12 +1576,6 @@ function patchDefinePreview({
 					'Preview config already defines `parameters` in a non-literal-object form — please manually add the `dependencyPreviews` block to the existing parameters definition.',
 			}
 		}
-	} else if (parametersValue.location === 'spread') {
-		if (!hasSettingsBlock) {
-			return spreadRefusal('parameters', parametersValue.spreadName!)
-		}
-	} else if (opaqueBodySpread !== null) {
-		return spreadRefusal('parameters', opaqueBodySpread)
 	} else if (addonsCreatedEndOffset !== null) {
 		// Straight after the `addons:` created above, wherever that landed.
 		const insertAt = addonsCreatedEndOffset
@@ -1473,6 +1588,7 @@ function patchDefinePreview({
 			content: newContent,
 			body: bodyRangeAfterAddons,
 			entry: `parameters: {${eol}${block}${eol}${l1}},`,
+			entryIndent: l1,
 			isAfterSpreads: hasBodySpread,
 			style,
 		})
@@ -1491,7 +1607,10 @@ function patchDefinePreview({
 	// ─── Imports, for what was inserted. The import edits all sit above the
 	// body, so they come last and shift nothing the edits above relied on.
 	const importsToInsert: string[] = []
-	if (inserted.dependencyPreviewsCall && !defaultAddonImportLocal) {
+	if (
+		inserted.dependencyPreviewsCall &&
+		!dependencyPreviewsBinding.isDefaultImport
+	) {
 		const merged = mergeAddonImport({
 			content: newContent,
 			requiredValueNames: ['dependencyPreviews'],
@@ -1561,11 +1680,13 @@ function patchExistingPreview(
 		!isCsfNext && /\bdefinePreview\s*\(/.test(views.structureOnly)
 	if (isUnresolvedDefinePreview) {
 		// A hand-configured file the finder cannot read is not refused on every
-		// run: when the file carries both registrations somewhere, it is
-		// reported as configured — with the caveat that, unread, the config is
-		// only presumed to hold them.
+		// run: when the file carries both registrations somewhere — the call
+		// under whatever name the file imports it as — it is reported as
+		// configured, with the caveat that, unread, the config is only presumed
+		// to hold them.
+		const { localName } = findDependencyPreviewsBinding(content, codeOnly)
 		const doesCarryBothHalves =
-			checkDoesListCall(views.structureOnly, 'dependencyPreviews') &&
+			checkDoesListCall(views.structureOnly, localName) &&
 			checkHasSettingsBlock(codeOnly)
 		if (doesCarryBothHalves) {
 			return {
