@@ -168,15 +168,16 @@ export function findRegexLiteralEnd(
 	slashIndex: number,
 ): number | null {
 	const next = text[slashIndex + 1]
-	if (next === '/' || next === '*') return null
+	// `//` and `/*` open comments; `/>` closes a self-contained JSX tag
+	// (`<Dark theme={t} />`, whose `}` would otherwise pass as a preceder). A
+	// regex whose pattern starts with `>` is rare enough to give up.
+	if (next === '/' || next === '*' || next === '>') return null
 	let before = slashIndex - 1
 	while (before >= 0 && /\s/.test(text[before]!)) before--
 	// Only the tail can hold a keyword, so only the tail is tested.
 	const longestKeywordLength = 'delete'.length
-	const tail = text.slice(
-		Math.max(0, before - longestKeywordLength),
-		before + 1,
-	)
+	const tailStart = before - longestKeywordLength
+	const tail = text.slice(Math.max(0, tailStart), before + 1)
 	const isExpressionStart =
 		before < 0 ||
 		REGEX_LITERAL_PRECEDERS.includes(text[before]!) ||
