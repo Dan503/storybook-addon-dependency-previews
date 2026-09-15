@@ -358,15 +358,17 @@ function mergeAddonImport({
 	style,
 }: MergeAddonImportParams): MergedAddonImport {
 	const { indent, eol, quote, trailingSemi } = style
-	// Match the whole import statement including any trailing semicolon and the
-	// terminating newline — one newline only, so a rewritten import keeps the
-	// blank line after it — so that deletions of additional imports don't
-	// leave stray `;` lines behind in semicolon-using projects. The name list
-	// is `[^}]*` rather than `[\s\S]*?`: a lazy any-character group can start
-	// at an earlier `import {` from another package and run on until it
-	// reaches the addon's `} from …`, swallowing every import in between.
+	// Match the whole import statement including any trailing semicolon, a
+	// trailing `// …` or `/* … */` comment on the same line (captured, and put
+	// back on the rewritten statement), and the terminating newline — one
+	// newline only, so a rewritten import keeps the blank line after it — so
+	// that deletions of additional imports don't leave stray `;` lines behind
+	// in semicolon-using projects. The name list is `[^}]*` rather than
+	// `[\s\S]*?`: a lazy any-character group can start at an earlier `import {`
+	// from another package and run on until it reaches the addon's `} from …`,
+	// swallowing every import in between.
 	const ADDON_IMPORT_REGEX = new RegExp(
-		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?[ \t]*(?:\r?\n|$)`,
+		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?[ \t]*(\/\/[^\r\n]*|\/\*[^\r\n]*?\*\/)?[ \t]*(?:\r?\n|$)`,
 		'gm',
 	)
 	const allAddonImports = [...content.matchAll(ADDON_IMPORT_REGEX)]
@@ -473,19 +475,24 @@ function mergeAddonImport({
 	let newContent = content
 	if (!nothingToDo) {
 		// The regex consumes the trailing newline, so include one in the
-		// replacement; also tack on the project's semicolon style.
-		const replacement = `import {${eol}${mergedEntries
+		// replacement; also tack on the project's semicolon style, and the
+		// trailing comment the replaced statement carried, if any.
+		const mergedStatement = `import {${eol}${mergedEntries
 			.map((e) => `${indent}${formatEntry(e)},`)
-			.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}${eol}`
+			.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}`
 		// Replace the first import with the merged version; delete the rest.
 		let firstReplaced = false
-		newContent = newContent.replace(ADDON_IMPORT_REGEX, () => {
-			if (!firstReplaced) {
-				firstReplaced = true
-				return replacement
-			}
-			return ''
-		})
+		newContent = newContent.replace(
+			ADDON_IMPORT_REGEX,
+			(_match, _typeOnly, _names, trailingComment: string | undefined) => {
+				if (!firstReplaced) {
+					firstReplaced = true
+					const comment = trailingComment ? ` ${trailingComment}` : ''
+					return `${mergedStatement}${comment}${eol}`
+				}
+				return ''
+			},
+		)
 		// Tidy up any blank-line runs left behind by deleted imports.
 		newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
 	}
@@ -745,7 +752,7 @@ const COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON =
  * @param keyword - the key to look up
  * @param body - the range inside the object's braces
  */
-function listCodeOfKey(
+function getCodeInsideKeyValue(
 	content: string,
 	keyword: string,
 	body: { from: number; to: number },
@@ -872,11 +879,11 @@ function patchDefinePreview({
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}
 	const isRegisteredInAddons = checkDoesListCall(
-		listCodeOfKey(content, 'addons', originalBody),
+		getCodeInsideKeyValue(content, 'addons', originalBody),
 		dependencyPreviewsLocal,
 	)
 	const hasSettingsBlock = checkHasSettingsBlock(
-		listCodeOfKey(content, 'parameters', originalBody),
+		getCodeInsideKeyValue(content, 'parameters', originalBody),
 	)
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
@@ -967,10 +974,21 @@ function patchDefinePreview({
 		if (isSingleLineParams) {
 			// `parameters: {}` or `parameters: { docs: … }` on one line: laid out
 			// as a multi-line object, or the block's last `},` and the old
-			// entries or closing `}` would share a line.
-			const existingEntries = paramsBody.trim().replace(/,$/, '')
+			// entries or closing `}` would share a line. The old text (comments
+			// included) moves onto its own line as it was; a trailing comma is
+			// added only when the code — not a comment — is what the line ends
+			// with, and does not already have one.
+			const existingText = paramsBody.trim()
+			const existingCode = stripCommentsRespectingStrings(paramsBody).trim()
+			const doesEndWithComment = /(\/\/[^\r\n]*|\*\/)$/.test(existingText)
+			const needsTrailingComma =
+				existingCode !== '' &&
+				!existingCode.endsWith(',') &&
+				!doesEndWithComment
 			const existingLines =
-				existingEntries === '' ? '' : `${eol}${l2}${existingEntries},`
+				existingText === ''
+					? ''
+					: `${eol}${l2}${existingText}${needsTrailingComma ? ',' : ''}`
 			const replacement = `${eol}${block}${existingLines}${eol}${l1}`
 			newContent =
 				newContent.slice(0, insertAt) +
@@ -1029,6 +1047,24 @@ function patchExistingPreview(
 	// literals are left intact so a URL containing `//` doesn't get truncated.)
 	const codeOnly = stripCommentsRespectingStrings(content)
 
+	// A CSF Next `export default definePreview({ … })` file is registered
+	// through `dependencyPreviews()` rather than the classic spreads, and has
+	// its own already-configured check — there the settings key says nothing
+	// about whether `dependencyPreviews()` is in `addons`.
+	const isCsfNext = findDefinePreviewBody(content) !== null
+
+	// `dependencyPreviews:` is the unique parameters key the wizard injects, so its
+	// presence means the addon is already wired in — the classic path writes it
+	// and the decorators spread together. Other markers like the bare
+	// `dependencyPreviewDecorators` identifier are too lenient — they'd false-positive
+	// on `import { dependencyPreviewDecorators as dpd } …` where the name appears in
+	// the import declaration but isn't actually used in any decorators array yet.
+	// Checked before the CommonJS test, so a hand-configured CommonJS preview is
+	// still reported as configured rather than refused.
+	if (!isCsfNext && checkHasSettingsBlock(codeOnly)) {
+		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
+	}
+
 	if (/\bmodule\.exports\s*=/.test(codeOnly)) {
 		return {
 			kind: 'failed',
@@ -1052,9 +1088,7 @@ function patchExistingPreview(
 	const l1 = indent
 	const l2 = indent.repeat(2)
 
-	// A CSF Next `export default definePreview({ … })` file is registered
-	// through `dependencyPreviews()` rather than the spreads below.
-	if (findDefinePreviewBody(content)) {
+	if (isCsfNext) {
 		return patchDefinePreview({
 			previewFile,
 			content,
@@ -1064,18 +1098,6 @@ function patchExistingPreview(
 			sourceRootUrl,
 			srcDir,
 		})
-	}
-
-	// `dependencyPreviews:` is the unique parameters key the wizard injects, so its
-	// presence means the addon is already wired in — the classic path writes it
-	// and the decorators spread together. Other markers like the bare
-	// `dependencyPreviewDecorators` identifier are too lenient — they'd false-positive
-	// on `import { dependencyPreviewDecorators as dpd } …` where the name appears in
-	// the import declaration but isn't actually used in any decorators array yet.
-	// (The CSF Next path has its own check: there the key says nothing about
-	// whether `dependencyPreviews()` is in `addons`.)
-	if (checkHasSettingsBlock(codeOnly)) {
-		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
 
 	// ─── Imports.
