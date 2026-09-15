@@ -344,21 +344,44 @@ interface MergedAddonImport {
 	importToInsert: string | null
 }
 
-// Match a whole named-import statement from the addon package: any trailing
-// semicolon, whatever run of comments follows it (captured, and put back on
-// the rewritten statement — a block comment may run onto later lines), and
-// then the line's newline when nothing else is on the line — one newline
-// only, so a rewritten import keeps the blank line after it, and a deleted
-// duplicate leaves no stray `;` line behind in semicolon-using projects. The
-// statement ends at the first character that is not a comment, so a second
-// statement on the same line stays where it is. The name list is `[^}]*`
-// rather than `[\s\S]*?`: a lazy any-character group can start at an earlier
-// `import {` from another package and run on until it reaches the addon's
-// `} from …`, swallowing every import in between.
+// What follows an import statement on its line: whatever run of comments
+// comes after it (captured, and put back on the rewritten statement — a
+// block comment may run onto later lines), and then the line's newline when
+// nothing else is on the line — one newline only, so a rewritten import
+// keeps the blank line after it, and a deleted duplicate leaves no stray `;`
+// line behind in semicolon-using projects. The statement ends at the first
+// character that is not a comment, so a second statement on the same line
+// stays where it is.
+const ADDON_IMPORT_TAIL_SOURCE = String.raw`((?:[ \t]*(?:\/\/[^\r\n]*|\/\*[\s\S]*?\*\/))*)[ \t]*(?:\r?\n|$)?`
+
+// Match a whole named-import statement from the addon package, up to any
+// trailing semicolon, then its tail. The name list is `[^}]*` rather than
+// `[\s\S]*?`: a lazy any-character group can start at an earlier `import {`
+// from another package and run on until it reaches the addon's `} from …`,
+// swallowing every import in between. Run on text with comments blanked, so
+// a `}` inside a comment in the list cannot end it early; the `d` flag gives
+// the tail's position, where the comments are read back from the file — so
+// the space before the tail is only taken when a `;` follows it, or the tail
+// would start past a blanked comment.
 const ADDON_IMPORT_REGEX = new RegExp(
-	String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?((?:[ \t]*(?:\/\/[^\r\n]*|\/\*[\s\S]*?\*\/))*)[ \t]*(?:\r?\n|$)?`,
-	'gm',
+	String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"](?:[ \t]*;)?` +
+		ADDON_IMPORT_TAIL_SOURCE,
+	'gmd',
 )
+
+/** One named-import statement from the addon package, as found in the file. */
+interface AddonImportStatement {
+	/** Position of the statement's first character. */
+	index: number
+	/** Length of the statement, its trailing comments and its line's newline. */
+	length: number
+	/** Whether it is an `import type { … }`. */
+	isTypeOnly: boolean
+	/** The text between its braces, comments blanked. */
+	namesList: string
+	/** The comments after it on its line, as written, or `''`. */
+	trailingComments: string
+}
 
 /** One name in an addon import's `{ … }` list. */
 type AddonImportEntry = { name: string; alias?: string; isType: boolean }
@@ -380,24 +403,34 @@ const TEMPLATE_QUOTE_ONLY: ReadonlyArray<string> = ['`']
  *
  * Statements are found on the text with comments and template-literal
  * contents blanked, so neither a commented-out import nor a code sample in a
- * template literal is taken for a live one, and then read again from the
- * file at the same position (the blanked text keeps every position) so the
- * match carries the statement's own trailing comments.
+ * template literal is taken for a live one, and a `}` inside a comment in
+ * the name list cannot end the list early. The blanked text keeps every
+ * position, so the statement's own trailing comments are then read from the
+ * file at the position the match gives for its tail.
  *
  * @param content - the file content
  */
 function parseAddonImports(content: string): {
-	statements: Array<RegExpExecArray>
+	statements: Array<AddonImportStatement>
 	entries: Array<AddonImportEntry>
 } {
 	const codeOnly = stripCommentsRespectingStrings(content)
 	const stripped = blankStringContents(codeOnly, TEMPLATE_QUOTE_ONLY)
-	const statements: Array<RegExpExecArray> = []
+	const statements: Array<AddonImportStatement> = []
 	for (const strippedMatch of stripped.matchAll(ADDON_IMPORT_REGEX)) {
-		const atSamePosition = new RegExp(ADDON_IMPORT_REGEX.source, 'my')
-		atSamePosition.lastIndex = strippedMatch.index!
-		const rawMatch = atSamePosition.exec(content)
-		if (rawMatch) statements.push(rawMatch)
+		const index = strippedMatch.index!
+		const tailStart = strippedMatch.indices![3]![0]
+		const tailInFile = new RegExp(ADDON_IMPORT_TAIL_SOURCE, 'y')
+		tailInFile.lastIndex = tailStart
+		// The tail can be empty, so this always matches.
+		const tail = tailInFile.exec(content)!
+		statements.push({
+			index,
+			length: tailStart - index + tail[0].length,
+			isTypeOnly: !!strippedMatch[1],
+			namesList: strippedMatch[2]!,
+			trailingComments: tail[1]!.trim(),
+		})
 	}
 	const parseEntry = (raw: string, wasTypeOnly: boolean): AddonImportEntry => {
 		// `import type { A, B }` makes every name a type, so respect that.
@@ -406,19 +439,13 @@ function parseAddonImports(content: string): {
 		const [name, alias] = stripped.split(/\s+as\s+/).map((s) => s.trim())
 		return { name: name!, alias, isType }
 	}
-	// Stripping comments inside `{ … }` first so that
-	// `import { foo, /* note */ bar }` doesn't produce `/* note */ bar` as a name.
 	const byName = new Map<string, AddonImportEntry>()
-	for (const m of statements) {
-		const wasTypeOnly = !!m[1]
-		const importContents = m[2]!
-			.replace(/\/\*[\s\S]*?\*\//g, '')
-			.replace(/\/\/.*$/gm, '')
-		for (const raw of importContents
+	for (const statement of statements) {
+		for (const raw of statement.namesList
 			.split(',')
 			.map((s) => s.trim())
 			.filter(Boolean)) {
-			const entry = parseEntry(raw, wasTypeOnly)
+			const entry = parseEntry(raw, statement.isTypeOnly)
 			const prev = byName.get(entry.name)
 			if (!prev || (prev.isType && !entry.isType)) byName.set(entry.name, entry)
 		}
@@ -524,14 +551,14 @@ function mergeAddonImport({
 		for (const statement of [...otherStatements].reverse()) {
 			newContent =
 				newContent.slice(0, statement.index) +
-				newContent.slice(statement.index + statement[0].length)
+				newContent.slice(statement.index + statement.length)
 		}
-		const trailingComments = (firstStatement![3] ?? '').trim()
+		const { trailingComments } = firstStatement!
 		const commentSuffix = trailingComments === '' ? '' : ` ${trailingComments}`
 		newContent =
 			newContent.slice(0, firstStatement!.index) +
 			`${mergedStatement}${commentSuffix}${eol}` +
-			newContent.slice(firstStatement!.index + firstStatement![0].length)
+			newContent.slice(firstStatement!.index + firstStatement!.length)
 		// Tidy up any blank-line runs left behind by deleted imports.
 		newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
 	}
