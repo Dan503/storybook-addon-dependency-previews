@@ -109,38 +109,6 @@ export function detectQuoteStyle(content: string): "'" | '"' {
  * the range), and unrelated objects elsewhere in the file are out of range
  * entirely.
  */
-/**
- * The position of the first character at or after `from` (and before `to`)
- * that is neither whitespace nor part of a line comment or a block comment.
- *
- * @param content - the text being scanned
- * @param from - where to start
- * @param to - where to stop (returned when nothing but whitespace and
- * comments remain)
- */
-function skipWhitespaceAndComments(
-	content: string,
-	from: number,
-	to: number,
-): number {
-	let i = from
-	while (i < to) {
-		const c = content[i]!
-		const next = content[i + 1]
-		if (/\s/.test(c)) {
-			i++
-		} else if (c === '/' && next === '/') {
-			while (i < to && content[i] !== '\n') i++
-		} else if (c === '/' && next === '*') {
-			const close = content.indexOf('*/', i + 2)
-			i = close === -1 || close + 2 > to ? to : close + 2
-		} else {
-			break
-		}
-	}
-	return i
-}
-
 export function findTopLevelKey(
 	content: string,
 	keyword: string,
@@ -275,6 +243,38 @@ export function findTopLevelKey(
 		i++
 	}
 	return null
+}
+
+/**
+ * The position of the first character at or after `from` (and before `to`)
+ * that is neither whitespace nor part of a line comment or a block comment.
+ *
+ * @param content - the text being scanned
+ * @param from - where to start
+ * @param to - where to stop (returned when nothing but whitespace and
+ * comments remain)
+ */
+function skipWhitespaceAndComments(
+	content: string,
+	from: number,
+	to: number,
+): number {
+	let i = from
+	while (i < to) {
+		const c = content[i]!
+		const next = content[i + 1]
+		if (/\s/.test(c)) {
+			i++
+		} else if (c === '/' && next === '/') {
+			while (i < to && content[i] !== '\n') i++
+		} else if (c === '/' && next === '*') {
+			const close = content.indexOf('*/', i + 2)
+			i = close === -1 || close + 2 > to ? to : close + 2
+		} else {
+			break
+		}
+	}
+	return i
 }
 
 /**

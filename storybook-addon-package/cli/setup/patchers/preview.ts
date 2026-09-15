@@ -771,7 +771,7 @@ interface LayOutSingleLineObjectParams {
 	entryIndent: string
 	/** Indent for the closing `}`. */
 	closeIndent: string
-	/** The file's line ending. */
+	/** The file's formatting — only its line ending is used here. */
 	style: PreviewFileStyle
 }
 
@@ -942,7 +942,10 @@ function patchDefinePreview({
 	// ─── Already configured? Both halves have to be there: the addon loads
 	// from its `addons` entry, and the settings block alone (a classic file
 	// migrated by hand, say) does not register it. Checked on the untouched
-	// content, before any edit shifts an offset.
+	// content, before any edit shifts an offset. A half that sits in a
+	// non-literal value — a same-file `const parameters = { dependencyPreviews:
+	// … }`, say — cannot be edited, but it still counts as present, so the
+	// file-wide checks below are what the non-literal branches consult.
 	const originalBody = findDefinePreviewBody(content)
 	if (!originalBody) {
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
@@ -957,13 +960,15 @@ function patchDefinePreview({
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
-	// When `addons` or `parameters` is not a literal the patcher cannot look
-	// inside it, so a file that holds both halves somewhere — a same-file
-	// `const parameters = { dependencyPreviews: … }`, say — is reported as
-	// configured rather than refused with advice to add what is already there.
-	const isConfiguredSomewhereInFile =
-		checkDoesListCall(codeOnly, dependencyPreviewsLocal) &&
-		checkHasSettingsBlock(codeOnly)
+	const isRegisteredSomewhereInFile = checkDoesListCall(
+		codeOnly,
+		dependencyPreviewsLocal,
+	)
+	const hasSettingsBlockSomewhereInFile = checkHasSettingsBlock(codeOnly)
+	// Whether either key was edited or created; when neither was, the file is
+	// already configured (both halves live in non-literal values) and nothing
+	// is written.
+	let didEditBody = false
 
 	let newContent = insertImports({
 		content: contentAfterImportMerge,
@@ -1012,15 +1017,17 @@ function patchDefinePreview({
 				entries: missingEntries,
 				style,
 			})
+			didEditBody = true
 		}
 	} else if (addonsKey) {
-		if (isConfiguredSomewhereInFile) {
-			return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
-		}
-		return {
-			kind: 'failed',
-			reason:
-				'Preview config defines `addons` in a non-literal-array form — please add `addonDocs()` and `dependencyPreviews()` to it manually.',
+		// A list the patcher cannot edit: fine when it already holds the
+		// registration (a same-file `const addons = [...]`), refused otherwise.
+		if (!isRegisteredSomewhereInFile) {
+			return {
+				kind: 'failed',
+				reason:
+					'Preview config defines `addons` in a non-literal-array form — please add `addonDocs()` and `dependencyPreviews()` to it manually.',
+			}
 		}
 	} else {
 		const insertAt = bodyRange.from
@@ -1028,6 +1035,7 @@ function patchDefinePreview({
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 		addonsCreatedEndOffset = insertAt + insertion.length
+		didEditBody = true
 	}
 
 	// ─── `parameters`: insert the settings block.
@@ -1047,45 +1055,51 @@ function patchDefinePreview({
 		bodyRangeAfterAddons,
 	)
 	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
-		// Only the `addons` entry was missing — the block is already there.
-		if (hasSettingsBlock) {
-			return writePreview(previewFile, newContent)
+		// Nothing to do when the block is already there — only `addons` needed
+		// the edit.
+		if (!hasSettingsBlock) {
+			const paramsStart = paramsKey.valueStart + 1
+			const paramsEnd =
+				findMatchingBrace(newContent, paramsKey.valueStart) ?? paramsStart
+			// `parameters: {}` or `parameters: { docs: … }` on one line is laid
+			// out as a multi-line object first, or the block's last `},` and the
+			// old entries or closing `}` would share a line.
+			newContent = layOutSingleLineObject({
+				content: newContent,
+				bodyStart: paramsStart,
+				bodyEnd: paramsEnd,
+				entryIndent: l2,
+				closeIndent: l1,
+				style,
+			})
+			const insertion = `${eol}${block}`
+			newContent =
+				newContent.slice(0, paramsStart) +
+				insertion +
+				newContent.slice(paramsStart)
+			didEditBody = true
 		}
-		const paramsStart = paramsKey.valueStart + 1
-		const paramsEnd =
-			findMatchingBrace(newContent, paramsKey.valueStart) ?? paramsStart
-		// `parameters: {}` or `parameters: { docs: … }` on one line is laid out
-		// as a multi-line object first, or the block's last `},` and the old
-		// entries or closing `}` would share a line.
-		newContent = layOutSingleLineObject({
-			content: newContent,
-			bodyStart: paramsStart,
-			bodyEnd: paramsEnd,
-			entryIndent: l2,
-			closeIndent: l1,
-			style,
-		})
-		const insertion = `${eol}${block}`
-		newContent =
-			newContent.slice(0, paramsStart) +
-			insertion +
-			newContent.slice(paramsStart)
 	} else if (paramsKey) {
-		if (isConfiguredSomewhereInFile) {
-			return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
-		}
-		return {
-			kind: 'failed',
-			reason:
-				'Preview config already defines `parameters` in a non-literal-object form — please manually add the `dependencyPreviews` block to the existing parameters definition.',
+		// An object the patcher cannot edit: fine when it already holds the
+		// block (a same-file `const parameters = { … }`), refused otherwise.
+		if (!hasSettingsBlockSomewhereInFile) {
+			return {
+				kind: 'failed',
+				reason:
+					'Preview config already defines `parameters` in a non-literal-object form — please manually add the `dependencyPreviews` block to the existing parameters definition.',
+			}
 		}
 	} else {
 		const insertAt = addonsCreatedEndOffset ?? bodyRangeAfterAddons.from
 		const insertion = `${eol}${l1}parameters: {${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		didEditBody = true
 	}
 
+	if (!didEditBody) {
+		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
+	}
 	return writePreview(previewFile, newContent)
 }
 
@@ -1115,6 +1129,14 @@ function patchExistingPreview(
 	// its own already-configured check — there the settings key says nothing
 	// about whether `dependencyPreviews()` is in `addons`.
 	const isCsfNext = findDefinePreviewBody(content) !== null
+	// A `definePreview(<name>)` whose config the finder could not resolve (an
+	// imported object, a call, a cast) is still a CSF Next file, so the advice
+	// has to name that style's additions rather than the classic spreads.
+	const isUnresolvedDefinePreview =
+		!isCsfNext && /export\s+default\s+definePreview\s*\(/.test(codeOnly)
+	if (isUnresolvedDefinePreview) {
+		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
+	}
 
 	// `dependencyPreviews:` is the unique parameters key the wizard injects, so its
 	// presence means the addon is already wired in — the classic path writes it
