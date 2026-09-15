@@ -356,16 +356,20 @@ function getStorybookAddonVersionSpec(
 	const installedVersion = getInstalledStorybookVersion(cwd)
 	if (installedVersion) return installedVersion
 	if (!declaredStorybookRange) return null
-	// A specifier that points somewhere other than the registry entry of the
-	// same name gives nothing the addons can be pinned to: one with a protocol
-	// (`workspace:*`, `catalog:`, `npm:…`, `file:…`, `github:…`, a URL), a
-	// GitHub shorthand (`owner/repo`), a folder path (`./sb`) or a tarball
-	// filename (`storybook.tgz`). A version, a range or a dist-tag never
-	// contains a colon or a slash, and never ends in a tarball extension.
-	const isNonRegistrySpecifier =
-		/[:/\\]/.test(declaredStorybookRange) ||
-		/\.(tgz|tar\.gz|tar)$/i.test(declaredStorybookRange)
-	if (isNonRegistrySpecifier) return null
+	// Only a registry version, range or dist-tag can be reused for the addons.
+	// Those are built from letters, digits and the range punctuation
+	// (`^10.0.2 || ^11.0.0-0`, `>=10 <12`, `10.x`, `*`, `next`,
+	// `1.2.3-beta.1+build`), so anything with another character — a protocol
+	// (`workspace:*`, `npm:…`, `file:…`, a URL), a GitHub shorthand
+	// (`owner/repo`), a folder path (`./sb`), or a quote or percent sign that
+	// would mean something to a shell — is not one. A bare tarball filename
+	// (`storybook.tgz`) passes the character test and is ruled out by its
+	// extension. Anything ruled out gives nothing the addons can be pinned to.
+	const hasOnlyRegistrySpecifierCharacters = /^[\w.+^~<>=|*\s-]+$/.test(
+		declaredStorybookRange,
+	)
+	const isTarballFilename = /\.(tgz|tar\.gz|tar)$/i.test(declaredStorybookRange)
+	if (!hasOnlyRegistrySpecifierCharacters || isTarballFilename) return null
 	return declaredStorybookRange
 }
 
