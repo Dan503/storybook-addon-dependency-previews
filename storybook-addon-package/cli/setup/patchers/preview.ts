@@ -359,13 +359,14 @@ function mergeAddonImport({
 }: MergeAddonImportParams): MergedAddonImport {
 	const { indent, eol, quote, trailingSemi } = style
 	// Match the whole import statement including any trailing semicolon and the
-	// terminating newline, so that deletions of additional imports don't leave
-	// stray `;` lines behind in semicolon-using projects. The name list is
-	// `[^}]*` rather than `[\s\S]*?`: a lazy any-character group can start at
-	// an earlier `import {` from another package and run on until it reaches
-	// the addon's `} from …`, swallowing every import in between.
+	// terminating newline — one newline only, so a rewritten import keeps the
+	// blank line after it — so that deletions of additional imports don't
+	// leave stray `;` lines behind in semicolon-using projects. The name list
+	// is `[^}]*` rather than `[\s\S]*?`: a lazy any-character group can start
+	// at an earlier `import {` from another package and run on until it
+	// reaches the addon's `} from …`, swallowing every import in between.
 	const ADDON_IMPORT_REGEX = new RegExp(
-		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"]\s*;?[ \t]*(?:\r?\n|$)`,
+		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?[ \t]*(?:\r?\n|$)`,
 		'gm',
 	)
 	const allAddonImports = [...content.matchAll(ADDON_IMPORT_REGEX)]
@@ -701,8 +702,9 @@ interface AddListEntriesParams {
 
 /**
  * Add entries at the front of a `[ … ]` list, keeping its layout: one entry
- * per line in a multi-line list, comma-and-space in a single-line one (after
- * any space that follows the `[`), and just the entries in an empty list.
+ * per line when the list starts with a line break, comma-and-space when the
+ * first entry sits on the `[` line (after any space that follows the `[`),
+ * and just the entries in an empty list.
  */
 function addListEntries({
 	content,
@@ -714,8 +716,8 @@ function addListEntries({
 	const { indent, eol } = style
 	const listText = content.slice(listStart, listEnd)
 	const before = content.slice(0, listStart)
-	const isMultiLineList = /\r?\n/.test(listText)
-	if (isMultiLineList) {
+	const isOneEntryPerLine = /^[ \t]*\r?\n/.test(listText)
+	if (isOneEntryPerLine) {
 		const l2 = indent.repeat(2)
 		const insertion = `${eol}${l2}${entries.join(`,${eol}${l2}`)},`
 		return before + insertion + content.slice(listStart)
@@ -728,6 +730,56 @@ function addListEntries({
 	const insertAt = listStart + leadingSpaces.length
 	const insertion = `${entries.join(', ')}, `
 	return content.slice(0, insertAt) + insertion + content.slice(insertAt)
+}
+
+const ALREADY_CONFIGURED_REASON = 'addon already configured in preview'
+const COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON =
+	'Could not locate the definePreview config object — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.'
+
+/**
+ * The comment-stripped text inside a key's literal `[ … ]` / `{ … }` value,
+ * scoped to one object's body — or `''` when the key is missing or its value
+ * is not a literal.
+ *
+ * @param content - the file content
+ * @param keyword - the key to look up
+ * @param body - the range inside the object's braces
+ */
+function listCodeOfKey(
+	content: string,
+	keyword: string,
+	body: { from: number; to: number },
+): string {
+	const key = findTopLevelKey(content, keyword, body)
+	if (!key) return ''
+	const opener = content[key.valueStart]
+	if (opener !== '[' && opener !== '{') return ''
+	const end = findMatchingBrace(content, key.valueStart)
+	if (end === null) return ''
+	return stripCommentsRespectingStrings(content.slice(key.valueStart + 1, end))
+}
+
+/**
+ * Whether the text holds the `dependencyPreviews:` settings key the wizard
+ * writes into `parameters`.
+ *
+ * @param codeOnly - text with comments stripped (the whole file, or one
+ * object's body)
+ */
+function checkHasSettingsBlock(codeOnly: string): boolean {
+	return /\bdependencyPreviews\s*:/.test(codeOnly)
+}
+
+/**
+ * Whether a `[ … ]` list calls the given local name — `addonDocs()` in an
+ * `addons` list, say.
+ *
+ * @param listCode - the text between the list's brackets, comments stripped
+ * @param localName - the identifier the call must use
+ */
+function checkDoesListCall(listCode: string, localName: string): boolean {
+	const escapedName = localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	return new RegExp(String.raw`\b${escapedName}\s*\(`).test(listCode)
 }
 
 interface PatchDefinePreviewParams {
@@ -767,6 +819,7 @@ function patchDefinePreview({
 }: PatchDefinePreviewParams): PreviewPatchResult {
 	const { indent, eol, quote, trailingSemi } = style
 	const l1 = indent
+	const l2 = indent.repeat(2)
 
 	// ─── Imports.
 	const importsToInsert: string[] = []
@@ -810,20 +863,35 @@ function patchDefinePreview({
 	const dependenciesJsonImport = dependenciesJsonImportToInsert(codeOnly, style)
 	if (dependenciesJsonImport) importsToInsert.push(dependenciesJsonImport)
 
+	// ─── Already configured? Both halves have to be there: the addon loads
+	// from its `addons` entry, and the settings block alone (a classic file
+	// migrated by hand, say) does not register it. Checked on the untouched
+	// content, before any edit shifts an offset.
+	const originalBody = findDefinePreviewBody(content)
+	if (!originalBody) {
+		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
+	}
+	const isRegisteredInAddons = checkDoesListCall(
+		listCodeOfKey(content, 'addons', originalBody),
+		dependencyPreviewsLocal,
+	)
+	const hasSettingsBlock = checkHasSettingsBlock(
+		listCodeOfKey(content, 'parameters', originalBody),
+	)
+	if (isRegisteredInAddons && hasSettingsBlock) {
+		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
+	}
+
 	let newContent = insertImports({
 		content: contentAfterImportMerge,
 		statements: importsToInsert,
 		eol,
 	})
 
-	// Located after the import edits, since those shift every later offset.
+	// Re-found after the import edits, since those shift every later offset.
 	const bodyRange = findDefinePreviewBody(newContent)
 	if (!bodyRange) {
-		return {
-			kind: 'failed',
-			reason:
-				'Could not locate the definePreview config object — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.',
-		}
+		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}
 
 	// `definePreview({})` and `definePreview({ })` — nothing between the braces
@@ -844,12 +912,8 @@ function patchDefinePreview({
 		const listCode = stripCommentsRespectingStrings(
 			newContent.slice(listStart, listEnd),
 		)
-		const checkIsRegistered = (localName: string): boolean =>
-			new RegExp(
-				String.raw`\b${localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\s*\(`,
-			).test(listCode)
 		const missingEntries = [addonDocsLocal, dependencyPreviewsLocal]
-			.filter((localName) => !checkIsRegistered(localName))
+			.filter((localName) => !checkDoesListCall(listCode, localName))
 			.map((localName) => `${localName}()`)
 		if (missingEntries.length > 0) {
 			newContent = addListEntries({
@@ -894,16 +958,29 @@ function patchDefinePreview({
 		const insertAt = paramsKey.valueStart + 1
 		const paramsEnd =
 			findMatchingBrace(newContent, paramsKey.valueStart) ?? insertAt
-		// An existing `parameters: {}` needs its `}` moved onto its own line,
-		// or the block's last `},` and that `}` end up together as `},}`.
-		const isEmptySingleLineParams = /^[ \t]*$/.test(
-			newContent.slice(insertAt, paramsEnd),
-		)
-		const insertion = isEmptySingleLineParams
-			? `${eol}${block}${eol}${l1}`
-			: `${eol}${block}`
-		newContent =
-			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		const paramsBody = newContent.slice(insertAt, paramsEnd)
+		// Only the `addons` entry was missing — the block is already there.
+		if (hasSettingsBlock) {
+			return writePreview(previewFile, newContent)
+		}
+		const isSingleLineParams = !/\r?\n/.test(paramsBody)
+		if (isSingleLineParams) {
+			// `parameters: {}` or `parameters: { docs: … }` on one line: laid out
+			// as a multi-line object, or the block's last `},` and the old
+			// entries or closing `}` would share a line.
+			const existingEntries = paramsBody.trim().replace(/,$/, '')
+			const existingLines =
+				existingEntries === '' ? '' : `${eol}${l2}${existingEntries},`
+			const replacement = `${eol}${block}${existingLines}${eol}${l1}`
+			newContent =
+				newContent.slice(0, insertAt) +
+				replacement +
+				newContent.slice(paramsEnd)
+		} else {
+			const insertion = `${eol}${block}`
+			newContent =
+				newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		}
 	} else if (paramsKey) {
 		return {
 			kind: 'failed',
@@ -952,15 +1029,6 @@ function patchExistingPreview(
 	// literals are left intact so a URL containing `//` doesn't get truncated.)
 	const codeOnly = stripCommentsRespectingStrings(content)
 
-	// `dependencyPreviews:` is the unique parameters key the wizard injects, so its
-	// presence means the addon is already wired in. Other markers like the bare
-	// `dependencyPreviewDecorators` identifier are too lenient — they'd false-positive
-	// on `import { dependencyPreviewDecorators as dpd } …` where the name appears in
-	// the import declaration but isn't actually used in any decorators array yet.
-	if (/\bdependencyPreviews\s*:/.test(codeOnly)) {
-		return { kind: 'skipped', reason: 'addon already configured in preview' }
-	}
-
 	if (/\bmodule\.exports\s*=/.test(codeOnly)) {
 		return {
 			kind: 'failed',
@@ -996,6 +1064,18 @@ function patchExistingPreview(
 			sourceRootUrl,
 			srcDir,
 		})
+	}
+
+	// `dependencyPreviews:` is the unique parameters key the wizard injects, so its
+	// presence means the addon is already wired in — the classic path writes it
+	// and the decorators spread together. Other markers like the bare
+	// `dependencyPreviewDecorators` identifier are too lenient — they'd false-positive
+	// on `import { dependencyPreviewDecorators as dpd } …` where the name appears in
+	// the import declaration but isn't actually used in any decorators array yet.
+	// (The CSF Next path has its own check: there the key says nothing about
+	// whether `dependencyPreviews()` is in `addons`.)
+	if (checkHasSettingsBlock(codeOnly)) {
+		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
 
 	// ─── Imports.
