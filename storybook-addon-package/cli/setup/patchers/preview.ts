@@ -594,12 +594,10 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
 
 	// Direct patterns: typed preview (`Preview = {`, `StorybookPreviewConfig = {`)
 	// or anonymous default export (`export default {`).
-	const direct = objectBodyAfterMatch(
-		text,
-		stripped.match(
-			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
-		),
+	const directMatch = stripped.match(
+		/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
 	)
+	const direct = objectBodyAfterMatch(text, directMatch)
 	if (direct) return direct
 
 	// Fallback: untyped `const preview = { … }; export default preview` (common
@@ -611,10 +609,10 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
 	)?.[1]
 	if (!exportIdent) return null
 	const escaped = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	return objectBodyAfterMatch(
-		text,
-		stripped.match(new RegExp(`(?:const|let|var)\\s+${escaped}\\s*=\\s*\\{`)),
+	const declarationMatch = stripped.match(
+		new RegExp(`(?:const|let|var)\\s+${escaped}\\s*=\\s*\\{`),
 	)
+	return objectBodyAfterMatch(text, declarationMatch)
 }
 
 /**
@@ -638,10 +636,10 @@ function findDefinePreviewBody(
 	const escapeForRegex = (name: string): string =>
 		name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-	const direct = objectBodyAfterMatch(
-		text,
-		stripped.match(/export\s+default\s+definePreview\s*\(\s*\{/),
+	const directMatch = stripped.match(
+		/export\s+default\s+definePreview\s*\(\s*\{/,
 	)
+	const direct = objectBodyAfterMatch(text, directMatch)
 	if (direct) return direct
 
 	const configIdent = stripped.match(
@@ -649,28 +647,24 @@ function findDefinePreviewBody(
 	)?.[1]
 	if (configIdent) {
 		// `(?::[^=]*)?` allows a type annotation on the declaration.
-		return objectBodyAfterMatch(
-			text,
-			stripped.match(
-				new RegExp(
-					`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=]*)?=\\s*\\{`,
-				),
+		const configDeclarationMatch = stripped.match(
+			new RegExp(
+				`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=]*)?=\\s*\\{`,
 			),
 		)
+		return objectBodyAfterMatch(text, configDeclarationMatch)
 	}
 
 	const exportIdent = stripped.match(
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
 	)?.[1]
 	if (!exportIdent) return null
-	return objectBodyAfterMatch(
-		text,
-		stripped.match(
-			new RegExp(
-				`(?:const|let|var)\\s+${escapeForRegex(exportIdent)}\\s*=\\s*definePreview\\s*\\(\\s*\\{`,
-			),
+	const previewDeclarationMatch = stripped.match(
+		new RegExp(
+			`(?:const|let|var)\\s+${escapeForRegex(exportIdent)}\\s*=\\s*definePreview\\s*\\(\\s*\\{`,
 		),
 	)
+	return objectBodyAfterMatch(text, previewDeclarationMatch)
 }
 
 /**
@@ -697,7 +691,8 @@ function writePreview(
 /**
  * The local name a file gives a package's default import — `import docs from
  * '@storybook/addon-docs'` gives `docs`, and so does `import docs, { X } from
- * '…'`. `null` when the file has no default import from that package.
+ * '…'` and `import { default as docs } from '…'`. `null` when the file has
+ * no default import from that package.
  *
  * @param codeOnly - the file content with comments stripped
  * @param packageName - the package the import must come from
@@ -707,12 +702,49 @@ function findDefaultImportLocalName(
 	packageName: string,
 ): string | null {
 	const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	const match = codeOnly.match(
+	const fromPackage = String.raw`\s*from\s*['"]${escapedPackageName}['"]`
+	const defaultBinding = codeOnly.match(
 		new RegExp(
-			String.raw`import\s+(?!type\s)([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?\s*from\s*['"]${escapedPackageName}['"]`,
+			String.raw`import\s+(?!type\s)([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?${fromPackage}`,
 		),
 	)
-	return match?.[1] ?? null
+	if (defaultBinding) return defaultBinding[1]!
+	const defaultAsNamed = codeOnly.match(
+		new RegExp(
+			String.raw`import\s*\{[^}]*\bdefault\s+as\s+([A-Za-z_$][\w$]*)[^}]*\}${fromPackage}`,
+		),
+	)
+	return defaultAsNamed?.[1] ?? null
+}
+
+interface FindNamedImportLocalNameParams {
+	/** The file content with comments stripped. */
+	codeOnly: string
+	/** The package the import must come from. */
+	packageName: string
+	/** The named export to look for. */
+	exportedName: string
+}
+
+/**
+ * The local name a file gives one of a package's named exports — `import {
+ * dependencyPreviews as dp } from '…'` gives `dp`, a plain `import {
+ * dependencyPreviews }` gives `dependencyPreviews` — or the export's own name
+ * when the file does not import it yet (which is the name a fresh import
+ * would bind).
+ */
+function findNamedImportLocalName({
+	codeOnly,
+	packageName,
+	exportedName,
+}: FindNamedImportLocalNameParams): string {
+	const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const match = codeOnly.match(
+		new RegExp(
+			String.raw`import\s*(?:type\s+)?\{[^}]*\b${exportedName}(?:\s+as\s+([A-Za-z_$][\w$]*))?\b[^}]*\}\s*from\s*['"]${escapedPackageName}['"]`,
+		),
+	)
+	return match?.[1] ?? exportedName
 }
 
 interface AddListEntriesParams {
@@ -865,6 +897,8 @@ interface PatchDefinePreviewParams {
 	content: string
 	/** `content` with comments stripped, for the identifier checks. */
 	codeOnly: string
+	/** The range inside the braces of the `definePreview({ … })` object in `content`. */
+	body: { from: number; to: number }
 	/** The file's formatting, matched by everything inserted. */
 	style: PreviewFileStyle
 	/** Decides the story glob in the settings block. */
@@ -888,6 +922,7 @@ function patchDefinePreview({
 	previewFile,
 	content,
 	codeOnly,
+	body,
 	style,
 	framework,
 	sourceRootUrl,
@@ -907,12 +942,11 @@ function patchDefinePreview({
 	const defaultAddonImportLocal = findDefaultImportLocalName(codeOnly, PKG)
 	const dependencyPreviewsLocal =
 		defaultAddonImportLocal ??
-		mergeAddonImport({
-			content,
-			requiredValueNames: ['dependencyPreviews'],
-			requiredTypeNames: [],
-			style,
-		}).localNames.get('dependencyPreviews')!
+		findNamedImportLocalName({
+			codeOnly,
+			packageName: PKG,
+			exportedName: 'dependencyPreviews',
+		})
 	// The docs addon may already be registered under any local name
 	// (`import docs from '@storybook/addon-docs'`); when it is, that name is
 	// what the `addons` scan below looks for.
@@ -922,30 +956,26 @@ function patchDefinePreview({
 	)
 	const addonDocsLocal = docsImportLocal ?? 'addonDocs'
 
-	// ─── Already configured? Both halves have to be there: the addon loads
-	// from its `addons` entry, and the settings block alone (a classic file
-	// migrated by hand, say) does not register it. A half that sits in a
-	// non-literal value — a same-file `const parameters = { dependencyPreviews:
-	// … }`, say — cannot be edited, but it still counts as present, so the
-	// file-wide checks are what the non-literal branches consult.
-	const originalBody = findDefinePreviewBody(content)
-	if (!originalBody) {
-		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
-	}
-	const isRegisteredInAddons = checkDoesListCall(
-		getCodeInsideKeyValue(content, 'addons', originalBody),
-		dependencyPreviewsLocal,
-	)
-	const hasSettingsBlock = checkHasSettingsBlock(
-		getCodeInsideKeyValue(content, 'parameters', originalBody),
-	)
+	// ─── Already configured? Both halves have to be there: the `addons` half
+	// — `dependencyPreviews()` and, since a CSF Next `addons` list is what
+	// loads each addon's preview-side setup, `addonDocs()` with it — and the
+	// settings block, which alone (a classic file migrated by hand, say) does
+	// not register anything. A half that sits in a non-literal value — a
+	// same-file `const parameters = { dependencyPreviews: … }`, say — cannot
+	// be edited, but it still counts as present, so the file-wide checks are
+	// what the non-literal branches consult.
+	const addonsListCode = getCodeInsideKeyValue(content, 'addons', body)
+	const parametersCode = getCodeInsideKeyValue(content, 'parameters', body)
+	const isRegisteredInAddons =
+		checkDoesListCall(addonsListCode, dependencyPreviewsLocal) &&
+		checkDoesListCall(addonsListCode, addonDocsLocal)
+	const hasSettingsBlock = checkHasSettingsBlock(parametersCode)
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
-	const isRegisteredSomewhereInFile = checkDoesListCall(
-		codeOnly,
-		dependencyPreviewsLocal,
-	)
+	const isRegisteredSomewhereInFile =
+		checkDoesListCall(codeOnly, dependencyPreviewsLocal) &&
+		checkDoesListCall(codeOnly, addonDocsLocal)
 	const hasSettingsBlockSomewhereInFile = checkHasSettingsBlock(codeOnly)
 	// What the body edits inserted — decides the imports at the end, and
 	// whether anything is written at all (nothing inserted means every half
@@ -961,13 +991,13 @@ function patchDefinePreview({
 	// get a line of their own and the closing brace is not glued to them.
 	let newContent = layOutSingleLineObject({
 		content,
-		bodyStart: originalBody.from,
-		bodyEnd: originalBody.to,
+		bodyStart: body.from,
+		bodyEnd: body.to,
 		entryIndent: l1,
 		closeIndent: '',
 		style,
 	})
-	const bodyRange = findDefinePreviewBody(newContent) ?? originalBody
+	const bodyRange = findDefinePreviewBody(newContent) ?? body
 
 	// ─── `addons`: make sure both registrations are in the list.
 	// If we create the key, remember where it ends so a created `parameters:`
@@ -1147,7 +1177,8 @@ function patchExistingPreview(
 	// through `dependencyPreviews()` rather than the classic spreads, and has
 	// its own already-configured check — there the settings key says nothing
 	// about whether `dependencyPreviews()` is in `addons`.
-	const isCsfNext = findDefinePreviewBody(content) !== null
+	const csfNextBody = findDefinePreviewBody(content)
+	const isCsfNext = csfNextBody !== null
 	// A `definePreview(…)` call whose config the finder could not resolve (an
 	// imported object, a call, a cast — exported directly or through a const)
 	// is still a CSF Next file, so the advice has to name that style's
@@ -1193,11 +1224,12 @@ function patchExistingPreview(
 	const l1 = indent
 	const l2 = indent.repeat(2)
 
-	if (isCsfNext) {
+	if (csfNextBody) {
 		return patchDefinePreview({
 			previewFile,
 			content,
 			codeOnly,
+			body: csfNextBody,
 			style,
 			framework,
 			sourceRootUrl,
