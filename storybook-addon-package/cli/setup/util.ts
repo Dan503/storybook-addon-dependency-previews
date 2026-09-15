@@ -95,6 +95,13 @@ export function detectQuoteStyle(content: string): "'" | '"' {
  * contain the keyword are still safely skipped via the existing string-mode
  * entry below.
  *
+ * The shorthand form (`addons,` or `addons }`, short for `addons: addons`) is
+ * recognized too, and returned with the value starting at the identifier
+ * itself — so a caller checking for a literal `[` / `{` value sees it as a
+ * non-literal value rather than as a missing key, and does not add a second
+ * `addons:` beside it. The keyword only counts as shorthand when it sits
+ * where a key can start: right after the object's `{` or after a `,`.
+ *
  * To target a specific config object's keys, pass `{ from, to }` set to the
  * range *inside* that object's braces — e.g. for `const config = { addons: [] }`
  * pass `from = positionAfterOpeningBrace`, `to = positionOfClosingBrace`.
@@ -115,6 +122,10 @@ export function findTopLevelKey(
 	let inTL = false
 	let inLC = false
 	let inBC = false
+	// The last code character seen outside strings and comments — what a
+	// shorthand key has to follow. `null` at the start of the range, which for
+	// a range inside an object's braces means the key follows the `{`.
+	let prevCodeChar: string | null = null
 
 	let i = from
 	while (i < to) {
@@ -222,10 +233,16 @@ export function findTopLevelKey(
 				while (j < to && /\s/.test(content[j]!)) j++
 				return { keyStart: i, valueStart: j }
 			}
+			const isAtKeyPosition =
+				prevCodeChar === null || prevCodeChar === '{' || prevCodeChar === ','
+			const isShorthandKey =
+				isAtKeyPosition && (content[j] === ',' || content[j] === '}')
+			if (isShorthandKey) return { keyStart: i, valueStart: i }
 		}
 
 		if (c === '{' || c === '[' || c === '(') depth++
 		else if ((c === '}' || c === ']' || c === ')') && depth > 0) depth--
+		if (!/\s/.test(c)) prevCodeChar = c
 		i++
 	}
 	return null

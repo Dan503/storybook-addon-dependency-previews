@@ -665,9 +665,34 @@ function writePreview(
 	return { kind: 'patched', path: previewFile.path }
 }
 
-interface ListInsertionParams {
-	/** The text between the list's `[` and `]`. */
-	listText: string
+/**
+ * The local name a file gives a package's default import — `import docs from
+ * '@storybook/addon-docs'` gives `docs`, and so does `import docs, { X } from
+ * '…'`. `null` when the file has no default import from that package.
+ *
+ * @param codeOnly - the file content with comments stripped
+ * @param packageName - the package the import must come from
+ */
+function findDefaultImportLocalName(
+	codeOnly: string,
+	packageName: string,
+): string | null {
+	const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const match = codeOnly.match(
+		new RegExp(
+			String.raw`import\s+(?!type\s)([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?\s*from\s*['"]${escapedPackageName}['"]`,
+		),
+	)
+	return match?.[1] ?? null
+}
+
+interface AddListEntriesParams {
+	/** The file content. */
+	content: string
+	/** Position just after the list's `[`. */
+	listStart: number
+	/** Position of the list's `]`. */
+	listEnd: number
 	/** The entries to add at the front of the list. */
 	entries: ReadonlyArray<string>
 	/** The file's formatting, for the multi-line case. */
@@ -675,24 +700,34 @@ interface ListInsertionParams {
 }
 
 /**
- * The text to insert right after a list's `[` so the new entries come first
- * and the list keeps its layout: one entry per line in a multi-line list,
- * comma-and-space in a single-line one.
+ * Add entries at the front of a `[ … ]` list, keeping its layout: one entry
+ * per line in a multi-line list, comma-and-space in a single-line one (after
+ * any space that follows the `[`), and just the entries in an empty list.
  */
-function listInsertion({
-	listText,
+function addListEntries({
+	content,
+	listStart,
+	listEnd,
 	entries,
 	style,
-}: ListInsertionParams): string {
+}: AddListEntriesParams): string {
 	const { indent, eol } = style
+	const listText = content.slice(listStart, listEnd)
+	const before = content.slice(0, listStart)
 	const isMultiLineList = /\r?\n/.test(listText)
 	if (isMultiLineList) {
 		const l2 = indent.repeat(2)
-		return `${eol}${l2}${entries.join(`,${eol}${l2}`)},`
+		const insertion = `${eol}${l2}${entries.join(`,${eol}${l2}`)},`
+		return before + insertion + content.slice(listStart)
 	}
 	const isEmptyList = listText.trim() === ''
-	if (isEmptyList) return entries.join(', ')
-	return `${entries.join(', ')}, `
+	if (isEmptyList) {
+		return before + entries.join(', ') + content.slice(listEnd)
+	}
+	const leadingSpaces = listText.match(/^[ \t]*/)![0]
+	const insertAt = listStart + leadingSpaces.length
+	const insertion = `${entries.join(', ')}, `
+	return content.slice(0, insertAt) + insertion + content.slice(insertAt)
 }
 
 interface PatchDefinePreviewParams {
@@ -734,22 +769,37 @@ function patchDefinePreview({
 	const l1 = indent
 
 	// ─── Imports.
-	const merged = mergeAddonImport({
-		content,
-		requiredValueNames: ['dependencyPreviews'],
-		requiredTypeNames: [],
-		style,
-	})
-	const dependencyPreviewsLocal = merged.localNames.get('dependencyPreviews')!
 	const importsToInsert: string[] = []
-	if (merged.importToInsert) importsToInsert.push(merged.importToInsert)
+
+	// `dependencyPreviews` is also the package's default export, and the docs
+	// used to show it imported that way — `import dependencyPreviews from '…'`
+	// — so a file may already bind it under a default import (possibly with a
+	// named list after it). That binding is used as is; merging a named import
+	// on top would declare the same name twice.
+	const defaultAddonImportLocal = findDefaultImportLocalName(codeOnly, PKG)
+	let dependencyPreviewsLocal: string
+	let contentAfterImportMerge = content
+	if (defaultAddonImportLocal) {
+		dependencyPreviewsLocal = defaultAddonImportLocal
+	} else {
+		const merged = mergeAddonImport({
+			content,
+			requiredValueNames: ['dependencyPreviews'],
+			requiredTypeNames: [],
+			style,
+		})
+		dependencyPreviewsLocal = merged.localNames.get('dependencyPreviews')!
+		contentAfterImportMerge = merged.content
+		if (merged.importToInsert) importsToInsert.push(merged.importToInsert)
+	}
 
 	// The docs addon may already be registered under any local name
 	// (`import docs from '@storybook/addon-docs'`); when it is, that name is
 	// what the `addons` scan below looks for and no import is added.
-	const docsImportLocal = codeOnly.match(
-		/import\s+([A-Za-z_$][\w$]*)\s+from\s*['"]@storybook\/addon-docs['"]/,
-	)?.[1]
+	const docsImportLocal = findDefaultImportLocalName(
+		codeOnly,
+		'@storybook/addon-docs',
+	)
 	const addonDocsLocal = docsImportLocal ?? 'addonDocs'
 	if (!docsImportLocal) {
 		importsToInsert.push(
@@ -761,7 +811,7 @@ function patchDefinePreview({
 	if (dependenciesJsonImport) importsToInsert.push(dependenciesJsonImport)
 
 	let newContent = insertImports({
-		content: merged.content,
+		content: contentAfterImportMerge,
 		statements: importsToInsert,
 		eol,
 	})
@@ -776,8 +826,11 @@ function patchDefinePreview({
 		}
 	}
 
-	const isEmptyBody =
-		newContent.slice(bodyRange.from, bodyRange.to).trim() === ''
+	// `definePreview({})` and `definePreview({ })` — nothing between the braces
+	// and no line break either, so the inserted keys need one before the `}`.
+	const isEmptySingleLineBody = /^[ \t]*$/.test(
+		newContent.slice(bodyRange.from, bodyRange.to),
+	)
 
 	// ─── `addons`: make sure both registrations are in the list.
 	// If we create the key, remember where it ends so a created `parameters:`
@@ -785,11 +838,12 @@ function patchDefinePreview({
 	let addonsCreatedEndOffset: number | null = null
 	const addonsKey = findTopLevelKey(newContent, 'addons', bodyRange)
 	if (addonsKey && newContent[addonsKey.valueStart] === '[') {
-		const listEnd = findMatchingBrace(newContent, addonsKey.valueStart)
 		const listStart = addonsKey.valueStart + 1
-		const listText =
-			listEnd === null ? '' : newContent.slice(listStart, listEnd)
-		const listCode = stripCommentsRespectingStrings(listText)
+		const listEnd =
+			findMatchingBrace(newContent, addonsKey.valueStart) ?? listStart
+		const listCode = stripCommentsRespectingStrings(
+			newContent.slice(listStart, listEnd),
+		)
 		const checkIsRegistered = (localName: string): boolean =>
 			new RegExp(
 				String.raw`\b${localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\s*\(`,
@@ -798,13 +852,13 @@ function patchDefinePreview({
 			.filter((localName) => !checkIsRegistered(localName))
 			.map((localName) => `${localName}()`)
 		if (missingEntries.length > 0) {
-			const insertion = listInsertion({
-				listText,
+			newContent = addListEntries({
+				content: newContent,
+				listStart,
+				listEnd,
 				entries: missingEntries,
 				style,
 			})
-			newContent =
-				newContent.slice(0, listStart) + insertion + newContent.slice(listStart)
 		}
 	} else if (addonsKey) {
 		return {
@@ -838,7 +892,16 @@ function patchDefinePreview({
 	)
 	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
 		const insertAt = paramsKey.valueStart + 1
-		const insertion = `${eol}${block}`
+		const paramsEnd =
+			findMatchingBrace(newContent, paramsKey.valueStart) ?? insertAt
+		// An existing `parameters: {}` needs its `}` moved onto its own line,
+		// or the block's last `},` and that `}` end up together as `},}`.
+		const isEmptySingleLineParams = /^[ \t]*$/.test(
+			newContent.slice(insertAt, paramsEnd),
+		)
+		const insertion = isEmptySingleLineParams
+			? `${eol}${block}${eol}${l1}`
+			: `${eol}${block}`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	} else if (paramsKey) {
@@ -854,9 +917,9 @@ function patchDefinePreview({
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
 
-	// `definePreview({})` had nothing between its braces, so the closing brace
-	// would otherwise stay glued to the last inserted line (`},})`).
-	if (isEmptyBody) {
+	// Without this the closing brace would stay glued to the last inserted
+	// line (`},})`).
+	if (isEmptySingleLineBody) {
 		const bodyRangeAfterParams = findDefinePreviewBody(newContent)
 		if (bodyRangeAfterParams) {
 			const closeAt = bodyRangeAfterParams.to
