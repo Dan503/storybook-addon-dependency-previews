@@ -897,55 +897,37 @@ function patchDefinePreview({
 	const l1 = indent
 	const l2 = indent.repeat(2)
 
-	// ─── Imports.
-	const importsToInsert: string[] = []
-
+	// ─── Local names. The body edits come first and the imports last, so an
+	// import is only ever added for something the edits actually inserted.
 	// `dependencyPreviews` is also the package's default export, and the docs
 	// used to show it imported that way — `import dependencyPreviews from '…'`
 	// — so a file may already bind it under a default import (possibly with a
 	// named list after it). That binding is used as is; merging a named import
 	// on top would declare the same name twice.
 	const defaultAddonImportLocal = findDefaultImportLocalName(codeOnly, PKG)
-	let dependencyPreviewsLocal: string
-	let contentAfterImportMerge = content
-	if (defaultAddonImportLocal) {
-		dependencyPreviewsLocal = defaultAddonImportLocal
-	} else {
-		const merged = mergeAddonImport({
+	const dependencyPreviewsLocal =
+		defaultAddonImportLocal ??
+		mergeAddonImport({
 			content,
 			requiredValueNames: ['dependencyPreviews'],
 			requiredTypeNames: [],
 			style,
-		})
-		dependencyPreviewsLocal = merged.localNames.get('dependencyPreviews')!
-		contentAfterImportMerge = merged.content
-		if (merged.importToInsert) importsToInsert.push(merged.importToInsert)
-	}
-
+		}).localNames.get('dependencyPreviews')!
 	// The docs addon may already be registered under any local name
 	// (`import docs from '@storybook/addon-docs'`); when it is, that name is
-	// what the `addons` scan below looks for and no import is added.
+	// what the `addons` scan below looks for.
 	const docsImportLocal = findDefaultImportLocalName(
 		codeOnly,
 		'@storybook/addon-docs',
 	)
 	const addonDocsLocal = docsImportLocal ?? 'addonDocs'
-	if (!docsImportLocal) {
-		importsToInsert.push(
-			`import addonDocs from ${quote}@storybook/addon-docs${quote}${trailingSemi}`,
-		)
-	}
-
-	const dependenciesJsonImport = dependenciesJsonImportToInsert(codeOnly, style)
-	if (dependenciesJsonImport) importsToInsert.push(dependenciesJsonImport)
 
 	// ─── Already configured? Both halves have to be there: the addon loads
 	// from its `addons` entry, and the settings block alone (a classic file
-	// migrated by hand, say) does not register it. Checked on the untouched
-	// content, before any edit shifts an offset. A half that sits in a
+	// migrated by hand, say) does not register it. A half that sits in a
 	// non-literal value — a same-file `const parameters = { dependencyPreviews:
 	// … }`, say — cannot be edited, but it still counts as present, so the
-	// file-wide checks below are what the non-literal branches consult.
+	// file-wide checks are what the non-literal branches consult.
 	const originalBody = findDefinePreviewBody(content)
 	if (!originalBody) {
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
@@ -965,34 +947,27 @@ function patchDefinePreview({
 		dependencyPreviewsLocal,
 	)
 	const hasSettingsBlockSomewhereInFile = checkHasSettingsBlock(codeOnly)
-	// Whether either key was edited or created; when neither was, the file is
-	// already configured (both halves live in non-literal values) and nothing
-	// is written.
-	let didEditBody = false
-
-	let newContent = insertImports({
-		content: contentAfterImportMerge,
-		statements: importsToInsert,
-		eol,
-	})
-
-	// Re-found after the import edits, since those shift every later offset.
-	const bodyAfterImports = findDefinePreviewBody(newContent)
-	if (!bodyAfterImports) {
-		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
+	// What the body edits inserted — decides the imports at the end, and
+	// whether anything is written at all (nothing inserted means every half
+	// was already present, in a literal or a non-literal value).
+	const inserted = {
+		dependencyPreviewsCall: false,
+		addonDocsCall: false,
+		settingsBlock: false,
 	}
+
 	// A body on one line (`definePreview({})`, `definePreview({ parameters: {} })`)
 	// is laid out as a multi-line object first, so the keys added below each
 	// get a line of their own and the closing brace is not glued to them.
-	newContent = layOutSingleLineObject({
-		content: newContent,
-		bodyStart: bodyAfterImports.from,
-		bodyEnd: bodyAfterImports.to,
+	let newContent = layOutSingleLineObject({
+		content,
+		bodyStart: originalBody.from,
+		bodyEnd: originalBody.to,
 		entryIndent: l1,
 		closeIndent: '',
 		style,
 	})
-	const bodyRange = findDefinePreviewBody(newContent) ?? bodyAfterImports
+	const bodyRange = findDefinePreviewBody(newContent) ?? originalBody
 
 	// ─── `addons`: make sure both registrations are in the list.
 	// If we create the key, remember where it ends so a created `parameters:`
@@ -1006,9 +981,17 @@ function patchDefinePreview({
 		const listCode = stripCommentsRespectingStrings(
 			newContent.slice(listStart, listEnd),
 		)
-		const missingEntries = [addonDocsLocal, dependencyPreviewsLocal]
-			.filter((localName) => !checkDoesListCall(listCode, localName))
-			.map((localName) => `${localName}()`)
+		inserted.addonDocsCall = !checkDoesListCall(listCode, addonDocsLocal)
+		inserted.dependencyPreviewsCall = !checkDoesListCall(
+			listCode,
+			dependencyPreviewsLocal,
+		)
+		const missingEntries = [
+			...(inserted.addonDocsCall ? [`${addonDocsLocal}()`] : []),
+			...(inserted.dependencyPreviewsCall
+				? [`${dependencyPreviewsLocal}()`]
+				: []),
+		]
 		if (missingEntries.length > 0) {
 			newContent = addListEntries({
 				content: newContent,
@@ -1017,7 +1000,6 @@ function patchDefinePreview({
 				entries: missingEntries,
 				style,
 			})
-			didEditBody = true
 		}
 	} else if (addonsKey) {
 		// A list the patcher cannot edit: fine when it already holds the
@@ -1035,7 +1017,8 @@ function patchDefinePreview({
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 		addonsCreatedEndOffset = insertAt + insertion.length
-		didEditBody = true
+		inserted.addonDocsCall = true
+		inserted.dependencyPreviewsCall = true
 	}
 
 	// ─── `parameters`: insert the settings block.
@@ -1077,7 +1060,7 @@ function patchDefinePreview({
 				newContent.slice(0, paramsStart) +
 				insertion +
 				newContent.slice(paramsStart)
-			didEditBody = true
+			inserted.settingsBlock = true
 		}
 	} else if (paramsKey) {
 		// An object the patcher cannot edit: fine when it already holds the
@@ -1094,12 +1077,48 @@ function patchDefinePreview({
 		const insertion = `${eol}${l1}parameters: {${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
-		didEditBody = true
+		inserted.settingsBlock = true
 	}
 
-	if (!didEditBody) {
+	const didInsertAnything =
+		inserted.dependencyPreviewsCall ||
+		inserted.addonDocsCall ||
+		inserted.settingsBlock
+	if (!didInsertAnything) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
+
+	// ─── Imports, for what was inserted. The import edits all sit above the
+	// body, so they come last and shift nothing the edits above relied on.
+	const importsToInsert: string[] = []
+	if (inserted.dependencyPreviewsCall && !defaultAddonImportLocal) {
+		const merged = mergeAddonImport({
+			content: newContent,
+			requiredValueNames: ['dependencyPreviews'],
+			requiredTypeNames: [],
+			style,
+		})
+		newContent = merged.content
+		if (merged.importToInsert) importsToInsert.push(merged.importToInsert)
+	}
+	if (inserted.addonDocsCall && !docsImportLocal) {
+		importsToInsert.push(
+			`import addonDocs from ${quote}@storybook/addon-docs${quote}${trailingSemi}`,
+		)
+	}
+	if (inserted.settingsBlock) {
+		const dependenciesJsonImport = dependenciesJsonImportToInsert(
+			codeOnly,
+			style,
+		)
+		if (dependenciesJsonImport) importsToInsert.push(dependenciesJsonImport)
+	}
+	newContent = insertImports({
+		content: newContent,
+		statements: importsToInsert,
+		eol,
+	})
+
 	return writePreview(previewFile, newContent)
 }
 
@@ -1129,11 +1148,12 @@ function patchExistingPreview(
 	// its own already-configured check — there the settings key says nothing
 	// about whether `dependencyPreviews()` is in `addons`.
 	const isCsfNext = findDefinePreviewBody(content) !== null
-	// A `definePreview(<name>)` whose config the finder could not resolve (an
-	// imported object, a call, a cast) is still a CSF Next file, so the advice
-	// has to name that style's additions rather than the classic spreads.
+	// A `definePreview(…)` call whose config the finder could not resolve (an
+	// imported object, a call, a cast — exported directly or through a const)
+	// is still a CSF Next file, so the advice has to name that style's
+	// additions rather than the classic spreads.
 	const isUnresolvedDefinePreview =
-		!isCsfNext && /export\s+default\s+definePreview\s*\(/.test(codeOnly)
+		!isCsfNext && /\bdefinePreview\s*\(/.test(codeOnly)
 	if (isUnresolvedDefinePreview) {
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}
