@@ -234,6 +234,41 @@ export default preview
 
 > Webpack-based projects don't use `storyModules` (no `import.meta.glob`). The CLI still generates the full dependency tree — `projectRootPath` is only used for the addon's "open in VS Code" feature.
 
+### Storybook 11 / CSF Next form
+
+From Storybook 11 the default `preview.ts` style is CSF Next — a `definePreview({ ... })` call that takes an `addons` list. Register the addon there by calling `dependencyPreviews()` instead of spreading the parameters and decorators in by hand; the `dependencyPreviews` settings block is the same as above:
+
+```ts
+import { definePreview } from '@storybook/angular' // if using Angular
+import { definePreview } from '@storybook/nextjs' // if using Next.js
+import addonDocs from '@storybook/addon-docs'
+import dependencyPreviews from 'storybook-addon-dependency-previews'
+import dependenciesJson from './dependency-previews.json'
+
+declare const __PROJECT_ROOT__: string
+
+export default definePreview({
+	// In a CSF Next preview this list is what loads each addon's preview-side
+	// setup, so `@storybook/addon-docs` (which this addon renders into) has to
+	// be listed here as well — the `addons` list in `main.ts` is not enough.
+	addons: [addonDocs(), dependencyPreviews()],
+	parameters: {
+		dependencyPreviews: {
+			dependenciesJson,
+			// Webpack has no `import.meta.glob`, and the settings type requires
+			// this key, so pass an empty object. The dependency tree still
+			// renders; the nested "Preview … component" panels inside it need
+			// `storyModules` and show "No story module found" instead.
+			storyModules: {},
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main',
+			projectRootPath: __PROJECT_ROOT__,
+		},
+	},
+})
+```
+
+Unlike the hand-spread form, `definePreview` type-checks the `dependencyPreviews` settings against the addon's own type, which is why `storyModules` appears here. The hand-spread form above remains supported.
+
 ## 7. Run it
 
 ```sh

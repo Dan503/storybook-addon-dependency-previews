@@ -4,7 +4,7 @@
 
 ## What is this?
 
-> **This plugin is built for Storybook 10**
+> **This plugin is built for Storybook 10 and 11**
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
@@ -108,6 +108,39 @@ The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-
 
 - [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
+
+### Storybook 11 / CSF Next preview configs
+
+From Storybook 11 the default `.storybook/preview.ts` style is CSF Next — a `definePreview({ ... })` call with an `addons` list. Register the addon there by calling the `dependencyPreviews()` function the package exports, alongside `@storybook/addon-docs`:
+
+```ts
+/// <reference types="vite/client" />
+
+import { definePreview } from '@storybook/react-vite'
+import addonDocs from '@storybook/addon-docs'
+import dependencyPreviews from 'storybook-addon-dependency-previews'
+
+import dependenciesJson from './dependency-previews.json'
+
+export default definePreview({
+	addons: [addonDocs(), dependencyPreviews()],
+	parameters: {
+		// The same settings block as the hand-spread form — the manual setup
+		// guides explain each value.
+		dependencyPreviews: {
+			dependenciesJson,
+			storyModules: import.meta.glob(
+				'/src/**/*.{story,stories}.{tsx,ts,jsx,js,svelte}',
+				{ eager: false },
+			),
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main',
+			projectRootPath: new URL('..', import.meta.url).pathname,
+		},
+	},
+})
+```
+
+The hand-spread `preview.ts` the wizard generates (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`) remains supported. The wizard does not patch an existing `definePreview({ ... })` preview — on such a file it stops with "Could not locate the preview config object" — so for a CSF Next project add the addon by hand using the config above. Both manual setup guides show the full CSF Next config for their frameworks.
 
 ## Auto-scaffolding new components and stories
 

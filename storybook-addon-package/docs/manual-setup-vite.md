@@ -211,6 +211,42 @@ const previewConfig: StorybookPreviewConfig = {
 export default previewConfig
 ```
 
+### Storybook 11 / CSF Next form
+
+From Storybook 11 the default `preview.ts` style is CSF Next — a `definePreview({ ... })` call that takes an `addons` list. Register the addon there by calling `dependencyPreviews()` instead of spreading the parameters and decorators in by hand; the `dependencyPreviews` settings block is the same as above:
+
+```ts
+/// <reference types="vite/client" />
+
+import { definePreview } from '@storybook/react-vite' // if using React
+import { definePreview } from '@storybook/vue3-vite' // if using Vue 3
+import { definePreview } from 'storybook-solidjs-vite' // if using Solid
+import addonDocs from '@storybook/addon-docs'
+import dependencyPreviews from 'storybook-addon-dependency-previews'
+
+import dependenciesJson from './dependency-previews.json'
+
+export default definePreview({
+	// In a CSF Next preview this list is what loads each addon's preview-side
+	// setup, so `@storybook/addon-docs` (which this addon renders into) has to
+	// be listed here as well — the `addons` list in `main.ts` is not enough.
+	addons: [addonDocs(), dependencyPreviews()],
+	parameters: {
+		dependencyPreviews: {
+			dependenciesJson,
+			storyModules: import.meta.glob(
+				'/src/**/*.{story,stories}.{tsx,ts,jsx,js,svelte}',
+				{ eager: false },
+			),
+			sourceRootUrl: 'https://github.com/your-org/your-repo/blob/main',
+			projectRootPath: new URL('..', import.meta.url).pathname,
+		},
+	},
+})
+```
+
+`definePreview` comes from your framework package. Not every framework package exports it yet (at the time of writing `@storybook/preact-vite`, `@storybook/sveltekit` and `@storybook/svelte-vite` do not) — for those, keep the hand-spread form. The hand-spread form remains supported on Storybook 11 (checked with the React example site on the 11 alpha), and is what the setup wizard generates.
+
 ## 7. Run it
 
 ```sh

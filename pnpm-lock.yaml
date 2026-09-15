@@ -594,11 +594,11 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
       '@storybook/addon-docs':
-        specifier: ^10.0.2
-        version: 10.0.2(@types/react@19.1.13)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))
+        specifier: ^10.0.2 || ^11.0.0-0
+        version: 10.5.10(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))
       '@storybook/addon-links':
-        specifier: ^10.0.2
-        version: 10.0.2(react@19.1.1)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
+        specifier: ^10.0.2 || ^11.0.0-0
+        version: 10.6.0(@types/react@19.1.13)(react@19.1.1)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       '@storybook/csf':
         specifier: ^0.1.13
         version: 0.1.13
@@ -649,8 +649,8 @@ importers:
         specifier: ^3.8.3
         version: 3.8.3
       storybook:
-        specifier: ^10.2.0
-        version: 10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^10.6.0
+        version: 10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       ts-dedent:
         specifier: ^2.2.0
         version: 2.2.0
@@ -5411,11 +5411,6 @@ packages:
     peerDependencies:
       storybook: ^10.4.6
 
-  '@storybook/addon-docs@10.0.2':
-    resolution: {integrity: sha512-0lU0kDKSLcKjTd+cQ2jwZr+vOIH/p0M6Vy6w/uoc6qsKEb/Plc+IHu+o2SU6ZO9hkVlDyXzk6xI+64N22O7CHg==}
-    peerDependencies:
-      storybook: ^10.0.2
-
   '@storybook/addon-docs@10.2.17':
     resolution: {integrity: sha512-c414xi7rxlaHn92qWOxtEkcOMm0/+cvBui0gUsgiWOZOM8dHChGZ/RjMuf1pPDyOrSsybLsPjZhP0WthsMDkdQ==}
     peerDependencies:
@@ -5451,15 +5446,6 @@ packages:
       storybook: ^10.5.10
     peerDependenciesMeta:
       '@types/react':
-        optional: true
-
-  '@storybook/addon-links@10.0.2':
-    resolution: {integrity: sha512-54QkYtyBfOzLJmQohnoL4fR8RGuw42fUvsX9qzyAxnd2PIcSK7eFo4L03S70l3WhuYbRzOo/Zem715nR2fVmuA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.0.2
-    peerDependenciesMeta:
-      react:
         optional: true
 
   '@storybook/addon-links@10.2.1':
@@ -5735,13 +5721,6 @@ packages:
 
   '@storybook/global@5.0.0':
     resolution: {integrity: sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ==}
-
-  '@storybook/icons@1.6.0':
-    resolution: {integrity: sha512-hcFZIjW8yQz8O8//2WTIXylm5Xsgc+lW9ISLgUk1xGmptIJQRdlhVIXCpSyLrQaaRiyhQRaVg7l3BD9S216BHw==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
 
   '@storybook/icons@2.0.1':
     resolution: {integrity: sha512-/smVjw88yK3CKsiuR71vNgWQ9+NuY2L+e8X7IMrFjexjm6ZR8ULrV2DRkTA61aV6ryefslzHEGDInGpnNeIocg==}
@@ -6474,6 +6453,12 @@ packages:
 
   '@testing-library/user-event@14.6.1':
     resolution: {integrity: sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw==}
+    engines: {node: '>=12', npm: '>=6'}
+    peerDependencies:
+      '@testing-library/dom': '>=7.21.4'
+
+  '@testing-library/user-event@14.6.7':
+    resolution: {integrity: sha512-MPCpX8bxe8zS+JmmTwLp8jd0dy1rAm60Te/SL8JrQM3qvQJcBOs1d7IefJMyZzqM3EWBrDn/LWDt1BCGu4ASfg==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
@@ -12654,6 +12639,21 @@ packages:
       vite-plus:
         optional: true
 
+  storybook@10.6.0:
+    resolution: {integrity: sha512-H48X6AURAFTpfN2zEux6vNesee5Oq8Gxj1IanYmblPZ218sfKSeyyerF1NC7GD7BrruoC8L4/cU0zII4y+d6zw==}
+    hasBin: true
+    peerDependencies:
+      '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      prettier: ^2 || ^3
+      vite-plus: ^0.1.15 || ^0.2.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      prettier:
+        optional: true
+      vite-plus:
+        optional: true
+
   stream-combiner@0.2.2:
     resolution: {integrity: sha512-6yHMqgLYDzQDcAkL+tjJDC5nSNuNIx0vZtRZeiPh7Saef7VHX9H5Ijn9l2VIol2zaNYlYEX6KyuT/237A58qEQ==}
 
@@ -17205,7 +17205,7 @@ snapshots:
 
   '@img/sharp-wasm32@0.34.5':
     dependencies:
-      '@emnapi/runtime': 1.10.0
+      '@emnapi/runtime': 1.11.0
     optional: true
 
   '@img/sharp-win32-arm64@0.34.5':
@@ -17600,7 +17600,7 @@ snapshots:
       https-proxy-agent: 7.0.6
       node-fetch: 2.7.0
       nopt: 8.1.0
-      semver: 7.8.1
+      semver: 7.8.5
       tar: 7.5.7
     transitivePeerDependencies:
       - encoding
@@ -17735,9 +17735,9 @@ snapshots:
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
-      '@emnapi/core': 1.10.0
-      '@emnapi/runtime': 1.10.0
-      '@tybys/wasm-util': 0.10.1
+      '@emnapi/core': 1.11.0
+      '@emnapi/runtime': 1.11.0
+      '@tybys/wasm-util': 0.10.3
     optional: true
 
   '@napi-rs/wasm-runtime@1.1.1':
@@ -17761,17 +17761,24 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)':
+  '@napi-rs/wasm-runtime@1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@emnapi/core': 1.9.2
-      '@emnapi/runtime': 1.9.2
-      '@tybys/wasm-util': 0.10.1
+      '@emnapi/core': 1.10.0
+      '@emnapi/runtime': 1.10.0
+      '@tybys/wasm-util': 0.10.3
     optional: true
 
   '@napi-rs/wasm-runtime@1.2.3(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)':
     dependencies:
       '@emnapi/core': 1.11.0
       '@emnapi/runtime': 1.11.0
+      '@tybys/wasm-util': 0.10.3
+    optional: true
+
+  '@napi-rs/wasm-runtime@1.2.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)':
+    dependencies:
+      '@emnapi/core': 1.9.2
+      '@emnapi/runtime': 1.9.2
       '@tybys/wasm-util': 0.10.3
     optional: true
 
@@ -17843,7 +17850,7 @@ snapshots:
       image-size: 2.0.2
       js-image-generator: 1.0.4
       parse-gitignore: 2.0.0
-      semver: 7.8.1
+      semver: 7.8.5
       tmp-promise: 3.0.3
       uuid: 13.0.0
       write-file-atomic: 5.0.1
@@ -17905,7 +17912,7 @@ snapshots:
       p-wait-for: 5.0.2
       parse-imports: 2.2.1
       path-key: 4.0.0
-      semver: 7.8.1
+      semver: 7.8.5
       tar: 7.5.7
       tmp-promise: 3.0.3
       urlpattern-polyfill: 8.0.2
@@ -17939,7 +17946,7 @@ snapshots:
       jwt-decode: 4.0.0
       lambda-local: 2.2.0
       read-package-up: 11.0.0
-      semver: 7.8.1
+      semver: 7.8.5
       source-map-support: 0.5.21
     transitivePeerDependencies:
       - bare-abort-controller
@@ -18128,7 +18135,7 @@ snapshots:
       precinct: 12.2.0
       require-package-name: 2.0.1
       resolve: 2.0.0-next.5
-      semver: 7.8.1
+      semver: 7.8.5
       tmp-promise: 3.0.3
       toml: 3.0.0
       unixify: 1.0.0
@@ -18174,7 +18181,7 @@ snapshots:
 
   '@npmcli/fs@5.0.0':
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.5
 
   '@npmcli/git@7.0.2':
     dependencies:
@@ -18184,7 +18191,7 @@ snapshots:
       lru-cache: 11.2.6
       npm-pick-manifest: 11.0.3
       proc-log: 6.1.0
-      semver: 7.8.1
+      semver: 7.8.5
       which: 6.0.1
 
   '@npmcli/installed-package-contents@4.0.0':
@@ -18201,7 +18208,7 @@ snapshots:
       hosted-git-info: 9.0.2
       json-parse-even-better-errors: 5.0.0
       proc-log: 6.1.0
-      semver: 7.8.1
+      semver: 7.8.5
       spdx-expression-parse: 4.0.0
 
   '@npmcli/promise-spawn@9.0.1':
@@ -18243,7 +18250,7 @@ snapshots:
       perfect-debounce: 2.1.0
       pkg-types: 2.3.1
       scule: 1.3.0
-      semver: 7.8.1
+      semver: 7.8.5
       srvx: 0.11.16
       std-env: 4.1.0
       tinyclip: 0.1.12
@@ -18277,7 +18284,7 @@ snapshots:
       magicast: 0.5.3
       pathe: 2.0.3
       pkg-types: 2.3.1
-      semver: 7.8.1
+      semver: 7.8.5
 
   '@nuxt/devtools@3.2.4(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(vue@3.5.34(typescript@5.9.3))':
     dependencies:
@@ -18304,7 +18311,7 @@ snapshots:
       pathe: 2.0.3
       perfect-debounce: 2.1.0
       pkg-types: 2.3.1
-      semver: 7.8.1
+      semver: 7.8.5
       simple-git: 3.36.0
       sirv: 3.0.2
       structured-clone-es: 2.0.0
@@ -18313,7 +18320,7 @@ snapshots:
       vite-plugin-inspect: 11.3.3(@nuxt/kit@4.4.6(magicast@0.5.3))(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))
       vite-plugin-vue-tracer: 1.4.0(vite@7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(vue@3.5.34(typescript@5.9.3))
       which: 6.0.1
-      ws: 8.21.0
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -18337,7 +18344,7 @@ snapshots:
       pkg-types: 2.3.1
       rc9: 3.0.1
       scule: 1.3.0
-      semver: 7.8.1
+      semver: 7.8.5
       tinyglobby: 0.2.16
       ufo: 1.6.4
       unctx: 2.5.0
@@ -18572,7 +18579,7 @@ snapshots:
       '@opentelemetry/propagator-b3': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/propagator-jaeger': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
-      semver: 7.8.1
+      semver: 7.8.5
 
   '@opentelemetry/semantic-conventions@1.28.0': {}
 
@@ -18740,14 +18747,14 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.9.2
       '@emnapi/runtime': 1.9.2
-      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
     optional: true
 
   '@oxc-parser/binding-wasm32-wasi@0.131.0':
     dependencies:
       '@emnapi/core': 1.10.0
       '@emnapi/runtime': 1.10.0
-      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     optional: true
 
   '@oxc-parser/binding-win32-arm64-msvc@0.127.0':
@@ -19029,7 +19036,7 @@ snapshots:
   '@parcel/watcher-wasm@2.5.6':
     dependencies:
       is-glob: 4.0.3
-      picomatch: 4.0.4
+      picomatch: 4.0.5
 
   '@parcel/watcher-win32-arm64@2.5.1':
     optional: true
@@ -19075,7 +19082,7 @@ snapshots:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.4
+      picomatch: 4.0.5
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -19314,7 +19321,7 @@ snapshots:
 
   '@rolldown/binding-wasm32-wasi@1.0.0-beta.45(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)
+      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -19359,10 +19366,10 @@ snapshots:
       '@rollup/pluginutils': 5.3.0(rollup@4.60.4)
       commondir: 1.0.1
       estree-walker: 2.0.2
-      fdir: 6.5.0(picomatch@4.0.4)
+      fdir: 6.5.0(picomatch@4.0.5)
       is-reference: 1.2.1
       magic-string: 0.30.21
-      picomatch: 4.0.4
+      picomatch: 4.0.5
     optionalDependencies:
       rollup: 4.60.4
 
@@ -19414,7 +19421,7 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.8
       estree-walker: 2.0.2
-      picomatch: 4.0.4
+      picomatch: 4.0.5
     optionalDependencies:
       rollup: 4.60.4
 
@@ -19765,23 +19772,6 @@ snapshots:
       axe-core: 4.11.1
       storybook: 10.4.6(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)(@testing-library/dom@10.4.1)(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
 
-  '@storybook/addon-docs@10.0.2(@types/react@19.1.13)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
-    dependencies:
-      '@mdx-js/react': 3.1.1(@types/react@19.1.13)(react@19.1.1)
-      '@storybook/csf-plugin': 10.0.2(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))
-      '@storybook/icons': 1.6.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@storybook/react-dom-shim': 10.0.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-      storybook: 10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      ts-dedent: 2.2.0
-    transitivePeerDependencies:
-      - '@types/react'
-      - esbuild
-      - rollup
-      - vite
-      - webpack
-
   '@storybook/addon-docs@10.2.17(@types/react@19.1.13)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.1(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
       '@mdx-js/react': 3.1.1(@types/react@19.1.13)(react@19.1.1)
@@ -19873,12 +19863,24 @@ snapshots:
       - vite
       - webpack
 
-  '@storybook/addon-links@10.0.2(react@19.1.1)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))':
+  '@storybook/addon-docs@10.5.10(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
-      '@storybook/global': 5.0.0
-      storybook: 10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-    optionalDependencies:
+      '@mdx-js/react': 3.1.1(@types/react@19.1.13)(react@19.1.1)
+      '@storybook/csf-plugin': 10.5.10(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))
+      '@storybook/icons': 2.0.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@storybook/react-dom-shim': 10.5.10(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+      storybook: 10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      ts-dedent: 2.2.0
+    optionalDependencies:
+      '@types/react': 19.1.13
+    transitivePeerDependencies:
+      - '@types/react-dom'
+      - esbuild
+      - rollup
+      - vite
+      - webpack
 
   '@storybook/addon-links@10.2.1(react@19.1.1)(storybook@10.2.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))':
     dependencies:
@@ -19907,6 +19909,14 @@ snapshots:
     dependencies:
       '@storybook/global': 5.0.0
       storybook: 10.5.10(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+    optionalDependencies:
+      '@types/react': 19.1.13
+      react: 19.1.1
+
+  '@storybook/addon-links@10.6.0(@types/react@19.1.13)(react@19.1.1)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))':
+    dependencies:
+      '@storybook/global': 5.0.0
+      storybook: 10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     optionalDependencies:
       '@types/react': 19.1.13
       react: 19.1.1
@@ -20073,20 +20083,10 @@ snapshots:
       storybook: 10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       ts-dedent: 2.2.0
 
-  '@storybook/csf-plugin@10.0.2(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
-    dependencies:
-      storybook: 10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      unplugin: 2.3.10
-    optionalDependencies:
-      esbuild: 0.28.0
-      rollup: 4.60.4
-      vite: 7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2)
-      webpack: 5.105.4(esbuild@0.28.0)
-
   '@storybook/csf-plugin@10.0.2(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.1(@types/node@22.18.6)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
       storybook: 10.2.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      unplugin: 2.3.10
+      unplugin: 2.3.11
     optionalDependencies:
       esbuild: 0.28.0
       rollup: 4.60.4
@@ -20096,7 +20096,7 @@ snapshots:
   '@storybook/csf-plugin@10.2.17(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.1(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
       storybook: 10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      unplugin: 2.3.10
+      unplugin: 2.3.11
     optionalDependencies:
       esbuild: 0.28.0
       rollup: 4.60.4
@@ -20106,7 +20106,7 @@ snapshots:
   '@storybook/csf-plugin@10.2.4(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.2.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.3.1(@types/node@22.18.6)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
       storybook: 10.2.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      unplugin: 2.3.10
+      unplugin: 2.3.11
     optionalDependencies:
       esbuild: 0.28.0
       rollup: 4.60.4
@@ -20143,16 +20143,21 @@ snapshots:
       vite: 7.3.3(@types/node@24.12.4)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2)
       webpack: 5.105.4(esbuild@0.28.0)
 
+  '@storybook/csf-plugin@10.5.10(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2))(webpack@5.105.4(esbuild@0.28.0))':
+    dependencies:
+      storybook: 10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      unplugin: 2.3.11
+    optionalDependencies:
+      esbuild: 0.28.0
+      rollup: 4.60.4
+      vite: 7.1.7(@types/node@24.7.2)(jiti@2.7.0)(less@4.4.2)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2)
+      webpack: 5.105.4(esbuild@0.28.0)
+
   '@storybook/csf@0.1.13':
     dependencies:
       type-fest: 2.19.0
 
   '@storybook/global@5.0.0': {}
-
-  '@storybook/icons@1.6.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
-    dependencies:
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
 
   '@storybook/icons@2.0.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
@@ -20182,12 +20187,6 @@ snapshots:
       preact: 10.29.8(preact-render-to-string@6.7.0)
       storybook: 10.5.10(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       ts-dedent: 2.2.0
-
-  '@storybook/react-dom-shim@10.0.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))':
-    dependencies:
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-      storybook: 10.2.17(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
 
   '@storybook/react-dom-shim@10.0.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@10.2.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))':
     dependencies:
@@ -20230,6 +20229,15 @@ snapshots:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       storybook: 10.5.10(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+    optionalDependencies:
+      '@types/react': 19.1.13
+      '@types/react-dom': 19.1.9(@types/react@19.1.13)
+
+  '@storybook/react-dom-shim@10.5.10(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))':
+    dependencies:
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+      storybook: 10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     optionalDependencies:
       '@types/react': 19.1.13
       '@types/react-dom': 19.1.9(@types/react@19.1.13)
@@ -20335,7 +20343,7 @@ snapshots:
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
       estraverse: 5.3.0
-      picomatch: 4.0.4
+      picomatch: 4.0.5
 
   '@sveltejs/acorn-typescript@1.0.8(acorn@8.15.0)':
     dependencies:
@@ -20622,7 +20630,7 @@ snapshots:
 
   '@tanstack/devtools-event-bus@0.2.1':
     dependencies:
-      ws: 8.21.0
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -21060,6 +21068,10 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.1
 
+  '@testing-library/user-event@14.6.7(@testing-library/dom@10.4.1)':
+    dependencies:
+      '@testing-library/dom': 10.4.1
+
   '@thednp/event-listener@2.0.12': {}
 
   '@thednp/position-observer@1.1.0':
@@ -21388,7 +21400,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.8.1
+      semver: 7.8.5
       ts-api-utils: 2.1.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -21402,7 +21414,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.54.0
       debug: 4.4.3(supports-color@5.5.0)
       minimatch: 9.0.5
-      semver: 7.8.1
+      semver: 7.8.5
       tinyglobby: 0.2.16
       ts-api-utils: 2.4.0(typescript@5.9.3)
       typescript: 5.9.3
@@ -21546,15 +21558,15 @@ snapshots:
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3
       '@rollup/pluginutils': 5.3.0(rollup@4.60.4)
-      acorn: 8.16.0
-      acorn-import-attributes: 1.9.5(acorn@8.16.0)
+      acorn: 8.18.0
+      acorn-import-attributes: 1.9.5(acorn@8.18.0)
       async-sema: 3.1.1
       bindings: 1.5.0
       estree-walker: 2.0.2
       glob: 10.4.5
       graceful-fs: 4.2.11
       node-gyp-build: 4.8.4
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       resolve-from: 5.0.0
     transitivePeerDependencies:
       - encoding
@@ -21565,15 +21577,15 @@ snapshots:
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3
       '@rollup/pluginutils': 5.3.0(rollup@4.60.4)
-      acorn: 8.16.0
-      acorn-import-attributes: 1.9.5(acorn@8.16.0)
+      acorn: 8.18.0
+      acorn-import-attributes: 1.9.5(acorn@8.18.0)
       async-sema: 3.1.1
       bindings: 1.5.0
       estree-walker: 2.0.2
       glob: 13.0.6
       graceful-fs: 4.2.11
       node-gyp-build: 4.8.4
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       resolve-from: 5.0.0
     transitivePeerDependencies:
       - encoding
@@ -21662,9 +21674,9 @@ snapshots:
       pixelmatch: 7.1.0
       pngjs: 7.0.0
       sirv: 3.0.2
-      tinyrainbow: 3.0.3
+      tinyrainbow: 3.1.0
       vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@22.18.6)(@vitest/browser-playwright@4.0.18)(jiti@2.7.0)(jsdom@27.4.0)(less@4.4.2)(lightningcss@1.32.0)(msw@2.12.10(@types/node@22.18.6)(typescript@5.9.3))(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2)
-      ws: 8.21.0
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -21679,9 +21691,9 @@ snapshots:
       pixelmatch: 7.1.0
       pngjs: 7.0.0
       sirv: 3.0.2
-      tinyrainbow: 3.0.3
+      tinyrainbow: 3.1.0
       vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/browser-playwright@4.0.18)(jiti@2.7.0)(jsdom@27.4.0)(less@4.4.2)(lightningcss@1.32.0)(msw@2.12.10(@types/node@24.12.4)(typescript@5.9.3))(sass@1.97.3)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.2)
-      ws: 8.21.0
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -22058,7 +22070,7 @@ snapshots:
       alien-signals: 3.2.1
       muggle-string: 0.4.1
       path-browserify: 1.0.1
-      picomatch: 4.0.4
+      picomatch: 4.0.5
 
   '@vue/reactivity@3.5.34':
     dependencies:
@@ -22217,13 +22229,17 @@ snapshots:
       mime-types: 3.0.2
       negotiator: 1.0.0
 
-  acorn-import-attributes@1.9.5(acorn@8.16.0):
+  acorn-import-attributes@1.9.5(acorn@8.18.0):
     dependencies:
-      acorn: 8.16.0
+      acorn: 8.18.0
 
   acorn-import-phases@1.0.4(acorn@8.16.0):
     dependencies:
       acorn: 8.16.0
+
+  acorn-import-phases@1.0.4(acorn@8.18.0):
+    dependencies:
+      acorn: 8.18.0
 
   acorn-jsx-walk@2.0.0: {}
 
@@ -22245,7 +22261,7 @@ snapshots:
 
   acorn-walk@8.3.4:
     dependencies:
-      acorn: 8.16.0
+      acorn: 8.18.0
 
   acorn-walk@8.3.5:
     dependencies:
@@ -23208,7 +23224,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.15)
       postcss-modules-values: 4.0.0(postcss@8.5.15)
       postcss-value-parser: 4.2.0
-      semver: 7.8.1
+      semver: 7.8.5
     optionalDependencies:
       webpack: 5.105.4(esbuild@0.28.0)
 
@@ -23887,7 +23903,7 @@ snapshots:
   eslint-compat-utils@0.5.1(eslint@9.39.2(jiti@2.7.0)):
     dependencies:
       eslint: 9.39.2(jiti@2.7.0)
-      semver: 7.8.1
+      semver: 7.8.5
 
   eslint-config-prettier@10.1.8(eslint@9.39.2(jiti@2.7.0)):
     dependencies:
@@ -24039,8 +24055,8 @@ snapshots:
 
   espree@10.4.0:
     dependencies:
-      acorn: 8.16.0
-      acorn-jsx: 5.3.2(acorn@8.16.0)
+      acorn: 8.18.0
+      acorn-jsx: 5.3.2(acorn@8.18.0)
       eslint-visitor-keys: 4.2.1
 
   esprima@4.0.1: {}
@@ -24397,7 +24413,7 @@ snapshots:
       minimatch: 3.1.2
       node-abort-controller: 3.1.1
       schema-utils: 3.3.0
-      semver: 7.8.1
+      semver: 7.8.5
       tapable: 2.3.3
       typescript: 5.9.3
       webpack: 5.105.4(esbuild@0.28.0)
@@ -24888,8 +24904,8 @@ snapshots:
 
   import-in-the-middle@1.15.0:
     dependencies:
-      acorn: 8.16.0
-      acorn-import-attributes: 1.9.5(acorn@8.16.0)
+      acorn: 8.18.0
+      acorn-import-attributes: 1.9.5(acorn@8.18.0)
       cjs-module-lexer: 1.4.3
       module-details-from-path: 1.0.4
 
@@ -25263,7 +25279,7 @@ snapshots:
       lodash.isstring: 4.0.1
       lodash.once: 4.1.1
       ms: 2.1.3
-      semver: 7.8.1
+      semver: 7.8.5
 
   jstransformer@1.0.0:
     dependencies:
@@ -25701,7 +25717,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.5
 
   make-fetch-happen@15.0.4:
     dependencies:
@@ -25906,14 +25922,14 @@ snapshots:
 
   mlly@1.8.0:
     dependencies:
-      acorn: 8.16.0
+      acorn: 8.18.0
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.6.3
 
   mlly@1.8.2:
     dependencies:
-      acorn: 8.16.0
+      acorn: 8.18.0
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.6.4
@@ -26110,7 +26126,7 @@ snapshots:
       rollup: 4.60.4
       rollup-plugin-visualizer: 7.0.1(rolldown@1.0.0-rc.4)(rollup@4.60.4)
       scule: 1.3.0
-      semver: 7.8.1
+      semver: 7.8.5
       serve-placeholder: 2.0.2
       serve-static: 2.2.1
       source-map: 0.7.6
@@ -26201,7 +26217,7 @@ snapshots:
       make-fetch-happen: 15.0.4
       nopt: 9.0.0
       proc-log: 6.1.0
-      semver: 7.8.1
+      semver: 7.8.5
       tar: 7.5.7
       tinyglobby: 0.2.16
       which: 6.0.1
@@ -26232,7 +26248,7 @@ snapshots:
       ignore-by-default: 1.0.1
       minimatch: 3.1.2
       pstree.remy: 1.1.8
-      semver: 7.8.1
+      semver: 7.8.5
       simple-update-notifier: 2.0.0
       supports-color: 5.5.0
       touch: 3.1.1
@@ -26249,7 +26265,7 @@ snapshots:
   normalize-package-data@6.0.2:
     dependencies:
       hosted-git-info: 7.0.2
-      semver: 7.8.1
+      semver: 7.8.5
       validate-npm-package-license: 3.0.4
 
   normalize-path@2.1.1:
@@ -26264,7 +26280,7 @@ snapshots:
 
   npm-install-checks@8.0.0:
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.5
 
   npm-normalize-package-bin@5.0.0: {}
 
@@ -26285,7 +26301,7 @@ snapshots:
       npm-install-checks: 8.0.0
       npm-normalize-package-bin: 5.0.0
       npm-package-arg: 13.0.2
-      semver: 7.8.1
+      semver: 7.8.5
 
   npm-registry-fetch@19.1.1:
     dependencies:
@@ -27767,7 +27783,7 @@ snapshots:
   rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.4)(rollup@4.60.4):
     dependencies:
       open: 11.0.0
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       source-map: 0.7.6
       yargs: 18.0.0
     optionalDependencies:
@@ -28029,7 +28045,7 @@ snapshots:
     dependencies:
       '@img/colour': 1.0.0
       detect-libc: 2.1.2
-      semver: 7.8.1
+      semver: 7.8.5
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.34.5
       '@img/sharp-darwin-x64': 0.34.5
@@ -28136,7 +28152,7 @@ snapshots:
 
   simple-update-notifier@2.0.0:
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.5
 
   sirv@3.0.2:
     dependencies:
@@ -28455,6 +28471,34 @@ snapshots:
       - react-dom
       - utf-8-validate
 
+  storybook@10.6.0(@types/react@19.1.13)(prettier@3.8.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+    dependencies:
+      '@storybook/global': 5.0.0
+      '@storybook/icons': 2.0.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@testing-library/dom': 10.4.1
+      '@testing-library/jest-dom': 6.9.1
+      '@testing-library/user-event': 14.6.7(@testing-library/dom@10.4.1)
+      '@vitest/expect': 3.2.4
+      '@vitest/spy': 3.2.4
+      '@webcontainer/env': 1.1.1
+      esbuild: 0.28.0
+      jsonc-parser: 3.3.1
+      open: 10.2.0
+      oxc-parser: 0.127.0
+      oxc-resolver: 11.21.2
+      recast: 0.23.11
+      semver: 7.8.5
+      use-sync-external-store: 1.5.0(react@19.1.1)
+      ws: 8.21.3
+    optionalDependencies:
+      '@types/react': 19.1.13
+      prettier: 3.8.3
+    transitivePeerDependencies:
+      - bufferutil
+      - react
+      - react-dom
+      - utf-8-validate
+
   stream-combiner@0.2.2:
     dependencies:
       duplexer: 0.1.2
@@ -28757,8 +28801,8 @@ snapshots:
 
   tinyglobby@0.2.16:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
+      fdir: 6.5.0(picomatch@4.0.5)
+      picomatch: 4.0.5
 
   tinypool@1.1.1: {}
 
@@ -28851,7 +28895,7 @@ snapshots:
 
   ts-declaration-location@1.0.7(typescript@5.9.3):
     dependencies:
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       typescript: 5.9.3
 
   ts-dedent@2.2.0: {}
@@ -28994,7 +29038,7 @@ snapshots:
 
   unctx@2.5.0:
     dependencies:
-      acorn: 8.16.0
+      acorn: 8.18.0
       estree-walker: 3.0.3
       magic-string: 0.30.21
       unplugin: 2.3.11
@@ -29038,14 +29082,14 @@ snapshots:
 
   unimport@6.3.0(oxc-parser@0.131.0)(rolldown@1.0.0-rc.4):
     dependencies:
-      acorn: 8.16.0
+      acorn: 8.18.0
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       local-pkg: 1.2.1
       magic-string: 0.30.21
       mlly: 1.8.2
       pathe: 2.0.3
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       pkg-types: 2.3.1
       scule: 1.3.0
       strip-literal: 3.1.0
@@ -29100,26 +29144,26 @@ snapshots:
   unplugin-utils@0.3.1:
     dependencies:
       pathe: 2.0.3
-      picomatch: 4.0.4
+      picomatch: 4.0.5
 
   unplugin@2.3.10:
     dependencies:
       '@jridgewell/remapping': 2.3.5
-      acorn: 8.16.0
-      picomatch: 4.0.4
+      acorn: 8.18.0
+      picomatch: 4.0.5
       webpack-virtual-modules: 0.6.2
 
   unplugin@2.3.11:
     dependencies:
       '@jridgewell/remapping': 2.3.5
-      acorn: 8.16.0
-      picomatch: 4.0.4
+      acorn: 8.18.0
+      picomatch: 4.0.5
       webpack-virtual-modules: 0.6.2
 
   unplugin@3.0.0:
     dependencies:
       '@jridgewell/remapping': 2.3.5
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       webpack-virtual-modules: 0.6.2
 
   unrouting@0.1.7:
@@ -29340,7 +29384,7 @@ snapshots:
       chokidar: 4.0.3
       npm-run-path: 6.0.0
       picocolors: 1.1.1
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       proper-lockfile: 4.1.2
       tiny-invariant: 1.3.3
       tinyglobby: 0.2.16
@@ -29952,8 +29996,8 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.16.0
-      acorn-import-phases: 1.0.4(acorn@8.16.0)
+      acorn: 8.18.0
+      acorn-import-phases: 1.0.4(acorn@8.18.0)
       browserslist: 4.28.1
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.24.5

@@ -27,6 +27,7 @@ import {
 	type TsxFramework,
 } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
+import { findInstalledPackage } from './setup/util.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
@@ -203,28 +204,28 @@ function getProjectFramework(): Framework {
 const IS_WIN = process.platform === 'win32'
 
 /**
- * Locate the `dependency-cruiser` CLI binary in the user's `node_modules/.bin`.
- * Returns the absolute path with the right extension for the platform (`.cmd`
- * shim on Windows, bare name elsewhere). Falls back to `null` if it can't be
- * found — caller decides what to do.
+ * Locate the JavaScript entry file of the `dependency-cruiser` CLI the
+ * project installed (its `bin.depcruise`), found by walking `node_modules`
+ * upwards from the project root so a hoisted workspace install is covered
+ * too. Falls back to `null` if it can't be found — caller decides what to do.
  *
- * Going through the resolved binary lets us call `execFileSync` directly
- * (with `shell: false`) and pass each flag as its own array element — no
- * shell quoting, no `cmd.exe` metacharacter mangling (`^` is a `cmd.exe`
- * escape character, which would silently strip the `^` anchor from our
- * `--include-only` regex if we went through a shell). It also avoids spawning
- * `npx`, which on Windows is a `.cmd` shim that requires `shell: true` to
- * launch — which would reintroduce the very quoting problem we're trying to
- * avoid.
+ * Running that file under the current `node` directly, rather than the
+ * `node_modules/.bin/depcruise` shim, means the exact installed
+ * `dependency-cruiser` runs with each flag as its own array element and no
+ * shell on any platform. On Windows the shim is a `.cmd` file that needs
+ * `shell: true`, and cmd.exe then mangles arguments (`^` is its escape
+ * character, spaces split a path, `%NAME%` is expanded even inside quotes);
+ * skipping the shim removes all of that.
  */
-function resolveDepCruiseBin(): string | null {
-	const bin = join(
-		projectRoot,
-		'node_modules',
-		'.bin',
-		IS_WIN ? 'depcruise.cmd' : 'depcruise',
-	)
-	return existsSync(bin) ? bin : null
+function resolveDepCruiseEntry(): string | null {
+	const found = findInstalledPackage(projectRoot, 'dependency-cruiser')
+	const bin = found?.pkg.bin
+	const relativeEntry =
+		bin && typeof bin === 'object'
+			? (bin as Record<string, unknown>).depcruise
+			: undefined
+	if (!found || typeof relativeEntry !== 'string') return null
+	return join(found.dir, relativeEntry)
 }
 
 function runDepCruiseOnce() {
@@ -265,36 +266,27 @@ function runDepCruiseOnce() {
 	}
 	args.push('--include-only', includeOnly, '--output-type', 'json')
 
-	const depcruiseBin = resolveDepCruiseBin()
-	if (!depcruiseBin) {
+	const depcruiseEntry = resolveDepCruiseEntry()
+	if (!depcruiseEntry) {
 		throw new Error(
-			'Could not locate `dependency-cruiser` in node_modules/.bin. Run the setup wizard (`sb-deps setup`) or install `dependency-cruiser` as a dev dependency.',
+			'Could not locate `dependency-cruiser` in node_modules. Run the setup wizard (`sb-deps setup`) or install `dependency-cruiser` as a dev dependency.',
 		)
 	}
 
 	const start = Date.now()
-	// `.cmd` shims on Windows need `shell: true` to launch, BUT once shell is
-	// on, cmd.exe re-interprets `^` as an escape character — which would strip
-	// the anchor from our regex. Workaround: spawn the `.cmd` itself with
-	// shell:true (cmd.exe wraps the call) and pre-escape `^` for cmd.exe by
-	// doubling it. On Unix the binary is a real ELF/script (no shim), shell:false
-	// is the default, args pass through unmolested.
-	const stdout = execFileSync(
-		depcruiseBin,
-		IS_WIN ? args.map(escapeForCmdExe) : args,
-		{
-			cwd: projectRoot,
-			stdio: ['ignore', 'pipe', 'inherit'],
-			encoding: 'utf8',
-			shell: IS_WIN,
-			// Pass SRC_DIR through to the bundled `depcruise.config.ts` so its
-			// `forbidden` rules' path matchers (currently anchored on `^src`)
-			// rebuild from the configured srcDir at depcruise's module-load time.
-			// User-provided depcruise configs that ignore this env still work —
-			// they just won't track srcDir automatically.
-			env: { ...process.env, SB_DEPS_SRC_DIR: SRC_DIR },
-		},
-	)
+	// No shell on any platform — see `resolveDepCruiseEntry` for why the entry
+	// file runs under node directly instead of the `.bin` shim.
+	const stdout = execFileSync(process.execPath, [depcruiseEntry, ...args], {
+		cwd: projectRoot,
+		stdio: ['ignore', 'pipe', 'inherit'],
+		encoding: 'utf8',
+		// Pass SRC_DIR through to the bundled `depcruise.config.ts` so its
+		// `forbidden` rules' path matchers (currently anchored on `^src`)
+		// rebuild from the configured srcDir at depcruise's module-load time.
+		// User-provided depcruise configs that ignore this env still work —
+		// they just won't track srcDir automatically.
+		env: { ...process.env, SB_DEPS_SRC_DIR: SRC_DIR },
+	})
 	writeFileSync(rawPath, stdout, 'utf8')
 	info(`graph ✓ (${ms(Date.now() - start)})`)
 }
@@ -354,18 +346,6 @@ function escapeForRegexIgnoringCase(text: string): string {
 /** Backslash-escape every character that has a special meaning in a regex, so the text only matches itself. */
 function escapeForRegex(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/**
- * Escape an argument so that it survives `cmd.exe` parsing when `execFileSync`
- * is invoked with `shell: true` on Windows. `^` is the cmd.exe escape character,
- * even inside double quotes — doubling it makes cmd.exe pass through a literal
- * `^`. Other shell metacharacters (`&`, `|`, `<`, `>`, `(`, `)`, `%`, `!`) are
- * already wrapped in double quotes by Node's internal arg-quoter when
- * `shell: true`, so we only need to handle `^` ourselves.
- */
-function escapeForCmdExe(arg: string): string {
-	return arg.replace(/\^/g, '^^')
 }
 
 function buildOnce() {
@@ -2944,9 +2924,10 @@ async function startStorybook() {
 	//   - rejects path separators (`/`, `\`) — srcDir must be a single segment
 	//     (`projects/foo/src` style multi-project Angular workspaces aren't
 	//     supported; use the empty-string project-root mode instead)
-	//   - rejects cmd.exe metacharacters including `%` (which triggers `%VAR%`
-	//     env expansion when the args go through a `cmd.exe`-invoked `.cmd`
-	//     shim on Windows) and `^` / `&` / `|` / `<` / `>` / `(` / `)` / `!`
+	//   - rejects the shell metacharacters `%`, `^`, `&`, `|`, `<`, `>`, `(`,
+	//     `)` and `!` — nothing built from srcDir crosses a shell any more
+	//     (the dependency scan runs under node directly), but keeping them
+	//     out means no future spawn site has to think about it either
 	//
 	// Bounding the input here means downstream interpolation sites can trust
 	// their `SRC_DIR` source and don't each need their own escape pass.

@@ -388,6 +388,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		cwd,
 		packageManager: detection.packageManager,
 		installedPackages: detection.installedPackages,
+		storybookAddonVersionSpec: detection.storybookAddonVersionSpec,
 	})
 	if (installResult.kind === 'failed') {
 		log(`  ✗ ${installResult.reason}`)

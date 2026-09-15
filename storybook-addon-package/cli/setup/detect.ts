@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
-import { stripCommentsRespectingStrings } from './util.js'
+import { findInstalledPackage, stripCommentsRespectingStrings } from './util.js'
 
 import type { SbDepsConfig } from '../../src/config.js'
 
@@ -51,6 +51,17 @@ export type Detection = {
 	 * consumer is *supposed* to provide, not something already installed.
 	 */
 	installedPackages: ReadonlySet<string>
+	/**
+	 * Version to install the `@storybook/*` addons at so they match the
+	 * project's Storybook core — the exact version of the `storybook` package
+	 * installed in the project's `node_modules` chain (e.g. `10.2.17`), or, when
+	 * none is installed, the specifier `package.json` declares for `storybook`
+	 * (e.g. `^10.2.0` or `next`), which resolves to the same version for the
+	 * addons as it does for the core. `null` when neither can be read, or when
+	 * the declared specifier is not a registry version, range or dist-tag (a
+	 * protocol, a GitHub shorthand, a folder path or a tarball filename).
+	 */
+	storybookAddonVersionSpec: string | null
 }
 
 const MAIN_CANDIDATES: ReadonlyArray<MainFile['lang']> = [
@@ -317,6 +328,51 @@ export function isFrameworkSupported(
 	return supportedFrameworks.includes(framework)
 }
 
+/**
+ * Read the version of the `storybook` package installed for the project (see
+ * `findInstalledPackage` for why the lookup walks `node_modules` itself
+ * rather than using `require.resolve`). `null` when it is not installed.
+ */
+function getInstalledStorybookVersion(cwd: string): string | null {
+	const version = findInstalledPackage(cwd, 'storybook')?.pkg.version
+	return typeof version === 'string' ? version : null
+}
+
+/**
+ * Work out which version the `@storybook/*` addons should be installed at, so
+ * they line up with the project's Storybook core rather than with whatever
+ * `@latest` happens to be — with two supported majors, `@latest` can be a
+ * different major from the one the project runs, and npm then refuses the
+ * install. Prefers the exact core version installed for the project; when
+ * none is installed falls back to the specifier `package.json` declares for
+ * `storybook`. The `@storybook/*` addons are published at every version the
+ * core is, so the same specifier — a version, a range, or a dist-tag —
+ * resolves to the same version for both.
+ */
+function getStorybookAddonVersionSpec(
+	cwd: string,
+	declaredStorybookRange: string | undefined,
+): string | null {
+	const installedVersion = getInstalledStorybookVersion(cwd)
+	if (installedVersion) return installedVersion
+	if (!declaredStorybookRange) return null
+	// Only a registry version, range or dist-tag can be reused for the addons.
+	// Those are built from letters, digits and the range punctuation
+	// (`^10.0.2 || ^11.0.0-0`, `>=10 <12`, `10.x`, `*`, `next`,
+	// `1.2.3-beta.1+build`), so anything with another character — a protocol
+	// (`workspace:*`, `npm:…`, `file:…`, a URL), a GitHub shorthand
+	// (`owner/repo`), a folder path (`./sb`), or a quote or percent sign that
+	// would mean something to a shell — is not one. A bare tarball filename
+	// (`storybook.tgz`) passes the character test and is ruled out by its
+	// extension. Anything ruled out gives nothing the addons can be pinned to.
+	const hasOnlyRegistrySpecifierCharacters = /^[\w.+^~<>=|*\s-]+$/.test(
+		declaredStorybookRange,
+	)
+	const isTarballFilename = /\.(tgz|tar\.gz|tar)$/i.test(declaredStorybookRange)
+	if (!hasOnlyRegistrySpecifierCharacters || isTarballFilename) return null
+	return declaredStorybookRange
+}
+
 export function detectProject(cwd: string): Detection {
 	const storybookDir = resolve(cwd, '.storybook')
 	const mainFile = findMainFile(storybookDir)
@@ -325,6 +381,7 @@ export function detectProject(cwd: string): Detection {
 	let isEsm = false
 	let installedPackages: ReadonlySet<string> = new Set<string>()
 	let allDependencyKeys: ReadonlySet<string> = new Set<string>()
+	let storybookAddonVersionSpec: string | null = null
 	try {
 		const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf8'))
 		isEsm = pkg.type === 'module'
@@ -333,6 +390,10 @@ export function detectProject(cwd: string): Detection {
 			...(pkg.devDependencies ?? {}),
 		}
 		installedPackages = new Set(Object.keys(installed))
+		storybookAddonVersionSpec = getStorybookAddonVersionSpec(
+			cwd,
+			installed.storybook,
+		)
 		// `allDependencyKeys` additionally includes peerDependencies — used only
 		// for framework detection. Apps typically declare their core framework
 		// (`react`, `@angular/core`, etc.) in deps/devDeps, but intermediate
@@ -392,5 +453,6 @@ export function detectProject(cwd: string): Detection {
 		packageManager: detectPackageManager(cwd),
 		isEsm,
 		installedPackages,
+		storybookAddonVersionSpec,
 	}
 }
