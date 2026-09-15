@@ -925,7 +925,7 @@ function layOutSingleLineObject({
 interface CreateKeyInBodyParams {
 	/** The file content. */
 	content: string
-	/** The range inside the config object's braces. */
+	/** The range inside the braces of the object literal the key goes into. */
 	body: { from: number; to: number }
 	/**
 	 * The key and value to write, as one entry ending in its comma, without
@@ -1184,15 +1184,21 @@ interface GetKeyValueCodeParams {
 	keyword: string
 	/** The range inside the braces of the object holding the key. */
 	body: { from: number; to: number }
+	/**
+	 * Spreads already being walked into, so `const a = { ...a }` cannot loop.
+	 * Left out at the top level.
+	 */
+	visited?: Set<string>
 }
 
 /**
  * Where a key's value comes from at runtime, and the code it stands for.
  * `body` — the config object's own key; `spread` — a same-file `const` the
  * body spreads at its top level (`definePreview({ ...base })` with
- * `base.addons`); `unreadable` — something spread there that the file cannot
- * see inside (an import, a call, an expression), which may or may not carry
- * the key; `missing` — nothing in the body writes it.
+ * `base.addons`), or one that such a const spreads in turn; `unreadable` —
+ * something spread at either level that the file cannot see inside (an
+ * import, a call, an expression), which may or may not carry the key;
+ * `missing` — nothing in the body writes it.
  */
 type KeyValueCode =
 	| {
@@ -1214,12 +1220,15 @@ type KeyValueCode =
  * writers of the key, and at runtime the last one in source order wins, so
  * they are walked last to first: a same-file spread that carries the key or
  * the body's own key is the value; a spread the file cannot read is reached
- * before either of those makes the value unknowable.
+ * before either of those makes the value unknowable. A same-file spread's
+ * literal is walked the same way, so a spread it carries in turn counts at
+ * that level.
  */
 function getKeyValueCode({
 	views,
 	keyword,
 	body,
+	visited = new Set(),
 }: GetKeyValueCodeParams): KeyValueCode {
 	const key = findTopLevelKey(views.codeOnly, keyword, body)
 	const spreads = findSpreadsAtTopLevel(views, body)
@@ -1227,27 +1236,33 @@ function getKeyValueCode({
 		? spreads.filter((spread) => spread.position > key.valueStart)
 		: spreads
 	for (const spread of spreadsAfterKey.reverse()) {
-		const range = spread.isPlainName
+		const isReadable = spread.isPlainName && !visited.has(spread.name)
+		const range = isReadable
 			? findInitializerLiteralRange(views, spread.name)
 			: null
 		if (!range) {
 			return { code: '', location: 'unreadable', spreadName: spread.name }
 		}
-		const keyInSpread = findTopLevelKey(views.codeOnly, keyword, range)
-		if (keyInSpread) {
-			const code = getValueCode({
-				views,
-				valueStart: keyInSpread.valueStart,
-				visited: new Set([spread.name]),
-			})
-			return { code, location: 'spread', spreadName: spread.name }
+		const inSpread = getKeyValueCode({
+			views,
+			keyword,
+			body: range,
+			visited: new Set([...visited, spread.name]),
+		})
+		if (inSpread.location === 'body') {
+			return {
+				code: inSpread.code,
+				location: 'spread',
+				spreadName: spread.name,
+			}
 		}
+		if (inSpread.location !== 'missing') return inSpread
 	}
 	if (key) {
 		const code = getValueCode({
 			views,
 			valueStart: key.valueStart,
-			visited: new Set(),
+			visited: new Set(visited),
 		})
 		return { code, location: 'body' }
 	}
@@ -1448,10 +1463,9 @@ function patchDefinePreview({
 	// lands after it rather than at the same body-start position.
 	let addonsCreatedEndOffset: number | null = null
 	const addonsKey = findTopLevelKey(newContent, 'addons', bodyRange)
-	if (
-		addonsValue.location === 'spread' ||
-		addonsValue.location === 'unreadable'
-	) {
+	const isAddonsFromSpread =
+		addonsValue.location === 'spread' || addonsValue.location === 'unreadable'
+	if (isAddonsFromSpread) {
 		// A spread after the body's own key (if any) decides the value: complete
 		// in a same-file spread, nothing to do; short there, or unreadable, the
 		// wizard will not write a list that does not run.
@@ -1523,10 +1537,10 @@ function patchDefinePreview({
 		'parameters',
 		bodyRangeAfterAddons,
 	)
-	if (
+	const isParametersFromSpread =
 		parametersValue.location === 'spread' ||
 		parametersValue.location === 'unreadable'
-	) {
+	if (isParametersFromSpread) {
 		if (!hasSettingsBlock) {
 			return spreadRefusal('parameters', parametersValue)
 		}
@@ -1607,10 +1621,10 @@ function patchDefinePreview({
 	// ─── Imports, for what was inserted. The import edits all sit above the
 	// body, so they come last and shift nothing the edits above relied on.
 	const importsToInsert: string[] = []
-	if (
+	const shouldAddDependencyPreviewsImport =
 		inserted.dependencyPreviewsCall &&
 		!dependencyPreviewsBinding.isDefaultImport
-	) {
+	if (shouldAddDependencyPreviewsImport) {
 		const merged = mergeAddonImport({
 			content: newContent,
 			requiredValueNames: ['dependencyPreviews'],
