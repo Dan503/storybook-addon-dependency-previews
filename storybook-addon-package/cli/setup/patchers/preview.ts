@@ -343,6 +343,67 @@ interface MergedAddonImport {
 	importToInsert: string | null
 }
 
+// Match a whole named-import statement from the addon package: any trailing
+// semicolon, whatever run of comments follows it (captured, and put back on
+// the rewritten statement — a block comment may run onto later lines), and
+// then the line's newline when nothing else is on the line — one newline
+// only, so a rewritten import keeps the blank line after it, and a deleted
+// duplicate leaves no stray `;` line behind in semicolon-using projects. The
+// statement ends at the first character that is not a comment, so a second
+// statement on the same line stays where it is. The name list is `[^}]*`
+// rather than `[\s\S]*?`: a lazy any-character group can start at an earlier
+// `import {` from another package and run on until it reaches the addon's
+// `} from …`, swallowing every import in between.
+const ADDON_IMPORT_REGEX = new RegExp(
+	String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?((?:[ \t]*(?:\/\/[^\r\n]*|\/\*[\s\S]*?\*\/))*)[ \t]*(?:\r?\n|$)?`,
+	'gm',
+)
+
+/** One name in an addon import's `{ … }` list. */
+type AddonImportEntry = { name: string; alias?: string; isType: boolean }
+
+/**
+ * Every named import from the addon package in the file: the statements as
+ * matched, and their names merged into one list — one entry per name, a
+ * value entry winning over a type-only one (a value can be used in type
+ * positions, not the other way round). The list is what a merged statement
+ * is written from, and what the local name of any addon export is read from,
+ * so the two cannot disagree.
+ *
+ * @param content - the file content
+ */
+function parseAddonImports(content: string): {
+	statements: Array<RegExpMatchArray>
+	entries: Array<AddonImportEntry>
+} {
+	const statements = [...content.matchAll(ADDON_IMPORT_REGEX)]
+	const parseEntry = (raw: string, wasTypeOnly: boolean): AddonImportEntry => {
+		// `import type { A, B }` makes every name a type, so respect that.
+		const isType = wasTypeOnly || /^type\s+/.test(raw)
+		const stripped = raw.replace(/^type\s+/, '')
+		const [name, alias] = stripped.split(/\s+as\s+/).map((s) => s.trim())
+		return { name: name!, alias, isType }
+	}
+	// Stripping comments inside `{ … }` first so that
+	// `import { foo, /* note */ bar }` doesn't produce `/* note */ bar` as a name.
+	const byName = new Map<string, AddonImportEntry>()
+	for (const m of statements) {
+		const wasTypeOnly = !!m[1]
+		const importContents = m[2]!
+			.replace(/\/\*[\s\S]*?\*\//g, '')
+			.replace(/\/\/.*$/gm, '')
+		for (const raw of importContents
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean)) {
+			const entry = parseEntry(raw, wasTypeOnly)
+			const prev = byName.get(entry.name)
+			if (!prev || (prev.isType && !entry.isType)) byName.set(entry.name, entry)
+		}
+	}
+	return { statements, entries: Array.from(byName.values()) }
+}
+
 /**
  * Make sure the file imports the required names from the addon package.
  * Collects every existing import from the package, merges them into one
@@ -358,22 +419,8 @@ function mergeAddonImport({
 	style,
 }: MergeAddonImportParams): MergedAddonImport {
 	const { indent, eol, quote, trailingSemi } = style
-	// Match the whole import statement: any trailing semicolon, whatever run
-	// of comments follows it (captured, and put back on the rewritten
-	// statement — a block comment may run onto later lines), and then the
-	// line's newline when nothing else is on the line — one newline only, so
-	// a rewritten import keeps the blank line after it, and a deleted
-	// duplicate leaves no stray `;` line behind in semicolon-using projects.
-	// The statement ends at the first character that is not a comment, so a
-	// second statement on the same line stays where it is. The name list is
-	// `[^}]*` rather than `[\s\S]*?`: a lazy any-character group can start at
-	// an earlier `import {` from another package and run on until it reaches
-	// the addon's `} from …`, swallowing every import in between.
-	const ADDON_IMPORT_REGEX = new RegExp(
-		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?((?:[ \t]*(?:\/\/[^\r\n]*|\/\*[\s\S]*?\*\/))*)[ \t]*(?:\r?\n|$)?`,
-		'gm',
-	)
-	const allAddonImports = [...content.matchAll(ADDON_IMPORT_REGEX)]
+	const { statements: allAddonImports, entries: dedupedExisting } =
+		parseAddonImports(content)
 	const localNames = new Map(requiredValueNames.map((n) => [n, n]))
 
 	if (allAddonImports.length === 0) {
@@ -393,52 +440,17 @@ function mergeAddonImport({
 		return { content, localNames, importToInsert }
 	}
 
-	type Entry = { name: string; alias?: string; isType: boolean }
-	const parseEntry = (raw: string, wasTypeOnly: boolean): Entry => {
-		// `import type { A, B }` makes every name a type, so respect that.
-		const isType = wasTypeOnly || /^type\s+/.test(raw)
-		const stripped = raw.replace(/^type\s+/, '')
-		const [name, alias] = stripped.split(/\s+as\s+/).map((s) => s.trim())
-		return { name: name!, alias, isType }
-	}
-	const formatEntry = (e: Entry): string => {
+	const formatEntry = (e: AddonImportEntry): string => {
 		const inner = e.alias ? `${e.name} as ${e.alias}` : e.name
 		return e.isType ? `type ${inner}` : inner
 	}
-
-	// Collect every named import from every `from 'storybook-addon-dependency-previews'`
-	// statement in the file. Stripping comments inside `{ … }` first so that
-	// `import { foo, /* note */ bar }` doesn't produce `/* note */ bar` as a name.
-	const existingEntries: Array<Entry> = []
-	for (const m of allAddonImports) {
-		const wasTypeOnly = !!m[1]
-		const importContents = m[2]!
-			.replace(/\/\*[\s\S]*?\*\//g, '')
-			.replace(/\/\/.*$/gm, '')
-		for (const raw of importContents
-			.split(',')
-			.map((s) => s.trim())
-			.filter(Boolean)) {
-			existingEntries.push(parseEntry(raw, wasTypeOnly))
-		}
-	}
-
-	// Deduplicate by name. Value-imports beat type-imports if both exist for the
-	// same name (you can use a value at runtime AND in type positions, but not
-	// vice-versa).
-	const byName = new Map<string, Entry>()
-	for (const e of existingEntries) {
-		const prev = byName.get(e.name)
-		if (!prev || (prev.isType && !e.isType)) byName.set(e.name, e)
-	}
-	const dedupedExisting = Array.from(byName.values())
 
 	const requiredValueSet = new Set(requiredValueNames)
 
 	// Promote any existing entry whose name matches a required value to a value
 	// import. This handles e.g. `import type { defaultPreviewParameters } from ...` —
 	// without promotion we'd leave it as a type and the runtime spread would fail.
-	const mergedEntries: Array<Entry> = dedupedExisting.map((e) =>
+	const mergedEntries: Array<AddonImportEntry> = dedupedExisting.map((e) =>
 		requiredValueSet.has(e.name) && e.isType ? { ...e, isType: false } : e,
 	)
 	const handled = new Set(mergedEntries.map((e) => e.name))
@@ -717,34 +729,26 @@ function findDefaultImportLocalName(
 	return defaultAsNamed?.[1] ?? null
 }
 
-interface FindNamedImportLocalNameParams {
-	/** The file content with comments stripped. */
-	codeOnly: string
-	/** The package the import must come from. */
-	packageName: string
-	/** The named export to look for. */
-	exportedName: string
-}
-
 /**
- * The local name a file gives one of a package's named exports — `import {
- * dependencyPreviews as dp } from '…'` gives `dp`, a plain `import {
- * dependencyPreviews }` gives `dependencyPreviews` — or the export's own name
- * when the file does not import it yet (which is the name a fresh import
- * would bind).
+ * The local name a file gives one of the addon package's named exports —
+ * `import { dependencyPreviews as dp } from '…'` gives `dp`, a plain
+ * `import { dependencyPreviews }` gives `dependencyPreviews` — or the
+ * export's own name when the file does not import it yet (which is the name
+ * a fresh import would bind). Read from the same merged list
+ * `mergeAddonImport` writes its statement from, so the name the body calls
+ * is the name the import binds.
+ *
+ * @param content - the file content
+ * @param exportedName - the named export to look for
  */
-function findNamedImportLocalName({
-	codeOnly,
-	packageName,
-	exportedName,
-}: FindNamedImportLocalNameParams): string {
-	const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	const match = codeOnly.match(
-		new RegExp(
-			String.raw`import\s*(?:type\s+)?\{[^}]*\b${exportedName}(?:\s+as\s+([A-Za-z_$][\w$]*))?\b[^}]*\}\s*from\s*['"]${escapedPackageName}['"]`,
-		),
+function findAddonNamedImportLocalName(
+	content: string,
+	exportedName: string,
+): string {
+	const entry = parseAddonImports(content).entries.find(
+		(e) => e.name === exportedName,
 	)
-	return match?.[1] ?? exportedName
+	return entry?.alias ?? exportedName
 }
 
 interface AddListEntriesParams {
@@ -879,6 +883,17 @@ function checkHasSettingsBlock(codeOnly: string): boolean {
 }
 
 /**
+ * Whether a literal's code spreads another value into it (`[...shared]`,
+ * `{ ...shared }`).
+ *
+ * @param literalCode - the text between the literal's brackets, comments
+ * stripped
+ */
+function checkHasSpread(literalCode: string): boolean {
+	return /\.\.\./.test(literalCode)
+}
+
+/**
  * Whether a `[ … ]` list calls the given local name — `addonDocs()` in an
  * `addons` list, say.
  *
@@ -942,11 +957,7 @@ function patchDefinePreview({
 	const defaultAddonImportLocal = findDefaultImportLocalName(codeOnly, PKG)
 	const dependencyPreviewsLocal =
 		defaultAddonImportLocal ??
-		findNamedImportLocalName({
-			codeOnly,
-			packageName: PKG,
-			exportedName: 'dependencyPreviews',
-		})
+		findAddonNamedImportLocalName(content, 'dependencyPreviews')
 	// The docs addon may already be registered under any local name
 	// (`import docs from '@storybook/addon-docs'`); when it is, that name is
 	// what the `addons` scan below looks for.
@@ -964,19 +975,33 @@ function patchDefinePreview({
 	// same-file `const parameters = { dependencyPreviews: … }`, say — cannot
 	// be edited, but it still counts as present, so the file-wide checks are
 	// what the non-literal branches consult.
+	const isDependencyPreviewsCalledSomewhere = checkDoesListCall(
+		codeOnly,
+		dependencyPreviewsLocal,
+	)
+	const isAddonDocsCalledSomewhere = checkDoesListCall(codeOnly, addonDocsLocal)
+	const isRegisteredSomewhereInFile =
+		isDependencyPreviewsCalledSomewhere && isAddonDocsCalledSomewhere
+	const hasSettingsBlockSomewhereInFile = checkHasSettingsBlock(codeOnly)
+	// A literal that spreads a same-file value (`addons: [...shared]`) holds
+	// whatever that value holds, which only the file-wide checks can see.
 	const addonsListCode = getCodeInsideKeyValue(content, 'addons', body)
 	const parametersCode = getCodeInsideKeyValue(content, 'parameters', body)
-	const isRegisteredInAddons =
-		checkDoesListCall(addonsListCode, dependencyPreviewsLocal) &&
-		checkDoesListCall(addonsListCode, addonDocsLocal)
-	const hasSettingsBlock = checkHasSettingsBlock(parametersCode)
+	const doesAddonsListSpread = checkHasSpread(addonsListCode)
+	const doesParametersSpread = checkHasSpread(parametersCode)
+	const isDependencyPreviewsInList =
+		checkDoesListCall(addonsListCode, dependencyPreviewsLocal) ||
+		(doesAddonsListSpread && isDependencyPreviewsCalledSomewhere)
+	const isAddonDocsInList =
+		checkDoesListCall(addonsListCode, addonDocsLocal) ||
+		(doesAddonsListSpread && isAddonDocsCalledSomewhere)
+	const isRegisteredInAddons = isDependencyPreviewsInList && isAddonDocsInList
+	const hasSettingsBlock =
+		checkHasSettingsBlock(parametersCode) ||
+		(doesParametersSpread && hasSettingsBlockSomewhereInFile)
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
-	const isRegisteredSomewhereInFile =
-		checkDoesListCall(codeOnly, dependencyPreviewsLocal) &&
-		checkDoesListCall(codeOnly, addonDocsLocal)
-	const hasSettingsBlockSomewhereInFile = checkHasSettingsBlock(codeOnly)
 	// What the body edits inserted — decides the imports at the end, and
 	// whether anything is written at all (nothing inserted means every half
 	// was already present, in a literal or a non-literal value).
@@ -1008,14 +1033,10 @@ function patchDefinePreview({
 		const listStart = addonsKey.valueStart + 1
 		const listEnd =
 			findMatchingBrace(newContent, addonsKey.valueStart) ?? listStart
-		const listCode = stripCommentsRespectingStrings(
-			newContent.slice(listStart, listEnd),
-		)
-		inserted.addonDocsCall = !checkDoesListCall(listCode, addonDocsLocal)
-		inserted.dependencyPreviewsCall = !checkDoesListCall(
-			listCode,
-			dependencyPreviewsLocal,
-		)
+		// The list is the one the presence checks above already read (the
+		// layout pass only moved it), so their answers decide what is missing.
+		inserted.addonDocsCall = !isAddonDocsInList
+		inserted.dependencyPreviewsCall = !isDependencyPreviewsInList
 		const missingEntries = [
 			...(inserted.addonDocsCall ? [`${addonDocsLocal}()`] : []),
 			...(inserted.dependencyPreviewsCall
