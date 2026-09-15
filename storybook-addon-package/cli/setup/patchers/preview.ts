@@ -600,7 +600,7 @@ function insertImports({
  * `match` — `from` just after the brace, `to` at its matching closer.
  *
  * @param text - the original file content (the match came from its
- * comment-stripped twin, whose positions line up with it)
+ * comment-stripped, string-blanked twin, whose positions line up with it)
  * @param match - a match ending in the opening brace, or `null`
  */
 function objectBodyAfterMatch(
@@ -1063,8 +1063,8 @@ interface PatchDefinePreviewParams {
 	previewFile: PreviewFile
 	/** The file's current content. */
 	content: string
-	/** `content` with comments stripped, for the identifier checks. */
-	codeOnly: string
+	/** `content` with comments stripped, and with strings blanked as well. */
+	views: CodeViews
 	/** The range inside the braces of the `definePreview({ … })` object in `content`. */
 	body: { from: number; to: number }
 	/** The file's formatting, matched by everything inserted. */
@@ -1089,13 +1089,14 @@ interface PatchDefinePreviewParams {
 function patchDefinePreview({
 	previewFile,
 	content,
-	codeOnly,
+	views,
 	body,
 	style,
 	framework,
 	sourceRootUrl,
 	srcDir,
 }: PatchDefinePreviewParams): PreviewPatchResult {
+	const { codeOnly } = views
 	const { indent, eol, quote, trailingSemi } = style
 	const l1 = indent
 	const l2 = indent.repeat(2)
@@ -1129,10 +1130,6 @@ function patchDefinePreview({
 	// a spread or a bare identifier points at — so a half that sits in a value
 	// the patcher cannot edit still counts as present, while a value the file
 	// cannot account for (a call, an import) counts as holding nothing.
-	const views: CodeViews = {
-		codeOnly,
-		structureOnly: blankStringContents(codeOnly),
-	}
 	const addonsCode = getKeyValueCode({ views, keyword: 'addons', body })
 	const parametersCode = getKeyValueCode({ views, keyword: 'parameters', body })
 	const isDependencyPreviewsInList = checkDoesListCall(
@@ -1349,9 +1346,12 @@ function patchExistingPreview(
 	// imported object, a call, a cast — exported directly or through a const)
 	// is still a CSF Next file, so the advice has to name that style's
 	// additions rather than the classic spreads.
-	const structureOnly = blankStringContents(codeOnly)
+	const views: CodeViews = {
+		codeOnly,
+		structureOnly: blankStringContents(codeOnly),
+	}
 	const isUnresolvedDefinePreview =
-		!isCsfNext && /\bdefinePreview\s*\(/.test(structureOnly)
+		!isCsfNext && /\bdefinePreview\s*\(/.test(views.structureOnly)
 	if (isUnresolvedDefinePreview) {
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}
@@ -1395,7 +1395,7 @@ function patchExistingPreview(
 		return patchDefinePreview({
 			previewFile,
 			content,
-			codeOnly,
+			views,
 			body: csfNextBody,
 			style,
 			framework,

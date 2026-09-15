@@ -81,6 +81,40 @@ export function detectQuoteStyle(content: string): "'" | '"' {
 }
 
 /**
+ * The one rule every scanner in this file uses to decide whether a quote
+ * character starts a string: it does only when its closing twin can be
+ * found — before the end of the line for `'` and `"` (a JS string cannot span
+ * a raw line break), before the end of the text for a backtick. Returns the
+ * closing quote's position, or `null` when the quote is not a string opener
+ * (a lone `'` in a regex literal or in JSX text, say) and is to be read as an
+ * ordinary character. Escaped characters inside the string are skipped.
+ *
+ * @param text - the text being scanned
+ * @param openIndex - position of the candidate opening quote
+ */
+export function findClosingQuote(
+	text: string,
+	openIndex: number,
+): number | null {
+	const quote = text[openIndex]!
+	const isSingleLine = quote !== '`'
+	let i = openIndex + 1
+	while (i < text.length) {
+		const c = text[i]!
+		if (c === '\\') {
+			i += 2
+			continue
+		}
+		if (c === quote) return i
+		if (isSingleLine && c === '\n') return null
+		i++
+	}
+	return null
+}
+
+const QUOTE_CHARS: ReadonlyArray<string> = ["'", '"', '`']
+
+/**
  * Find the first occurrence of `<keyword>:` at the immediate level of the
  * scanned range (i.e. depth 0 within the search window, outside any string /
  * template literal / comment, and not nested inside a `{}`/`[]`/`()` group).
@@ -117,9 +151,6 @@ export function findTopLevelKey(
 	const { from = 0, to = content.length } = options
 	const kwLen = keyword.length
 	let depth = 0
-	let inSQ = false
-	let inDQ = false
-	let inTL = false
 	let inLC = false
 	let inBC = false
 	// The last code character seen outside strings and comments — what a
@@ -146,34 +177,6 @@ export function findTopLevelKey(
 			i++
 			continue
 		}
-		if (inSQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			// A line break ends the string too — see stripCommentsRespectingStrings.
-			if (c === "'" || c === '\n') inSQ = false
-			i++
-			continue
-		}
-		if (inDQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '"' || c === '\n') inDQ = false
-			i++
-			continue
-		}
-		if (inTL) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '`') inTL = false
-			i++
-			continue
-		}
 		if (c === '/' && next === '/') {
 			inLC = true
 			i += 2
@@ -185,10 +188,10 @@ export function findTopLevelKey(
 			continue
 		}
 		// Quoted property key — `"keyword":` or `'keyword':`. Checked before the
-		// string-entry branches below so a quoted key isn't swallowed as a string
-		// literal. The closing quote must land immediately after `<keyword>`, so
-		// string values that happen to contain the keyword fall through to the
-		// real string-entry logic and are skipped as before.
+		// string skip below so a quoted key isn't swallowed as a string literal.
+		// The closing quote must land immediately after `<keyword>`, so string
+		// values that happen to contain the keyword fall through to the string
+		// skip and are passed over as before.
 		if (depth === 0 && (c === "'" || c === '"')) {
 			const afterKey = i + 1 + kwLen
 			if (
@@ -203,20 +206,13 @@ export function findTopLevelKey(
 				}
 			}
 		}
-		if (c === "'") {
-			inSQ = true
-			i++
-			continue
-		}
-		if (c === '"') {
-			inDQ = true
-			i++
-			continue
-		}
-		if (c === '`') {
-			inTL = true
-			i++
-			continue
+		if (QUOTE_CHARS.includes(c)) {
+			const closeIndex = findClosingQuote(content, i)
+			if (closeIndex !== null) {
+				i = closeIndex + 1
+				continue
+			}
+			// Not a string opener — an ordinary character.
 		}
 
 		if (
@@ -296,9 +292,6 @@ export function findMatchingBrace(
 	else return null
 
 	let depth = 0
-	let inSQ = false
-	let inDQ = false
-	let inTL = false
 	let inLC = false
 	let inBC = false
 
@@ -321,34 +314,6 @@ export function findMatchingBrace(
 			i++
 			continue
 		}
-		if (inSQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			// A line break ends the string too — see stripCommentsRespectingStrings.
-			if (c === "'" || c === '\n') inSQ = false
-			i++
-			continue
-		}
-		if (inDQ) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '"' || c === '\n') inDQ = false
-			i++
-			continue
-		}
-		if (inTL) {
-			if (c === '\\') {
-				i += 2
-				continue
-			}
-			if (c === '`') inTL = false
-			i++
-			continue
-		}
 		if (c === '/' && next === '/') {
 			inLC = true
 			i += 2
@@ -359,20 +324,13 @@ export function findMatchingBrace(
 			i += 2
 			continue
 		}
-		if (c === "'") {
-			inSQ = true
-			i++
-			continue
-		}
-		if (c === '"') {
-			inDQ = true
-			i++
-			continue
-		}
-		if (c === '`') {
-			inTL = true
-			i++
-			continue
+		if (QUOTE_CHARS.includes(c)) {
+			const closeIndex = findClosingQuote(content, i)
+			if (closeIndex !== null) {
+				i = closeIndex + 1
+				continue
+			}
+			// Not a string opener — an ordinary character.
 		}
 
 		if (c === open) depth++
@@ -395,9 +353,6 @@ export function findMatchingBrace(
  */
 export function stripCommentsRespectingStrings(content: string): string {
 	let out = ''
-	let inSQ = false
-	let inDQ = false
-	let inTL = false
 	let inLC = false
 	let inBC = false
 
@@ -427,44 +382,6 @@ export function stripCommentsRespectingStrings(content: string): string {
 			i++
 			continue
 		}
-		// A `'…'` / `"…"` string cannot span a raw line break, so a line break
-		// ends it — a lone quote that is not a string opener (in a regex, or
-		// an apostrophe in JSX text) then cannot put the scan out of phase for
-		// the rest of the file. Template literals may span lines.
-		if (inSQ) {
-			out += c
-			if (c === '\\' && i + 1 < content.length) {
-				out += content[i + 1]
-				i += 2
-				continue
-			}
-			if (c === "'" || c === '\n') inSQ = false
-			i++
-			continue
-		}
-		if (inDQ) {
-			out += c
-			if (c === '\\' && i + 1 < content.length) {
-				out += content[i + 1]
-				i += 2
-				continue
-			}
-			if (c === '"' || c === '\n') inDQ = false
-			i++
-			continue
-		}
-		if (inTL) {
-			out += c
-			if (c === '\\' && i + 1 < content.length) {
-				out += content[i + 1]
-				i += 2
-				continue
-			}
-			if (c === '`') inTL = false
-			i++
-			continue
-		}
-
 		if (c === '/' && next === '/') {
 			inLC = true
 			out += '  '
@@ -477,23 +394,15 @@ export function stripCommentsRespectingStrings(content: string): string {
 			i += 2
 			continue
 		}
-		if (c === "'") {
-			inSQ = true
-			out += c
-			i++
-			continue
-		}
-		if (c === '"') {
-			inDQ = true
-			out += c
-			i++
-			continue
-		}
-		if (c === '`') {
-			inTL = true
-			out += c
-			i++
-			continue
+		// A string is copied through whole (see `findClosingQuote` for what
+		// counts as one); a lone quote that opens none is an ordinary character.
+		if (QUOTE_CHARS.includes(c)) {
+			const closeIndex = findClosingQuote(content, i)
+			if (closeIndex !== null) {
+				out += content.slice(i, closeIndex + 1)
+				i = closeIndex + 1
+				continue
+			}
 		}
 		out += c
 		i++
@@ -521,56 +430,31 @@ export function stripCommentsRespectingStrings(content: string): string {
  */
 export function blankStringContents(
 	codeOnly: string,
-	quotes: ReadonlyArray<string> = ["'", '"', '`'],
+	quotes: ReadonlyArray<string> = QUOTE_CHARS,
 ): string {
 	let out = ''
 	let i = 0
 	while (i < codeOnly.length) {
 		const c = codeOnly[i]!
-		if (!quotes.includes(c)) {
-			out += c
-			i++
-			continue
-		}
-		const closeIndex = findClosingQuote(codeOnly, i)
+		// Every string is stepped over whole, whichever kind it is, so a
+		// backtick inside a `'…'` string cannot open a template literal; only
+		// the requested kinds have their contents blanked.
+		const closeIndex = QUOTE_CHARS.includes(c)
+			? findClosingQuote(codeOnly, i)
+			: null
 		if (closeIndex === null) {
 			out += c
 			i++
 			continue
 		}
-		out += c
-		for (let j = i + 1; j < closeIndex; j++) {
-			out += codeOnly[j] === '\n' ? '\n' : ' '
-		}
-		out += c
+		const contents = codeOnly.slice(i + 1, closeIndex)
+		const blanked = quotes.includes(c)
+			? contents.replace(/[^\n]/g, ' ')
+			: contents
+		out += c + blanked + c
 		i = closeIndex + 1
 	}
 	return out
-}
-
-/**
- * The position of the quote that closes the string opened at `openIndex`, or
- * `null` when there is none — before the end of the line for `'` and `"`,
- * before the end of the text for a backtick. Escaped characters are skipped.
- *
- * @param codeOnly - the text being scanned
- * @param openIndex - position of the opening quote
- */
-function findClosingQuote(codeOnly: string, openIndex: number): number | null {
-	const quote = codeOnly[openIndex]!
-	const isSingleLine = quote !== '`'
-	let i = openIndex + 1
-	while (i < codeOnly.length) {
-		const c = codeOnly[i]!
-		if (c === '\\') {
-			i += 2
-			continue
-		}
-		if (c === quote) return i
-		if (isSingleLine && c === '\n') return null
-		i++
-	}
-	return null
 }
 
 /**
