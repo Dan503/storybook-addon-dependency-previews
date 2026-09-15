@@ -364,19 +364,31 @@ type AddonImportEntry = { name: string; alias?: string; isType: boolean }
 
 /**
  * Every named import from the addon package in the file: the statements as
- * matched, and their names merged into one list — one entry per name, a
- * value entry winning over a type-only one (a value can be used in type
- * positions, not the other way round). The list is what a merged statement
- * is written from, and what the local name of any addon export is read from,
- * so the two cannot disagree.
+ * matched (each with its `index` into the file), and their names merged into
+ * one list — one entry per name, a value entry winning over a type-only one
+ * (a value can be used in type positions, not the other way round). The list
+ * is what a merged statement is written from, and what the local name of any
+ * addon export is read from, so the two cannot disagree.
+ *
+ * Statements are found on the comment-stripped text, so a commented-out
+ * import is not taken for a live one, and then read again from the file at
+ * the same position (the stripped text keeps every position) so the match
+ * carries the statement's own trailing comments.
  *
  * @param content - the file content
  */
 function parseAddonImports(content: string): {
-	statements: Array<RegExpMatchArray>
+	statements: Array<RegExpExecArray>
 	entries: Array<AddonImportEntry>
 } {
-	const statements = [...content.matchAll(ADDON_IMPORT_REGEX)]
+	const stripped = stripCommentsRespectingStrings(content)
+	const statements: Array<RegExpExecArray> = []
+	for (const strippedMatch of stripped.matchAll(ADDON_IMPORT_REGEX)) {
+		const atSamePosition = new RegExp(ADDON_IMPORT_REGEX.source, 'my')
+		atSamePosition.lastIndex = strippedMatch.index!
+		const rawMatch = atSamePosition.exec(content)
+		if (rawMatch) statements.push(rawMatch)
+	}
 	const parseEntry = (raw: string, wasTypeOnly: boolean): AddonImportEntry => {
 		// `import type { A, B }` makes every name a type, so respect that.
 		const isType = wasTypeOnly || /^type\s+/.test(raw)
@@ -495,19 +507,21 @@ function mergeAddonImport({
 			.map((e) => `${indent}${formatEntry(e)},`)
 			.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}`
 		// Replace the first import with the merged version; delete the rest.
-		let firstReplaced = false
-		newContent = newContent.replace(
-			ADDON_IMPORT_REGEX,
-			(_match, _typeOnly, _names, trailingComments: string) => {
-				if (!firstReplaced) {
-					firstReplaced = true
-					const comments = trailingComments.trim()
-					const commentSuffix = comments === '' ? '' : ` ${comments}`
-					return `${mergedStatement}${commentSuffix}${eol}`
-				}
-				return ''
-			},
-		)
+		// Spliced by position, last statement first so earlier positions stay
+		// valid — a regex replace over the file would also hit a commented-out
+		// import, which the parse deliberately skipped.
+		const [firstStatement, ...otherStatements] = allAddonImports
+		for (const statement of [...otherStatements].reverse()) {
+			newContent =
+				newContent.slice(0, statement.index) +
+				newContent.slice(statement.index + statement[0].length)
+		}
+		const trailingComments = (firstStatement![3] ?? '').trim()
+		const commentSuffix = trailingComments === '' ? '' : ` ${trailingComments}`
+		newContent =
+			newContent.slice(0, firstStatement!.index) +
+			`${mergedStatement}${commentSuffix}${eol}` +
+			newContent.slice(firstStatement!.index + firstStatement![0].length)
 		// Tidy up any blank-line runs left behind by deleted imports.
 		newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
 	}
