@@ -9,6 +9,7 @@ import {
 	type SupportedFramework,
 } from '../detect.js'
 import {
+	blankStringContents,
 	detectEol,
 	detectFileIndent,
 	detectQuoteStyle,
@@ -550,7 +551,7 @@ function dependenciesJsonImportToInsert(
 	style: PreviewFileStyle,
 ): string | null {
 	const hasDependenciesJsonImport =
-		/import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/.test(
+		/^[\t ]*import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/m.test(
 			codeOnly,
 		)
 	if (hasDependenciesJsonImport) return null
@@ -616,7 +617,9 @@ function objectBodyAfterMatch(
  * @param text - the file content
  */
 function findPreviewBody(text: string): { from: number; to: number } | null {
-	const stripped = stripCommentsRespectingStrings(text)
+	// Comments and string contents blanked, positions kept: a code sample
+	// held in a string cannot pass for the config.
+	const stripped = blankStringContents(stripCommentsRespectingStrings(text))
 
 	// Direct patterns: typed preview (`Preview = {`, `StorybookPreviewConfig = {`)
 	// or anonymous default export (`export default {`).
@@ -658,7 +661,9 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
 function findDefinePreviewBody(
 	text: string,
 ): { from: number; to: number } | null {
-	const stripped = stripCommentsRespectingStrings(text)
+	// Comments and string contents blanked, positions kept: a code sample
+	// held in a string cannot pass for the config.
+	const stripped = blankStringContents(stripCommentsRespectingStrings(text))
 	const escapeForRegex = (name: string): string =>
 		name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -729,15 +734,19 @@ function findDefaultImportLocalName(
 ): string | null {
 	const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 	const fromPackage = String.raw`\s*from\s*['"]${escapedPackageName}['"]`
+	// Anchored to a line start so an import quoted inside a string on some
+	// other line (a code sample) is not taken for a real one.
 	const defaultBinding = codeOnly.match(
 		new RegExp(
-			String.raw`import\s+(?!type\s)([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?${fromPackage}`,
+			String.raw`^[\t ]*import\s+(?!type\s)([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?${fromPackage}`,
+			'm',
 		),
 	)
 	if (defaultBinding) return defaultBinding[1]!
 	const defaultAsNamed = codeOnly.match(
 		new RegExp(
-			String.raw`import\s*\{[^}]*\bdefault\s+as\s+([A-Za-z_$][\w$]*)[^}]*\}${fromPackage}`,
+			String.raw`^[\t ]*import\s*\{[^}]*\bdefault\s+as\s+([A-Za-z_$][\w$]*)[^}]*\}${fromPackage}`,
+			'm',
 		),
 	)
 	return defaultAsNamed?.[1] ?? null
@@ -862,49 +871,148 @@ const ALREADY_CONFIGURED_REASON = 'addon already configured in preview'
 const COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON =
 	'Could not locate the definePreview config object — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.'
 
+interface GetValueCodeParams {
+	/** The file with comments and string contents blanked, positions kept. */
+	structureOnly: string
+	/** Position of the value's first character. */
+	valueStart: number
+	/** Identifiers already being resolved, so `const a = [...a]` cannot loop. */
+	visited: Set<string>
+}
+
 /**
- * The comment-stripped text inside a key's literal `[ … ]` / `{ … }` value,
- * scoped to one object's body — or `''` when the key is missing or its value
- * is not a literal.
- *
- * @param content - the file content
- * @param keyword - the key to look up
- * @param body - the range inside the object's braces
+ * The code a value stands for, as one flat list of entries. A literal
+ * `[ … ]` / `{ … }` gives its contents, followed by the contents of every
+ * same-file `const` it spreads at its own level; a bare identifier
+ * (`addons: shared`, or the shorthand `addons,`) gives its same-file
+ * initializer the same way. Anything the file itself cannot account for — a
+ * call, an import, a spread of an import — contributes nothing, so the
+ * presence checks built on this never credit code they cannot see.
  */
-function getCodeInsideKeyValue(
-	content: string,
-	keyword: string,
-	body: { from: number; to: number },
-): string {
-	const key = findTopLevelKey(content, keyword, body)
+function getValueCode({
+	structureOnly,
+	valueStart,
+	visited,
+}: GetValueCodeParams): string {
+	const opener = structureOnly[valueStart]
+	if (opener === '[' || opener === '{') {
+		const end = findMatchingBrace(structureOnly, valueStart)
+		if (end === null) return ''
+		const contents = structureOnly.slice(valueStart + 1, end)
+		const spreadNames = findSpreadNamesAtTopLevel(contents)
+		const spreadCodes = spreadNames.map((name) =>
+			getInitializerCode({ structureOnly, name, visited }),
+		)
+		return [contents, ...spreadCodes].join(',\n')
+	}
+	const identifier = structureOnly.slice(valueStart).match(/^[A-Za-z_$][\w$]*/)
+	if (!identifier) return ''
+	return getInitializerCode({ structureOnly, name: identifier[0], visited })
+}
+
+interface GetInitializerCodeParams {
+	/** The file with comments and string contents blanked, positions kept. */
+	structureOnly: string
+	/** The identifier whose `const` / `let` / `var` initializer is wanted. */
+	name: string
+	/** Identifiers already being resolved, so `const a = [...a]` cannot loop. */
+	visited: Set<string>
+}
+
+/**
+ * The code of an identifier's same-file initializer, resolved like any other
+ * value (`getValueCode`), or `''` when the file declares no literal for it.
+ * `(?::[^=]*)?` allows a type annotation on the declaration.
+ */
+function getInitializerCode({
+	structureOnly,
+	name,
+	visited,
+}: GetInitializerCodeParams): string {
+	if (visited.has(name)) return ''
+	visited.add(name)
+	const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const declaration = structureOnly.match(
+		new RegExp(
+			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=]*)?=\s*`,
+		),
+	)
+	if (!declaration || declaration.index === undefined) return ''
+	const valueStart = declaration.index + declaration[0].length
+	return getValueCode({ structureOnly, valueStart, visited })
+}
+
+/**
+ * The names spread at the top level of a literal's contents — `shared` in
+ * `[a(), ...shared]` or `{ ...shared, docs: {} }` — not those inside nested
+ * literals, which belong to the nested value.
+ *
+ * @param contents - the text between the literal's brackets, structure only
+ */
+function findSpreadNamesAtTopLevel(contents: string): Array<string> {
+	const names: Array<string> = []
+	let depth = 0
+	for (let i = 0; i < contents.length; i++) {
+		const c = contents[i]!
+		if (c === '{' || c === '[' || c === '(') depth++
+		else if (c === '}' || c === ']' || c === ')') depth--
+		else if (depth === 0 && contents.startsWith('...', i)) {
+			const name = contents.slice(i + 3).match(/^\s*([A-Za-z_$][\w$]*)/)?.[1]
+			if (name) names.push(name)
+		}
+	}
+	return names
+}
+
+interface GetKeyValueCodeParams {
+	/** The file with comments and string contents blanked, positions kept. */
+	structureOnly: string
+	/** The key to look up. */
+	keyword: string
+	/** The range inside the braces of the object holding the key. */
+	body: { from: number; to: number }
+}
+
+/**
+ * The code a key's value stands for (see `getValueCode`), scoped to one
+ * object's body — `''` when the key is missing or its value cannot be
+ * accounted for from the file.
+ */
+function getKeyValueCode({
+	structureOnly,
+	keyword,
+	body,
+}: GetKeyValueCodeParams): string {
+	const key = findTopLevelKey(structureOnly, keyword, body)
 	if (!key) return ''
-	const opener = content[key.valueStart]
-	if (opener !== '[' && opener !== '{') return ''
-	const end = findMatchingBrace(content, key.valueStart)
-	if (end === null) return ''
-	return stripCommentsRespectingStrings(content.slice(key.valueStart + 1, end))
+	return getValueCode({
+		structureOnly,
+		valueStart: key.valueStart,
+		visited: new Set(),
+	})
 }
 
 /**
  * Whether the text holds the `dependencyPreviews:` settings key the wizard
- * writes into `parameters`.
+ * writes into `parameters`, anywhere in it — the classic path's file-wide
+ * marker. The CSF Next path asks the narrower `checkHasSettingsKeyAtTopLevel`
+ * of the `parameters` value instead.
  *
- * @param codeOnly - text with comments stripped (the whole file, or one
- * object's body)
+ * @param codeOnly - text with comments stripped
  */
 function checkHasSettingsBlock(codeOnly: string): boolean {
 	return /\bdependencyPreviews\s*:/.test(codeOnly)
 }
 
 /**
- * Whether a literal's code spreads another value into it (`[...shared]`,
- * `{ ...shared }`).
+ * Whether the `dependencyPreviews:` settings key sits at the top level of a
+ * `parameters` value's code (from `getValueCode`) — a `dependencyPreviews`
+ * nested deeper belongs to some other setting.
  *
- * @param literalCode - the text between the literal's brackets, comments
- * stripped
+ * @param parametersCode - the `parameters` value's code
  */
-function checkHasSpread(literalCode: string): boolean {
-	return /\.\.\./.test(literalCode)
+function checkHasSettingsKeyAtTopLevel(parametersCode: string): boolean {
+	return findTopLevelKey(parametersCode, 'dependencyPreviews') !== null
 }
 
 /**
@@ -985,34 +1093,29 @@ function patchDefinePreview({
 	// — `dependencyPreviews()` and, since a CSF Next `addons` list is what
 	// loads each addon's preview-side setup, `addonDocs()` with it — and the
 	// settings block, which alone (a classic file migrated by hand, say) does
-	// not register anything. A half that sits in a non-literal value — a
-	// same-file `const parameters = { dependencyPreviews: … }`, say — cannot
-	// be edited, but it still counts as present, so the file-wide checks are
-	// what the non-literal branches consult.
-	const isDependencyPreviewsCalledSomewhere = checkDoesListCall(
-		codeOnly,
+	// not register anything. Each key's value is read as the code it stands
+	// for (`getValueCode`): a literal's contents, plus the same-file `const`
+	// a spread or a bare identifier points at — so a half that sits in a value
+	// the patcher cannot edit still counts as present, while a value the file
+	// cannot account for (a call, an import) counts as holding nothing.
+	const structureOnly = blankStringContents(codeOnly)
+	const addonsCode = getKeyValueCode({
+		structureOnly,
+		keyword: 'addons',
+		body,
+	})
+	const parametersCode = getKeyValueCode({
+		structureOnly,
+		keyword: 'parameters',
+		body,
+	})
+	const isDependencyPreviewsInList = checkDoesListCall(
+		addonsCode,
 		dependencyPreviewsLocal,
 	)
-	const isAddonDocsCalledSomewhere = checkDoesListCall(codeOnly, addonDocsLocal)
-	const isRegisteredSomewhereInFile =
-		isDependencyPreviewsCalledSomewhere && isAddonDocsCalledSomewhere
-	const hasSettingsBlockSomewhereInFile = checkHasSettingsBlock(codeOnly)
-	// A literal that spreads a same-file value (`addons: [...shared]`) holds
-	// whatever that value holds, which only the file-wide checks can see.
-	const addonsListCode = getCodeInsideKeyValue(content, 'addons', body)
-	const parametersCode = getCodeInsideKeyValue(content, 'parameters', body)
-	const doesAddonsListSpread = checkHasSpread(addonsListCode)
-	const doesParametersSpread = checkHasSpread(parametersCode)
-	const isDependencyPreviewsInList =
-		checkDoesListCall(addonsListCode, dependencyPreviewsLocal) ||
-		(doesAddonsListSpread && isDependencyPreviewsCalledSomewhere)
-	const isAddonDocsInList =
-		checkDoesListCall(addonsListCode, addonDocsLocal) ||
-		(doesAddonsListSpread && isAddonDocsCalledSomewhere)
+	const isAddonDocsInList = checkDoesListCall(addonsCode, addonDocsLocal)
 	const isRegisteredInAddons = isDependencyPreviewsInList && isAddonDocsInList
-	const hasSettingsBlock =
-		checkHasSettingsBlock(parametersCode) ||
-		(doesParametersSpread && hasSettingsBlockSomewhereInFile)
+	const hasSettingsBlock = checkHasSettingsKeyAtTopLevel(parametersCode)
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
@@ -1067,9 +1170,10 @@ function patchDefinePreview({
 			})
 		}
 	} else if (addonsKey) {
-		// A list the patcher cannot edit: fine when it already holds the
-		// registration (a same-file `const addons = [...]`), refused otherwise.
-		if (!isRegisteredSomewhereInFile) {
+		// A list the patcher cannot edit: fine when the value it stands for
+		// already holds both registrations (a same-file `const addons = [...]`),
+		// refused otherwise.
+		if (!isRegisteredInAddons) {
 			return {
 				kind: 'failed',
 				reason:
@@ -1128,9 +1232,10 @@ function patchDefinePreview({
 			inserted.settingsBlock = true
 		}
 	} else if (paramsKey) {
-		// An object the patcher cannot edit: fine when it already holds the
-		// block (a same-file `const parameters = { … }`), refused otherwise.
-		if (!hasSettingsBlockSomewhereInFile) {
+		// An object the patcher cannot edit: fine when the value it stands for
+		// already holds the block (a same-file `const parameters = { … }`),
+		// refused otherwise.
+		if (!hasSettingsBlock) {
 			return {
 				kind: 'failed',
 				reason:
@@ -1219,7 +1324,7 @@ function patchExistingPreview(
 	// is still a CSF Next file, so the advice has to name that style's
 	// additions rather than the classic spreads.
 	const isUnresolvedDefinePreview =
-		!isCsfNext && /\bdefinePreview\s*\(/.test(codeOnly)
+		!isCsfNext && /\bdefinePreview\s*\(/.test(blankStringContents(codeOnly))
 	if (isUnresolvedDefinePreview) {
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}

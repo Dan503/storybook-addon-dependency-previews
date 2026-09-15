@@ -391,6 +391,46 @@ export function findMatchingBrace(
  * original. That lets callers run a regex against the stripped output and use
  * `match.index` to locate the corresponding position in the unstripped file.
  */
+/**
+ * Blank the contents of every string and template literal — each character
+ * between the quotes becomes a space, the quotes stay, so every position is
+ * preserved — for searches that must only see code structure. A code sample
+ * held in a string (`const example = 'definePreview({})'`) then cannot be
+ * mistaken for the real thing. Run it on comment-stripped text; a quote
+ * inside a comment would otherwise open a string that never closes.
+ *
+ * @param codeOnly - text with comments already stripped
+ */
+export function blankStringContents(codeOnly: string): string {
+	let out = ''
+	let openQuote: string | null = null
+	let i = 0
+	while (i < codeOnly.length) {
+		const c = codeOnly[i]!
+		if (openQuote === null) {
+			out += c
+			if (c === "'" || c === '"' || c === '`') openQuote = c
+			i++
+			continue
+		}
+		if (c === '\\') {
+			// The escaped character is part of the string too.
+			const hasEscapedChar = i + 1 < codeOnly.length
+			out += hasEscapedChar ? '  ' : ' '
+			i += hasEscapedChar ? 2 : 1
+			continue
+		}
+		if (c === openQuote) {
+			out += c
+			openQuote = null
+		} else {
+			out += c === '\n' ? '\n' : ' '
+		}
+		i++
+	}
+	return out
+}
+
 export function stripCommentsRespectingStrings(content: string): string {
 	let out = ''
 	let inSQ = false
