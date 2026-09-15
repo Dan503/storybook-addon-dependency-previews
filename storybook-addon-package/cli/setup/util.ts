@@ -5,6 +5,34 @@ import { dirname, join, resolve } from 'node:path'
 const QUOTE_CHARS: ReadonlyArray<string> = ["'", '"', '`']
 
 /**
+ * Keywords an expression can directly follow — a regex literal (`return /x/`)
+ * or a string (`return'x'`, `case'a':`) — so a `/` or a quote straight after
+ * one of them is an opener, where the same character straight after any
+ * other word is not.
+ */
+const EXPRESSION_PRECEDING_KEYWORDS =
+	/(?:^|[^\w$])(?:return|typeof|case|do|else|in|of|instanceof|new|delete|void|throw|yield|await)$/
+
+/** The longest keyword in `EXPRESSION_PRECEDING_KEYWORDS`. */
+const LONGEST_EXPRESSION_PRECEDING_KEYWORD_LENGTH = 'instanceof'.length
+
+/**
+ * Whether the text ending at `endIndex` (inclusive) is a word — an
+ * identifier, a number — that is not one of the keywords an expression can
+ * directly follow. A quote or `/` straight after such a word cannot open a
+ * string or a regex literal (`don't`, `it's`, `a/b`).
+ *
+ * @param text - the text being scanned
+ * @param endIndex - position of the word's last character
+ */
+function checkIsEndOfNonKeywordWord(text: string, endIndex: number): boolean {
+	if (endIndex < 0 || !/[\w$]/.test(text[endIndex]!)) return false
+	const tailStart = endIndex - LONGEST_EXPRESSION_PRECEDING_KEYWORD_LENGTH
+	const tail = text.slice(Math.max(0, tailStart), endIndex + 1)
+	return !EXPRESSION_PRECEDING_KEYWORDS.test(tail)
+}
+
+/**
  * Detect the file's leading indent unit (one level deep) — first indented line
  * wins. Defaults to a tab so a file with no existing indent doesn't end up
  * un-indented.
@@ -86,12 +114,19 @@ export function detectQuoteStyle(content: string): "'" | '"' {
 
 /**
  * The one rule every scanner in this file uses to decide whether a quote
- * character starts a string: it does only when its closing twin can be
- * found — before the end of the line for `'` and `"` (a JS string cannot span
- * a raw line break), before the end of the text for a backtick. Returns the
- * closing quote's position, or `null` when the quote is not a string opener
- * (a lone `'` in a regex literal or in JSX text, say) and is to be read as an
- * ordinary character. Escaped characters inside the string are skipped.
+ * character starts a string: it does only when it does not sit straight after
+ * a word (`don't`, `it's` — a string can follow a keyword like `return`, never
+ * an identifier), and when its closing twin can be found — before the end of
+ * the line for `'` and `"` (a JS string cannot span a raw line break), before
+ * the end of the text for a backtick. Returns the closing quote's position,
+ * or `null` when the quote is not a string opener (a lone `'` in a regex
+ * literal or in JSX text, say) and is to be read as an ordinary character.
+ * Escaped characters inside the string are skipped.
+ *
+ * The boundary of a scanner that does not parse JSX: a quote in JSX text
+ * that follows a space or punctuation (`rock 'n roll`, `<p>'quoted'</p>`) is
+ * still paired with the next twin on its line, and the span between them
+ * stepped over as a string — including a `{` or `}` inside it.
  *
  * @param text - the text being scanned
  * @param openIndex - position of the candidate opening quote
@@ -100,6 +135,7 @@ export function findClosingQuote(
 	text: string,
 	openIndex: number,
 ): number | null {
+	if (checkIsEndOfNonKeywordWord(text, openIndex - 1)) return null
 	const quote = text[openIndex]!
 	const isSingleLine = quote !== '`'
 	let i = openIndex + 1
@@ -148,12 +184,6 @@ const REGEX_LITERAL_PRECEDERS: ReadonlyArray<string> = [
 ]
 
 /**
- * Keywords after which a `/` starts a regex literal (`return /x/`).
- */
-const REGEX_LITERAL_PRECEDING_KEYWORDS =
-	/(?:^|[^\w$])(?:return|typeof|case|do|else|in|of|new|delete|void|throw|yield|await)$/
-
-/**
  * The position of the last character of the regex literal that starts at
  * `slashIndex` (its final flag, or its closing `/`), or `null` when that `/`
  * does not start one. Both neighbours of the `/` are read. What comes after
@@ -185,14 +215,13 @@ export function findRegexLiteralEnd(
 	const precedingChar = before < 0 ? '' : text[before]!
 	const isAfterArrow = precedingChar === '>' && text[before - 1] === '='
 	// Only the tail can hold a keyword, so only the tail is tested.
-	const longestKeywordLength = 'delete'.length
-	const tailStart = before - longestKeywordLength
+	const tailStart = before - LONGEST_EXPRESSION_PRECEDING_KEYWORD_LENGTH
 	const tail = text.slice(Math.max(0, tailStart), before + 1)
 	const isExpressionStart =
 		before < 0 ||
 		isAfterArrow ||
 		REGEX_LITERAL_PRECEDERS.includes(precedingChar) ||
-		REGEX_LITERAL_PRECEDING_KEYWORDS.test(tail)
+		EXPRESSION_PRECEDING_KEYWORDS.test(tail)
 	if (!isExpressionStart) return null
 	let i = slashIndex + 1
 	let isInCharacterClass = false

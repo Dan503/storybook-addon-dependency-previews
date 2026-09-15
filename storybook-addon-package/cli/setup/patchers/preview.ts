@@ -454,6 +454,33 @@ function parseAddonImports(content: string): {
 }
 
 /**
+ * Collapse a run of three or more line breaks around `position` — the gap a
+ * deleted statement leaves between the blank lines that surrounded it — to
+ * one blank line. Only that run is touched, so a longer run elsewhere in the
+ * file (inside a template literal, say) is left as written.
+ *
+ * @param content - the file content
+ * @param position - a position inside or at either end of the run
+ * @param eol - the file's line ending
+ */
+function collapseBlankLinesAt(
+	content: string,
+	position: number,
+	eol: string,
+): string {
+	const isLineBreakChar = (c: string | undefined) => c === '\n' || c === '\r'
+	let runStart = position
+	while (runStart > 0 && isLineBreakChar(content[runStart - 1])) runStart--
+	let runEnd = position
+	while (runEnd < content.length && isLineBreakChar(content[runEnd])) runEnd++
+	const run = content.slice(runStart, runEnd)
+	const lineBreakCount = run.split('\n').length - 1
+	const maxKeptLineBreaks = 2
+	if (lineBreakCount <= maxKeptLineBreaks) return content
+	return content.slice(0, runStart) + eol + eol + content.slice(runEnd)
+}
+
+/**
  * Make sure the file imports the required names from the addon package.
  * Collects every existing import from the package, merges them into one
  * (promoting a `type` import of a required value to a value import, and
@@ -549,9 +576,11 @@ function mergeAddonImport({
 		// import, which the parse deliberately skipped.
 		const [firstStatement, ...otherStatements] = allAddonImports
 		for (const statement of [...otherStatements].reverse()) {
+			const deletedFrom = statement.index
 			newContent =
-				newContent.slice(0, statement.index) +
-				newContent.slice(statement.index + statement.length)
+				newContent.slice(0, deletedFrom) +
+				newContent.slice(deletedFrom + statement.length)
+			newContent = collapseBlankLinesAt(newContent, deletedFrom, eol)
 		}
 		const { trailingComments } = firstStatement!
 		const commentSuffix = trailingComments === '' ? '' : ` ${trailingComments}`
@@ -559,8 +588,6 @@ function mergeAddonImport({
 			newContent.slice(0, firstStatement!.index) +
 			`${mergedStatement}${commentSuffix}${eol}` +
 			newContent.slice(firstStatement!.index + firstStatement!.length)
-		// Tidy up any blank-line runs left behind by deleted imports.
-		newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
 	}
 
 	// Resolve the local binding names — if the user aliased an import we need
@@ -1342,16 +1369,52 @@ function checkHasSettingsKeyAtTopLevel(parametersCode: string): boolean {
 	return findTopLevelKey(parametersCode, 'dependencyPreviews') !== null
 }
 
+/** The text of each entry at the top level of a list's contents, in order. */
+function splitTopLevelEntries(listStructure: string): Array<string> {
+	const entries: Array<string> = []
+	let depth = 0
+	let entryStart = 0
+	for (let i = 0; i < listStructure.length; i++) {
+		const c = listStructure[i]!
+		if (c === '{' || c === '[' || c === '(') depth++
+		else if (c === '}' || c === ']' || c === ')') depth--
+		else if (c === ',' && depth === 0) {
+			entries.push(listStructure.slice(entryStart, i))
+			entryStart = i + 1
+		}
+	}
+	entries.push(listStructure.slice(entryStart))
+	return entries
+}
+
 /**
- * Whether a `[ … ]` list calls the given local name — `addonDocs()` in an
- * `addons` list, say.
+ * Whether a `[ … ]` list has an entry that is a call of the given local name
+ * — `addonDocs()` in an `addons` list, say. Only an entry of its own counts:
+ * the same call nested inside another entry, or quoted in a string, does not
+ * register anything.
  *
  * @param listCode - the text between the list's brackets, comments stripped
  * @param localName - the identifier the call must use
  */
 function checkDoesListCall(listCode: string, localName: string): boolean {
 	const escapedName = localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	return new RegExp(String.raw`\b${escapedName}\s*\(`).test(listCode)
+	const isCallOfName = new RegExp(String.raw`^${escapedName}\s*\(`)
+	const listStructure = blankStringContents(listCode)
+	return splitTopLevelEntries(listStructure).some((entry) =>
+		isCallOfName.test(entry.trim()),
+	)
+}
+
+/**
+ * Whether the given local name is called anywhere in the file — the
+ * file-wide reading used only when the config object itself cannot be read.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param localName - the identifier the call must use
+ */
+function checkDoesFileCall(structureOnly: string, localName: string): boolean {
+	const escapedName = localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	return new RegExp(String.raw`\b${escapedName}\s*\(`).test(structureOnly)
 }
 
 interface PatchDefinePreviewParams {
@@ -1727,7 +1790,7 @@ function patchExistingPreview(
 		// to hold them.
 		const { localName } = findDependencyPreviewsBinding(content, codeOnly)
 		const doesCarryBothHalves =
-			checkDoesListCall(views.structureOnly, localName) &&
+			checkDoesFileCall(views.structureOnly, localName) &&
 			checkHasSettingsBlock(codeOnly)
 		if (doesCarryBothHalves) {
 			return {
