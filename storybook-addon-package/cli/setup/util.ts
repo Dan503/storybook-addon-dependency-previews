@@ -154,11 +154,14 @@ const REGEX_LITERAL_PRECEDING_KEYWORDS =
 /**
  * The position of the last character of the regex literal that starts at
  * `slashIndex` (its final flag, or its closing `/`), or `null` when that `/`
- * does not start one — it divides, or it opens a comment, or the literal
- * never closes on its line. Decided from what comes before the `/`: a regex
- * literal can only start where an expression can. A quote inside a regex
- * (`/['"]/`) then never opens a string, which is what every scanner in this
- * file relies on.
+ * does not start one. Both neighbours of the `/` are read. What comes after
+ * rules out a comment opener (`//`, `/*`), a JSX tag close (`/>`), and — after
+ * a `}` or `>` — a slash followed by whitespace, which is JSX text between an
+ * expression and whatever follows (`{a} / {b}`) rather than a pattern. What
+ * comes before decides between a literal and division: a regex literal can
+ * only start where an expression can. And a literal that never closes on its
+ * line is not one. A quote inside a regex (`/['"]/`) then never opens a
+ * string, which is what every scanner in this file relies on.
  *
  * @param text - the text being scanned
  * @param slashIndex - position of the candidate opening `/`
@@ -167,20 +170,23 @@ export function findRegexLiteralEnd(
 	text: string,
 	slashIndex: number,
 ): number | null {
-	const next = text[slashIndex + 1]
-	// `//` and `/*` open comments; `/>` closes a self-contained JSX tag
-	// (`<Dark theme={t} />`, whose `}` would otherwise pass as a preceder). A
-	// regex whose pattern starts with `>` is rare enough to give up.
+	const next = text[slashIndex + 1] ?? ''
 	if (next === '/' || next === '*' || next === '>') return null
 	let before = slashIndex - 1
 	while (before >= 0 && /\s/.test(text[before]!)) before--
+	const precedingChar = before < 0 ? '' : text[before]!
+	// A regex whose pattern starts with a space, written straight after a
+	// block or a tag, is rare enough to give up for the JSX-text shape.
+	const isJsxTextSlash =
+		(precedingChar === '}' || precedingChar === '>') && /\s/.test(next)
+	if (isJsxTextSlash) return null
 	// Only the tail can hold a keyword, so only the tail is tested.
 	const longestKeywordLength = 'delete'.length
 	const tailStart = before - longestKeywordLength
 	const tail = text.slice(Math.max(0, tailStart), before + 1)
 	const isExpressionStart =
 		before < 0 ||
-		REGEX_LITERAL_PRECEDERS.includes(text[before]!) ||
+		REGEX_LITERAL_PRECEDERS.includes(precedingChar) ||
 		REGEX_LITERAL_PRECEDING_KEYWORDS.test(tail)
 	if (!isExpressionStart) return null
 	let i = slashIndex + 1
