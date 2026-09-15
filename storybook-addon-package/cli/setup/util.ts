@@ -86,8 +86,8 @@ export function detectQuoteStyle(content: string): "'" | '"' {
  * template literal / comment, and not nested inside a `{}`/`[]`/`()` group).
  * Returns the position of the **start of the property-key token** (which is
  * the keyword character itself for bare identifiers, or the opening quote for
- * the quoted form) and the position of the value (first non-whitespace char
- * after the colon).
+ * the quoted form) and the position of the value (first character after the
+ * colon that is not whitespace or a comment).
  *
  * Both bare-identifier (`addons:`) and quoted (`"addons":`, `'addons':`) property
  * keys are recognized. Quoted-key matching requires the closing quote to land
@@ -109,6 +109,38 @@ export function detectQuoteStyle(content: string): "'" | '"' {
  * the range), and unrelated objects elsewhere in the file are out of range
  * entirely.
  */
+/**
+ * The position of the first character at or after `from` (and before `to`)
+ * that is neither whitespace nor part of a line comment or a block comment.
+ *
+ * @param content - the text being scanned
+ * @param from - where to start
+ * @param to - where to stop (returned when nothing but whitespace and
+ * comments remain)
+ */
+function skipWhitespaceAndComments(
+	content: string,
+	from: number,
+	to: number,
+): number {
+	let i = from
+	while (i < to) {
+		const c = content[i]!
+		const next = content[i + 1]
+		if (/\s/.test(c)) {
+			i++
+		} else if (c === '/' && next === '/') {
+			while (i < to && content[i] !== '\n') i++
+		} else if (c === '/' && next === '*') {
+			const close = content.indexOf('*/', i + 2)
+			i = close === -1 || close + 2 > to ? to : close + 2
+		} else {
+			break
+		}
+	}
+	return i
+}
+
 export function findTopLevelKey(
 	content: string,
 	keyword: string,
@@ -195,12 +227,10 @@ export function findTopLevelKey(
 				content.startsWith(keyword, i + 1) &&
 				content[afterKey] === c
 			) {
-				let j = afterKey + 1
-				while (j < to && /\s/.test(content[j]!)) j++
+				const j = skipWhitespaceAndComments(content, afterKey + 1, to)
 				if (content[j] === ':') {
-					j++
-					while (j < to && /\s/.test(content[j]!)) j++
-					return { keyStart: i, valueStart: j }
+					const valueStart = skipWhitespaceAndComments(content, j + 1, to)
+					return { keyStart: i, valueStart }
 				}
 			}
 		}
@@ -226,12 +256,11 @@ export function findTopLevelKey(
 			(i === 0 || !/[A-Za-z0-9_$]/.test(content[i - 1]!)) &&
 			!/[A-Za-z0-9_$]/.test(content[i + kwLen] ?? '')
 		) {
-			let j = i + kwLen
-			while (j < to && /\s/.test(content[j]!)) j++
+			// A comment may sit between the key and its `:` / `,` (`addons /* c */:`).
+			const j = skipWhitespaceAndComments(content, i + kwLen, to)
 			if (content[j] === ':') {
-				j++
-				while (j < to && /\s/.test(content[j]!)) j++
-				return { keyStart: i, valueStart: j }
+				const valueStart = skipWhitespaceAndComments(content, j + 1, to)
+				return { keyStart: i, valueStart }
 			}
 			const isAtKeyPosition =
 				prevCodeChar === null || prevCodeChar === '{' || prevCodeChar === ','

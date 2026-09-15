@@ -358,17 +358,19 @@ function mergeAddonImport({
 	style,
 }: MergeAddonImportParams): MergedAddonImport {
 	const { indent, eol, quote, trailingSemi } = style
-	// Match the whole import statement including any trailing semicolon, a
-	// trailing `// …` or `/* … */` comment on the same line (captured, and put
-	// back on the rewritten statement), and the terminating newline — one
-	// newline only, so a rewritten import keeps the blank line after it — so
-	// that deletions of additional imports don't leave stray `;` lines behind
-	// in semicolon-using projects. The name list is `[^}]*` rather than
-	// `[\s\S]*?`: a lazy any-character group can start at an earlier `import {`
-	// from another package and run on until it reaches the addon's `} from …`,
-	// swallowing every import in between.
+	// Match the whole import statement: any trailing semicolon, whatever run
+	// of comments follows it (captured, and put back on the rewritten
+	// statement — a block comment may run onto later lines), and then the
+	// line's newline when nothing else is on the line — one newline only, so
+	// a rewritten import keeps the blank line after it, and a deleted
+	// duplicate leaves no stray `;` line behind in semicolon-using projects.
+	// The statement ends at the first character that is not a comment, so a
+	// second statement on the same line stays where it is. The name list is
+	// `[^}]*` rather than `[\s\S]*?`: a lazy any-character group can start at
+	// an earlier `import {` from another package and run on until it reaches
+	// the addon's `} from …`, swallowing every import in between.
 	const ADDON_IMPORT_REGEX = new RegExp(
-		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?[ \t]*(\/\/[^\r\n]*|\/\*[^\r\n]*?\*\/)?[ \t]*(?:\r?\n|$)`,
+		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"][ \t]*;?((?:[ \t]*(?:\/\/[^\r\n]*|\/\*[\s\S]*?\*\/))*)[ \t]*(?:\r?\n|$)?`,
 		'gm',
 	)
 	const allAddonImports = [...content.matchAll(ADDON_IMPORT_REGEX)]
@@ -484,11 +486,12 @@ function mergeAddonImport({
 		let firstReplaced = false
 		newContent = newContent.replace(
 			ADDON_IMPORT_REGEX,
-			(_match, _typeOnly, _names, trailingComment: string | undefined) => {
+			(_match, _typeOnly, _names, trailingComments: string) => {
 				if (!firstReplaced) {
 					firstReplaced = true
-					const comment = trailingComment ? ` ${trailingComment}` : ''
-					return `${mergedStatement}${comment}${eol}`
+					const comments = trailingComments.trim()
+					const commentSuffix = comments === '' ? '' : ` ${comments}`
+					return `${mergedStatement}${commentSuffix}${eol}`
 				}
 				return ''
 			},
@@ -617,12 +620,14 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
 /**
  * Locate the body of the object passed to `definePreview({ … })` in a CSF
  * Next preview file — the style Storybook 11 makes the default. Only the
- * default export counts: `export default definePreview({` directly, or
- * `export default <name>` resolved to its `const <name> = definePreview({`
- * declaration — so a stray `definePreview` call elsewhere in the file is not
- * mistaken for the config. Runs on the comment-stripped text like
- * `findPreviewBody`, so a `definePreview` that only appears in a comment is
- * ignored. `null` when the file is not in this style.
+ * default export counts, in three shapes: `export default definePreview({`
+ * directly; `export default definePreview(<name>)` resolved to its
+ * `const <name> = {` declaration; or `export default <name>` resolved to its
+ * `const <name> = definePreview({` declaration — so a stray `definePreview`
+ * call elsewhere in the file is not mistaken for the config. Runs on the
+ * comment-stripped text like `findPreviewBody`, so a `definePreview` that
+ * only appears in a comment is ignored. `null` when the file is not in this
+ * style.
  *
  * @param text - the file content
  */
@@ -630,6 +635,8 @@ function findDefinePreviewBody(
 	text: string,
 ): { from: number; to: number } | null {
 	const stripped = stripCommentsRespectingStrings(text)
+	const escapeForRegex = (name: string): string =>
+		name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 	const direct = objectBodyAfterMatch(
 		text,
@@ -637,16 +644,30 @@ function findDefinePreviewBody(
 	)
 	if (direct) return direct
 
+	const configIdent = stripped.match(
+		/export\s+default\s+definePreview\s*\(\s*([A-Za-z_$][\w$]*)\s*\)/,
+	)?.[1]
+	if (configIdent) {
+		// `(?::[^=]*)?` allows a type annotation on the declaration.
+		return objectBodyAfterMatch(
+			text,
+			stripped.match(
+				new RegExp(
+					`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=]*)?=\\s*\\{`,
+				),
+			),
+		)
+	}
+
 	const exportIdent = stripped.match(
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
 	)?.[1]
 	if (!exportIdent) return null
-	const escaped = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 	return objectBodyAfterMatch(
 		text,
 		stripped.match(
 			new RegExp(
-				`(?:const|let|var)\\s+${escaped}\\s*=\\s*definePreview\\s*\\(\\s*\\{`,
+				`(?:const|let|var)\\s+${escapeForRegex(exportIdent)}\\s*=\\s*definePreview\\s*\\(\\s*\\{`,
 			),
 		),
 	)
@@ -737,6 +758,54 @@ function addListEntries({
 	const insertAt = listStart + leadingSpaces.length
 	const insertion = `${entries.join(', ')}, `
 	return content.slice(0, insertAt) + insertion + content.slice(insertAt)
+}
+
+interface LayOutSingleLineObjectParams {
+	/** The file content. */
+	content: string
+	/** Position just after the object's `{`. */
+	bodyStart: number
+	/** Position of the object's `}`. */
+	bodyEnd: number
+	/** Indent for the line the existing entries move onto. */
+	entryIndent: string
+	/** Indent for the closing `}`. */
+	closeIndent: string
+	/** The file's line ending. */
+	style: PreviewFileStyle
+}
+
+/**
+ * Lay an object whose body sits on one line (`{}`, `{ docs: … }`) out as a
+ * multi-line object, so a key inserted after its `{` gets a line of its own
+ * and the closing `}` does not end up glued to it. The existing text —
+ * comments included — moves onto its own line as it was; a trailing comma is
+ * added only when the line ends in code that lacks one, never after a
+ * comment. A body that already holds a line break is returned unchanged.
+ */
+function layOutSingleLineObject({
+	content,
+	bodyStart,
+	bodyEnd,
+	entryIndent,
+	closeIndent,
+	style,
+}: LayOutSingleLineObjectParams): string {
+	const { eol } = style
+	const body = content.slice(bodyStart, bodyEnd)
+	const isMultiLine = /\r?\n/.test(body)
+	if (isMultiLine) return content
+	const existingText = body.trim()
+	const existingCode = stripCommentsRespectingStrings(body).trim()
+	const doesEndWithComment = /(\/\/[^\r\n]*|\*\/)$/.test(existingText)
+	const needsTrailingComma =
+		existingCode !== '' && !existingCode.endsWith(',') && !doesEndWithComment
+	const existingLine =
+		existingText === ''
+			? ''
+			: `${eol}${entryIndent}${existingText}${needsTrailingComma ? ',' : ''}`
+	const newBody = `${existingLine}${eol}${closeIndent}`
+	return content.slice(0, bodyStart) + newBody + content.slice(bodyEnd)
 }
 
 const ALREADY_CONFIGURED_REASON = 'addon already configured in preview'
@@ -888,6 +957,13 @@ function patchDefinePreview({
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
 	}
+	// When `addons` or `parameters` is not a literal the patcher cannot look
+	// inside it, so a file that holds both halves somewhere — a same-file
+	// `const parameters = { dependencyPreviews: … }`, say — is reported as
+	// configured rather than refused with advice to add what is already there.
+	const isConfiguredSomewhereInFile =
+		checkDoesListCall(codeOnly, dependencyPreviewsLocal) &&
+		checkHasSettingsBlock(codeOnly)
 
 	let newContent = insertImports({
 		content: contentAfterImportMerge,
@@ -896,16 +972,22 @@ function patchDefinePreview({
 	})
 
 	// Re-found after the import edits, since those shift every later offset.
-	const bodyRange = findDefinePreviewBody(newContent)
-	if (!bodyRange) {
+	const bodyAfterImports = findDefinePreviewBody(newContent)
+	if (!bodyAfterImports) {
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}
-
-	// `definePreview({})` and `definePreview({ })` — nothing between the braces
-	// and no line break either, so the inserted keys need one before the `}`.
-	const isEmptySingleLineBody = /^[ \t]*$/.test(
-		newContent.slice(bodyRange.from, bodyRange.to),
-	)
+	// A body on one line (`definePreview({})`, `definePreview({ parameters: {} })`)
+	// is laid out as a multi-line object first, so the keys added below each
+	// get a line of their own and the closing brace is not glued to them.
+	newContent = layOutSingleLineObject({
+		content: newContent,
+		bodyStart: bodyAfterImports.from,
+		bodyEnd: bodyAfterImports.to,
+		entryIndent: l1,
+		closeIndent: '',
+		style,
+	})
+	const bodyRange = findDefinePreviewBody(newContent) ?? bodyAfterImports
 
 	// ─── `addons`: make sure both registrations are in the list.
 	// If we create the key, remember where it ends so a created `parameters:`
@@ -932,6 +1014,9 @@ function patchDefinePreview({
 			})
 		}
 	} else if (addonsKey) {
+		if (isConfiguredSomewhereInFile) {
+			return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
+		}
 		return {
 			kind: 'failed',
 			reason:
@@ -962,44 +1047,33 @@ function patchDefinePreview({
 		bodyRangeAfterAddons,
 	)
 	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
-		const insertAt = paramsKey.valueStart + 1
-		const paramsEnd =
-			findMatchingBrace(newContent, paramsKey.valueStart) ?? insertAt
-		const paramsBody = newContent.slice(insertAt, paramsEnd)
 		// Only the `addons` entry was missing — the block is already there.
 		if (hasSettingsBlock) {
 			return writePreview(previewFile, newContent)
 		}
-		const isSingleLineParams = !/\r?\n/.test(paramsBody)
-		if (isSingleLineParams) {
-			// `parameters: {}` or `parameters: { docs: … }` on one line: laid out
-			// as a multi-line object, or the block's last `},` and the old
-			// entries or closing `}` would share a line. The old text (comments
-			// included) moves onto its own line as it was; a trailing comma is
-			// added only when the code — not a comment — is what the line ends
-			// with, and does not already have one.
-			const existingText = paramsBody.trim()
-			const existingCode = stripCommentsRespectingStrings(paramsBody).trim()
-			const doesEndWithComment = /(\/\/[^\r\n]*|\*\/)$/.test(existingText)
-			const needsTrailingComma =
-				existingCode !== '' &&
-				!existingCode.endsWith(',') &&
-				!doesEndWithComment
-			const existingLines =
-				existingText === ''
-					? ''
-					: `${eol}${l2}${existingText}${needsTrailingComma ? ',' : ''}`
-			const replacement = `${eol}${block}${existingLines}${eol}${l1}`
-			newContent =
-				newContent.slice(0, insertAt) +
-				replacement +
-				newContent.slice(paramsEnd)
-		} else {
-			const insertion = `${eol}${block}`
-			newContent =
-				newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
-		}
+		const paramsStart = paramsKey.valueStart + 1
+		const paramsEnd =
+			findMatchingBrace(newContent, paramsKey.valueStart) ?? paramsStart
+		// `parameters: {}` or `parameters: { docs: … }` on one line is laid out
+		// as a multi-line object first, or the block's last `},` and the old
+		// entries or closing `}` would share a line.
+		newContent = layOutSingleLineObject({
+			content: newContent,
+			bodyStart: paramsStart,
+			bodyEnd: paramsEnd,
+			entryIndent: l2,
+			closeIndent: l1,
+			style,
+		})
+		const insertion = `${eol}${block}`
+		newContent =
+			newContent.slice(0, paramsStart) +
+			insertion +
+			newContent.slice(paramsStart)
 	} else if (paramsKey) {
+		if (isConfiguredSomewhereInFile) {
+			return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
+		}
 		return {
 			kind: 'failed',
 			reason:
@@ -1010,17 +1084,6 @@ function patchDefinePreview({
 		const insertion = `${eol}${l1}parameters: {${eol}${block}${eol}${l1}},`
 		newContent =
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
-	}
-
-	// Without this the closing brace would stay glued to the last inserted
-	// line (`},})`).
-	if (isEmptySingleLineBody) {
-		const bodyRangeAfterParams = findDefinePreviewBody(newContent)
-		if (bodyRangeAfterParams) {
-			const closeAt = bodyRangeAfterParams.to
-			newContent =
-				newContent.slice(0, closeAt) + eol + newContent.slice(closeAt)
-		}
 	}
 
 	return writePreview(previewFile, newContent)
