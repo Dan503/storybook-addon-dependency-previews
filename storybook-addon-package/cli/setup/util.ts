@@ -151,7 +151,8 @@ export function findTopLevelKey(
 				i += 2
 				continue
 			}
-			if (c === "'") inSQ = false
+			// A line break ends the string too — see stripCommentsRespectingStrings.
+			if (c === "'" || c === '\n') inSQ = false
 			i++
 			continue
 		}
@@ -160,7 +161,7 @@ export function findTopLevelKey(
 				i += 2
 				continue
 			}
-			if (c === '"') inDQ = false
+			if (c === '"' || c === '\n') inDQ = false
 			i++
 			continue
 		}
@@ -325,7 +326,8 @@ export function findMatchingBrace(
 				i += 2
 				continue
 			}
-			if (c === "'") inSQ = false
+			// A line break ends the string too — see stripCommentsRespectingStrings.
+			if (c === "'" || c === '\n') inSQ = false
 			i++
 			continue
 		}
@@ -334,7 +336,7 @@ export function findMatchingBrace(
 				i += 2
 				continue
 			}
-			if (c === '"') inDQ = false
+			if (c === '"' || c === '\n') inDQ = false
 			i++
 			continue
 		}
@@ -391,46 +393,6 @@ export function findMatchingBrace(
  * original. That lets callers run a regex against the stripped output and use
  * `match.index` to locate the corresponding position in the unstripped file.
  */
-/**
- * Blank the contents of every string and template literal — each character
- * between the quotes becomes a space, the quotes stay, so every position is
- * preserved — for searches that must only see code structure. A code sample
- * held in a string (`const example = 'definePreview({})'`) then cannot be
- * mistaken for the real thing. Run it on comment-stripped text; a quote
- * inside a comment would otherwise open a string that never closes.
- *
- * @param codeOnly - text with comments already stripped
- */
-export function blankStringContents(codeOnly: string): string {
-	let out = ''
-	let openQuote: string | null = null
-	let i = 0
-	while (i < codeOnly.length) {
-		const c = codeOnly[i]!
-		if (openQuote === null) {
-			out += c
-			if (c === "'" || c === '"' || c === '`') openQuote = c
-			i++
-			continue
-		}
-		if (c === '\\') {
-			// The escaped character is part of the string too.
-			const hasEscapedChar = i + 1 < codeOnly.length
-			out += hasEscapedChar ? '  ' : ' '
-			i += hasEscapedChar ? 2 : 1
-			continue
-		}
-		if (c === openQuote) {
-			out += c
-			openQuote = null
-		} else {
-			out += c === '\n' ? '\n' : ' '
-		}
-		i++
-	}
-	return out
-}
-
 export function stripCommentsRespectingStrings(content: string): string {
 	let out = ''
 	let inSQ = false
@@ -465,6 +427,10 @@ export function stripCommentsRespectingStrings(content: string): string {
 			i++
 			continue
 		}
+		// A `'…'` / `"…"` string cannot span a raw line break, so a line break
+		// ends it — a lone quote that is not a string opener (in a regex, or
+		// an apostrophe in JSX text) then cannot put the scan out of phase for
+		// the rest of the file. Template literals may span lines.
 		if (inSQ) {
 			out += c
 			if (c === '\\' && i + 1 < content.length) {
@@ -472,7 +438,7 @@ export function stripCommentsRespectingStrings(content: string): string {
 				i += 2
 				continue
 			}
-			if (c === "'") inSQ = false
+			if (c === "'" || c === '\n') inSQ = false
 			i++
 			continue
 		}
@@ -483,7 +449,7 @@ export function stripCommentsRespectingStrings(content: string): string {
 				i += 2
 				continue
 			}
-			if (c === '"') inDQ = false
+			if (c === '"' || c === '\n') inDQ = false
 			i++
 			continue
 		}
@@ -533,6 +499,78 @@ export function stripCommentsRespectingStrings(content: string): string {
 		i++
 	}
 	return out
+}
+
+/**
+ * Blank the contents of string and template literals — each character between
+ * the quotes becomes a space, the quotes stay, so every position is preserved
+ * — for searches that must only see code structure. A code sample held in a
+ * string (`const example = 'definePreview({})'`) then cannot be mistaken for
+ * the real thing.
+ *
+ * A quote only opens a string when its closing twin can be found: on the same
+ * line for `'` and `"`, anywhere later in the text for a backtick. A quote
+ * with no twin — a regex literal like `/['"]/`, an apostrophe in JSX text —
+ * is left as it is, so it cannot blank the rest of the file. Run it on
+ * comment-stripped text; a quote inside a comment would otherwise count.
+ *
+ * @param codeOnly - text with comments already stripped
+ * @param quotes - the quote characters to blank; the default is all three,
+ * and a caller that needs `'…'` / `"…"` contents kept (an import matcher
+ * reading a package name) passes only the backtick
+ */
+export function blankStringContents(
+	codeOnly: string,
+	quotes: ReadonlyArray<string> = ["'", '"', '`'],
+): string {
+	let out = ''
+	let i = 0
+	while (i < codeOnly.length) {
+		const c = codeOnly[i]!
+		if (!quotes.includes(c)) {
+			out += c
+			i++
+			continue
+		}
+		const closeIndex = findClosingQuote(codeOnly, i)
+		if (closeIndex === null) {
+			out += c
+			i++
+			continue
+		}
+		out += c
+		for (let j = i + 1; j < closeIndex; j++) {
+			out += codeOnly[j] === '\n' ? '\n' : ' '
+		}
+		out += c
+		i = closeIndex + 1
+	}
+	return out
+}
+
+/**
+ * The position of the quote that closes the string opened at `openIndex`, or
+ * `null` when there is none — before the end of the line for `'` and `"`,
+ * before the end of the text for a backtick. Escaped characters are skipped.
+ *
+ * @param codeOnly - the text being scanned
+ * @param openIndex - position of the opening quote
+ */
+function findClosingQuote(codeOnly: string, openIndex: number): number | null {
+	const quote = codeOnly[openIndex]!
+	const isSingleLine = quote !== '`'
+	let i = openIndex + 1
+	while (i < codeOnly.length) {
+		const c = codeOnly[i]!
+		if (c === '\\') {
+			i += 2
+			continue
+		}
+		if (c === quote) return i
+		if (isSingleLine && c === '\n') return null
+		i++
+	}
+	return null
 }
 
 /**

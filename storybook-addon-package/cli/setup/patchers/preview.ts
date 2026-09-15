@@ -364,6 +364,13 @@ const ADDON_IMPORT_REGEX = new RegExp(
 type AddonImportEntry = { name: string; alias?: string; isType: boolean }
 
 /**
+ * What the import matchers blank: template literals, where a multi-line
+ * code sample would put an `import` at a line start, but not `'…'` / `"…"`
+ * strings, whose contents are the package names the matchers read.
+ */
+const TEMPLATE_QUOTE_ONLY: ReadonlyArray<string> = ['`']
+
+/**
  * Every named import from the addon package in the file: the statements as
  * matched (each with its `index` into the file), and their names merged into
  * one list — one entry per name, a value entry winning over a type-only one
@@ -371,10 +378,11 @@ type AddonImportEntry = { name: string; alias?: string; isType: boolean }
  * is what a merged statement is written from, and what the local name of any
  * addon export is read from, so the two cannot disagree.
  *
- * Statements are found on the comment-stripped text, so a commented-out
- * import is not taken for a live one, and then read again from the file at
- * the same position (the stripped text keeps every position) so the match
- * carries the statement's own trailing comments.
+ * Statements are found on the text with comments and template-literal
+ * contents blanked, so neither a commented-out import nor a code sample in a
+ * template literal is taken for a live one, and then read again from the
+ * file at the same position (the blanked text keeps every position) so the
+ * match carries the statement's own trailing comments.
  *
  * @param content - the file content
  */
@@ -382,7 +390,8 @@ function parseAddonImports(content: string): {
 	statements: Array<RegExpExecArray>
 	entries: Array<AddonImportEntry>
 } {
-	const stripped = stripCommentsRespectingStrings(content)
+	const codeOnly = stripCommentsRespectingStrings(content)
+	const stripped = blankStringContents(codeOnly, TEMPLATE_QUOTE_ONLY)
 	const statements: Array<RegExpExecArray> = []
 	for (const strippedMatch of stripped.matchAll(ADDON_IMPORT_REGEX)) {
 		const atSamePosition = new RegExp(ADDON_IMPORT_REGEX.source, 'my')
@@ -550,9 +559,12 @@ function dependenciesJsonImportToInsert(
 	codeOnly: string,
 	style: PreviewFileStyle,
 ): string | null {
+	// Line-start anchor against a single-line string sample; template-literal
+	// contents blanked against a multi-line one.
+	const withoutTemplates = blankStringContents(codeOnly, TEMPLATE_QUOTE_ONLY)
 	const hasDependenciesJsonImport =
 		/^[\t ]*import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/m.test(
-			codeOnly,
+			withoutTemplates,
 		)
 	if (hasDependenciesJsonImport) return null
 	const { quote, trailingSemi } = style
@@ -619,7 +631,8 @@ function objectBodyAfterMatch(
 function findPreviewBody(text: string): { from: number; to: number } | null {
 	// Comments and string contents blanked, positions kept: a code sample
 	// held in a string cannot pass for the config.
-	const stripped = blankStringContents(stripCommentsRespectingStrings(text))
+	const codeOnly = stripCommentsRespectingStrings(text)
+	const stripped = blankStringContents(codeOnly)
 
 	// Direct patterns: typed preview (`Preview = {`, `StorybookPreviewConfig = {`)
 	// or anonymous default export (`export default {`).
@@ -663,7 +676,8 @@ function findDefinePreviewBody(
 ): { from: number; to: number } | null {
 	// Comments and string contents blanked, positions kept: a code sample
 	// held in a string cannot pass for the config.
-	const stripped = blankStringContents(stripCommentsRespectingStrings(text))
+	const codeOnly = stripCommentsRespectingStrings(text)
+	const stripped = blankStringContents(codeOnly)
 	const escapeForRegex = (name: string): string =>
 		name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -677,10 +691,12 @@ function findDefinePreviewBody(
 		/export\s+default\s+definePreview\s*\(\s*([A-Za-z_$][\w$]*)\s*\)/,
 	)?.[1]
 	if (configIdent) {
-		// `(?::[^=]*)?` allows a type annotation on the declaration.
+		// `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping
+		// at the statement end so a declaration with no initializer cannot reach
+		// the next `=` in the file.
 		const configDeclarationMatch = stripped.match(
 			new RegExp(
-				`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=]*)?=\\s*\\{`,
+				`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=;\\n]*)?=\\s*\\{`,
 			),
 		)
 		return objectBodyAfterMatch(text, configDeclarationMatch)
@@ -735,15 +751,17 @@ function findDefaultImportLocalName(
 	const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 	const fromPackage = String.raw`\s*from\s*['"]${escapedPackageName}['"]`
 	// Anchored to a line start so an import quoted inside a string on some
-	// other line (a code sample) is not taken for a real one.
-	const defaultBinding = codeOnly.match(
+	// other line (a code sample) is not taken for a real one, and read with
+	// template-literal contents blanked so a multi-line sample is not either.
+	const withoutTemplates = blankStringContents(codeOnly, TEMPLATE_QUOTE_ONLY)
+	const defaultBinding = withoutTemplates.match(
 		new RegExp(
 			String.raw`^[\t ]*import\s+(?!type\s)([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?${fromPackage}`,
 			'm',
 		),
 	)
 	if (defaultBinding) return defaultBinding[1]!
-	const defaultAsNamed = codeOnly.match(
+	const defaultAsNamed = withoutTemplates.match(
 		new RegExp(
 			String.raw`^[\t ]*import\s*\{[^}]*\bdefault\s+as\s+([A-Za-z_$][\w$]*)[^}]*\}${fromPackage}`,
 			'm',
@@ -871,9 +889,21 @@ const ALREADY_CONFIGURED_REASON = 'addon already configured in preview'
 const COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON =
 	'Could not locate the definePreview config object — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.'
 
-interface GetValueCodeParams {
-	/** The file with comments and string contents blanked, positions kept. */
+/**
+ * Two views of one file with every position shared: `codeOnly` has comments
+ * blanked and strings kept (what a key lookup and the returned code read,
+ * so a quoted key like `"addons":` stays visible), `structureOnly` has string
+ * contents blanked as well (what brace matching, spread scanning and
+ * declaration searches read, so a code sample in a string cannot mislead
+ * them).
+ */
+interface CodeViews {
+	codeOnly: string
 	structureOnly: string
+}
+
+interface GetValueCodeParams {
+	views: CodeViews
 	/** Position of the value's first character. */
 	valueStart: number
 	/** Identifiers already being resolved, so `const a = [...a]` cannot loop. */
@@ -890,29 +920,30 @@ interface GetValueCodeParams {
  * presence checks built on this never credit code they cannot see.
  */
 function getValueCode({
-	structureOnly,
+	views,
 	valueStart,
 	visited,
 }: GetValueCodeParams): string {
+	const { codeOnly, structureOnly } = views
 	const opener = structureOnly[valueStart]
 	if (opener === '[' || opener === '{') {
 		const end = findMatchingBrace(structureOnly, valueStart)
 		if (end === null) return ''
-		const contents = structureOnly.slice(valueStart + 1, end)
-		const spreadNames = findSpreadNamesAtTopLevel(contents)
+		const contents = codeOnly.slice(valueStart + 1, end)
+		const contentsStructure = structureOnly.slice(valueStart + 1, end)
+		const spreadNames = findSpreadNamesAtTopLevel(contentsStructure)
 		const spreadCodes = spreadNames.map((name) =>
-			getInitializerCode({ structureOnly, name, visited }),
+			getInitializerCode({ views, name, visited }),
 		)
 		return [contents, ...spreadCodes].join(',\n')
 	}
 	const identifier = structureOnly.slice(valueStart).match(/^[A-Za-z_$][\w$]*/)
 	if (!identifier) return ''
-	return getInitializerCode({ structureOnly, name: identifier[0], visited })
+	return getInitializerCode({ views, name: identifier[0], visited })
 }
 
 interface GetInitializerCodeParams {
-	/** The file with comments and string contents blanked, positions kept. */
-	structureOnly: string
+	views: CodeViews
 	/** The identifier whose `const` / `let` / `var` initializer is wanted. */
 	name: string
 	/** Identifiers already being resolved, so `const a = [...a]` cannot loop. */
@@ -922,25 +953,29 @@ interface GetInitializerCodeParams {
 /**
  * The code of an identifier's same-file initializer, resolved like any other
  * value (`getValueCode`), or `''` when the file declares no literal for it.
- * `(?::[^=]*)?` allows a type annotation on the declaration.
+ * `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping at
+ * the statement end so a declaration with no initializer cannot reach the
+ * next `=` in the file.
  */
 function getInitializerCode({
-	structureOnly,
+	views,
 	name,
 	visited,
 }: GetInitializerCodeParams): string {
 	if (visited.has(name)) return ''
 	visited.add(name)
 	const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	const declaration = structureOnly.match(
+	const declaration = views.structureOnly.match(
 		new RegExp(
-			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=]*)?=\s*`,
+			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*`,
 		),
 	)
 	if (!declaration || declaration.index === undefined) return ''
 	const valueStart = declaration.index + declaration[0].length
-	return getValueCode({ structureOnly, valueStart, visited })
+	return getValueCode({ views, valueStart, visited })
 }
+
+const SPREAD_TOKEN = '...'
 
 /**
  * The names spread at the top level of a literal's contents — `shared` in
@@ -956,8 +991,9 @@ function findSpreadNamesAtTopLevel(contents: string): Array<string> {
 		const c = contents[i]!
 		if (c === '{' || c === '[' || c === '(') depth++
 		else if (c === '}' || c === ']' || c === ')') depth--
-		else if (depth === 0 && contents.startsWith('...', i)) {
-			const name = contents.slice(i + 3).match(/^\s*([A-Za-z_$][\w$]*)/)?.[1]
+		else if (depth === 0 && contents.startsWith(SPREAD_TOKEN, i)) {
+			const afterToken = contents.slice(i + SPREAD_TOKEN.length)
+			const name = afterToken.match(/^\s*([A-Za-z_$][\w$]*)/)?.[1]
 			if (name) names.push(name)
 		}
 	}
@@ -965,8 +1001,7 @@ function findSpreadNamesAtTopLevel(contents: string): Array<string> {
 }
 
 interface GetKeyValueCodeParams {
-	/** The file with comments and string contents blanked, positions kept. */
-	structureOnly: string
+	views: CodeViews
 	/** The key to look up. */
 	keyword: string
 	/** The range inside the braces of the object holding the key. */
@@ -979,17 +1014,13 @@ interface GetKeyValueCodeParams {
  * accounted for from the file.
  */
 function getKeyValueCode({
-	structureOnly,
+	views,
 	keyword,
 	body,
 }: GetKeyValueCodeParams): string {
-	const key = findTopLevelKey(structureOnly, keyword, body)
+	const key = findTopLevelKey(views.codeOnly, keyword, body)
 	if (!key) return ''
-	return getValueCode({
-		structureOnly,
-		valueStart: key.valueStart,
-		visited: new Set(),
-	})
+	return getValueCode({ views, valueStart: key.valueStart, visited: new Set() })
 }
 
 /**
@@ -1098,17 +1129,12 @@ function patchDefinePreview({
 	// a spread or a bare identifier points at — so a half that sits in a value
 	// the patcher cannot edit still counts as present, while a value the file
 	// cannot account for (a call, an import) counts as holding nothing.
-	const structureOnly = blankStringContents(codeOnly)
-	const addonsCode = getKeyValueCode({
-		structureOnly,
-		keyword: 'addons',
-		body,
-	})
-	const parametersCode = getKeyValueCode({
-		structureOnly,
-		keyword: 'parameters',
-		body,
-	})
+	const views: CodeViews = {
+		codeOnly,
+		structureOnly: blankStringContents(codeOnly),
+	}
+	const addonsCode = getKeyValueCode({ views, keyword: 'addons', body })
+	const parametersCode = getKeyValueCode({ views, keyword: 'parameters', body })
 	const isDependencyPreviewsInList = checkDoesListCall(
 		addonsCode,
 		dependencyPreviewsLocal,
@@ -1323,8 +1349,9 @@ function patchExistingPreview(
 	// imported object, a call, a cast — exported directly or through a const)
 	// is still a CSF Next file, so the advice has to name that style's
 	// additions rather than the classic spreads.
+	const structureOnly = blankStringContents(codeOnly)
 	const isUnresolvedDefinePreview =
-		!isCsfNext && /\bdefinePreview\s*\(/.test(blankStringContents(codeOnly))
+		!isCsfNext && /\bdefinePreview\s*\(/.test(structureOnly)
 	if (isUnresolvedDefinePreview) {
 		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
 	}
