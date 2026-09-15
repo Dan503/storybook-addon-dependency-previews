@@ -119,9 +119,13 @@ export function findClosingQuote(
 /**
  * Characters after which a `/` starts a regex literal rather than dividing —
  * the start of an expression. After a name, a number, a `)` or a `]` it is
- * division. `<` is deliberately absent: in the `.tsx` / `.jsx` files the
- * wizard patches, a `/` straight after `<` is a JSX closing tag (`</div>`),
- * and a regex directly after a `<` comparison is rare enough to give up.
+ * division. Three are deliberately absent, because in the `.tsx` / `.jsx`
+ * files the wizard patches they are what JSX sits after: `<` (a `/` straight
+ * after it is a closing tag, `</div>`), and `}` and `>` (a `/` after an
+ * expression or a tag is JSX text, `{a}/{b}`, `</b>/<i>`). The one real
+ * regex-after-`>` shape, an arrow function body (`=> /re/`), is recognised
+ * on its own; a regex directly after a `<` or `>` comparison, or at the
+ * start of a statement after a block, is rare enough to give up.
  */
 const REGEX_LITERAL_PRECEDERS: ReadonlyArray<string> = [
 	'(',
@@ -134,13 +138,11 @@ const REGEX_LITERAL_PRECEDERS: ReadonlyArray<string> = [
 	'|',
 	'?',
 	'{',
-	'}',
 	';',
 	'+',
 	'-',
 	'*',
 	'%',
-	'>',
 	'~',
 	'^',
 ]
@@ -155,13 +157,13 @@ const REGEX_LITERAL_PRECEDING_KEYWORDS =
  * The position of the last character of the regex literal that starts at
  * `slashIndex` (its final flag, or its closing `/`), or `null` when that `/`
  * does not start one. Both neighbours of the `/` are read. What comes after
- * rules out a comment opener (`//`, `/*`), a JSX tag close (`/>`), and — after
- * a `}` or `>` — a slash followed by whitespace, which is JSX text between an
- * expression and whatever follows (`{a} / {b}`) rather than a pattern. What
+ * rules out a comment opener (`//`, `/*`) and a JSX tag close (`/>`). What
  * comes before decides between a literal and division: a regex literal can
- * only start where an expression can. And a literal that never closes on its
- * line is not one. A quote inside a regex (`/['"]/`) then never opens a
- * string, which is what every scanner in this file relies on.
+ * only start where an expression can — after one of
+ * `REGEX_LITERAL_PRECEDERS`, after an arrow (`=> /re/`), or after a keyword
+ * like `return`. And a literal that never closes on its line is not one. A
+ * quote inside a regex (`/['"]/`) then never opens a string, which is what
+ * every scanner in this file relies on.
  *
  * @param text - the text being scanned
  * @param slashIndex - position of the candidate opening `/`
@@ -175,17 +177,14 @@ export function findRegexLiteralEnd(
 	let before = slashIndex - 1
 	while (before >= 0 && /\s/.test(text[before]!)) before--
 	const precedingChar = before < 0 ? '' : text[before]!
-	// A regex whose pattern starts with a space, written straight after a
-	// block or a tag, is rare enough to give up for the JSX-text shape.
-	const isJsxTextSlash =
-		(precedingChar === '}' || precedingChar === '>') && /\s/.test(next)
-	if (isJsxTextSlash) return null
+	const isAfterArrow = precedingChar === '>' && text[before - 1] === '='
 	// Only the tail can hold a keyword, so only the tail is tested.
 	const longestKeywordLength = 'delete'.length
 	const tailStart = before - longestKeywordLength
 	const tail = text.slice(Math.max(0, tailStart), before + 1)
 	const isExpressionStart =
 		before < 0 ||
+		isAfterArrow ||
 		REGEX_LITERAL_PRECEDERS.includes(precedingChar) ||
 		REGEX_LITERAL_PRECEDING_KEYWORDS.test(tail)
 	if (!isExpressionStart) return null
