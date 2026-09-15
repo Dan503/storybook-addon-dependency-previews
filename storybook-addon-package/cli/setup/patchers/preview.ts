@@ -129,6 +129,74 @@ function buildTemplate(
 }
 
 /**
+ * The package a CSF Next `preview.ts` imports `definePreview` from, per
+ * framework — only the frameworks whose package exports it. At the time of
+ * writing `@storybook/preact-vite`, `@storybook/sveltekit` and
+ * `@storybook/svelte-vite` do not, so those frameworks are absent and keep the
+ * classic template (which works on Storybook 10 and 11 alike). Adding a
+ * framework here is what switches its Storybook 11 projects to the CSF Next
+ * template.
+ */
+const DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK: Partial<
+	Record<SupportedFramework, string>
+> = {
+	'react-vite': '@storybook/react-vite',
+	'vue3-vite': '@storybook/vue3-vite',
+	'solid-vite': 'storybook-solidjs-vite',
+}
+
+/** The first Storybook major whose default `preview.ts` style is CSF Next. */
+const FIRST_STORYBOOK_MAJOR_WITH_CSF_NEXT = 11
+
+interface BuildDefinePreviewTemplateParams {
+	framework: SupportedFramework
+	/** The package `definePreview` is imported from (see `DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK`). */
+	definePreviewPackage: string
+	sourceRootUrl: string
+	srcDir: string
+	style: TemplateStyle
+	/** Whether the file is TypeScript — decides the `vite/client` reference line. */
+	isTs: boolean
+}
+
+/**
+ * The CSF Next preview file: `export default definePreview({ ... })` with the
+ * addon registered through `dependencyPreviews()` in `addons`, alongside the
+ * docs addon. The registration function carries the default parameters and
+ * the decorators, so unlike `buildTemplate` nothing is spread in by hand.
+ */
+function buildDefinePreviewTemplate({
+	framework,
+	definePreviewPackage,
+	sourceRootUrl,
+	srcDir,
+	style,
+	isTs,
+}: BuildDefinePreviewTemplateParams): string {
+	const { indent, eol } = style
+	const l1 = indent
+	const lines = [
+		// `/// <reference types="vite/client" />` is a TypeScript-only directive;
+		// Vite-flavoured JS preview files don't need it.
+		...(isTs ? [`/// <reference types="vite/client" />`, ``] : []),
+		`import { definePreview } from '${definePreviewPackage}'`,
+		`import addonDocs from '@storybook/addon-docs'`,
+		`import { dependencyPreviews } from 'storybook-addon-dependency-previews'`,
+		``,
+		`import dependenciesJson from './dependency-previews.json'`,
+		``,
+		`export default definePreview({`,
+		`${l1}addons: [addonDocs(), dependencyPreviews()],`,
+		`${l1}parameters: {`,
+		dependencyPreviewsBlock(framework, sourceRootUrl, srcDir, indent, eol),
+		`${l1}},`,
+		`})`,
+		``,
+	]
+	return lines.join(eol)
+}
+
+/**
  * Map the detected `.storybook/main.{ts,js,mjs,cjs}` extension to the matching
  * preview-file extension. The `PreviewFile['lang']` type only models the four
  * extensions Storybook actually loads as a preview module — `mjs`/`cjs` mains
@@ -140,16 +208,52 @@ function previewLangForMainLang(
 	return mainLang === 'ts' ? 'ts' : 'js'
 }
 
-function templateForFramework(
-	framework: SupportedFramework,
-	sourceRootUrl: string,
-	srcDir: string,
-	style: TemplateStyle,
-	mainLang: MainFile['lang'],
-): { content: string; lang: PreviewFile['lang'] } {
+interface TemplateForFrameworkParams {
+	framework: SupportedFramework
+	sourceRootUrl: string
+	srcDir: string
+	style: TemplateStyle
+	mainLang: MainFile['lang']
+	/** Major version of the installed `storybook` package; `null` when unknown. */
+	storybookMajor: number | null
+}
+
+/**
+ * Pick the template for a brand-new preview file. Storybook 11 projects on a
+ * framework whose package exports `definePreview` get the CSF Next template;
+ * everything else — Storybook 10, a framework without `definePreview`, or a
+ * version that could not be read — gets the classic template, which works on
+ * both majors.
+ */
+function templateForFramework({
+	framework,
+	sourceRootUrl,
+	srcDir,
+	style,
+	mainLang,
+	storybookMajor,
+}: TemplateForFrameworkParams): { content: string; lang: PreviewFile['lang'] } {
 	const lang = previewLangForMainLang(mainLang)
+	const isTs = lang === 'ts'
+	const definePreviewPackage = DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK[framework]
+	const isCsfNextDefault =
+		storybookMajor !== null &&
+		storybookMajor >= FIRST_STORYBOOK_MAJOR_WITH_CSF_NEXT
+	if (isCsfNextDefault && definePreviewPackage) {
+		return {
+			content: buildDefinePreviewTemplate({
+				framework,
+				definePreviewPackage,
+				sourceRootUrl,
+				srcDir,
+				style,
+				isTs,
+			}),
+			lang,
+		}
+	}
 	return {
-		content: buildTemplate(framework, sourceRootUrl, srcDir, style, lang === 'ts'),
+		content: buildTemplate(framework, sourceRootUrl, srcDir, style, isTs),
 		lang,
 	}
 }
@@ -190,6 +294,558 @@ function findImportInsertionIndex(content: string): number {
 		break
 	}
 	return idx
+}
+
+const PKG = 'storybook-addon-dependency-previews'
+
+/** The formatting of an existing preview file that inserted code has to match. */
+interface PreviewFileStyle {
+	indent: string
+	eol: string
+	quote: "'" | '"'
+	/** `';'` when the file ends its import statements with semicolons, else `''`. */
+	trailingSemi: string
+}
+
+interface MergeAddonImportParams {
+	content: string
+	/** The value names the patched file must import from the addon package. */
+	requiredValueNames: ReadonlyArray<string>
+	/** The type names it must import — TypeScript only, and empty otherwise. */
+	requiredTypeNames: ReadonlyArray<string>
+	style: PreviewFileStyle
+}
+
+interface MergedAddonImport {
+	content: string
+	/**
+	 * The local binding name for each required value name — the alias when the
+	 * file imported it under one (`import { dependencyPreviews as dp } …`),
+	 * which is the name the inserted code then has to use.
+	 */
+	localNames: Map<string, string>
+	/**
+	 * The import statement to insert when the file had no import from the addon
+	 * package at all; `null` when an existing import was merged instead.
+	 */
+	importToInsert: string | null
+}
+
+/**
+ * Make sure the file imports the required names from the addon package.
+ * Collects every existing import from the package, merges them into one
+ * (promoting a `type` import of a required value to a value import, and
+ * keeping any alias), and either rewrites the first statement and deletes
+ * the rest, or — when there is none — hands back a fresh statement for the
+ * caller to insert with its other imports.
+ */
+function mergeAddonImport({
+	content,
+	requiredValueNames,
+	requiredTypeNames,
+	style,
+}: MergeAddonImportParams): MergedAddonImport {
+	const { indent, eol, quote, trailingSemi } = style
+	// Match the whole import statement including any trailing semicolon and the
+	// terminating newline, so that deletions of additional imports don't leave
+	// stray `;` lines behind in semicolon-using projects. The name list is
+	// `[^}]*` rather than `[\s\S]*?`: a lazy any-character group can start at
+	// an earlier `import {` from another package and run on until it reaches
+	// the addon's `} from …`, swallowing every import in between.
+	const ADDON_IMPORT_REGEX = new RegExp(
+		String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"]\s*;?[ \t]*(?:\r?\n|$)`,
+		'gm',
+	)
+	const allAddonImports = [...content.matchAll(ADDON_IMPORT_REGEX)]
+	const localNames = new Map(requiredValueNames.map((n) => [n, n]))
+
+	if (allAddonImports.length === 0) {
+		const entries = [
+			...requiredValueNames,
+			...requiredTypeNames.map((n) => `type ${n}`),
+		]
+		const fromClause = `from ${quote}${PKG}${quote}${trailingSemi}`
+		const importToInsert =
+			entries.length === 1
+				? `import { ${entries[0]} } ${fromClause}`
+				: [
+						`import {`,
+						...entries.map((e) => `${indent}${e},`),
+						`} ${fromClause}`,
+					].join(eol)
+		return { content, localNames, importToInsert }
+	}
+
+	type Entry = { name: string; alias?: string; isType: boolean }
+	const parseEntry = (raw: string, wasTypeOnly: boolean): Entry => {
+		// `import type { A, B }` makes every name a type, so respect that.
+		const isType = wasTypeOnly || /^type\s+/.test(raw)
+		const stripped = raw.replace(/^type\s+/, '')
+		const [name, alias] = stripped.split(/\s+as\s+/).map((s) => s.trim())
+		return { name: name!, alias, isType }
+	}
+	const formatEntry = (e: Entry): string => {
+		const inner = e.alias ? `${e.name} as ${e.alias}` : e.name
+		return e.isType ? `type ${inner}` : inner
+	}
+
+	// Collect every named import from every `from 'storybook-addon-dependency-previews'`
+	// statement in the file. Stripping comments inside `{ … }` first so that
+	// `import { foo, /* note */ bar }` doesn't produce `/* note */ bar` as a name.
+	const existingEntries: Array<Entry> = []
+	for (const m of allAddonImports) {
+		const wasTypeOnly = !!m[1]
+		const importContents = m[2]!
+			.replace(/\/\*[\s\S]*?\*\//g, '')
+			.replace(/\/\/.*$/gm, '')
+		for (const raw of importContents
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean)) {
+			existingEntries.push(parseEntry(raw, wasTypeOnly))
+		}
+	}
+
+	// Deduplicate by name. Value-imports beat type-imports if both exist for the
+	// same name (you can use a value at runtime AND in type positions, but not
+	// vice-versa).
+	const byName = new Map<string, Entry>()
+	for (const e of existingEntries) {
+		const prev = byName.get(e.name)
+		if (!prev || (prev.isType && !e.isType)) byName.set(e.name, e)
+	}
+	const dedupedExisting = Array.from(byName.values())
+
+	const requiredValueSet = new Set(requiredValueNames)
+
+	// Promote any existing entry whose name matches a required value to a value
+	// import. This handles e.g. `import type { defaultPreviewParameters } from ...` —
+	// without promotion we'd leave it as a type and the runtime spread would fail.
+	const mergedEntries: Array<Entry> = dedupedExisting.map((e) =>
+		requiredValueSet.has(e.name) && e.isType ? { ...e, isType: false } : e,
+	)
+	const handled = new Set(mergedEntries.map((e) => e.name))
+	for (const n of requiredValueNames) {
+		if (!handled.has(n)) {
+			mergedEntries.push({ name: n, isType: false })
+			handled.add(n)
+		}
+	}
+	for (const n of requiredTypeNames) {
+		if (!handled.has(n)) {
+			mergedEntries.push({ name: n, isType: true })
+			handled.add(n)
+		}
+	}
+
+	const isMultipleImports = allAddonImports.length > 1
+	const noPromotionNeeded = dedupedExisting.every(
+		(e) => mergedEntries.find((m) => m.name === e.name)?.isType === e.isType,
+	)
+	const allRequiredAlreadyValueImported = requiredValueNames.every((n) =>
+		dedupedExisting.some((e) => e.name === n && !e.isType),
+	)
+	const allRequiredAlreadyTypeImported = requiredTypeNames.every((n) =>
+		dedupedExisting.some((e) => e.name === n && e.isType),
+	)
+	// Skip the rewrite only when there's a single import AND nothing about it
+	// needs to change. With multiple imports we always merge to avoid duplicate
+	// identifier bindings between them.
+	const nothingToDo =
+		!isMultipleImports &&
+		noPromotionNeeded &&
+		allRequiredAlreadyValueImported &&
+		allRequiredAlreadyTypeImported
+
+	let newContent = content
+	if (!nothingToDo) {
+		// The regex consumes the trailing newline, so include one in the
+		// replacement; also tack on the project's semicolon style.
+		const replacement = `import {${eol}${mergedEntries
+			.map((e) => `${indent}${formatEntry(e)},`)
+			.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}${eol}`
+		// Replace the first import with the merged version; delete the rest.
+		let firstReplaced = false
+		newContent = newContent.replace(ADDON_IMPORT_REGEX, () => {
+			if (!firstReplaced) {
+				firstReplaced = true
+				return replacement
+			}
+			return ''
+		})
+		// Tidy up any blank-line runs left behind by deleted imports.
+		newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
+	}
+
+	// Resolve the local binding names — if the user aliased an import we need
+	// to reference the alias in the inserted code, not the original name.
+	for (const name of requiredValueNames) {
+		const entry = mergedEntries.find((m) => m.name === name && !m.isType)
+		localNames.set(name, entry?.alias ?? name)
+	}
+	return { content: newContent, localNames, importToInsert: null }
+}
+
+/**
+ * The `import dependenciesJson from './dependency-previews.json'` statement to
+ * insert, or `null` when the file already has it. Checked against the
+ * comment-stripped content so a commented-out copy doesn't trick us into
+ * skipping the real import (which would leave the inserted
+ * `dependencyPreviews` block referencing an undefined identifier).
+ *
+ * @param codeOnly - the file content with comments stripped
+ * @param style - the file's formatting
+ */
+function dependenciesJsonImportToInsert(
+	codeOnly: string,
+	style: PreviewFileStyle,
+): string | null {
+	const hasDependenciesJsonImport =
+		/import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/.test(
+			codeOnly,
+		)
+	if (hasDependenciesJsonImport) return null
+	const { quote, trailingSemi } = style
+	return `import dependenciesJson from ${quote}./dependency-previews.json${quote}${trailingSemi}`
+}
+
+interface InsertImportsParams {
+	content: string
+	/** Whole import statements, each already in the file's style. */
+	statements: ReadonlyArray<string>
+	eol: string
+}
+
+/**
+ * Insert import statements at the top of the file, after any leading
+ * comments and directives, each separated by a blank line.
+ */
+function insertImports({
+	content,
+	statements,
+	eol,
+}: InsertImportsParams): string {
+	if (statements.length === 0) return content
+	const insertAt = findImportInsertionIndex(content)
+	const insertion = statements.join(eol + eol) + eol + eol
+	return content.slice(0, insertAt) + insertion + content.slice(insertAt)
+}
+
+/**
+ * The range inside the `{ … }` whose opening brace is the last character of
+ * `match` — `from` just after the brace, `to` at its matching closer.
+ *
+ * @param text - the original file content (the match came from its
+ * comment-stripped twin, whose positions line up with it)
+ * @param match - a match ending in the opening brace, or `null`
+ */
+function objectBodyAfterMatch(
+	text: string,
+	match: RegExpMatchArray | null,
+): { from: number; to: number } | null {
+	if (!match || match.index === undefined) return null
+	const openBraceIdx = match.index + match[0].length - 1
+	if (text[openBraceIdx] !== '{') return null
+	const closeIdx = findMatchingBrace(text, openBraceIdx)
+	if (closeIdx === null) return null
+	return { from: openBraceIdx + 1, to: closeIdx }
+}
+
+/**
+ * Locate the classic preview config object's body so the key lookups are
+ * scoped to *that* object. Without this, a `parameters:` / `decorators:`
+ * belonging to some unrelated object earlier in the file would be matched
+ * instead of the one we want to patch.
+ *
+ * The opener regex runs against the position-preserving comment-stripped
+ * text so an example like `// const preview: Preview = { ... }` in a
+ * comment can't hijack the search — `match.index` from the stripped
+ * content lines up with the original.
+ *
+ * @param text - the file content
+ */
+function findPreviewBody(text: string): { from: number; to: number } | null {
+	const stripped = stripCommentsRespectingStrings(text)
+
+	// Direct patterns: typed preview (`Preview = {`, `StorybookPreviewConfig = {`)
+	// or anonymous default export (`export default {`).
+	const direct = objectBodyAfterMatch(
+		text,
+		stripped.match(
+			/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
+		),
+	)
+	if (direct) return direct
+
+	// Fallback: untyped `const preview = { … }; export default preview` (common
+	// in `.js` / `.jsx` preview files where there's no type annotation).
+	// Resolve `export default <ident>` to its `(const|let|var) <ident> = {…}`
+	// declaration and use that object's body.
+	const exportIdent = stripped.match(
+		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
+	)?.[1]
+	if (!exportIdent) return null
+	const escaped = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	return objectBodyAfterMatch(
+		text,
+		stripped.match(new RegExp(`(?:const|let|var)\\s+${escaped}\\s*=\\s*\\{`)),
+	)
+}
+
+/**
+ * Locate the body of the object passed to `definePreview({ … })` in a CSF
+ * Next preview file — the style Storybook 11 makes the default. Only the
+ * default export counts: `export default definePreview({` directly, or
+ * `export default <name>` resolved to its `const <name> = definePreview({`
+ * declaration — so a stray `definePreview` call elsewhere in the file is not
+ * mistaken for the config. Runs on the comment-stripped text like
+ * `findPreviewBody`, so a `definePreview` that only appears in a comment is
+ * ignored. `null` when the file is not in this style.
+ *
+ * @param text - the file content
+ */
+function findDefinePreviewBody(
+	text: string,
+): { from: number; to: number } | null {
+	const stripped = stripCommentsRespectingStrings(text)
+
+	const direct = objectBodyAfterMatch(
+		text,
+		stripped.match(/export\s+default\s+definePreview\s*\(\s*\{/),
+	)
+	if (direct) return direct
+
+	const exportIdent = stripped.match(
+		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
+	)?.[1]
+	if (!exportIdent) return null
+	const escaped = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	return objectBodyAfterMatch(
+		text,
+		stripped.match(
+			new RegExp(
+				`(?:const|let|var)\\s+${escaped}\\s*=\\s*definePreview\\s*\\(\\s*\\{`,
+			),
+		),
+	)
+}
+
+/**
+ * Write the patched content back to the preview file.
+ *
+ * @param previewFile - the file being patched
+ * @param content - the patched content
+ */
+function writePreview(
+	previewFile: PreviewFile,
+	content: string,
+): PreviewPatchResult {
+	try {
+		writeFileSync(previewFile.path, content, 'utf8')
+	} catch (e) {
+		return {
+			kind: 'failed',
+			reason: `Could not write ${previewFile.path}: ${(e as Error).message}`,
+		}
+	}
+	return { kind: 'patched', path: previewFile.path }
+}
+
+interface ListInsertionParams {
+	/** The text between the list's `[` and `]`. */
+	listText: string
+	/** The entries to add at the front of the list. */
+	entries: ReadonlyArray<string>
+	style: PreviewFileStyle
+}
+
+/**
+ * The text to insert right after a list's `[` so the new entries come first
+ * and the list keeps its layout: one entry per line in a multi-line list,
+ * comma-and-space in a single-line one.
+ */
+function listInsertion({
+	listText,
+	entries,
+	style,
+}: ListInsertionParams): string {
+	const { indent, eol } = style
+	const isMultiLineList = /\r?\n/.test(listText)
+	if (isMultiLineList) {
+		const l2 = indent.repeat(2)
+		return `${eol}${l2}${entries.join(`,${eol}${l2}`)},`
+	}
+	const isEmptyList = listText.trim() === ''
+	if (isEmptyList) return entries.join(', ')
+	return `${entries.join(', ')}, `
+}
+
+interface PatchDefinePreviewParams {
+	previewFile: PreviewFile
+	/** The file's current content. */
+	content: string
+	/** `content` with comments stripped, for the identifier checks. */
+	codeOnly: string
+	style: PreviewFileStyle
+	framework: SupportedFramework
+	sourceRootUrl: string
+	srcDir: string
+}
+
+/**
+ * Patch a CSF Next `export default definePreview({ … })` preview file. The
+ * addon is registered by calling `dependencyPreviews()` in `addons` (which
+ * carries the default parameters and the decorators, so nothing is spread
+ * into `parameters` or `decorators` here) alongside the docs addon, and the
+ * `dependencyPreviews` settings block goes into `parameters`. Missing
+ * `addons` / `parameters` keys and missing imports are created; an existing
+ * docs-addon registration under any local name is kept.
+ */
+function patchDefinePreview({
+	previewFile,
+	content,
+	codeOnly,
+	style,
+	framework,
+	sourceRootUrl,
+	srcDir,
+}: PatchDefinePreviewParams): PreviewPatchResult {
+	const { indent, eol, quote, trailingSemi } = style
+	const l1 = indent
+
+	// ─── Imports.
+	const merged = mergeAddonImport({
+		content,
+		requiredValueNames: ['dependencyPreviews'],
+		requiredTypeNames: [],
+		style,
+	})
+	const dependencyPreviewsLocal = merged.localNames.get('dependencyPreviews')!
+	const importsToInsert: string[] = []
+	if (merged.importToInsert) importsToInsert.push(merged.importToInsert)
+
+	// The docs addon may already be registered under any local name
+	// (`import docs from '@storybook/addon-docs'`); when it is, that name is
+	// what the `addons` scan below looks for and no import is added.
+	const docsImportLocal = codeOnly.match(
+		/import\s+([A-Za-z_$][\w$]*)\s+from\s*['"]@storybook\/addon-docs['"]/,
+	)?.[1]
+	const addonDocsLocal = docsImportLocal ?? 'addonDocs'
+	if (!docsImportLocal) {
+		importsToInsert.push(
+			`import addonDocs from ${quote}@storybook/addon-docs${quote}${trailingSemi}`,
+		)
+	}
+
+	const dependenciesJsonImport = dependenciesJsonImportToInsert(codeOnly, style)
+	if (dependenciesJsonImport) importsToInsert.push(dependenciesJsonImport)
+
+	let newContent = insertImports({
+		content: merged.content,
+		statements: importsToInsert,
+		eol,
+	})
+
+	// Located after the import edits, since those shift every later offset.
+	const bodyRange = findDefinePreviewBody(newContent)
+	if (!bodyRange) {
+		return {
+			kind: 'failed',
+			reason:
+				'Could not locate the definePreview config object — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.',
+		}
+	}
+
+	const isEmptyBody =
+		newContent.slice(bodyRange.from, bodyRange.to).trim() === ''
+
+	// ─── `addons`: make sure both registrations are in the list.
+	// If we create the key, remember where it ends so a created `parameters:`
+	// lands after it rather than at the same body-start position.
+	let addonsCreatedEndOffset: number | null = null
+	const addonsKey = findTopLevelKey(newContent, 'addons', bodyRange)
+	if (addonsKey && newContent[addonsKey.valueStart] === '[') {
+		const listEnd = findMatchingBrace(newContent, addonsKey.valueStart)
+		const listStart = addonsKey.valueStart + 1
+		const listText =
+			listEnd === null ? '' : newContent.slice(listStart, listEnd)
+		const listCode = stripCommentsRespectingStrings(listText)
+		const checkIsRegistered = (localName: string): boolean =>
+			new RegExp(
+				String.raw`\b${localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\s*\(`,
+			).test(listCode)
+		const missingEntries = [addonDocsLocal, dependencyPreviewsLocal]
+			.filter((localName) => !checkIsRegistered(localName))
+			.map((localName) => `${localName}()`)
+		if (missingEntries.length > 0) {
+			const insertion = listInsertion({
+				listText,
+				entries: missingEntries,
+				style,
+			})
+			newContent =
+				newContent.slice(0, listStart) + insertion + newContent.slice(listStart)
+		}
+	} else if (addonsKey) {
+		return {
+			kind: 'failed',
+			reason:
+				'Preview config defines `addons` in a non-literal-array form — please add `addonDocs()` and `dependencyPreviews()` to it manually.',
+		}
+	} else {
+		const insertAt = bodyRange.from
+		const insertion = `${eol}${l1}addons: [${addonDocsLocal}(), ${dependencyPreviewsLocal}()],`
+		newContent =
+			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+		addonsCreatedEndOffset = insertAt + insertion.length
+	}
+
+	// ─── `parameters`: insert the settings block.
+	const block = dependencyPreviewsBlock(
+		framework,
+		sourceRootUrl,
+		srcDir,
+		indent,
+		eol,
+		quote,
+	)
+	// Re-find the body — the `addons` edit shifted its closing brace.
+	const bodyRangeAfterAddons = findDefinePreviewBody(newContent) ?? bodyRange
+	const paramsKey = findTopLevelKey(
+		newContent,
+		'parameters',
+		bodyRangeAfterAddons,
+	)
+	if (paramsKey && newContent[paramsKey.valueStart] === '{') {
+		const insertAt = paramsKey.valueStart + 1
+		const insertion = `${eol}${block}`
+		newContent =
+			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+	} else if (paramsKey) {
+		return {
+			kind: 'failed',
+			reason:
+				'Preview config already defines `parameters` in a non-literal-object form — please manually add the `dependencyPreviews` block to the existing parameters definition.',
+		}
+	} else {
+		const insertAt = addonsCreatedEndOffset ?? bodyRangeAfterAddons.from
+		const insertion = `${eol}${l1}parameters: {${eol}${block}${eol}${l1}},`
+		newContent =
+			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
+	}
+
+	// `definePreview({})` had nothing between its braces, so the closing brace
+	// would otherwise stay glued to the last inserted line (`},})`).
+	if (isEmptyBody) {
+		const bodyRangeAfterParams = findDefinePreviewBody(newContent)
+		if (bodyRangeAfterParams) {
+			const closeAt = bodyRangeAfterParams.to
+			newContent =
+				newContent.slice(0, closeAt) + eol + newContent.slice(closeAt)
+		}
+	}
+
+	return writePreview(previewFile, newContent)
 }
 
 function patchExistingPreview(
@@ -234,39 +890,32 @@ function patchExistingPreview(
 	const indent = detectFileIndent(content)
 	const eol = detectEol(content)
 	const quote = detectQuoteStyle(content)
+	// Preserve the project's semicolon style on inserted imports.
+	const usesSemicolons = /from\s*['"][^'"]*['"]\s*;/.test(content)
+	const style: PreviewFileStyle = {
+		indent,
+		eol,
+		quote,
+		trailingSemi: usesSemicolons ? ';' : '',
+	}
 	const l1 = indent
 	const l2 = indent.repeat(2)
 
-	let newContent = content
-
-	// ─── Imports: collect all imports from the addon package, merge them into one,
-	// and either replace the first / delete the rest, or insert a new one if none exist.
-	const PKG = 'storybook-addon-dependency-previews'
-	// Match the whole import statement including any trailing semicolon and the
-	// terminating newline, so that deletions of additional imports don't leave
-	// stray `;` lines behind in semicolon-using projects.
-	const ADDON_IMPORT_REGEX = new RegExp(
-		String.raw`^[\t ]*import\s*(type\s+)?\{([\s\S]*?)\}\s*from\s*['"]storybook-addon-dependency-previews['"]\s*;?[ \t]*(?:\r?\n|$)`,
-		'gm',
-	)
-	const allAddonImports = [...newContent.matchAll(ADDON_IMPORT_REGEX)]
-	// Preserve the project's semicolon style on the merged import.
-	const usesSemicolons =
-		/from\s*['"][^'"]*['"]\s*;/.test(newContent) ||
-		allAddonImports.some((m) => /;\s*(?:\r?\n|$)/.test(m[0]!))
-	const trailingSemi = usesSemicolons ? ';' : ''
-	// Use the comment-stripped content so a commented-out `// import dependenciesJson …`
-	// doesn't trick us into skipping the real import (which would leave the inserted
-	// `dependencyPreviews` block referencing an undefined identifier).
-	const hasDependenciesJsonImport =
-		/import\s+dependenciesJson\s+from\s*['"]\.\/dependency-previews\.json['"]/.test(
+	// A CSF Next `export default definePreview({ … })` file is registered
+	// through `dependencyPreviews()` rather than the spreads below.
+	if (findDefinePreviewBody(content)) {
+		return patchDefinePreview({
+			previewFile,
+			content,
 			codeOnly,
-		)
+			style,
+			framework,
+			sourceRootUrl,
+			srcDir,
+		})
+	}
 
-	const requiredValueNames = [
-		'defaultPreviewParameters',
-		'dependencyPreviewDecorators',
-	]
+	// ─── Imports.
 	// Only require `StorybookPreviewConfig` as a type import when the existing
 	// preview body actually annotates with that type. A file that already types
 	// its config as the framework's own `Preview` (or any other type, or is
@@ -279,152 +928,33 @@ function patchExistingPreview(
 		isTs && /:\s*StorybookPreviewConfig\b/.test(codeOnly)
 	const requiredTypeNames =
 		isTs && existingUsesOurType ? ['StorybookPreviewConfig'] : []
-
+	const merged = mergeAddonImport({
+		content,
+		requiredValueNames: [
+			'defaultPreviewParameters',
+			'dependencyPreviewDecorators',
+		],
+		requiredTypeNames,
+		style,
+	})
 	// The local binding names for the addon's value imports — usually identical
 	// to the original names, but if the user has aliased an import (e.g.
 	// `import { defaultPreviewParameters as dp } from '…'`) then the local name
 	// is the alias and that's what later spreads need to reference.
-	let defaultsLocalName = 'defaultPreviewParameters'
-	let decoratorsLocalName = 'dependencyPreviewDecorators'
-
-	if (allAddonImports.length > 0) {
-		type Entry = { name: string; alias?: string; isType: boolean }
-		const parseEntry = (raw: string, wasTypeOnly: boolean): Entry => {
-			// `import type { A, B }` makes every name a type, so respect that.
-			const isType = wasTypeOnly || /^type\s+/.test(raw)
-			const stripped = raw.replace(/^type\s+/, '')
-			const [name, alias] = stripped.split(/\s+as\s+/).map((s) => s.trim())
-			return { name: name!, alias, isType }
-		}
-		const formatEntry = (e: Entry): string => {
-			const inner = e.alias ? `${e.name} as ${e.alias}` : e.name
-			return e.isType ? `type ${inner}` : inner
-		}
-
-		// Collect every named import from every `from 'storybook-addon-dependency-previews'`
-		// statement in the file. Stripping comments inside `{ … }` first so that
-		// `import { foo, /* note */ bar }` doesn't produce `/* note */ bar` as a name.
-		const existingEntries: Array<Entry> = []
-		for (const m of allAddonImports) {
-			const wasTypeOnly = !!m[1]
-			const importContents = m[2]!
-				.replace(/\/\*[\s\S]*?\*\//g, '')
-				.replace(/\/\/.*$/gm, '')
-			for (const raw of importContents
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)) {
-				existingEntries.push(parseEntry(raw, wasTypeOnly))
-			}
-		}
-
-		// Deduplicate by name. Value-imports beat type-imports if both exist for the
-		// same name (you can use a value at runtime AND in type positions, but not
-		// vice-versa).
-		const byName = new Map<string, Entry>()
-		for (const e of existingEntries) {
-			const prev = byName.get(e.name)
-			if (!prev || (prev.isType && !e.isType)) byName.set(e.name, e)
-		}
-		const dedupedExisting = Array.from(byName.values())
-
-		const requiredValueSet = new Set(requiredValueNames)
-
-		// Promote any existing entry whose name matches a required value to a value
-		// import. This handles e.g. `import type { defaultPreviewParameters } from ...` —
-		// without promotion we'd leave it as a type and the runtime spread would fail.
-		const mergedEntries: Array<Entry> = dedupedExisting.map((e) =>
-			requiredValueSet.has(e.name) && e.isType ? { ...e, isType: false } : e,
-		)
-		const handled = new Set(mergedEntries.map((e) => e.name))
-		for (const n of requiredValueNames) {
-			if (!handled.has(n)) {
-				mergedEntries.push({ name: n, isType: false })
-				handled.add(n)
-			}
-		}
-		for (const n of requiredTypeNames) {
-			if (!handled.has(n)) {
-				mergedEntries.push({ name: n, isType: true })
-				handled.add(n)
-			}
-		}
-
-		const isMultipleImports = allAddonImports.length > 1
-		const noPromotionNeeded = dedupedExisting.every(
-			(e) => mergedEntries.find((m) => m.name === e.name)?.isType === e.isType,
-		)
-		const allRequiredAlreadyValueImported = requiredValueNames.every((n) =>
-			dedupedExisting.some((e) => e.name === n && !e.isType),
-		)
-		const allRequiredAlreadyTypeImported = requiredTypeNames.every((n) =>
-			dedupedExisting.some((e) => e.name === n && e.isType),
-		)
-		// Skip the rewrite only when there's a single import AND nothing about it
-		// needs to change. With multiple imports we always merge to avoid duplicate
-		// identifier bindings between them.
-		const nothingToDo =
-			!isMultipleImports &&
-			noPromotionNeeded &&
-			allRequiredAlreadyValueImported &&
-			allRequiredAlreadyTypeImported
-
-		if (!nothingToDo) {
-			// The regex consumes the trailing newline, so include one in the
-			// replacement; also tack on the project's semicolon style.
-			const replacement = `import {${eol}${mergedEntries
-				.map((e) => `${indent}${formatEntry(e)},`)
-				.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}${eol}`
-			// Replace the first import with the merged version; delete the rest.
-			let firstReplaced = false
-			newContent = newContent.replace(ADDON_IMPORT_REGEX, () => {
-				if (!firstReplaced) {
-					firstReplaced = true
-					return replacement
-				}
-				return ''
-			})
-			// Tidy up any blank-line runs left behind by deleted imports.
-			newContent = newContent.replace(/(\r?\n){3,}/g, `${eol}${eol}`)
-		}
-
-		// Resolve the local binding names — if the user aliased an import we need
-		// to reference the alias in the inserted spreads, not the original name.
-		const findLocalName = (name: string): string => {
-			const entry = mergedEntries.find((m) => m.name === name && !m.isType)
-			return entry?.alias ?? name
-		}
-		defaultsLocalName = findLocalName('defaultPreviewParameters')
-		decoratorsLocalName = findLocalName('dependencyPreviewDecorators')
-	}
+	const defaultsLocalName = merged.localNames.get('defaultPreviewParameters')!
+	const decoratorsLocalName = merged.localNames.get(
+		'dependencyPreviewDecorators',
+	)!
 
 	const importsToInsert: string[] = []
-	if (allAddonImports.length === 0) {
-		// Mirror the `existingUsesOurType` check above: only emit the
-		// `StorybookPreviewConfig` type import when the existing preview body
-		// actually annotates with that type. Otherwise the wizard would
-		// produce a dead import on every patch of a `Preview`-typed (or
-		// untyped) preview file.
-		const includeTypeImport = isTs && existingUsesOurType
-		const addonImportBlock = [
-			`import {`,
-			`${indent}defaultPreviewParameters,`,
-			`${indent}dependencyPreviewDecorators,${includeTypeImport ? `${eol}${indent}type StorybookPreviewConfig,` : ''}`,
-			`} from ${quote}${PKG}${quote}${trailingSemi}`,
-		].join(eol)
-		importsToInsert.push(addonImportBlock)
-	}
-	if (!hasDependenciesJsonImport) {
-		importsToInsert.push(
-			`import dependenciesJson from ${quote}./dependency-previews.json${quote}${trailingSemi}`,
-		)
-	}
-	if (importsToInsert.length > 0) {
-		const insertAt = findImportInsertionIndex(newContent)
-		const insertion = importsToInsert.join(eol + eol) + eol + eol
-		newContent =
-			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
-	}
+	if (merged.importToInsert) importsToInsert.push(merged.importToInsert)
+	const dependenciesJsonImport = dependenciesJsonImportToInsert(codeOnly, style)
+	if (dependenciesJsonImport) importsToInsert.push(dependenciesJsonImport)
+	let newContent = insertImports({
+		content: merged.content,
+		statements: importsToInsert,
+		eol,
+	})
 
 	const block = dependencyPreviewsBlock(
 		framework,
@@ -434,55 +964,6 @@ function patchExistingPreview(
 		eol,
 		quote,
 	)
-
-	/**
-	 * Locate the preview config object's body so all the key lookups below
-	 * are scoped to *that* object. Without this, a `parameters:` /
-	 * `decorators:` belonging to some unrelated object earlier in the file
-	 * would be matched instead of the one we want to patch.
-	 *
-	 * The opener regex runs against the position-preserving comment-stripped
-	 * text so an example like `// const preview: Preview = { ... }` in a
-	 * comment can't hijack the search — `match.index` from the stripped
-	 * content lines up with the original.
-	 */
-	const findPreviewBody = (
-		text: string,
-	): { from: number; to: number } | null => {
-		const stripped = stripCommentsRespectingStrings(text)
-		const bodyAt = (
-			match: RegExpMatchArray | null,
-		): { from: number; to: number } | null => {
-			if (!match || match.index === undefined) return null
-			const openBraceIdx = match.index + match[0].length - 1
-			if (text[openBraceIdx] !== '{') return null
-			const closeIdx = findMatchingBrace(text, openBraceIdx)
-			if (closeIdx === null) return null
-			return { from: openBraceIdx + 1, to: closeIdx }
-		}
-
-		// Direct patterns: typed preview (`Preview = {`, `StorybookPreviewConfig = {`)
-		// or anonymous default export (`export default {`).
-		const direct = bodyAt(
-			stripped.match(
-				/(StorybookPreviewConfig\s*=\s*\{|Preview\s*=\s*\{|export\s+default\s*\{)/,
-			),
-		)
-		if (direct) return direct
-
-		// Fallback: untyped `const preview = { … }; export default preview` (common
-		// in `.js` / `.jsx` preview files where there's no type annotation).
-		// Resolve `export default <ident>` to its `(const|let|var) <ident> = {…}`
-		// declaration and use that object's body.
-		const exportIdent = stripped.match(
-			/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
-		)?.[1]
-		if (!exportIdent) return null
-		const escaped = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-		return bodyAt(
-			stripped.match(new RegExp(`(?:const|let|var)\\s+${escaped}\\s*=\\s*\\{`)),
-		)
-	}
 
 	const bodyRange = findPreviewBody(newContent)
 	if (!bodyRange) {
@@ -595,15 +1076,7 @@ function patchExistingPreview(
 			newContent.slice(0, insertAt) + insertion + newContent.slice(insertAt)
 	}
 
-	try {
-		writeFileSync(previewFile.path, newContent, 'utf8')
-	} catch (e) {
-		return {
-			kind: 'failed',
-			reason: `Could not write ${previewFile.path}: ${(e as Error).message}`,
-		}
-	}
-	return { kind: 'patched', path: previewFile.path }
+	return writePreview(previewFile, newContent)
 }
 
 export interface PatchPreviewFileOptions {
@@ -641,6 +1114,15 @@ export interface PatchPreviewFileOptions {
 	 * the `import.meta.glob` story pattern injected into the preview file.
 	 */
 	srcDir: string
+	/**
+	 * Major version of the `storybook` package installed for the project, or
+	 * `null` when it is not installed. Decides whether a newly-created preview
+	 * file uses the CSF Next `definePreview({ ... })` style (Storybook 11 and
+	 * up, on frameworks whose package exports `definePreview`) or the classic
+	 * hand-spread style. Existing preview files are patched in whichever style
+	 * they already use, regardless of this value.
+	 */
+	storybookMajor: number | null
 }
 
 /**
@@ -651,8 +1133,15 @@ export interface PatchPreviewFileOptions {
 export function patchPreviewFile(
 	opts: PatchPreviewFileOptions,
 ): PreviewPatchResult {
-	const { storybookDir, previewFile, mainFile, framework, sourceRootUrl, srcDir } =
-		opts
+	const {
+		storybookDir,
+		previewFile,
+		mainFile,
+		framework,
+		sourceRootUrl,
+		srcDir,
+		storybookMajor,
+	} = opts
 
 	if (!isFrameworkSupported(framework)) {
 		return {
@@ -679,13 +1168,14 @@ export function patchPreviewFile(
 		// If main.ts can't be read for some reason, fall back to the defaults.
 	}
 
-	const { content, lang } = templateForFramework(
+	const { content, lang } = templateForFramework({
 		framework,
 		sourceRootUrl,
 		srcDir,
 		style,
-		mainFile.lang,
-	)
+		mainLang: mainFile.lang,
+		storybookMajor,
+	})
 	const path = resolve(storybookDir, `preview.${lang}`)
 	if (existsSync(path)) {
 		return { kind: 'skipped', reason: `${path} already exists` }
