@@ -1,6 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
+/** The three characters that can open a string or template literal. */
+const QUOTE_CHARS: ReadonlyArray<string> = ["'", '"', '`']
+
 /**
  * Detect the file's leading indent unit (one level deep) — first indented line
  * wins. Defaults to a tab so a file with no existing indent doesn't end up
@@ -32,9 +35,10 @@ export function detectEol(content: string): string {
  * the whole file matches whichever style the body actually uses.
  *
  * Operates on the comment-stripped (but string-preserving) content so a
- * commented-out example doesn't skew the count, and uses a tiny state
- * machine so quote characters that appear *inside* the other quote's
- * string literal don't get double-counted.
+ * commented-out example doesn't skew the count, and steps over each string
+ * whole with the shared `findClosingQuote` rule so quote characters that
+ * appear *inside* the other quote's string literal, in a regex literal, or
+ * alone in JSX text don't get counted.
  *
  * **Known limitation — template-literal expressions are opaque.** A
  * backtick string is treated as a single span until the closing backtick,
@@ -53,29 +57,29 @@ export function detectQuoteStyle(content: string): "'" | '"' {
 	const stripped = stripCommentsRespectingStrings(content)
 	let singles = 0
 	let doubles = 0
-	let mode: 'normal' | "'" | '"' | '`' = 'normal'
-	for (let i = 0; i < stripped.length; i++) {
-		const ch = stripped[i]
-		if (mode === 'normal') {
-			if (ch === "'") {
-				singles++
-				mode = "'"
-			} else if (ch === '"') {
-				doubles++
-				mode = '"'
-			} else if (ch === '`') {
-				mode = '`'
+	let i = 0
+	while (i < stripped.length) {
+		const c = stripped[i]!
+		// Only a quote that opens a string is counted (a lone apostrophe in JSX
+		// text is not); the string is then stepped over whole, as is a regex
+		// literal, so nothing inside either is counted.
+		if (QUOTE_CHARS.includes(c)) {
+			const closeIndex = findClosingQuote(stripped, i)
+			if (closeIndex !== null) {
+				if (c === "'") singles++
+				if (c === '"') doubles++
+				i = closeIndex + 1
+				continue
 			}
-			continue
 		}
-		// Inside a string/template — skip escapes, exit on matching closer.
-		if (ch === '\\') {
-			i++
-			continue
+		if (c === '/') {
+			const regexEnd = findRegexLiteralEnd(stripped, i)
+			if (regexEnd !== null) {
+				i = regexEnd + 1
+				continue
+			}
 		}
-		if (ch === mode) {
-			mode = 'normal'
-		}
+		i++
 	}
 	return doubles > singles ? '"' : "'"
 }
@@ -112,7 +116,93 @@ export function findClosingQuote(
 	return null
 }
 
-const QUOTE_CHARS: ReadonlyArray<string> = ["'", '"', '`']
+/**
+ * Characters after which a `/` starts a regex literal rather than dividing —
+ * the start of an expression. After a name, a number, a `)` or a `]` it is
+ * division.
+ */
+const REGEX_LITERAL_PRECEDERS: ReadonlyArray<string> = [
+	'(',
+	',',
+	'=',
+	':',
+	'[',
+	'!',
+	'&',
+	'|',
+	'?',
+	'{',
+	'}',
+	';',
+	'+',
+	'-',
+	'*',
+	'%',
+	'<',
+	'>',
+	'~',
+	'^',
+]
+
+/**
+ * Keywords after which a `/` starts a regex literal (`return /x/`).
+ */
+const REGEX_LITERAL_PRECEDING_KEYWORDS =
+	/(?:^|[^\w$])(?:return|typeof|case|do|else|in|of|new|delete|void|throw|yield|await)$/
+
+/**
+ * The position of the last character of the regex literal that starts at
+ * `slashIndex` (its final flag, or its closing `/`), or `null` when that `/`
+ * does not start one — it divides, or it opens a comment, or the literal
+ * never closes on its line. Decided from what comes before the `/`: a regex
+ * literal can only start where an expression can. A quote inside a regex
+ * (`/['"]/`) then never opens a string, which is what every scanner in this
+ * file relies on.
+ *
+ * @param text - the text being scanned
+ * @param slashIndex - position of the candidate opening `/`
+ */
+export function findRegexLiteralEnd(
+	text: string,
+	slashIndex: number,
+): number | null {
+	const next = text[slashIndex + 1]
+	if (next === '/' || next === '*') return null
+	let before = slashIndex - 1
+	while (before >= 0 && /\s/.test(text[before]!)) before--
+	// Only the tail can hold a keyword, so only the tail is tested.
+	const longestKeywordLength = 'delete'.length
+	const tail = text.slice(
+		Math.max(0, before - longestKeywordLength),
+		before + 1,
+	)
+	const isExpressionStart =
+		before < 0 ||
+		REGEX_LITERAL_PRECEDERS.includes(text[before]!) ||
+		REGEX_LITERAL_PRECEDING_KEYWORDS.test(tail)
+	if (!isExpressionStart) return null
+	let i = slashIndex + 1
+	let isInCharacterClass = false
+	while (i < text.length) {
+		const c = text[i]!
+		if (c === '\\') {
+			i += 2
+			continue
+		}
+		if (c === '\n') return null
+		if (isInCharacterClass) {
+			if (c === ']') isInCharacterClass = false
+		} else if (c === '[') {
+			isInCharacterClass = true
+		} else if (c === '/') {
+			let flagsEnd = i
+			while (/[a-z]/i.test(text[flagsEnd + 1] ?? '')) flagsEnd++
+			return flagsEnd
+		}
+		i++
+	}
+	return null
+}
 
 /**
  * Find the first occurrence of `<keyword>:` at the immediate level of the
@@ -126,8 +216,7 @@ const QUOTE_CHARS: ReadonlyArray<string> = ["'", '"', '`']
  * Both bare-identifier (`addons:`) and quoted (`"addons":`, `'addons':`) property
  * keys are recognized. Quoted-key matching requires the closing quote to land
  * immediately after `<keyword>`, so string literals whose contents merely
- * contain the keyword are still safely skipped via the existing string-mode
- * entry below.
+ * contain the keyword are still stepped over whole by the string skip below.
  *
  * The shorthand form (`addons,` or `addons }`, short for `addons: addons`) is
  * recognized too, and returned with the value starting at the identifier
@@ -213,6 +302,13 @@ export function findTopLevelKey(
 				continue
 			}
 			// Not a string opener — an ordinary character.
+		}
+		if (c === '/') {
+			const regexEnd = findRegexLiteralEnd(content, i)
+			if (regexEnd !== null) {
+				i = regexEnd + 1
+				continue
+			}
 		}
 
 		if (
@@ -332,6 +428,13 @@ export function findMatchingBrace(
 			}
 			// Not a string opener — an ordinary character.
 		}
+		if (c === '/') {
+			const regexEnd = findRegexLiteralEnd(content, i)
+			if (regexEnd !== null) {
+				i = regexEnd + 1
+				continue
+			}
+		}
 
 		if (c === open) depth++
 		else if (c === close) {
@@ -394,13 +497,22 @@ export function stripCommentsRespectingStrings(content: string): string {
 			i += 2
 			continue
 		}
-		// A string is copied through whole (see `findClosingQuote` for what
-		// counts as one); a lone quote that opens none is an ordinary character.
+		// A string or a regex literal is copied through whole (see
+		// `findClosingQuote` / `findRegexLiteralEnd` for what counts as one); a
+		// lone quote that opens none is an ordinary character.
 		if (QUOTE_CHARS.includes(c)) {
 			const closeIndex = findClosingQuote(content, i)
 			if (closeIndex !== null) {
 				out += content.slice(i, closeIndex + 1)
 				i = closeIndex + 1
+				continue
+			}
+		}
+		if (c === '/') {
+			const regexEnd = findRegexLiteralEnd(content, i)
+			if (regexEnd !== null) {
+				out += content.slice(i, regexEnd + 1)
+				i = regexEnd + 1
 				continue
 			}
 		}
@@ -438,21 +550,38 @@ export function blankStringContents(
 		const c = codeOnly[i]!
 		// Every string is stepped over whole, whichever kind it is, so a
 		// backtick inside a `'…'` string cannot open a template literal; only
-		// the requested kinds have their contents blanked.
-		const closeIndex = QUOTE_CHARS.includes(c)
-			? findClosingQuote(codeOnly, i)
-			: null
-		if (closeIndex === null) {
-			out += c
-			i++
-			continue
+		// the requested kinds have their contents blanked. A regex literal is
+		// stepped over too, and blanked between its slashes whenever `'…'`
+		// strings are — its quotes and brackets are no more structure than a
+		// string's.
+		if (QUOTE_CHARS.includes(c)) {
+			const closeIndex = findClosingQuote(codeOnly, i)
+			if (closeIndex !== null) {
+				const contents = codeOnly.slice(i + 1, closeIndex)
+				const blanked = quotes.includes(c)
+					? contents.replace(/[^\n]/g, ' ')
+					: contents
+				out += c + blanked + c
+				i = closeIndex + 1
+				continue
+			}
 		}
-		const contents = codeOnly.slice(i + 1, closeIndex)
-		const blanked = quotes.includes(c)
-			? contents.replace(/[^\n]/g, ' ')
-			: contents
-		out += c + blanked + c
-		i = closeIndex + 1
+		if (c === '/') {
+			const regexEnd = findRegexLiteralEnd(codeOnly, i)
+			if (regexEnd !== null) {
+				const literal = codeOnly.slice(i, regexEnd + 1)
+				const closingSlash = literal.lastIndexOf('/')
+				const pattern = literal.slice(1, closingSlash)
+				const doesBlankRegex = quotes.includes("'")
+				out += doesBlankRegex
+					? `/${' '.repeat(pattern.length)}${literal.slice(closingSlash)}`
+					: literal
+				i = regexEnd + 1
+				continue
+			}
+		}
+		out += c
+		i++
 	}
 	return out
 }
