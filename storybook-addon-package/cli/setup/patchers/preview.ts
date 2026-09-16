@@ -1264,6 +1264,10 @@ function createKeyInBody({
 const ALREADY_CONFIGURED_REASON = 'addon already configured in preview'
 const COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON =
 	'Could not locate the definePreview config object — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.'
+const UNPAIRED_BRACKET_IN_DEFINE_PREVIEW_REASON =
+	'The definePreview config holds a bracket nothing pairs (in JSX text, say), so the wizard cannot read its keys — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.'
+const UNPAIRED_BRACKET_IN_PREVIEW_REASON =
+	'The preview config holds a bracket nothing pairs (in JSX text, say), so the wizard cannot read its keys — please add the dependencyPreviews parameters and decorators manually.'
 
 /**
  * Two views of one file with every position shared: `codeOnly` has comments
@@ -1332,7 +1336,8 @@ function getValueCode({
  * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }` —
  * `null` otherwise (no declaration at the module's top level, no
  * initializer, a call, an import, a `let` assigned to again —
- * `checkIsAssignedAfter`). The declaration is found by
+ * `checkIsAssignedAfter` — or a literal holding a bracket nothing pairs —
+ * `checkHasUnpairedBracket`). The declaration is found by
  * `findTopLevelDeclaration`, which allows a type annotation.
  *
  * @param views - the file views
@@ -1358,7 +1363,11 @@ function findInitializerLiteralRange(
 	if (opener !== '[' && opener !== '{') return null
 	const end = findMatchingBrace(views.structureOnly, valueStart)
 	if (end === null) return null
-	return { from: valueStart + 1, to: end }
+	const range = { from: valueStart + 1, to: end }
+	// A literal the key and spread scanners cannot read through is no more
+	// readable than a call.
+	const isUnreadable = checkHasUnpairedBracket(views.structureOnly, range)
+	return isUnreadable ? null : range
 }
 
 interface GetInitializerCodeParams {
@@ -1464,6 +1473,32 @@ function getBracketDepthChange(c: string): number {
 	if (c === '{' || c === '[' || c === '(') return 1
 	if (c === '}' || c === ']' || c === ')') return -1
 	return 0
+}
+
+/**
+ * Whether a literal's contents hold a bracket nothing pairs — a `(` or `)`
+ * in the JSX text of a decorator (`<p>Note (experimental</p>`, `:-)`), which
+ * no scanner reads as text. The key and spread scanners count brackets to
+ * tell the literal's own level from a nested one, so such a bracket hides
+ * every key and spread after it, and the patcher would write a second
+ * `addons` or `parameters`, or create a key above a spread that then
+ * overrides it. A surplus closer counts as much as a surplus opener. Read on
+ * the structure view, where the brackets in strings, comments and regex
+ * patterns are already blanked.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param range - the range between the literal's brackets
+ */
+function checkHasUnpairedBracket(
+	structureOnly: string,
+	range: { from: number; to: number },
+): boolean {
+	let depth = 0
+	for (let i = range.from; i < range.to; i++) {
+		depth += getBracketDepthChange(structureOnly[i]!)
+		if (depth < 0) return true
+	}
+	return depth !== 0
 }
 
 interface GetKeyValueCodeParams {
@@ -2187,7 +2222,13 @@ function patchExistingPreview(
 	const isUnresolvedDefinePreview =
 		!isCsfNext &&
 		findDefaultExportDefinePreviewArgument(views.structureOnly) !== null
-	if (isUnresolvedDefinePreview) {
+	// A config the key and spread scanners cannot read through — one holding
+	// a bracket nothing pairs — is treated the same way as one the finder
+	// could not resolve: refused, never patched with a second key.
+	const isCsfNextBodyUnreadable =
+		csfNextBody !== null &&
+		checkHasUnpairedBracket(views.structureOnly, csfNextBody)
+	if (isUnresolvedDefinePreview || isCsfNextBodyUnreadable) {
 		// A hand-configured file the finder cannot read is not refused on every
 		// run: when the file carries both registrations somewhere — the call
 		// under whatever name the file imports it as — it is reported as
@@ -2206,7 +2247,12 @@ function patchExistingPreview(
 					'addon appears already configured in preview (the definePreview config could not be read — check that `addonDocs()` and `dependencyPreviews()` are in its `addons`)',
 			}
 		}
-		return { kind: 'failed', reason: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON }
+		return {
+			kind: 'failed',
+			reason: isCsfNextBodyUnreadable
+				? UNPAIRED_BRACKET_IN_DEFINE_PREVIEW_REASON
+				: COULD_NOT_LOCATE_DEFINE_PREVIEW_REASON,
+		}
 	}
 
 	// `dependencyPreviews:` is the unique parameters key the wizard injects, so its
@@ -2227,6 +2273,16 @@ function patchExistingPreview(
 			reason:
 				'Preview file uses CommonJS (module.exports). The wizard only patches ESM preview files — please convert to ESM or follow the manual setup docs.',
 		}
+	}
+
+	// The classic config gets the same refusal as the CSF Next one above; the
+	// body is found again below, once the imports are in.
+	const classicBody = isCsfNext ? null : findPreviewBody(content)
+	const isClassicBodyUnreadable =
+		classicBody !== null &&
+		checkHasUnpairedBracket(views.structureOnly, classicBody)
+	if (isClassicBodyUnreadable) {
+		return { kind: 'failed', reason: UNPAIRED_BRACKET_IN_PREVIEW_REASON }
 	}
 
 	const isTs = previewFile.lang === 'ts' || previewFile.lang === 'tsx'
