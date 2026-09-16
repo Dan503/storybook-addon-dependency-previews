@@ -1700,21 +1700,18 @@ function checkHasDuplicateTopLevelKey(
 	return findTopLevelKey(views.codeOnly, keyword, afterFirstValue) !== null
 }
 
-/** A member modifier keyword ending the text before a member's name. */
-const MEMBER_MODIFIER_BEFORE_NAME =
-	/(?:^|[^\w$])(?:readonly|public|private|protected|static|declare|abstract|override|accessor|get|set)$/
-
 /**
  * Whether a name is used as a binding anywhere in the file's code (strings
  * and comments blanked) — so a declaration the wizard would insert under it
  * would be a second one. A property access (`.dependencyPreviews`) is not a
- * binding, nor is a member — a `name:`, `name?:` or `name(` at a member
- * position: starting its line, after a `{`, `,` or `;` on it, or after a
- * member modifier (`readonly`, `private`, `static`, …), as an object
- * literal's key or a type, interface or class member does. A `name:` or
- * `name(` anywhere else is a binding — a declaration with a type annotation
- * (`const dependenciesJson: Graph = …`), a call — and counts, as does any
- * bare reference and a spread (`...dependencyPreviews`).
+ * binding. A member-shaped occurrence — `name:`, `name?:` or `name(` — is a
+ * binding at the module's top level (a declaration with a type annotation,
+ * `const dependenciesJson: Graph = …`, in any position of its statement; a
+ * call) and a member inside any bracket (an object literal's key, a type,
+ * interface or class member, a method, a parameter — whatever modifier or
+ * decorator precedes it), which the inserted import cannot collide with.
+ * Every other occurrence — a bare reference, a spread
+ * (`...dependencyPreviews`) — counts wherever it sits.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  * @param name - the identifier
@@ -1731,18 +1728,27 @@ function checkIsNameUsed(structureOnly: string, name: string): boolean {
 	for (const occurrence of occurrences) {
 		const isMemberShaped = occurrence[1] !== undefined
 		if (!isMemberShaped) return true
-		// Comments are already blanked in this view, so only whitespace sits
-		// between the name and what precedes it on the line.
-		const lineStart = structureOnly.lastIndexOf('\n', occurrence.index! - 1) + 1
-		const lineBefore = structureOnly
-			.slice(lineStart, occurrence.index!)
-			.trimEnd()
-		const charBefore = lineBefore.at(-1) ?? ''
-		const isAfterMemberSeparator = ['', '{', ',', ';'].includes(charBefore)
-		const isAfterMemberModifier = MEMBER_MODIFIER_BEFORE_NAME.test(lineBefore)
-		if (!isAfterMemberSeparator && !isAfterMemberModifier) return true
+		const isAtTopLevel =
+			getBracketDepthAt(structureOnly, occurrence.index!) === 0
+		if (isAtTopLevel) return true
 	}
 	return false
+}
+
+/**
+ * How many `{`, `[` and `(` are open at `index` — `0` at the module's top
+ * level. Read on the structure view, where strings, comments and regex
+ * patterns are blanked, so only real brackets count.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param index - the position asked about
+ */
+function getBracketDepthAt(structureOnly: string, index: number): number {
+	let depth = 0
+	for (let i = 0; i < index; i++) {
+		depth += getBracketDepthChange(structureOnly[i]!)
+	}
+	return depth
 }
 
 interface PatchDefinePreviewParams {
