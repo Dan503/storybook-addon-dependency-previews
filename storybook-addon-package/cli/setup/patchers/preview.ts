@@ -891,10 +891,12 @@ interface CheckIsAssignedAfterParams {
  * literal must not be read as its value. A `const` cannot be reassigned, so
  * it is never checked: a `<name> =` at a line start after one is something
  * else that shares the name — a JSX attribute, a default parameter — and
- * must not count. An arrow parameter of that name (`items.map(name => …)`)
- * is never counted, since the `=` of `=>` is not an assignment. (A default
- * parameter, or a JSX attribute on its own line, on a `let`-named binding
- * does count, and refuses; that is accepted.)
+ * must not count. A bare arrow parameter of that name (`items.map(name =>
+ * …)`) is never counted, since the `=` of `=>` is not an assignment. On a
+ * `let`-named binding, though, anything else that shares the name and sits
+ * after one of those statement starts — a default parameter, a
+ * destructuring default, a JSX attribute or a class field on its own line —
+ * does count, and refuses; that is accepted.
  */
 function checkIsAssignedAfter({
 	structureOnly,
