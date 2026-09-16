@@ -341,7 +341,10 @@ interface MergeAddonImportParams {
 }
 
 interface MergedAddonImport {
-	/** The content with the existing addon imports merged into one, else unchanged. */
+	/**
+	 * The content with the existing addon imports merged into one (plus a
+	 * default-only import for any second default binding), else unchanged.
+	 */
 	content: string
 	/**
 	 * The local binding name for each required value name — the alias when the
@@ -467,9 +470,8 @@ function parseAddonImports(content: string): {
 			const entry = parseEntry(raw, statement.isTypeOnly)
 			const localName = entry.alias ?? entry.name
 			const prev = byLocalName.get(localName)
-			if (!prev || (prev.isType && !entry.isType)) {
-				byLocalName.set(localName, entry)
-			}
+			const isValueReplacingType = !!prev && prev.isType && !entry.isType
+			if (!prev || isValueReplacingType) byLocalName.set(localName, entry)
 		}
 	}
 	return { statements, entries: Array.from(byLocalName.values()) }
@@ -507,8 +509,10 @@ function collapseBlankLinesAt(
  * Collects every existing import from the package, merges them into one
  * (promoting a `type` import of a required value to a value import, and
  * keeping any alias), and either rewrites the first statement and deletes
- * the rest, or — when there is none — hands back a fresh statement for the
- * caller to insert with its other imports.
+ * the rest — except that a statement carrying a second, differently named
+ * default binding is kept as a default-only import — or, when there is
+ * none, hands back a fresh statement for the caller to insert with its
+ * other imports.
  */
 function mergeAddonImport({
 	content,
@@ -611,10 +615,7 @@ function mergeAddonImport({
 				statement.defaultBinding !== null &&
 				statement.defaultBinding !== defaultBinding
 			if (hasOtherDefaultBinding) {
-				const suffix =
-					statement.trailingComments === ''
-						? ''
-						: ` ${statement.trailingComments}`
+				const suffix = getTrailingCommentSuffix(statement)
 				const defaultOnlyImport = `import ${statement.defaultBinding} from ${quote}${PKG}${quote}${trailingSemi}${suffix}${eol}`
 				newContent =
 					newContent.slice(0, spliceFrom) +
@@ -625,8 +626,7 @@ function mergeAddonImport({
 			newContent = newContent.slice(0, spliceFrom) + newContent.slice(spliceTo)
 			newContent = collapseBlankLinesAt(newContent, spliceFrom, eol)
 		}
-		const { trailingComments } = firstStatement!
-		const commentSuffix = trailingComments === '' ? '' : ` ${trailingComments}`
+		const commentSuffix = getTrailingCommentSuffix(firstStatement!)
 		newContent =
 			newContent.slice(0, firstStatement!.index) +
 			`${mergedStatement}${commentSuffix}${eol}` +
@@ -640,6 +640,17 @@ function mergeAddonImport({
 		localNames.set(name, entry?.alias ?? name)
 	}
 	return { content: newContent, localNames, importToInsert: null }
+}
+
+/**
+ * The trailing comments an import statement carried, ready to append to a
+ * rewritten statement — a space and the comments, or `''` when it had none.
+ *
+ * @param statement - the statement as parsed
+ */
+function getTrailingCommentSuffix(statement: AddonImportStatement): string {
+	const { trailingComments } = statement
+	return trailingComments === '' ? '' : ` ${trailingComments}`
 }
 
 /**
@@ -962,7 +973,8 @@ function writePreview(
  * The local name a file gives a package's default import — `import docs from
  * '@storybook/addon-docs'` gives `docs`, and so does `import docs, { X } from
  * '…'` and `import { default as docs } from '…'`. `null` when the file has
- * no default import from that package.
+ * no default import from that package; the first when it has several
+ * (`findDefaultImportLocalNames`).
  *
  * @param codeOnly - the file content with comments stripped
  * @param packageName - the package the import must come from
@@ -971,48 +983,63 @@ function findDefaultImportLocalName(
 	codeOnly: string,
 	packageName: string,
 ): string | null {
+	return findDefaultImportLocalNames(codeOnly, packageName)[0] ?? null
+}
+
+/**
+ * Every local name a file gives a package's default import, in file order —
+ * a file may import it more than once under different names (`import first
+ * from '…'` and `import second, { X } from '…'`). Empty when it has none.
+ *
+ * @param codeOnly - the file content with comments stripped
+ * @param packageName - the package the import must come from
+ */
+function findDefaultImportLocalNames(
+	codeOnly: string,
+	packageName: string,
+): Array<string> {
 	const escapedPackageName = escapeForRegex(packageName)
 	const fromPackage = String.raw`\s*from\s*['"]${escapedPackageName}['"]`
 	// Anchored to a line start so an import quoted inside a string on some
 	// other line (a code sample) is not taken for a real one, and read with
 	// template-literal contents blanked so a multi-line sample is not either.
 	const withoutTemplates = blankStringContents(codeOnly, TEMPLATE_QUOTE_ONLY)
-	const defaultBinding = withoutTemplates.match(
+	const defaultBindings = withoutTemplates.matchAll(
 		new RegExp(
 			String.raw`^[\t ]*import\s+(?!type\s)([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?${fromPackage}`,
-			'm',
+			'gm',
 		),
 	)
-	if (defaultBinding) return defaultBinding[1]!
-	const defaultAsNamed = withoutTemplates.match(
+	const defaultsAsNamed = withoutTemplates.matchAll(
 		new RegExp(
 			String.raw`^[\t ]*import\s*\{[^}]*\bdefault\s+as\s+([A-Za-z_$][\w$]*)[^}]*\}${fromPackage}`,
-			'm',
+			'gm',
 		),
 	)
-	return defaultAsNamed?.[1] ?? null
+	return [...defaultBindings, ...defaultsAsNamed]
+		.sort((a, b) => a.index! - b.index!)
+		.map((match) => match[1]!)
 }
 
 /**
- * The local name a file gives one of the addon package's named exports —
+ * Every local name a file gives one of the addon package's named exports —
  * `import { dependencyPreviews as dp } from '…'` gives `dp`, a plain
- * `import { dependencyPreviews }` gives `dependencyPreviews` — or `null`
- * when the file does not import it. Read from the same merged list
- * `mergeAddonImport` writes its statement from, so the name the body calls
- * is the name the import binds.
+ * `import { dependencyPreviews }` gives `dependencyPreviews`, and a file may
+ * bind the same export under several names. Empty when the file does not
+ * import it. Read from the same merged list `mergeAddonImport` writes its
+ * statement from, so the names the body calls are the names the import
+ * binds.
  *
  * @param content - the file content
  * @param exportedName - the named export to look for
  */
-function findAddonNamedImportLocalName(
+function findAddonNamedImportLocalNames(
 	content: string,
 	exportedName: string,
-): string | null {
-	const entry = parseAddonImports(content).entries.find(
-		(e) => e.name === exportedName,
-	)
-	if (!entry) return null
-	return entry.alias ?? entry.name
+): Array<string> {
+	return parseAddonImports(content)
+		.entries.filter((e) => e.name === exportedName)
+		.map((e) => e.alias ?? e.name)
 }
 
 /** How a file binds the addon's `dependencyPreviews` registration function. */
@@ -1042,8 +1069,9 @@ interface DependencyPreviewsBinding {
  * package's default export, and the docs used to show it imported that way
  * — `import dependencyPreviews from '…'` — so a default import (possibly
  * with a named list after it) is preferred for a call the wizard inserts,
- * and the named import under any alias (`findAddonNamedImportLocalName`)
- * is read as well, since a file may carry both and call either.
+ * and every other binding — further default imports, the named import under
+ * any alias (`findAddonNamedImportLocalNames`) — is read as well, since a
+ * file may carry several and call any of them.
  *
  * @param content - the file content
  * @param codeOnly - the same content with comments stripped
@@ -1052,18 +1080,22 @@ function findDependencyPreviewsBinding(
 	content: string,
 	codeOnly: string,
 ): DependencyPreviewsBinding {
-	const defaultImportLocal = findDefaultImportLocalName(codeOnly, PKG)
-	const namedImportLocal = findAddonNamedImportLocalName(
+	const defaultImportLocals = findDefaultImportLocalNames(codeOnly, PKG)
+	const namedImportLocals = findAddonNamedImportLocalNames(
 		content,
 		'dependencyPreviews',
 	)
 	// The export's own name is what a fresh named import binds.
 	const nameToCall =
-		defaultImportLocal ?? namedImportLocal ?? 'dependencyPreviews'
-	const boundNames = [defaultImportLocal, namedImportLocal].filter(
-		(name): name is string => name !== null,
+		defaultImportLocals[0] ?? namedImportLocals[0] ?? 'dependencyPreviews'
+	const boundNames = Array.from(
+		new Set([...defaultImportLocals, ...namedImportLocals]),
 	)
-	return { nameToCall, boundNames, isDefaultImport: !!defaultImportLocal }
+	return {
+		nameToCall,
+		boundNames,
+		isDefaultImport: defaultImportLocals.length > 0,
+	}
 }
 
 interface AddListEntriesParams {

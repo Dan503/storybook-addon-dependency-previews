@@ -416,18 +416,20 @@ export function findTopLevelKey(
 		// The closing quote must land immediately after `<keyword>`, so string
 		// values that happen to contain the keyword fall through to the string
 		// skip and are passed over as before.
-		// A key can only start at the object's `{` or after a `,` — a `keyword :`
-		// elsewhere at this depth is something else, such as the branches of a
-		// ternary (`enabled ? addons : []`).
-		const isAtKeyPosition =
+		// A key can only start at the object's own level, at its `{` or after
+		// a `,` — a `keyword :` elsewhere is something else, such as the
+		// branches of a ternary (`enabled ? addons : []`).
+		const isAtKeyStart =
 			prevCodeChar === null || prevCodeChar === '{' || prevCodeChar === ','
-		if (depth === 0 && isAtKeyPosition && (c === "'" || c === '"')) {
+		const isAtKeyPosition = depth === 0 && isAtKeyStart
+		const isQuoteAtKeyPosition = isAtKeyPosition && (c === "'" || c === '"')
+		if (isQuoteAtKeyPosition) {
 			const afterKey = i + 1 + kwLen
-			if (
+			const isQuotedKeyword =
 				afterKey < to &&
 				content.startsWith(keyword, i + 1) &&
 				content[afterKey] === c
-			) {
+			if (isQuotedKeyword) {
 				const j = skipWhitespaceAndComments(content, afterKey + 1, to)
 				if (content[j] === ':') {
 					const valueStart = skipWhitespaceAndComments(content, j + 1, to)
@@ -451,13 +453,12 @@ export function findTopLevelKey(
 			}
 		}
 
-		if (
-			depth === 0 &&
+		const isBareKeywordAtKeyPosition =
 			isAtKeyPosition &&
 			content.startsWith(keyword, i) &&
 			(i === 0 || !/[A-Za-z0-9_$]/.test(content[i - 1]!)) &&
 			!/[A-Za-z0-9_$]/.test(content[i + kwLen] ?? '')
-		) {
+		if (isBareKeywordAtKeyPosition) {
 			// A comment may sit between the key and its `:` / `,` (`addons /* c */:`).
 			const j = skipWhitespaceAndComments(content, i + kwLen, to)
 			if (content[j] === ':') {
