@@ -355,8 +355,10 @@ function findLineCommentStart(
  * recognized too, and returned with the value starting at the identifier
  * itself — so a caller checking for a literal `[` / `{` value sees it as a
  * non-literal value rather than as a missing key, and does not add a second
- * `addons:` beside it. The keyword only counts as shorthand when it sits
- * where a key can start: right after the object's `{` or after a `,`.
+ * `addons:` beside it. In every form the keyword only counts when it sits
+ * where a key can start — right after the object's `{` or after a `,` — so
+ * the branches of a ternary at this depth (`enabled ? addons : []`) are not
+ * taken for a key and its value.
  *
  * To target a specific config object's keys, pass `{ from, to }` set to the
  * range *inside* that object's braces — e.g. for `const config = { addons: [] }`
@@ -414,7 +416,12 @@ export function findTopLevelKey(
 		// The closing quote must land immediately after `<keyword>`, so string
 		// values that happen to contain the keyword fall through to the string
 		// skip and are passed over as before.
-		if (depth === 0 && (c === "'" || c === '"')) {
+		// A key can only start at the object's `{` or after a `,` — a `keyword :`
+		// elsewhere at this depth is something else, such as the branches of a
+		// ternary (`enabled ? addons : []`).
+		const isAtKeyPosition =
+			prevCodeChar === null || prevCodeChar === '{' || prevCodeChar === ','
+		if (depth === 0 && isAtKeyPosition && (c === "'" || c === '"')) {
 			const afterKey = i + 1 + kwLen
 			if (
 				afterKey < to &&
@@ -446,6 +453,7 @@ export function findTopLevelKey(
 
 		if (
 			depth === 0 &&
+			isAtKeyPosition &&
 			content.startsWith(keyword, i) &&
 			(i === 0 || !/[A-Za-z0-9_$]/.test(content[i - 1]!)) &&
 			!/[A-Za-z0-9_$]/.test(content[i + kwLen] ?? '')
@@ -456,10 +464,7 @@ export function findTopLevelKey(
 				const valueStart = skipWhitespaceAndComments(content, j + 1, to)
 				return { keyStart: i, valueStart }
 			}
-			const isAtKeyPosition =
-				prevCodeChar === null || prevCodeChar === '{' || prevCodeChar === ','
-			const isShorthandKey =
-				isAtKeyPosition && (content[j] === ',' || content[j] === '}')
+			const isShorthandKey = content[j] === ',' || content[j] === '}'
 			if (isShorthandKey) return { keyStart: i, valueStart: i }
 		}
 

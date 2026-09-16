@@ -411,8 +411,9 @@ const TEMPLATE_QUOTE_ONLY: ReadonlyArray<string> = ['`']
 /**
  * Every named import from the addon package in the file: the statements as
  * matched (each with its `index` into the file), and their names merged into
- * one list — one entry per name, a value entry winning over a type-only one
- * (a value can be used in type positions, not the other way round). The list
+ * one list — one entry per local binding, a value entry winning over a
+ * type-only one of the same binding (a value can be used in type positions,
+ * not the other way round). The list
  * is what a merged statement is written from, and what the local name of any
  * addon export is read from, so the two cannot disagree.
  *
@@ -455,18 +456,23 @@ function parseAddonImports(content: string): {
 		const [name, alias] = stripped.split(/\s+as\s+/).map((s) => s.trim())
 		return { name: name!, alias, isType }
 	}
-	const byName = new Map<string, AddonImportEntry>()
+	// One entry per local binding (`x` and `x as y` are two), so a second
+	// alias of the same export survives the merge and its uses still compile.
+	const byLocalName = new Map<string, AddonImportEntry>()
 	for (const statement of statements) {
 		for (const raw of statement.namesList
 			.split(',')
 			.map((s) => s.trim())
 			.filter(Boolean)) {
 			const entry = parseEntry(raw, statement.isTypeOnly)
-			const prev = byName.get(entry.name)
-			if (!prev || (prev.isType && !entry.isType)) byName.set(entry.name, entry)
+			const localName = entry.alias ?? entry.name
+			const prev = byLocalName.get(localName)
+			if (!prev || (prev.isType && !entry.isType)) {
+				byLocalName.set(localName, entry)
+			}
 		}
 	}
-	return { statements, entries: Array.from(byName.values()) }
+	return { statements, entries: Array.from(byLocalName.values()) }
 }
 
 /**
@@ -591,17 +597,33 @@ function mergeAddonImport({
 		const mergedStatement = `import ${defaultClause}{${eol}${mergedEntries
 			.map((e) => `${indent}${formatEntry(e)},`)
 			.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}`
-		// Replace the first import with the merged version; delete the rest.
-		// Spliced by position, last statement first so earlier positions stay
-		// valid — a regex replace over the file would also hit a commented-out
-		// import, which the parse deliberately skipped.
+		// Replace the first import with the merged version; delete the rest —
+		// except that a statement carrying a second, differently named default
+		// binding keeps that binding as a default-only import, so its uses
+		// still compile. Spliced by position, last statement first so earlier
+		// positions stay valid — a regex replace over the file would also hit
+		// a commented-out import, which the parse deliberately skipped.
 		const [firstStatement, ...otherStatements] = allAddonImports
 		for (const statement of [...otherStatements].reverse()) {
-			const deletedFrom = statement.index
-			newContent =
-				newContent.slice(0, deletedFrom) +
-				newContent.slice(deletedFrom + statement.length)
-			newContent = collapseBlankLinesAt(newContent, deletedFrom, eol)
+			const spliceFrom = statement.index
+			const spliceTo = spliceFrom + statement.length
+			const hasOtherDefaultBinding =
+				statement.defaultBinding !== null &&
+				statement.defaultBinding !== defaultBinding
+			if (hasOtherDefaultBinding) {
+				const suffix =
+					statement.trailingComments === ''
+						? ''
+						: ` ${statement.trailingComments}`
+				const defaultOnlyImport = `import ${statement.defaultBinding} from ${quote}${PKG}${quote}${trailingSemi}${suffix}${eol}`
+				newContent =
+					newContent.slice(0, spliceFrom) +
+					defaultOnlyImport +
+					newContent.slice(spliceTo)
+				continue
+			}
+			newContent = newContent.slice(0, spliceFrom) + newContent.slice(spliceTo)
+			newContent = collapseBlankLinesAt(newContent, spliceFrom, eol)
 		}
 		const { trailingComments } = firstStatement!
 		const commentSuffix = trailingComments === '' ? '' : ` ${trailingComments}`
@@ -1563,21 +1585,42 @@ function splitTopLevelEntries(listStructure: string): Array<string> {
 
 /**
  * Whether a `[ … ]` list has an entry that is a call of the given local name
- * — `addonDocs()` in an `addons` list, say. Only an entry of its own counts:
- * the same call nested inside another entry, or quoted in a string, does not
- * register anything.
+ * — `addonDocs()` in an `addons` list, say. Only an entry that is that call
+ * and nothing more (parentheses around it aside) counts: the same call
+ * nested inside another entry, quoted in a string, or as one operand of a
+ * larger expression (`addonDocs() && other()`) does not register anything.
  *
  * @param listCode - the text between the list's brackets, comments stripped
  * @param localName - the identifier the call must use
  */
 function checkDoesListCall(listCode: string, localName: string): boolean {
-	const isCallOfName = new RegExp(
-		String.raw`^${escapeForRegex(localName)}\s*\(`,
-	)
+	const callStart = new RegExp(String.raw`^${escapeForRegex(localName)}\s*\(`)
 	const listStructure = blankStringContents(listCode)
-	return splitTopLevelEntries(listStructure).some((entry) =>
-		isCallOfName.test(entry.trim()),
-	)
+	return splitTopLevelEntries(listStructure).some((entry) => {
+		const unwrapped = stripWrappingParentheses(entry.trim())
+		const start = unwrapped.match(callStart)
+		if (!start) return false
+		const openIdx = start[0].length - 1
+		const closeIdx = findMatchingBrace(unwrapped, openIdx)
+		return closeIdx === unwrapped.length - 1
+	})
+}
+
+/**
+ * The expression with any parentheses wrapping the whole of it removed —
+ * `((x()))` gives `x()`; `(a) && (b)` is left as it is, since its first `(`
+ * does not close at its end.
+ *
+ * @param expression - the expression text, trimmed
+ */
+function stripWrappingParentheses(expression: string): string {
+	let unwrapped = expression
+	while (unwrapped.startsWith('(')) {
+		const closeIdx = findMatchingBrace(unwrapped, 0)
+		if (closeIdx !== unwrapped.length - 1) break
+		unwrapped = unwrapped.slice(1, -1).trim()
+	}
+	return unwrapped
 }
 
 /**
