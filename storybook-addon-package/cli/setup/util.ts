@@ -114,14 +114,15 @@ export function detectQuoteStyle(content: string): "'" | '"' {
 
 /**
  * The one rule every scanner in this file uses to decide whether a quote
- * character starts a string: it does only when it does not sit straight after
- * a word (`don't`, `it's` — a string can follow a keyword like `return`, never
- * an identifier), and when its closing twin can be found — before the end of
- * the line for `'` and `"` (a JS string cannot span a raw line break), before
- * the end of the text for a backtick. Returns the closing quote's position,
- * or `null` when the quote is not a string opener (a lone `'` in a regex
- * literal or in JSX text, say) and is to be read as an ordinary character.
- * Escaped characters inside the string are skipped.
+ * character starts a string: a `'` or `"` does only when it does not sit
+ * straight after a word (`don't`, `it's` — a string can follow a keyword like
+ * `return`, never an identifier; a backtick after a word is a tagged template
+ * and does open one), and any quote only when its closing twin can be found
+ * — before the end of the line for `'` and `"` (a JS string cannot span a raw
+ * line break), before the end of the text for a backtick. Returns the
+ * closing quote's position, or `null` when the quote is not a string opener
+ * (a lone `'` in a regex literal or in JSX text, say) and is to be read as an
+ * ordinary character. Escaped characters inside the string are skipped.
  *
  * The boundary of a scanner that does not parse JSX: a quote in JSX text
  * that follows a space or punctuation (`rock 'n roll`, `<p>'quoted'</p>`) is
@@ -135,9 +136,13 @@ export function findClosingQuote(
 	text: string,
 	openIndex: number,
 ): number | null {
-	if (checkIsEndOfNonKeywordWord(text, openIndex - 1)) return null
 	const quote = text[openIndex]!
 	const isSingleLine = quote !== '`'
+	// A backtick straight after a word is a tagged template (`String.raw\`…\``),
+	// so the after-a-word rule is for `'` and `"` only.
+	const isAfterWord =
+		isSingleLine && checkIsEndOfNonKeywordWord(text, openIndex - 1)
+	if (isAfterWord) return null
 	let i = openIndex + 1
 	while (i < text.length) {
 		const c = text[i]!

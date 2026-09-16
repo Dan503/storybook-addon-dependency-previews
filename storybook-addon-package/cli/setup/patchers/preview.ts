@@ -354,17 +354,18 @@ interface MergedAddonImport {
 // stays where it is.
 const ADDON_IMPORT_TAIL_SOURCE = String.raw`((?:[ \t]*(?:\/\/[^\r\n]*|\/\*[\s\S]*?\*\/))*)[ \t]*(?:\r?\n|$)?`
 
-// Match a whole named-import statement from the addon package, up to any
-// trailing semicolon, then its tail. The name list is `[^}]*` rather than
-// `[\s\S]*?`: a lazy any-character group can start at an earlier `import {`
-// from another package and run on until it reaches the addon's `} from …`,
-// swallowing every import in between. Run on text with comments blanked, so
-// a `}` inside a comment in the list cannot end it early; the `d` flag gives
-// the tail's position, where the comments are read back from the file — so
-// the space before the tail is only taken when a `;` follows it, or the tail
-// would start past a blanked comment.
+// Match a whole named-import statement from the addon package — with or
+// without a default binding before the list (`import dp, { … } from …`) —
+// up to any trailing semicolon, then its tail. The name list is `[^}]*`
+// rather than `[\s\S]*?`: a lazy any-character group can start at an earlier
+// `import {` from another package and run on until it reaches the addon's
+// `} from …`, swallowing every import in between. Run on text with comments
+// blanked, so a `}` inside a comment in the list cannot end it early; the `d`
+// flag gives the tail's position, where the comments are read back from the
+// file — so the space before the tail is only taken when a `;` follows it,
+// or the tail would start past a blanked comment.
 const ADDON_IMPORT_REGEX = new RegExp(
-	String.raw`^[\t ]*import\s*(type\s+)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"](?:[ \t]*;)?` +
+	String.raw`^[\t ]*import\s*(type\s+)?(?:([A-Za-z_$][\w$]*)\s*,\s*)?\{([^}]*)\}\s*from\s*['"]storybook-addon-dependency-previews['"](?:[ \t]*;)?` +
 		ADDON_IMPORT_TAIL_SOURCE,
 	'gmd',
 )
@@ -377,6 +378,8 @@ interface AddonImportStatement {
 	length: number
 	/** Whether it is an `import type { … }`. */
 	isTypeOnly: boolean
+	/** The default binding before the list (`dp` in `import dp, { … }`), if any. */
+	defaultBinding: string | null
 	/** The text between its braces, comments blanked. */
 	namesList: string
 	/** The comments after it on its line, as written, or `''`. */
@@ -419,7 +422,7 @@ function parseAddonImports(content: string): {
 	const statements: Array<AddonImportStatement> = []
 	for (const strippedMatch of stripped.matchAll(ADDON_IMPORT_REGEX)) {
 		const index = strippedMatch.index!
-		const tailStart = strippedMatch.indices![3]![0]
+		const tailStart = strippedMatch.indices![4]![0]
 		const tailInFile = new RegExp(ADDON_IMPORT_TAIL_SOURCE, 'y')
 		tailInFile.lastIndex = tailStart
 		// The tail can be empty, so this always matches.
@@ -428,7 +431,8 @@ function parseAddonImports(content: string): {
 			index,
 			length: tailStart - index + tail[0].length,
 			isTypeOnly: !!strippedMatch[1],
-			namesList: strippedMatch[2]!,
+			defaultBinding: strippedMatch[2] ?? null,
+			namesList: strippedMatch[3]!,
 			trailingComments: tail[1]!.trim(),
 		})
 	}
@@ -566,8 +570,13 @@ function mergeAddonImport({
 	if (!nothingToDo) {
 		// The regex consumes the trailing newline, so include one in the
 		// replacement; also tack on the project's semicolon style, and the
-		// trailing comment the replaced statement carried, if any.
-		const mergedStatement = `import {${eol}${mergedEntries
+		// trailing comment the replaced statement carried, if any. A default
+		// binding one of the statements carried (`import dp, { … }`) stays on
+		// the merged one.
+		const defaultBinding =
+			allAddonImports.find((s) => s.defaultBinding)?.defaultBinding ?? null
+		const defaultClause = defaultBinding ? `${defaultBinding}, ` : ''
+		const mergedStatement = `import ${defaultClause}{${eol}${mergedEntries
 			.map((e) => `${indent}${formatEntry(e)},`)
 			.join(eol)}${eol}} from ${quote}${PKG}${quote}${trailingSemi}`
 		// Replace the first import with the merged version; delete the rest.
@@ -767,6 +776,27 @@ function findDefinePreviewBody(
 		),
 	)
 	return objectBodyAfterMatch(text, previewDeclarationMatch)
+}
+
+/**
+ * Whether the file's default export is a `definePreview(…)` call, whatever
+ * its argument — written directly, or through a `const` initialised by one.
+ * The question `findDefinePreviewBody` answers no to when it cannot read the
+ * argument; a `definePreview` call that is not the default export is some
+ * other value and says nothing about the file's style.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ */
+function checkIsDefaultExportDefinePreview(structureOnly: string): boolean {
+	if (/export\s+default\s+definePreview\s*\(/.test(structureOnly)) return true
+	const exportIdent = structureOnly.match(
+		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
+	)?.[1]
+	if (!exportIdent) return false
+	const escapedName = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	return new RegExp(
+		String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*definePreview\s*\(`,
+	).test(structureOnly)
 }
 
 /**
@@ -1772,16 +1802,17 @@ function patchExistingPreview(
 	// about whether `dependencyPreviews()` is in `addons`.
 	const csfNextBody = findDefinePreviewBody(content)
 	const isCsfNext = csfNextBody !== null
-	// A `definePreview(…)` call whose config the finder could not resolve (an
-	// imported object, a call, a cast — exported directly or through a const)
-	// is still a CSF Next file, so the advice has to name that style's
-	// additions rather than the classic spreads.
+	// A default-exported `definePreview(…)` whose config the finder could not
+	// resolve (an imported object, a call, a cast — exported directly or
+	// through a const) is still a CSF Next file, so the advice has to name
+	// that style's additions rather than the classic spreads. A call that is
+	// not the default export leaves a classic file classic.
 	const views: CodeViews = {
 		codeOnly,
 		structureOnly: blankStringContents(codeOnly),
 	}
 	const isUnresolvedDefinePreview =
-		!isCsfNext && /\bdefinePreview\s*\(/.test(views.structureOnly)
+		!isCsfNext && checkIsDefaultExportDefinePreview(views.structureOnly)
 	if (isUnresolvedDefinePreview) {
 		// A hand-configured file the finder cannot read is not refused on every
 		// run: when the file carries both registrations somewhere — the call
