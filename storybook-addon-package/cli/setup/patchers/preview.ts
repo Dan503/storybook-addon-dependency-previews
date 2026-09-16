@@ -1736,19 +1736,50 @@ function checkIsNameUsed(structureOnly: string, name: string): boolean {
 }
 
 /**
- * How many `{`, `[` and `(` are open at `index` — `0` at the module's top
- * level. Read on the structure view, where strings, comments and regex
- * patterns are blanked, so only real brackets count.
+ * How many `{`, `[` and `(` are open at `index`, counted from the start of
+ * the statement `index` sits in — `0` when it is at the module's top level.
+ * The count starts at the statement, not at the file, because JSX text is a
+ * boundary the scanners do not read: a bracket inside it (`<p>Enjoy :)</p>`)
+ * is never paired, and counted from the file start it would put every
+ * statement below it at the wrong depth (the same reason
+ * `findTopLevelDeclaration` reads "top level" as "starts its line"). A
+ * statement's start is the nearest line, at or above `index`, that begins
+ * at the first column with a letter, `_`, `$` or a decorator's `@` — how
+ * every formatter writes a top-level statement, and where an inner line
+ * never starts. Brackets left unpaired inside that same statement still
+ * count; that is the boundary. Read on the structure view, where strings,
+ * comments and regex patterns are blanked.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  * @param index - the position asked about
  */
 function getBracketDepthAt(structureOnly: string, index: number): number {
+	const statementStart = findStatementStartAt(structureOnly, index)
 	let depth = 0
-	for (let i = 0; i < index; i++) {
+	for (let i = statementStart; i < index; i++) {
 		depth += getBracketDepthChange(structureOnly[i]!)
 	}
 	return depth
+}
+
+/** A line that begins at the first column with a letter, `_`, `$` or `@`. */
+const STATEMENT_LINE_START_REGEX = /^[A-Za-z_$@]/gm
+
+/**
+ * Where the statement holding `index` starts — the start of the nearest line
+ * at or above `index` that `STATEMENT_LINE_START_REGEX` matches, or `0` when
+ * no line above it does.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param index - the position asked about
+ */
+function findStatementStartAt(structureOnly: string, index: number): number {
+	let statementStart = 0
+	for (const lineStart of structureOnly.matchAll(STATEMENT_LINE_START_REGEX)) {
+		if (lineStart.index! > index) break
+		statementStart = lineStart.index!
+	}
+	return statementStart
 }
 
 interface PatchDefinePreviewParams {
