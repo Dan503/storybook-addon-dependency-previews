@@ -807,27 +807,87 @@ function findDefaultExportDefinePreviewArgument(
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
 	)?.[1]
 	if (!exportIdent) return null
-	const declaredCall = structureOnly.match(
-		new RegExp(
-			String.raw`(const|let|var)\s+${escapeForRegex(exportIdent)}\s*${TYPE_ANNOTATION_SOURCE}=\s*definePreview\s*\(\s*`,
-		),
+	const declaredCall = findTopLevelDeclaration(
+		structureOnly,
+		exportIdent,
+		String.raw`definePreview\s*\(\s*`,
 	)
-	if (declaredCall?.index === undefined) return null
-	const argumentStart = declaredCall.index + declaredCall[0].length
+	if (!declaredCall) return null
+	const argumentStart = declaredCall.valueStart
 	const isBindingReassigned = checkIsAssignedAfter({
 		structureOnly,
-		keyword: declaredCall[1]!,
+		declarationKeyword: declaredCall.keyword,
 		name: exportIdent,
 		position: argumentStart,
 	})
 	return { argumentStart, isBindingReassigned }
 }
 
+/** The keyword a binding is declared with. */
+type DeclarationKeyword = 'const' | 'let' | 'var'
+
+/** A `const` / `let` / `var` declaration found at the module's top level. */
+interface TopLevelDeclaration {
+	keyword: DeclarationKeyword
+	/** Position just after the `=` and the whitespace following it. */
+	valueStart: number
+}
+
+/**
+ * The first `const` / `let` / `var` declaration of `name` at the module's
+ * top level — outside every `{`, `[` and `(` — whose initializer starts
+ * with `initializerStart`, or `null` when there is none. A same-named
+ * binding inside a helper's body (a decorator's local `config`) is passed
+ * over, so it is not taken for the exported one. A type annotation on the
+ * declaration is allowed (`TYPE_ANNOTATION_SOURCE`).
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param name - the binding
+ * @param initializerStart - regex source the initializer has to begin with
+ *   (`''` for any initializer)
+ */
+function findTopLevelDeclaration(
+	structureOnly: string,
+	name: string,
+	initializerStart: string,
+): TopLevelDeclaration | null {
+	const declaration = new RegExp(
+		String.raw`(const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*${initializerStart}`,
+		'g',
+	)
+	for (const match of structureOnly.matchAll(declaration)) {
+		const index = match.index!
+		if (getBracketDepthAt(structureOnly, index) !== 0) continue
+		return {
+			keyword: match[1] as DeclarationKeyword,
+			valueStart: index + match[0].length,
+		}
+	}
+	return null
+}
+
+/**
+ * How many `{`, `[` and `(` are open at `index` — `0` at the module's top
+ * level.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param index - the position asked about
+ */
+function getBracketDepthAt(structureOnly: string, index: number): number {
+	let depth = 0
+	for (let i = 0; i < index; i++) {
+		const c = structureOnly[i]!
+		if (c === '{' || c === '[' || c === '(') depth++
+		else if (c === '}' || c === ']' || c === ')') depth--
+	}
+	return depth
+}
+
 interface CheckIsAssignedAfterParams {
 	/** The file with comments stripped and strings blanked. */
 	structureOnly: string
-	/** The keyword the binding was declared with: `const`, `let` or `var`. */
-	keyword: string
+	/** The keyword the binding was declared with. */
+	declarationKeyword: DeclarationKeyword
 	/** The binding. */
 	name: string
 	/** Where to start looking — just after the declaration's `=`. */
@@ -845,11 +905,11 @@ interface CheckIsAssignedAfterParams {
  */
 function checkIsAssignedAfter({
 	structureOnly,
-	keyword,
+	declarationKeyword,
 	name,
 	position,
 }: CheckIsAssignedAfterParams): boolean {
-	if (keyword === 'const') return false
+	if (declarationKeyword === 'const') return false
 	const assignment = new RegExp(
 		String.raw`(?:^|;)[ \t]*${escapeForRegex(name)}\s*(?:\*\*|[-+*/%&|^]|<<|>>>?|&&|\|\||\?\?)?=(?!=)`,
 		'm',
@@ -1209,9 +1269,10 @@ function getValueCode({
 /**
  * The range inside the brackets of an identifier's same-file `const` / `let`
  * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }` —
- * `null` otherwise (no declaration, no initializer, a call, an import, a
- * `let` assigned to again — `checkIsAssignedAfter`). A type annotation on
- * the declaration is allowed (`TYPE_ANNOTATION_SOURCE`).
+ * `null` otherwise (no declaration at the module's top level, no
+ * initializer, a call, an import, a `let` assigned to again —
+ * `checkIsAssignedAfter`). The declaration is found by
+ * `findTopLevelDeclaration`, which allows a type annotation.
  *
  * @param views - the file views
  * @param name - the identifier whose initializer is wanted
@@ -1220,18 +1281,14 @@ function findInitializerLiteralRange(
 	views: CodeViews,
 	name: string,
 ): { from: number; to: number } | null {
-	const declaration = views.structureOnly.match(
-		new RegExp(
-			String.raw`(const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*`,
-		),
-	)
-	if (!declaration || declaration.index === undefined) return null
-	const valueStart = declaration.index + declaration[0].length
+	const declaration = findTopLevelDeclaration(views.structureOnly, name, '')
+	if (!declaration) return null
+	const { valueStart } = declaration
 	// A binding written to again later holds something else by the time it
 	// is used, so its initializer is not what runs.
 	const isReassigned = checkIsAssignedAfter({
 		structureOnly: views.structureOnly,
-		keyword: declaration[1]!,
+		declarationKeyword: declaration.keyword,
 		name,
 		position: valueStart,
 	})
