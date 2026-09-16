@@ -196,9 +196,10 @@ const REGEX_LITERAL_PRECEDERS: ReadonlyArray<string> = [
  * comes before decides between a literal and division: a regex literal can
  * only start where an expression can — after one of
  * `REGEX_LITERAL_PRECEDERS`, after an arrow (`=> /re/`), or after a keyword
- * like `return`. And a literal that never closes on its line is not one. A
- * quote inside a regex (`/['"]/`) then never opens a string, which is what
- * every scanner in this file relies on.
+ * like `return`, with any whitespace and comments between stepped over
+ * (`findLastCodeCharBefore`). And a literal that never closes on its line
+ * is not one. A quote inside a regex (`/['"]/`) then never opens a string,
+ * which is what every scanner in this file relies on.
  *
  * The boundary of a scanner that does not parse JSX: a `/` in JSX text whose
  * preceding text ends in one of the preceders — `&nbsp;/`, `Questions? /`,
@@ -215,8 +216,7 @@ export function findRegexLiteralEnd(
 ): number | null {
 	const next = text[slashIndex + 1] ?? ''
 	if (next === '/' || next === '*' || next === '>') return null
-	let before = slashIndex - 1
-	while (before >= 0 && /\s/.test(text[before]!)) before--
+	const before = findLastCodeCharBefore(text, slashIndex)
 	const precedingChar = before < 0 ? '' : text[before]!
 	const isAfterArrow = precedingChar === '>' && text[before - 1] === '='
 	// Only the tail can hold a keyword, so only the tail is tested.
@@ -249,6 +249,42 @@ export function findRegexLiteralEnd(
 		i++
 	}
 	return null
+}
+
+/**
+ * The position of the last character of code before `index`, stepping back
+ * over whitespace and comments — a `/* … *\/` block, and a `// …` comment
+ * on a line the step crosses — or `-1` when there is none. Read on the raw
+ * file, so a `//` inside a string on that earlier line is taken for a
+ * comment opener too; that line then reads as ending before it.
+ *
+ * @param text - the text being scanned
+ * @param index - the position to look back from
+ */
+function findLastCodeCharBefore(text: string, index: number): number {
+	let before = index - 1
+	while (before >= 0) {
+		const c = text[before]!
+		if (c === '\n') {
+			const lineStart = text.lastIndexOf('\n', before - 1) + 1
+			const lineCommentAt = text.slice(lineStart, before).indexOf('//')
+			before = lineCommentAt < 0 ? before - 1 : lineStart + lineCommentAt - 1
+			continue
+		}
+		if (/\s/.test(c)) {
+			before--
+			continue
+		}
+		const isBlockCommentEnd = c === '/' && text[before - 1] === '*'
+		if (isBlockCommentEnd) {
+			const blockStart = text.lastIndexOf('/*', before - 2)
+			if (blockStart < 0) return before
+			before = blockStart - 1
+			continue
+		}
+		return before
+	}
+	return -1
 }
 
 /**
