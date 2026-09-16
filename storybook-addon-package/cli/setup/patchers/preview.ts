@@ -1317,9 +1317,14 @@ function getValueCode({
 		)
 		return [contents, ...spreadCodes].join(',\n')
 	}
-	const identifier = structureOnly.slice(valueStart).match(/^[A-Za-z_$][\w$]*/)
-	if (!identifier) return ''
-	return getInitializerCode({ views, name: identifier[0], visited })
+	// Only a value that is a bare identifier and nothing more resolves —
+	// `shared.addons`, `list.slice(0, 1)` or `shared as X` is something the
+	// file cannot account for, as the spread path's `isPlainName` says.
+	const bareIdentifier = structureOnly
+		.slice(valueStart)
+		.match(/^([A-Za-z_$][\w$]*)\s*(?:[,})]|$)/)
+	if (!bareIdentifier) return ''
+	return getInitializerCode({ views, name: bareIdentifier[1]!, visited })
 }
 
 /**
@@ -1699,10 +1704,12 @@ function checkHasDuplicateTopLevelKey(
  * Whether a name is used as a binding anywhere in the file's code (strings
  * and comments blanked) — so a declaration the wizard would insert under it
  * would be a second one. A property access (`.dependencyPreviews`) is not a
- * binding, nor is a property key — a `name:` sitting where a key can start,
- * right after a `{` or a `,`; a `name:` anywhere else is a declaration with
- * a type annotation (`const dependenciesJson: Graph = …`) and counts. A
- * spread (`...dependencyPreviews`) counts too.
+ * binding, nor is a member key — a `name:` or `name?:` that starts its line
+ * or follows a `{`, `,` or `;` on it, as an object literal's key or a type,
+ * interface or class member does; a `name:` with anything else before it
+ * on its line is a declaration with a type annotation (`const
+ * dependenciesJson: Graph = …`) and counts. A spread
+ * (`...dependencyPreviews`) counts too.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  * @param name - the identifier
@@ -1712,7 +1719,7 @@ function checkIsNameUsed(structureOnly: string, name: string): boolean {
 	// `...` is allowed).
 	const occurrences = structureOnly.matchAll(
 		new RegExp(
-			String.raw`(?<![\w$])(?<!(?<!\.\.)\.)${escapeForRegex(name)}(?![\w$])(\s*:)?`,
+			String.raw`(?<![\w$])(?<!(?<!\.\.)\.)${escapeForRegex(name)}(?![\w$])(\s*\??\s*:)?`,
 			'g',
 		),
 	)
@@ -1720,11 +1727,14 @@ function checkIsNameUsed(structureOnly: string, name: string): boolean {
 		const isFollowedByColon = occurrence[1] !== undefined
 		if (!isFollowedByColon) return true
 		// Comments are already blanked in this view, so only whitespace sits
-		// between the name and the character before it.
-		const textBefore = structureOnly.slice(0, occurrence.index!).trimEnd()
-		const charBefore = textBefore.at(-1) ?? ''
-		const isPropertyKey = charBefore === '{' || charBefore === ','
-		if (!isPropertyKey) return true
+		// between the name and what precedes it on the line.
+		const lineStart = structureOnly.lastIndexOf('\n', occurrence.index! - 1) + 1
+		const lineBefore = structureOnly
+			.slice(lineStart, occurrence.index!)
+			.trimEnd()
+		const charBefore = lineBefore.at(-1) ?? ''
+		const isMemberKey = ['', '{', ',', ';'].includes(charBefore)
+		if (!isMemberKey) return true
 	}
 	return false
 }
