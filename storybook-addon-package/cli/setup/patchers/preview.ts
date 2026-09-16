@@ -1627,10 +1627,12 @@ const CLOSER_TO_OPENER: Record<string, string> = {
  * surplus closer counts as much as a surplus opener, and a stray `(` in one
  * value does not cancel against a stray `)` in a later one — the two sit at
  * different levels, so the `)` meets a `{` or `[` it does not close. What
- * still passes is a stray opener and a stray closer of one kind at the same
- * level (`[(S) => <p>(</p>, (S) => <p>)</p>]`), which pair as written. Read
- * on the structure view, where the brackets in strings, comments and regex
- * patterns are already blanked.
+ * still passes is a stray opener and a stray closer of one kind that are
+ * direct values of the same literal (`{ banner: () => <p>(</p>, footer: ()
+ * => <p>)</p> }`): they pair as written, so nothing can tell them from real
+ * brackets, and a key that sits between them is hidden from the scanners
+ * and would be written a second time. Read on the structure view, where
+ * the brackets in strings, comments and regex patterns are already blanked.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  * @param range - the range between the literal's brackets
