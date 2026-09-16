@@ -1698,17 +1698,35 @@ function checkHasDuplicateTopLevelKey(
 /**
  * Whether a name is used as a binding anywhere in the file's code (strings
  * and comments blanked) — so a declaration the wizard would insert under it
- * would be a second one. A property key (`dependencyPreviews: {`) or a
- * property access (`.dependencyPreviews`) is not a binding and does not
- * count; every binding is declared or used somewhere in neither form.
+ * would be a second one. A property access (`.dependencyPreviews`) is not a
+ * binding, nor is a property key — a `name:` sitting where a key can start,
+ * right after a `{` or a `,`; a `name:` anywhere else is a declaration with
+ * a type annotation (`const dependenciesJson: Graph = …`) and counts. A
+ * spread (`...dependencyPreviews`) counts too.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  * @param name - the identifier
  */
 function checkIsNameUsed(structureOnly: string, name: string): boolean {
-	return new RegExp(
-		String.raw`(?<![.\w$])${escapeForRegex(name)}(?![\w$])(?!\s*:)`,
-	).test(structureOnly)
+	// Not part of a longer word, and not after a single `.` (a spread's
+	// `...` is allowed).
+	const occurrences = structureOnly.matchAll(
+		new RegExp(
+			String.raw`(?<![\w$])(?<!(?<!\.\.)\.)${escapeForRegex(name)}(?![\w$])(\s*:)?`,
+			'g',
+		),
+	)
+	for (const occurrence of occurrences) {
+		const isFollowedByColon = occurrence[1] !== undefined
+		if (!isFollowedByColon) return true
+		// Comments are already blanked in this view, so only whitespace sits
+		// between the name and the character before it.
+		const textBefore = structureOnly.slice(0, occurrence.index!).trimEnd()
+		const charBefore = textBefore.at(-1) ?? ''
+		const isPropertyKey = charBefore === '{' || charBefore === ','
+		if (!isPropertyKey) return true
+	}
+	return false
 }
 
 interface PatchDefinePreviewParams {
