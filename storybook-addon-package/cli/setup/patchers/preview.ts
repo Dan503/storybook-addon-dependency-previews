@@ -723,14 +723,15 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
 /**
  * Locate the body of the object passed to `definePreview({ … })` in a CSF
  * Next preview file — the style Storybook 11 makes the default. Only the
- * default export counts, in three shapes: `export default definePreview({`
- * directly; `export default definePreview(<name>)` resolved to its
- * `const <name> = {` declaration; or `export default <name>` resolved to its
- * `const <name> = definePreview({` declaration — so a stray `definePreview`
- * call elsewhere in the file is not mistaken for the config. Runs on the
- * comment-stripped text like `findPreviewBody`, so a `definePreview` that
- * only appears in a comment is ignored. `null` when the file is not in this
- * style.
+ * default export counts — `export default definePreview(…)` directly, or
+ * `export default <name>` resolved to its `const <name> = definePreview(…)`
+ * declaration — so a stray `definePreview` call elsewhere in the file is not
+ * mistaken for the config. Either way the call's argument is then read the
+ * same: a `{ … }` literal is the body; an identifier is resolved to its
+ * `const <name> = {` declaration. Runs on the comment-stripped text like
+ * `findPreviewBody`, so a `definePreview` that only appears in a comment is
+ * ignored. `null` when the file is not in this style, or the argument is
+ * something else (an import, a call).
  *
  * @param text - the file content
  */
@@ -744,59 +745,63 @@ function findDefinePreviewBody(
 	const escapeForRegex = (name: string): string =>
 		name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-	const directMatch = stripped.match(
-		/export\s+default\s+definePreview\s*\(\s*\{/,
-	)
-	const direct = objectBodyAfterMatch(text, directMatch)
-	if (direct) return direct
+	const argumentStart = findDefaultExportDefinePreviewArgument(stripped)
+	if (argumentStart === null) return null
 
-	// `(?:as\s+[^,)]+)?` allows a cast on the argument, `,?` a trailing comma.
-	const configIdent = stripped.match(
-		/export\s+default\s+definePreview\s*\(\s*([A-Za-z_$][\w$]*)\s*(?:as\s+[^,)]+)?\s*,?\s*\)/,
-	)?.[1]
-	if (configIdent) {
-		// `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping
-		// at the statement end so a declaration with no initializer cannot reach
-		// the next `=` in the file.
-		const configDeclarationMatch = stripped.match(
-			new RegExp(
-				`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=;\\n]*)?=\\s*\\{`,
-			),
-		)
-		return objectBodyAfterMatch(text, configDeclarationMatch)
+	if (stripped[argumentStart] === '{') {
+		const closeIdx = findMatchingBrace(stripped, argumentStart)
+		return closeIdx === null ? null : { from: argumentStart + 1, to: closeIdx }
 	}
 
-	const exportIdent = stripped.match(
-		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
-	)?.[1]
-	if (!exportIdent) return null
-	const previewDeclarationMatch = stripped.match(
+	// `(?:as\s+[^,)]+)?` allows a cast on the argument, `,?` a trailing comma.
+	const configArgument = new RegExp(
+		String.raw`([A-Za-z_$][\w$]*)\s*(?:as\s+[^,)]+)?\s*,?\s*\)`,
+		'y',
+	)
+	configArgument.lastIndex = argumentStart
+	const configIdent = configArgument.exec(stripped)?.[1]
+	if (!configIdent) return null
+	// `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping
+	// at the statement end so a declaration with no initializer cannot reach
+	// the next `=` in the file.
+	const configDeclarationMatch = stripped.match(
 		new RegExp(
-			`(?:const|let|var)\\s+${escapeForRegex(exportIdent)}\\s*=\\s*definePreview\\s*\\(\\s*\\{`,
+			`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=;\\n]*)?=\\s*\\{`,
 		),
 	)
-	return objectBodyAfterMatch(text, previewDeclarationMatch)
+	return objectBodyAfterMatch(text, configDeclarationMatch)
 }
 
 /**
- * Whether the file's default export is a `definePreview(…)` call, whatever
- * its argument — written directly, or through a `const` initialised by one.
- * The question `findDefinePreviewBody` answers no to when it cannot read the
- * argument; a `definePreview` call that is not the default export is some
- * other value and says nothing about the file's style.
+ * The position of the first character of the argument to the file's
+ * default-exported `definePreview(…)` call — written directly, or through a
+ * `const <name> = definePreview(…)` (with any type annotation on the const)
+ * that `export default <name>` names — or `null` when the default export is
+ * not such a call.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  */
-function checkIsDefaultExportDefinePreview(structureOnly: string): boolean {
-	if (/export\s+default\s+definePreview\s*\(/.test(structureOnly)) return true
+function findDefaultExportDefinePreviewArgument(
+	structureOnly: string,
+): number | null {
+	const directCall = structureOnly.match(
+		/export\s+default\s+definePreview\s*\(\s*/,
+	)
+	if (directCall?.index !== undefined) {
+		return directCall.index + directCall[0].length
+	}
 	const exportIdent = structureOnly.match(
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
 	)?.[1]
-	if (!exportIdent) return false
+	if (!exportIdent) return null
 	const escapedName = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	return new RegExp(
-		String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*definePreview\s*\(`,
-	).test(structureOnly)
+	const declaredCall = structureOnly.match(
+		new RegExp(
+			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*definePreview\s*\(\s*`,
+		),
+	)
+	if (declaredCall?.index === undefined) return null
+	return declaredCall.index + declaredCall[0].length
 }
 
 /**
@@ -1803,16 +1808,17 @@ function patchExistingPreview(
 	const csfNextBody = findDefinePreviewBody(content)
 	const isCsfNext = csfNextBody !== null
 	// A default-exported `definePreview(…)` whose config the finder could not
-	// resolve (an imported object, a call, a cast — exported directly or
-	// through a const) is still a CSF Next file, so the advice has to name
-	// that style's additions rather than the classic spreads. A call that is
-	// not the default export leaves a classic file classic.
+	// resolve (an imported object, a call — exported directly or through a
+	// const) is still a CSF Next file, so the advice has to name that style's
+	// additions rather than the classic spreads. A call that is not the
+	// default export leaves a classic file classic.
 	const views: CodeViews = {
 		codeOnly,
 		structureOnly: blankStringContents(codeOnly),
 	}
 	const isUnresolvedDefinePreview =
-		!isCsfNext && checkIsDefaultExportDefinePreview(views.structureOnly)
+		!isCsfNext &&
+		findDefaultExportDefinePreviewArgument(views.structureOnly) !== null
 	if (isUnresolvedDefinePreview) {
 		// A hand-configured file the finder cannot read is not refused on every
 		// run: when the file carries both registrations somewhere — the call
