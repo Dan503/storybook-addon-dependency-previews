@@ -1609,6 +1609,13 @@ function getBracketDepthChange(c: string): number {
 	return 0
 }
 
+/** Each closing bracket's opener. */
+const CLOSER_TO_OPENER: Record<string, string> = {
+	')': '(',
+	']': '[',
+	'}': '{',
+}
+
 /**
  * Whether a literal's contents hold a bracket nothing pairs — a `(` or `)`
  * in the JSX text of a decorator (`<p>Note (experimental</p>`, `:-)`), which
@@ -1616,8 +1623,13 @@ function getBracketDepthChange(c: string): number {
  * tell the literal's own level from a nested one, so such a bracket hides
  * every key and spread after it, and the patcher would write a second
  * `addons` or `parameters`, or create a key above a spread that then
- * overrides it. A surplus closer counts as much as a surplus opener. Read on
- * the structure view, where the brackets in strings, comments and regex
+ * overrides it. Brackets are matched by kind, opener against closer, so a
+ * surplus closer counts as much as a surplus opener, and a stray `(` in one
+ * value does not cancel against a stray `)` in a later one — the two sit at
+ * different levels, so the `)` meets a `{` or `[` it does not close. What
+ * still passes is a stray opener and a stray closer of one kind at the same
+ * level (`[(S) => <p>(</p>, (S) => <p>)</p>]`), which pair as written. Read
+ * on the structure view, where the brackets in strings, comments and regex
  * patterns are already blanked.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
@@ -1627,12 +1639,17 @@ function checkHasUnpairedBracket(
 	structureOnly: string,
 	range: { from: number; to: number },
 ): boolean {
-	let depth = 0
+	const openers: Array<string> = []
 	for (let i = range.from; i < range.to; i++) {
-		depth += getBracketDepthChange(structureOnly[i]!)
-		if (depth < 0) return true
+		const c = structureOnly[i]!
+		const change = getBracketDepthChange(c)
+		if (change === 1) openers.push(c)
+		if (change === -1) {
+			const isClosingTheLastOpener = openers.pop() === CLOSER_TO_OPENER[c]
+			if (!isClosingTheLastOpener) return true
+		}
 	}
-	return depth !== 0
+	return openers.length > 0
 }
 
 interface GetKeyValueCodeParams {
@@ -2350,10 +2367,9 @@ function patchDefinePreview({
 	// that inserts nothing: its import is promoted below. It is only reached
 	// through the list branch, since any other `addons` value with such a
 	// call is refused above as unregistered.
-	const needsDependencyPreviewsImport =
-		inserted.dependencyPreviewsCall || isCalledUnderTypeOnlyImport
 	const didInsertAnything =
-		needsDependencyPreviewsImport ||
+		inserted.dependencyPreviewsCall ||
+		isCalledUnderTypeOnlyImport ||
 		inserted.addonDocsCall ||
 		inserted.settingsBlock
 	if (!didInsertAnything) {
@@ -2363,9 +2379,16 @@ function patchDefinePreview({
 	// ─── Imports, for what was inserted. The import edits all sit above the
 	// body, so they come last and shift nothing the edits above relied on.
 	const importsToInsert: string[] = []
-	const shouldAddDependencyPreviewsImport =
-		needsDependencyPreviewsImport && !dependencyPreviewsBinding.isDefaultImport
-	if (shouldAddDependencyPreviewsImport) {
+	// A fresh named import is not merged beside a default import of the
+	// package, which would declare the name twice; a promotion changes an
+	// entry that is already there and declares nothing, so it runs whatever
+	// the file's default import is.
+	const isFreshNamedImportNeeded =
+		inserted.dependencyPreviewsCall &&
+		!dependencyPreviewsBinding.isDefaultImport
+	const shouldMergeDependencyPreviewsImport =
+		isFreshNamedImportNeeded || isCalledUnderTypeOnlyImport
+	if (shouldMergeDependencyPreviewsImport) {
 		const merged = mergeAddonImport({
 			content: newContent,
 			requiredValueNames: ['dependencyPreviews'],
