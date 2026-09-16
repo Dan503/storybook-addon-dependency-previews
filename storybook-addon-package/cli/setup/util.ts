@@ -251,12 +251,15 @@ export function findRegexLiteralEnd(
 	return null
 }
 
+const BLOCK_COMMENT_OPEN = '/*'
+const BLOCK_COMMENT_CLOSE = '*/'
+const LINE_COMMENT_OPEN = '//'
+
 /**
  * The position of the last character of code before `index`, stepping back
  * over whitespace and comments — a `/* … *\/` block, and a `// …` comment
- * on a line the step crosses — or `-1` when there is none. Read on the raw
- * file, so a `//` inside a string on that earlier line is taken for a
- * comment opener too; that line then reads as ending before it.
+ * on a line the step crosses (`findLineCommentStart`) — or `-1` when there
+ * is none.
  *
  * @param text - the text being scanned
  * @param index - the position to look back from
@@ -267,22 +270,69 @@ function findLastCodeCharBefore(text: string, index: number): number {
 		const c = text[before]!
 		if (c === '\n') {
 			const lineStart = text.lastIndexOf('\n', before - 1) + 1
-			const lineCommentAt = text.slice(lineStart, before).indexOf('//')
-			before = lineCommentAt < 0 ? before - 1 : lineStart + lineCommentAt - 1
+			const lineCommentAt = findLineCommentStart(text, lineStart, before)
+			before = lineCommentAt < 0 ? before - 1 : lineCommentAt - 1
 			continue
 		}
 		if (/\s/.test(c)) {
 			before--
 			continue
 		}
-		const isBlockCommentEnd = c === '/' && text[before - 1] === '*'
+		const isBlockCommentEnd =
+			text.slice(before + 1 - BLOCK_COMMENT_CLOSE.length, before + 1) ===
+			BLOCK_COMMENT_CLOSE
 		if (isBlockCommentEnd) {
-			const blockStart = text.lastIndexOf('/*', before - 2)
+			const blockStart = text.lastIndexOf(
+				BLOCK_COMMENT_OPEN,
+				before - BLOCK_COMMENT_CLOSE.length,
+			)
 			if (blockStart < 0) return before
 			before = blockStart - 1
 			continue
 		}
 		return before
+	}
+	return -1
+}
+
+/**
+ * The position where a `// …` comment starts on one line of code, or `-1`
+ * when the line has none. Read the way every scanner here reads a line:
+ * strings are stepped over whole (`findClosingQuote`), so a `//` inside one
+ * (`'a//b'`, a protocol-relative URL) is not a comment; a `/* … *\/` block
+ * is stepped over too, and one left open at the line's end counts as the
+ * comment start, since the rest of the line is comment either way.
+ *
+ * @param text - the text being scanned
+ * @param lineStart - position of the line's first character
+ * @param lineEnd - position just past the line's last character
+ */
+function findLineCommentStart(
+	text: string,
+	lineStart: number,
+	lineEnd: number,
+): number {
+	let i = lineStart
+	while (i < lineEnd) {
+		const c = text[i]!
+		if (QUOTE_CHARS.includes(c)) {
+			const closeIndex = findClosingQuote(text, i)
+			if (closeIndex !== null) {
+				i = closeIndex + 1
+				continue
+			}
+		}
+		if (text.startsWith(LINE_COMMENT_OPEN, i)) return i
+		if (text.startsWith(BLOCK_COMMENT_OPEN, i)) {
+			const closeAt = text.indexOf(
+				BLOCK_COMMENT_CLOSE,
+				i + BLOCK_COMMENT_OPEN.length,
+			)
+			if (closeAt < 0 || closeAt >= lineEnd) return i
+			i = closeAt + BLOCK_COMMENT_CLOSE.length
+			continue
+		}
+		i++
 	}
 	return -1
 }
