@@ -1668,6 +1668,49 @@ function checkDoesFileCall(structureOnly: string, localName: string): boolean {
 	)
 }
 
+/**
+ * Whether a key is written more than once at the top level of an object's
+ * body — the second one wins at runtime, and the lookups read the first.
+ *
+ * @param views - the file views
+ * @param keyword - the key
+ * @param body - the range inside the object's braces
+ */
+function checkHasDuplicateTopLevelKey(
+	views: CodeViews,
+	keyword: string,
+	body: { from: number; to: number },
+): boolean {
+	const first = findTopLevelKey(views.codeOnly, keyword, body)
+	if (!first) return false
+	// Resume after the first value: past a literal's closing bracket, or one
+	// character into anything else (an identifier, a call, the shorthand).
+	const opener = views.structureOnly[first.valueStart]
+	const isLiteral = opener === '[' || opener === '{'
+	const literalEnd = isLiteral
+		? findMatchingBrace(views.structureOnly, first.valueStart)
+		: null
+	const resumeAt = literalEnd === null ? first.valueStart + 1 : literalEnd + 1
+	const afterFirstValue = { from: resumeAt, to: body.to }
+	return findTopLevelKey(views.codeOnly, keyword, afterFirstValue) !== null
+}
+
+/**
+ * Whether a name is used as a binding anywhere in the file's code (strings
+ * and comments blanked) — so a declaration the wizard would insert under it
+ * would be a second one. A property key (`dependencyPreviews: {`) or a
+ * property access (`.dependencyPreviews`) is not a binding and does not
+ * count; every binding is declared or used somewhere in neither form.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param name - the identifier
+ */
+function checkIsNameUsed(structureOnly: string, name: string): boolean {
+	return new RegExp(
+		String.raw`(?<![.\w$])${escapeForRegex(name)}(?![\w$])(?!\s*:)`,
+	).test(structureOnly)
+}
+
 interface PatchDefinePreviewParams {
 	/** The file being patched — written back at the end. */
 	previewFile: PreviewFile
@@ -1752,6 +1795,42 @@ function patchDefinePreview({
 	const hasSettingsBlock = checkHasSettingsKeyAtTopLevel(parametersValue.code)
 	if (isRegisteredInAddons && hasSettingsBlock) {
 		return { kind: 'skipped', reason: ALREADY_CONFIGURED_REASON }
+	}
+	// A key written twice runs with the second, which the lookups above do
+	// not read (a type error in TypeScript, a lint error in JavaScript, and
+	// not a file to guess at).
+	const duplicateKey = ['addons', 'parameters'].find((keyword) =>
+		checkHasDuplicateTopLevelKey(views, keyword, body),
+	)
+	if (duplicateKey) {
+		return {
+			kind: 'failed',
+			reason: `Preview config defines \`${duplicateKey}\` more than once — please remove the duplicate and re-run, or add \`addonDocs()\` and \`dependencyPreviews()\` to \`addons\` and the \`dependencyPreviews\` parameters manually.`,
+		}
+	}
+	// A name the wizard would declare — by the import it inserts — has to be
+	// free: a file that already uses it for something else (a local
+	// `addonDocs`, its own `dependenciesJson`) would get a second declaration.
+	const willImportDependencyPreviews =
+		!isDependencyPreviewsInList &&
+		!dependencyPreviewsBinding.boundNames.includes(dependencyPreviewsLocal)
+	const willImportAddonDocs = !isAddonDocsInList && !docsImportLocal
+	const willImportDependenciesJson =
+		!hasSettingsBlock &&
+		dependenciesJsonImportToInsert(codeOnly, style) !== null
+	const namesToDeclare = [
+		...(willImportDependencyPreviews ? [dependencyPreviewsLocal] : []),
+		...(willImportAddonDocs ? [addonDocsLocal] : []),
+		...(willImportDependenciesJson ? ['dependenciesJson'] : []),
+	]
+	const takenName = namesToDeclare.find((name) =>
+		checkIsNameUsed(views.structureOnly, name),
+	)
+	if (takenName) {
+		return {
+			kind: 'failed',
+			reason: `Preview file already uses the name \`${takenName}\` for something else, so the wizard cannot write it — please add \`addonDocs()\` and \`dependencyPreviews()\` to \`addons\` and the \`dependencyPreviews\` parameters manually.`,
+		}
 	}
 	// Each key is handled by where its runtime value comes from
 	// (`getKeyValueCode`): the body's own key is edited in place; a key a

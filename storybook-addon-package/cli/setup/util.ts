@@ -351,7 +351,9 @@ function findLineCommentStart(
  * immediately after `<keyword>`, so string literals whose contents merely
  * contain the keyword are still stepped over whole by the string skip below.
  *
- * The shorthand form (`addons,` or `addons }`, short for `addons: addons`) is
+ * The shorthand form (`addons,` or `addons }`, short for `addons: addons` —
+ * or `addons` ending the scanned range, for a caller scanning an object's
+ * contents without its closing brace) is
  * recognized too, and returned with the value starting at the identifier
  * itself — so a caller checking for a literal `[` / `{` value sees it as a
  * non-literal value rather than as a missing key, and does not add a second
@@ -465,7 +467,9 @@ export function findTopLevelKey(
 				const valueStart = skipWhitespaceAndComments(content, j + 1, to)
 				return { keyStart: i, valueStart }
 			}
-			const isShorthandKey = content[j] === ',' || content[j] === '}'
+			// The range's end counts as a terminator too: a caller scanning an
+			// object's contents without its closing brace ends the range there.
+			const isShorthandKey = content[j] === ',' || content[j] === '}' || j >= to
 			if (isShorthandKey) return { keyStart: i, valueStart: i }
 		}
 
