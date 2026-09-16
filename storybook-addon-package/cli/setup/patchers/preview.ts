@@ -743,7 +743,8 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
  * `const <name> = {` declaration. Runs on the comment-stripped text like
  * `findPreviewBody`, so a `definePreview` that only appears in a comment is
  * ignored. `null` when the file is not in this style, or the argument is
- * something else (an import, a call).
+ * something else (an import, a call), or the binding holding the call or
+ * the config is a `let` assigned to again (`checkIsAssignedAfter`).
  *
  * @param text - the file content
  */
@@ -808,34 +809,47 @@ function findDefaultExportDefinePreviewArgument(
 	if (!exportIdent) return null
 	const declaredCall = structureOnly.match(
 		new RegExp(
-			String.raw`(?:const|let|var)\s+${escapeForRegex(exportIdent)}\s*${TYPE_ANNOTATION_SOURCE}=\s*definePreview\s*\(\s*`,
+			String.raw`(const|let|var)\s+${escapeForRegex(exportIdent)}\s*${TYPE_ANNOTATION_SOURCE}=\s*definePreview\s*\(\s*`,
 		),
 	)
 	if (declaredCall?.index === undefined) return null
 	const argumentStart = declaredCall.index + declaredCall[0].length
-	const isBindingReassigned = checkIsAssignedAfter(
+	const isBindingReassigned = checkIsAssignedAfter({
 		structureOnly,
-		exportIdent,
-		argumentStart,
-	)
+		keyword: declaredCall[1]!,
+		name: exportIdent,
+		position: argumentStart,
+	})
 	return { argumentStart, isBindingReassigned }
 }
 
+interface CheckIsAssignedAfterParams {
+	/** The file with comments stripped and strings blanked. */
+	structureOnly: string
+	/** The keyword the binding was declared with: `const`, `let` or `var`. */
+	keyword: string
+	/** The binding. */
+	name: string
+	/** Where to start looking — just after the declaration's `=`. */
+	position: number
+}
+
 /**
- * Whether a binding is assigned to again after `position` — a statement
- * starting `<name> =` (or `<name> +=` and the like) at a line start or after
- * a `;`. A `let` or `var` initialised with a literal and then reassigned
- * runs with the later value, so the literal must not be read as its value.
- *
- * @param structureOnly - the file with comments stripped and strings blanked
- * @param name - the binding
- * @param position - where to start looking
+ * Whether a `let` or `var` binding is assigned to again after `position` — a
+ * statement starting `<name> =` (or `<name> +=` and the like) at a line
+ * start or after a `;`. Such a binding initialised with a literal and then
+ * reassigned runs with the later value, so the literal must not be read as
+ * its value. A `const` cannot be reassigned, so it is never checked: a
+ * `<name> =` at a line start after one is something else that shares the
+ * name — a JSX attribute, a default parameter — and must not count.
  */
-function checkIsAssignedAfter(
-	structureOnly: string,
-	name: string,
-	position: number,
-): boolean {
+function checkIsAssignedAfter({
+	structureOnly,
+	keyword,
+	name,
+	position,
+}: CheckIsAssignedAfterParams): boolean {
+	if (keyword === 'const') return false
 	const assignment = new RegExp(
 		String.raw`(?:^|;)[ \t]*${escapeForRegex(name)}\s*(?:\*\*|[-+*/%&|^]|<<|>>>?|&&|\|\||\?\?)?=(?!=)`,
 		'm',
@@ -930,8 +944,10 @@ interface DependencyPreviewsBinding {
 	 */
 	nameToCall: string
 	/**
-	 * Every name the file already binds it to — a default import and a named
-	 * import can both be present — a call of any of which registers it.
+	 * Every name the file imports it under — a default import and a named
+	 * import can both be present — plus the export's own name when there is
+	 * no named import (a re-export can bind it where the import parser does
+	 * not look); a call of any of these registers it.
 	 */
 	boundNames: Array<string>
 	/**
@@ -1193,8 +1209,9 @@ function getValueCode({
 /**
  * The range inside the brackets of an identifier's same-file `const` / `let`
  * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }` —
- * `null` otherwise (no declaration, no initializer, a call, an import). A
- * type annotation on the declaration is allowed (`TYPE_ANNOTATION_SOURCE`).
+ * `null` otherwise (no declaration, no initializer, a call, an import, a
+ * `let` assigned to again — `checkIsAssignedAfter`). A type annotation on
+ * the declaration is allowed (`TYPE_ANNOTATION_SOURCE`).
  *
  * @param views - the file views
  * @param name - the identifier whose initializer is wanted
@@ -1205,14 +1222,20 @@ function findInitializerLiteralRange(
 ): { from: number; to: number } | null {
 	const declaration = views.structureOnly.match(
 		new RegExp(
-			String.raw`(?:const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*`,
+			String.raw`(const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*`,
 		),
 	)
 	if (!declaration || declaration.index === undefined) return null
 	const valueStart = declaration.index + declaration[0].length
 	// A binding written to again later holds something else by the time it
 	// is used, so its initializer is not what runs.
-	if (checkIsAssignedAfter(views.structureOnly, name, valueStart)) return null
+	const isReassigned = checkIsAssignedAfter({
+		structureOnly: views.structureOnly,
+		keyword: declaration[1]!,
+		name,
+		position: valueStart,
+	})
+	if (isReassigned) return null
 	const opener = views.structureOnly[valueStart]
 	if (opener !== '[' && opener !== '{') return null
 	const end = findMatchingBrace(views.structureOnly, valueStart)
@@ -1860,9 +1883,10 @@ function patchExistingPreview(
 	const isCsfNext = csfNextBody !== null
 	// A default-exported `definePreview(…)` whose config the finder could not
 	// resolve (an imported object, a call — exported directly or through a
-	// const) is still a CSF Next file, so the advice has to name that style's
-	// additions rather than the classic spreads. A call that is not the
-	// default export leaves a classic file classic.
+	// const — or a `let` assigned to again) is still a CSF Next file, so the
+	// advice has to name that style's additions rather than the classic
+	// spreads. A call that is not the default export leaves a classic file
+	// classic.
 	const views: CodeViews = {
 		codeOnly,
 		structureOnly: blankStringContents(codeOnly),
