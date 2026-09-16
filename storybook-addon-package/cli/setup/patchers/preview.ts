@@ -1700,16 +1700,21 @@ function checkHasDuplicateTopLevelKey(
 	return findTopLevelKey(views.codeOnly, keyword, afterFirstValue) !== null
 }
 
+/** A member modifier keyword ending the text before a member's name. */
+const MEMBER_MODIFIER_BEFORE_NAME =
+	/(?:^|[^\w$])(?:readonly|public|private|protected|static|declare|abstract|override|accessor|get|set)$/
+
 /**
  * Whether a name is used as a binding anywhere in the file's code (strings
  * and comments blanked) — so a declaration the wizard would insert under it
  * would be a second one. A property access (`.dependencyPreviews`) is not a
- * binding, nor is a member key — a `name:` or `name?:` that starts its line
- * or follows a `{`, `,` or `;` on it, as an object literal's key or a type,
- * interface or class member does; a `name:` with anything else before it
- * on its line is a declaration with a type annotation (`const
- * dependenciesJson: Graph = …`) and counts. A spread
- * (`...dependencyPreviews`) counts too.
+ * binding, nor is a member — a `name:`, `name?:` or `name(` at a member
+ * position: starting its line, after a `{`, `,` or `;` on it, or after a
+ * member modifier (`readonly`, `private`, `static`, …), as an object
+ * literal's key or a type, interface or class member does. A `name:` or
+ * `name(` anywhere else is a binding — a declaration with a type annotation
+ * (`const dependenciesJson: Graph = …`), a call — and counts, as does any
+ * bare reference and a spread (`...dependencyPreviews`).
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  * @param name - the identifier
@@ -1719,13 +1724,13 @@ function checkIsNameUsed(structureOnly: string, name: string): boolean {
 	// `...` is allowed).
 	const occurrences = structureOnly.matchAll(
 		new RegExp(
-			String.raw`(?<![\w$])(?<!(?<!\.\.)\.)${escapeForRegex(name)}(?![\w$])(\s*\??\s*:)?`,
+			String.raw`(?<![\w$])(?<!(?<!\.\.)\.)${escapeForRegex(name)}(?![\w$])(\s*\??\s*[:(])?`,
 			'g',
 		),
 	)
 	for (const occurrence of occurrences) {
-		const isFollowedByColon = occurrence[1] !== undefined
-		if (!isFollowedByColon) return true
+		const isMemberShaped = occurrence[1] !== undefined
+		if (!isMemberShaped) return true
 		// Comments are already blanked in this view, so only whitespace sits
 		// between the name and what precedes it on the line.
 		const lineStart = structureOnly.lastIndexOf('\n', occurrence.index! - 1) + 1
@@ -1733,8 +1738,9 @@ function checkIsNameUsed(structureOnly: string, name: string): boolean {
 			.slice(lineStart, occurrence.index!)
 			.trimEnd()
 		const charBefore = lineBefore.at(-1) ?? ''
-		const isMemberKey = ['', '{', ',', ';'].includes(charBefore)
-		if (!isMemberKey) return true
+		const isAfterMemberSeparator = ['', '{', ',', ';'].includes(charBefore)
+		const isAfterMemberModifier = MEMBER_MODIFIER_BEFORE_NAME.test(lineBefore)
+		if (!isAfterMemberSeparator && !isAfterMemberModifier) return true
 	}
 	return false
 }
