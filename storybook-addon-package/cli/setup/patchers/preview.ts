@@ -777,7 +777,9 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
  * `findPreviewBody`, so a `definePreview` that only appears in a comment is
  * ignored. `null` when the file is not in this style, or the argument is
  * something else (an import, a call), or the binding holding the call or
- * the config is a `let` assigned to again (`checkIsAssignedAfter`).
+ * the config is a `let` assigned to again (`checkIsAssignedAfter`). Whether
+ * the body can be read through (`checkHasUnpairedBracket`) is left to the
+ * caller, either way the object is named.
  *
  * @param text - the file content
  */
@@ -808,7 +810,9 @@ function findDefinePreviewBody(
 	const configIdent = configArgument.exec(stripped)?.[1]
 	if (!configIdent) return null
 	const views: CodeViews = { codeOnly, structureOnly: stripped }
-	const configRange = findInitializerLiteralRange(views, configIdent)
+	// The declared literal, readable or not: whether its contents can be read
+	// through is the caller's question, so a refusal can name the cause.
+	const configRange = findDeclaredLiteralRange(views, configIdent)
 	// The initializer has to be an object; `definePreview([…])` is no config.
 	const isObjectLiteral =
 		configRange !== null && stripped[configRange.from - 1] === '{'
@@ -1333,17 +1337,39 @@ function getValueCode({
 
 /**
  * The range inside the brackets of an identifier's same-file `const` / `let`
- * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }` —
- * `null` otherwise (no declaration at the module's top level, no
- * initializer, a call, an import, a `let` assigned to again —
- * `checkIsAssignedAfter` — or a literal holding a bracket nothing pairs —
- * `checkHasUnpairedBracket`). The declaration is found by
- * `findTopLevelDeclaration`, which allows a type annotation.
+ * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }`
+ * the key and spread scanners can read through — `null` otherwise (no such
+ * literal — `findDeclaredLiteralRange` — or one holding a bracket nothing
+ * pairs — `checkHasUnpairedBracket`). For a caller that reads the literal's
+ * contents, so an unreadable one counts as no literal at all; a caller that
+ * only needs to know where the literal is asks `findDeclaredLiteralRange`.
  *
  * @param views - the file views
  * @param name - the identifier whose initializer is wanted
  */
 function findInitializerLiteralRange(
+	views: CodeViews,
+	name: string,
+): { from: number; to: number } | null {
+	const range = findDeclaredLiteralRange(views, name)
+	if (!range) return null
+	const isUnreadable = checkHasUnpairedBracket(views.structureOnly, range)
+	return isUnreadable ? null : range
+}
+
+/**
+ * The range inside the brackets of an identifier's same-file `const` / `let`
+ * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }` —
+ * `null` otherwise (no declaration at the module's top level, no
+ * initializer, a call, an import, a `let` assigned to again —
+ * `checkIsAssignedAfter`). The declaration is found by
+ * `findTopLevelDeclaration`, which allows a type annotation. Whether the
+ * literal can be read through is not asked here.
+ *
+ * @param views - the file views
+ * @param name - the identifier whose initializer is wanted
+ */
+function findDeclaredLiteralRange(
 	views: CodeViews,
 	name: string,
 ): { from: number; to: number } | null {
@@ -1363,11 +1389,7 @@ function findInitializerLiteralRange(
 	if (opener !== '[' && opener !== '{') return null
 	const end = findMatchingBrace(views.structureOnly, valueStart)
 	if (end === null) return null
-	const range = { from: valueStart + 1, to: end }
-	// A literal the key and spread scanners cannot read through is no more
-	// readable than a call.
-	const isUnreadable = checkHasUnpairedBracket(views.structureOnly, range)
-	return isUnreadable ? null : range
+	return { from: valueStart + 1, to: end }
 }
 
 interface GetInitializerCodeParams {
