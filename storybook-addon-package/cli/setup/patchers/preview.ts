@@ -884,7 +884,8 @@ interface CheckIsAssignedAfterParams {
 /**
  * Whether a `let` or `var` binding is assigned to again after `position` — a
  * statement starting `<name> =` (or `<name> +=` and the like) at a line
- * start or after a `;`. Such a binding initialised with a literal and then
+ * start, or after a `;`, a `)` (`if (x) name = …`), a block's `{` or `}`, an
+ * `else` or a `=>`. Such a binding initialised with a literal and then
  * reassigned runs with the later value, so the literal must not be read as
  * its value. A `const` cannot be reassigned, so it is never checked: a
  * `<name> =` at a line start after one is something else that shares the
@@ -897,8 +898,10 @@ function checkIsAssignedAfter({
 	position,
 }: CheckIsAssignedAfterParams): boolean {
 	if (declarationKeyword === 'const') return false
+	// A statement can also start after a `)` (`if (x) name = …`), a `{` or
+	// `}` (a block), an `else`, or a `=>` (an arrow body).
 	const assignment = new RegExp(
-		String.raw`(?:^|;)[ \t]*${escapeForRegex(name)}\s*(?:\*\*|[-+*/%&|^]|<<|>>>?|&&|\|\||\?\?)?=(?!=)`,
+		String.raw`(?:^|[;)}{]|\belse|=>)[ \t]*${escapeForRegex(name)}\s*(?:\*\*|[-+*/%&|^]|<<|>>>?|&&|\|\||\?\?)?=(?!=)`,
 		'm',
 	)
 	return assignment.test(structureOnly.slice(position))
@@ -963,9 +966,8 @@ function findDefaultImportLocalName(
 /**
  * The local name a file gives one of the addon package's named exports —
  * `import { dependencyPreviews as dp } from '…'` gives `dp`, a plain
- * `import { dependencyPreviews }` gives `dependencyPreviews` — or the
- * export's own name when the file does not import it yet (which is the name
- * a fresh import would bind). Read from the same merged list
+ * `import { dependencyPreviews }` gives `dependencyPreviews` — or `null`
+ * when the file does not import it. Read from the same merged list
  * `mergeAddonImport` writes its statement from, so the name the body calls
  * is the name the import binds.
  *
@@ -975,11 +977,12 @@ function findDefaultImportLocalName(
 function findAddonNamedImportLocalName(
 	content: string,
 	exportedName: string,
-): string {
+): string | null {
 	const entry = parseAddonImports(content).entries.find(
 		(e) => e.name === exportedName,
 	)
-	return entry?.alias ?? exportedName
+	if (!entry) return null
+	return entry.alias ?? entry.name
 }
 
 /** How a file binds the addon's `dependencyPreviews` registration function. */
@@ -992,9 +995,9 @@ interface DependencyPreviewsBinding {
 	nameToCall: string
 	/**
 	 * Every name the file imports it under — a default import and a named
-	 * import can both be present — plus the export's own name when there is
-	 * no named import (a re-export can bind it where the import parser does
-	 * not look); a call of any of these registers it.
+	 * import can both be present; empty when it imports neither. A call of
+	 * any of these registers it; a call of the export's own name in a file
+	 * that does not import it is some other function.
 	 */
 	boundNames: Array<string>
 	/**
@@ -1024,8 +1027,12 @@ function findDependencyPreviewsBinding(
 		content,
 		'dependencyPreviews',
 	)
-	const nameToCall = defaultImportLocal ?? namedImportLocal
-	const boundNames = Array.from(new Set([nameToCall, namedImportLocal]))
+	// The export's own name is what a fresh named import binds.
+	const nameToCall =
+		defaultImportLocal ?? namedImportLocal ?? 'dependencyPreviews'
+	const boundNames = [defaultImportLocal, namedImportLocal].filter(
+		(name): name is string => name !== null,
+	)
 	return { nameToCall, boundNames, isDefaultImport: !!defaultImportLocal }
 }
 
