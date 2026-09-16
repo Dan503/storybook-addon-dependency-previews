@@ -488,14 +488,17 @@ function skipWhitespaceAndComments(
 	let i = from
 	while (i < to) {
 		const c = content[i]!
-		const next = content[i + 1]
 		if (/\s/.test(c)) {
 			i++
-		} else if (c === '/' && next === '/') {
+		} else if (content.startsWith(LINE_COMMENT_OPEN, i)) {
 			while (i < to && content[i] !== '\n') i++
-		} else if (c === '/' && next === '*') {
-			const close = content.indexOf('*/', i + 2)
-			i = close === -1 || close + 2 > to ? to : close + 2
+		} else if (content.startsWith(BLOCK_COMMENT_OPEN, i)) {
+			const close = content.indexOf(
+				BLOCK_COMMENT_CLOSE,
+				i + BLOCK_COMMENT_OPEN.length,
+			)
+			const afterClose = close + BLOCK_COMMENT_CLOSE.length
+			i = close === -1 || afterClose > to ? to : afterClose
 		} else {
 			break
 		}
