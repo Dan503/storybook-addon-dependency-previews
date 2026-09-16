@@ -270,7 +270,11 @@ function findLastCodeCharBefore(text: string, index: number): number {
 		const c = text[before]!
 		if (c === '\n') {
 			const lineStart = text.lastIndexOf('\n', before - 1) + 1
-			const lineCommentAt = findLineCommentStart(text, lineStart, before)
+			const lineCommentAt = findLineCommentStart({
+				text,
+				lineStart,
+				lineEnd: before,
+			})
 			before = lineCommentAt < 0 ? before - 1 : lineCommentAt - 1
 			continue
 		}
@@ -295,6 +299,15 @@ function findLastCodeCharBefore(text: string, index: number): number {
 	return -1
 }
 
+interface FindLineCommentStartParams {
+	/** The text being scanned. */
+	text: string
+	/** Position of the line's first character. */
+	lineStart: number
+	/** Position just past the line's last character. */
+	lineEnd: number
+}
+
 /**
  * The position where a `// …` comment starts on one line of code, or `-1`
  * when the line has none. Read the way every scanner here reads a line:
@@ -302,16 +315,12 @@ function findLastCodeCharBefore(text: string, index: number): number {
  * (`'a//b'`, a protocol-relative URL) is not a comment; a `/* … *\/` block
  * is stepped over too, and one left open at the line's end counts as the
  * comment start, since the rest of the line is comment either way.
- *
- * @param text - the text being scanned
- * @param lineStart - position of the line's first character
- * @param lineEnd - position just past the line's last character
  */
-function findLineCommentStart(
-	text: string,
-	lineStart: number,
-	lineEnd: number,
-): number {
+function findLineCommentStart({
+	text,
+	lineStart,
+	lineEnd,
+}: FindLineCommentStartParams): number {
 	let i = lineStart
 	while (i < lineEnd) {
 		const c = text[i]!
@@ -432,9 +441,17 @@ export function findTopLevelKey(
 				content.startsWith(keyword, i + 1) &&
 				content[afterKey] === c
 			if (isQuotedKeyword) {
-				const j = skipWhitespaceAndComments(content, afterKey + 1, to)
+				const j = skipWhitespaceAndComments({
+					content,
+					from: afterKey + 1,
+					to,
+				})
 				if (content[j] === ':') {
-					const valueStart = skipWhitespaceAndComments(content, j + 1, to)
+					const valueStart = skipWhitespaceAndComments({
+						content,
+						from: j + 1,
+						to,
+					})
 					return { keyStart: i, valueStart }
 				}
 			}
@@ -462,9 +479,13 @@ export function findTopLevelKey(
 			!/[A-Za-z0-9_$]/.test(content[i + kwLen] ?? '')
 		if (isBareKeywordAtKeyPosition) {
 			// A comment may sit between the key and its `:` / `,` (`addons /* c */:`).
-			const j = skipWhitespaceAndComments(content, i + kwLen, to)
+			const j = skipWhitespaceAndComments({ content, from: i + kwLen, to })
 			if (content[j] === ':') {
-				const valueStart = skipWhitespaceAndComments(content, j + 1, to)
+				const valueStart = skipWhitespaceAndComments({
+					content,
+					from: j + 1,
+					to,
+				})
 				return { keyStart: i, valueStart }
 			}
 			// The range's end counts as a terminator too: a caller scanning an
@@ -481,20 +502,24 @@ export function findTopLevelKey(
 	return null
 }
 
+interface SkipWhitespaceAndCommentsParams {
+	/** The text being scanned. */
+	content: string
+	/** Where to start. */
+	from: number
+	/** Where to stop (returned when nothing but whitespace and comments remain). */
+	to: number
+}
+
 /**
  * The position of the first character at or after `from` (and before `to`)
  * that is neither whitespace nor part of a line comment or a block comment.
- *
- * @param content - the text being scanned
- * @param from - where to start
- * @param to - where to stop (returned when nothing but whitespace and
- * comments remain)
  */
-function skipWhitespaceAndComments(
-	content: string,
-	from: number,
-	to: number,
-): number {
+function skipWhitespaceAndComments({
+	content,
+	from,
+	to,
+}: SkipWhitespaceAndCommentsParams): number {
 	let i = from
 	while (i < to) {
 		const c = content[i]!

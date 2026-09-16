@@ -477,21 +477,26 @@ function parseAddonImports(content: string): {
 	return { statements, entries: Array.from(byLocalName.values()) }
 }
 
+interface CollapseBlankLinesAtParams {
+	/** The file content. */
+	content: string
+	/** A position inside or at either end of the run. */
+	position: number
+	/** The file's line ending. */
+	eol: string
+}
+
 /**
  * Collapse a run of three or more line breaks around `position` — the gap a
  * deleted statement leaves between the blank lines that surrounded it — to
  * one blank line. Only that run is touched, so a longer run elsewhere in the
  * file (inside a template literal, say) is left as written.
- *
- * @param content - the file content
- * @param position - a position inside or at either end of the run
- * @param eol - the file's line ending
  */
-function collapseBlankLinesAt(
-	content: string,
-	position: number,
-	eol: string,
-): string {
+function collapseBlankLinesAt({
+	content,
+	position,
+	eol,
+}: CollapseBlankLinesAtParams): string {
 	const isLineBreakChar = (c: string | undefined) => c === '\n' || c === '\r'
 	let runStart = position
 	while (runStart > 0 && isLineBreakChar(content[runStart - 1])) runStart--
@@ -624,7 +629,11 @@ function mergeAddonImport({
 				continue
 			}
 			newContent = newContent.slice(0, spliceFrom) + newContent.slice(spliceTo)
-			newContent = collapseBlankLinesAt(newContent, spliceFrom, eol)
+			newContent = collapseBlankLinesAt({
+				content: newContent,
+				position: spliceFrom,
+				eol,
+			})
 		}
 		const commentSuffix = getTrailingCommentSuffix(firstStatement!)
 		newContent =
@@ -844,11 +853,11 @@ function findDefaultExportDefinePreviewArgument(
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
 	)?.[1]
 	if (!exportIdent) return null
-	const declaredCall = findTopLevelDeclaration(
+	const declaredCall = findTopLevelDeclaration({
 		structureOnly,
-		exportIdent,
-		String.raw`definePreview\s*\(\s*`,
-	)
+		name: exportIdent,
+		initializerStart: String.raw`definePreview\s*\(\s*`,
+	})
 	if (!declaredCall) return null
 	const argumentStart = declaredCall.valueStart
 	const isBindingReassigned = checkIsAssignedAfter({
@@ -870,6 +879,15 @@ interface TopLevelDeclaration {
 	valueStart: number
 }
 
+interface FindTopLevelDeclarationParams {
+	/** The file with comments stripped and strings blanked. */
+	structureOnly: string
+	/** The binding. */
+	name: string
+	/** Regex source the initializer has to begin with (`''` for any). */
+	initializerStart: string
+}
+
 /**
  * The first `const` / `let` / `var` declaration of `name` at the module's
  * top level whose initializer starts with `initializerStart`, or `null`
@@ -883,17 +901,12 @@ interface TopLevelDeclaration {
  * say) would then hide every declaration below it; a line start cannot be
  * hidden that way. A type annotation on the declaration is allowed
  * (`TYPE_ANNOTATION_SOURCE`).
- *
- * @param structureOnly - the file with comments stripped and strings blanked
- * @param name - the binding
- * @param initializerStart - regex source the initializer has to begin with
- *   (`''` for any initializer)
  */
-function findTopLevelDeclaration(
-	structureOnly: string,
-	name: string,
-	initializerStart: string,
-): TopLevelDeclaration | null {
+function findTopLevelDeclaration({
+	structureOnly,
+	name,
+	initializerStart,
+}: FindTopLevelDeclarationParams): TopLevelDeclaration | null {
 	const declaration = structureOnly.match(
 		new RegExp(
 			String.raw`^(?:export\s+)?(const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*${initializerStart}`,
@@ -1025,14 +1038,27 @@ function findDefaultImportLocalNames(
 		.map((match) => match[1]!)
 }
 
+/** The local names a file gives one of the addon's named exports. */
+interface AddonNamedImportLocalNames {
+	/** Names a value import binds — ones a call can run under. */
+	valueNames: Array<string>
+	/**
+	 * Names only a type-only import binds (`import type { dependencyPreviews
+	 * }`, `import { type dependencyPreviews as dp }`) — erased at build, so a
+	 * call under one runs nothing until the import is promoted.
+	 */
+	typeOnlyNames: Array<string>
+}
+
 /**
  * Every local name a file gives one of the addon package's named exports —
  * `import { dependencyPreviews as dp } from '…'` gives `dp`, a plain
  * `import { dependencyPreviews }` gives `dependencyPreviews`, and a file may
- * bind the same export under several names. Empty when the file does not
- * import it. Read from the same merged list `mergeAddonImport` writes its
- * statement from, so the names the body calls are the names the import
- * binds.
+ * bind the same export under several names — split by whether the import
+ * is a value import or type-only. Both empty when the file does not import
+ * it. Read from the same merged list `mergeAddonImport` writes its statement
+ * from, so the names the body calls are the names the import binds, and a
+ * name both kinds bind counts as a value (that is what the merge keeps).
  *
  * @param content - the file content
  * @param exportedName - the named export to look for
@@ -1040,10 +1066,15 @@ function findDefaultImportLocalNames(
 function findAddonNamedImportLocalNames(
 	content: string,
 	exportedName: string,
-): Array<string> {
-	return parseAddonImports(content)
-		.entries.filter((e) => e.name === exportedName)
-		.map((e) => e.alias ?? e.name)
+): AddonNamedImportLocalNames {
+	const entries = parseAddonImports(content).entries.filter(
+		(e) => e.name === exportedName,
+	)
+	const localName = (e: AddonImportEntry): string => e.alias ?? e.name
+	return {
+		valueNames: entries.filter((e) => !e.isType).map(localName),
+		typeOnlyNames: entries.filter((e) => e.isType).map(localName),
+	}
 }
 
 /** How a file binds the addon's `dependencyPreviews` registration function. */
@@ -1055,12 +1086,19 @@ interface DependencyPreviewsBinding {
 	 */
 	nameToCall: string
 	/**
-	 * Every name the file imports it under — a default import and a named
+	 * Every name a value import binds it to — a default import and a named
 	 * import can both be present; empty when it imports neither. A call of
 	 * any of these registers it; a call of the export's own name in a file
 	 * that does not import it is some other function.
 	 */
 	boundNames: Array<string>
+	/**
+	 * Every name only a type-only import binds it to (`import type {
+	 * dependencyPreviews }`). Such an import is erased at build, so a call
+	 * under one of these registers nothing until the import is promoted to a
+	 * value import — which `mergeAddonImport` does when asked for the name.
+	 */
+	typeOnlyBoundNames: Array<string>
 	/**
 	 * Whether `nameToCall` is the package's default import — one a named
 	 * import must not be merged beside, since it would declare the name twice.
@@ -1075,7 +1113,10 @@ interface DependencyPreviewsBinding {
  * with a named list after it) is preferred for a call the wizard inserts,
  * and every other binding — further default imports, the named import under
  * any alias (`findAddonNamedImportLocalNames`) — is read as well, since a
- * file may carry several and call any of them.
+ * file may carry several and call any of them. A name only a type-only
+ * import binds is still the one to call when nothing else binds it — the
+ * import merge promotes it — but it is kept apart from the names a call
+ * already runs under.
  *
  * @param content - the file content
  * @param codeOnly - the same content with comments stripped
@@ -1091,13 +1132,19 @@ function findDependencyPreviewsBinding(
 	)
 	// The export's own name is what a fresh named import binds.
 	const nameToCall =
-		defaultImportLocals[0] ?? namedImportLocals[0] ?? 'dependencyPreviews'
+		defaultImportLocals[0] ??
+		namedImportLocals.valueNames[0] ??
+		namedImportLocals.typeOnlyNames[0] ??
+		'dependencyPreviews'
 	const boundNames = Array.from(
-		new Set([...defaultImportLocals, ...namedImportLocals]),
+		new Set([...defaultImportLocals, ...namedImportLocals.valueNames]),
 	)
 	return {
 		nameToCall,
 		boundNames,
+		typeOnlyBoundNames: namedImportLocals.typeOnlyNames.filter(
+			(name) => !boundNames.includes(name),
+		),
 		isDefaultImport: defaultImportLocals.length > 0,
 	}
 }
@@ -1276,7 +1323,7 @@ const UNPAIRED_BRACKET_IN_PREVIEW_REASON =
 const PRESUMED_CONFIGURED_RESULT: PreviewPatchResult = {
 	kind: 'skipped',
 	reason:
-		'addon appears already configured in preview (part of the definePreview config could not be read — check that `addonDocs()` and `dependencyPreviews()` are in its `addons`)',
+		'addon appears already configured in preview (part of the definePreview config could not be read — check that `addonDocs()` and `dependencyPreviews()` are in its `addons` and the `dependencyPreviews` block in its `parameters`)',
 }
 
 /**
@@ -1319,6 +1366,23 @@ interface GetValueCodeParams {
 	visited: Set<string>
 }
 
+/** What a value stands for (`getValueCode`). */
+interface ValueCode {
+	/** The code, as one flat list of entries — `''` for nothing readable. */
+	code: string
+	/**
+	 * The first same-file literal the walk reached that it could not read
+	 * through — one holding a bracket nothing pairs
+	 * (`checkHasUnpairedBracket`) — by the name it is declared under, or
+	 * `null` when none was. Such a literal contributes nothing to `code`, as a
+	 * call or an import does, but unlike those it is code the file does hold,
+	 * so a caller can tell "unreadable" from "absent".
+	 */
+	unreadableLiteral: string | null
+}
+
+const NOTHING_READABLE: ValueCode = { code: '', unreadableLiteral: null }
+
 /**
  * The code a value stands for, as one flat list of entries. A literal
  * `[ … ]` / `{ … }` gives its contents, followed by the contents of every
@@ -1326,76 +1390,75 @@ interface GetValueCodeParams {
  * (`addons: shared`, or the shorthand `addons,`) gives its same-file
  * initializer the same way. Anything the file itself cannot account for — a
  * call, an import, a spread of an import — contributes nothing, so the
- * presence checks built on this never credit code they cannot see.
+ * presence checks built on this never credit code they cannot see; a
+ * same-file literal that cannot be read through contributes nothing either,
+ * and is named in the answer.
  */
 function getValueCode({
 	views,
 	valueStart,
 	visited,
-}: GetValueCodeParams): string {
+}: GetValueCodeParams): ValueCode {
 	const { codeOnly, structureOnly } = views
 	const opener = structureOnly[valueStart]
 	if (opener === '[' || opener === '{') {
 		const end = findMatchingBrace(structureOnly, valueStart)
-		if (end === null) return ''
+		if (end === null) return NOTHING_READABLE
 		const contents = codeOnly.slice(valueStart + 1, end)
 		const spreads = findSpreadsAtTopLevel(views, {
 			from: valueStart + 1,
 			to: end,
 		})
-		const spreadCodes = spreads.map((spread) =>
+		const spreadValues = spreads.map((spread) =>
 			spread.isPlainName
 				? getInitializerCode({ views, name: spread.name, visited })
-				: '',
+				: NOTHING_READABLE,
 		)
-		return [contents, ...spreadCodes].join(',\n')
+		const spreadCodes = spreadValues.map((value) => value.code)
+		const unreadableLiteral =
+			spreadValues.find((value) => value.unreadableLiteral !== null)
+				?.unreadableLiteral ?? null
+		return { code: [contents, ...spreadCodes].join(',\n'), unreadableLiteral }
 	}
 	// Only a value that is a bare identifier and nothing more resolves —
 	// `shared.addons`, `list.slice(0, 1)` or `shared as X` is something the
 	// file cannot account for, as the spread path's `isPlainName` says.
-	const bareIdentifier = getBareIdentifierValue(structureOnly, valueStart)
-	if (bareIdentifier === null) return ''
-	return getInitializerCode({ views, name: bareIdentifier, visited })
-}
-
-/**
- * The identifier a value starting at `valueStart` is, when it is a bare
- * identifier and nothing more (`shared` — not `shared.addons`, a call or a
- * cast), or `null`.
- *
- * @param structureOnly - the file with comments stripped and strings blanked
- * @param valueStart - where the value starts
- */
-function getBareIdentifierValue(
-	structureOnly: string,
-	valueStart: number,
-): string | null {
 	const bareIdentifier = structureOnly
 		.slice(valueStart)
 		.match(/^([A-Za-z_$][\w$]*)\s*(?:[,})]|$)/)
-	return bareIdentifier?.[1] ?? null
+	if (!bareIdentifier) return NOTHING_READABLE
+	return getInitializerCode({ views, name: bareIdentifier[1]!, visited })
 }
 
 /**
- * The range inside the brackets of an identifier's same-file `const` / `let`
- * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }`
- * the key and spread scanners can read through — `null` otherwise (no such
- * literal — `findDeclaredLiteralRange` — or one holding a bracket nothing
- * pairs — `checkHasUnpairedBracket`). For a caller that reads the literal's
- * contents, so an unreadable one counts as no literal at all; a caller that
- * only needs to know where the literal is asks `findDeclaredLiteralRange`.
+ * An identifier's same-file literal initializer, for a caller that reads its
+ * contents: `readable` with the range inside its brackets, `unreadable` when
+ * the literal is there but holds a bracket nothing pairs
+ * (`checkHasUnpairedBracket`), `none` when the file declares no such literal
+ * (`findDeclaredLiteralRange`).
+ */
+type InitializerLiteral =
+	| { kind: 'readable'; range: { from: number; to: number } }
+	| { kind: 'unreadable' }
+	| { kind: 'none' }
+
+/**
+ * Find an identifier's same-file literal initializer and say whether the key
+ * and spread scanners can read through it — see `InitializerLiteral`. A
+ * caller that only needs to know where the literal is asks
+ * `findDeclaredLiteralRange`.
  *
  * @param views - the file views
  * @param name - the identifier whose initializer is wanted
  */
-function findInitializerLiteralRange(
+function findInitializerLiteral(
 	views: CodeViews,
 	name: string,
-): { from: number; to: number } | null {
+): InitializerLiteral {
 	const range = findDeclaredLiteralRange(views, name)
-	if (!range) return null
+	if (!range) return { kind: 'none' }
 	const isUnreadable = checkHasUnpairedBracket(views.structureOnly, range)
-	return isUnreadable ? null : range
+	return isUnreadable ? { kind: 'unreadable' } : { kind: 'readable', range }
 }
 
 /**
@@ -1414,7 +1477,11 @@ function findDeclaredLiteralRange(
 	views: CodeViews,
 	name: string,
 ): { from: number; to: number } | null {
-	const declaration = findTopLevelDeclaration(views.structureOnly, name, '')
+	const declaration = findTopLevelDeclaration({
+		structureOnly: views.structureOnly,
+		name,
+		initializerStart: '',
+	})
 	if (!declaration) return null
 	const { valueStart } = declaration
 	// A binding written to again later holds something else by the time it
@@ -1443,19 +1510,23 @@ interface GetInitializerCodeParams {
 
 /**
  * The code of an identifier's same-file initializer, resolved like any other
- * value (`getValueCode`), or `''` when the file declares no literal for it.
+ * value (`getValueCode`) — nothing when the file declares no literal for it,
+ * and nothing but the name when the literal cannot be read through.
  */
 function getInitializerCode({
 	views,
 	name,
 	visited,
-}: GetInitializerCodeParams): string {
-	if (visited.has(name)) return ''
+}: GetInitializerCodeParams): ValueCode {
+	if (visited.has(name)) return NOTHING_READABLE
 	visited.add(name)
-	const range = findInitializerLiteralRange(views, name)
-	if (!range) return ''
+	const literal = findInitializerLiteral(views, name)
+	if (literal.kind === 'none') return NOTHING_READABLE
+	if (literal.kind === 'unreadable') {
+		return { code: '', unreadableLiteral: name }
+	}
 	// `from` is just inside the bracket; the value starts at the bracket.
-	return getValueCode({ views, valueStart: range.from - 1, visited })
+	return getValueCode({ views, valueStart: literal.range.from - 1, visited })
 }
 
 const SPREAD_TOKEN = '...'
@@ -1583,22 +1654,23 @@ interface GetKeyValueCodeParams {
  * body spreads at its top level (`definePreview({ ...base })` with
  * `base.addons`), or one reached through any chain of such consts;
  * `unreadable` — something spread at any depth that the file cannot see
- * inside (an import, a call, an expression), which may or may not carry the
- * key; `missing` — nothing in the body writes it.
+ * inside (an import, a call, an expression, a same-file literal holding a
+ * bracket nothing pairs), which may or may not carry the key; `missing` —
+ * nothing in the body writes it. Whichever it is, `unreadableLiteral` names
+ * a same-file literal the walk reached but could not read through — at the
+ * spread itself, or anywhere inside the value (`ValueCode`).
  */
-type KeyValueCode =
-	| {
-			location: 'body' | 'missing'
-			/** `''` when the key is nowhere the file can account for. */
-			code: string
-	  }
-	| {
-			location: 'spread' | 'unreadable'
-			/** `''` for `unreadable`: what the spread carries is not readable. */
-			code: string
-			/** The spread, as written after its `...`. */
-			spreadName: string
-	  }
+type KeyValueCode = ValueCode &
+	(
+		| {
+				location: 'body' | 'missing'
+		  }
+		| {
+				location: 'spread' | 'unreadable'
+				/** The spread, as written after its `...`. */
+				spreadName: string
+		  }
+	)
 
 /**
  * The code a key's value stands for (see `getValueCode`), scoped to one
@@ -1622,77 +1694,46 @@ function getKeyValueCode({
 		? spreads.filter((spread) => spread.position > key.valueStart)
 		: spreads
 	for (const spread of spreadsAfterKey.reverse()) {
-		const isReadable = spread.isPlainName && !visited.has(spread.name)
-		const range = isReadable
-			? findInitializerLiteralRange(views, spread.name)
-			: null
-		if (!range) {
-			return { code: '', location: 'unreadable', spreadName: spread.name }
+		const isResolvable = spread.isPlainName && !visited.has(spread.name)
+		const literal: InitializerLiteral = isResolvable
+			? findInitializerLiteral(views, spread.name)
+			: { kind: 'none' }
+		if (literal.kind !== 'readable') {
+			return {
+				...NOTHING_READABLE,
+				location: 'unreadable',
+				spreadName: spread.name,
+				unreadableLiteral: literal.kind === 'unreadable' ? spread.name : null,
+			}
 		}
 		const inSpread = getKeyValueCode({
 			views,
 			keyword,
-			body: range,
+			body: literal.range,
 			visited: new Set([...visited, spread.name]),
 		})
 		if (inSpread.location === 'body') {
-			return {
-				code: inSpread.code,
-				location: 'spread',
-				spreadName: spread.name,
-			}
+			return { ...inSpread, location: 'spread', spreadName: spread.name }
 		}
 		if (inSpread.location !== 'missing') return inSpread
 	}
 	if (key) {
-		const code = getValueCode({
+		const value = getValueCode({
 			views,
 			valueStart: key.valueStart,
 			visited: new Set(visited),
 		})
-		return { code, location: 'body' }
+		return { ...value, location: 'body' }
 	}
-	return { code: '', location: 'missing' }
+	return { ...NOTHING_READABLE, location: 'missing' }
 }
 
-interface CheckIsUnreadableLiteralValueParams {
+interface CheckHasSpreadInLiteralValueParams {
 	views: CodeViews
-	/** The key whose value was looked up. */
+	/** The key whose literal value is checked. */
 	keyword: string
 	/** The range inside the braces of the object holding the key. */
 	body: { from: number; to: number }
-	/** What `getKeyValueCode` answered for the key. */
-	value: KeyValueCode
-}
-
-/**
- * Whether a key's value the file could not account for is a same-file
- * literal holding a bracket nothing pairs (`checkHasUnpairedBracket`) — a
- * spread the body reaches it through, or the bare identifier the body's own
- * key names — rather than a call or an import, which the file never reads.
- * The literal is declared (`findDeclaredLiteralRange`) but was not read
- * (`findInitializerLiteralRange`), which is the only way the two answers
- * differ.
- */
-function checkIsUnreadableLiteralValue({
-	views,
-	keyword,
-	body,
-	value,
-}: CheckIsUnreadableLiteralValueParams): boolean {
-	let name: string | null = null
-	if (value.location === 'unreadable') {
-		name = value.spreadName
-	} else if (value.location === 'body' && value.code === '') {
-		const key = findTopLevelKey(views.codeOnly, keyword, body)
-		name = key
-			? getBareIdentifierValue(views.structureOnly, key.valueStart)
-			: null
-	}
-	if (name === null) return false
-	const isDeclaredLiteral = findDeclaredLiteralRange(views, name) !== null
-	const isReadLiteral = findInitializerLiteralRange(views, name) !== null
-	return isDeclaredLiteral && !isReadLiteral
 }
 
 /**
@@ -1700,16 +1741,12 @@ function checkIsUnreadableLiteralValue({
  * anything at its own top level (`parameters: { ...base }`) — so a key
  * created inside it has to go after the spread. `false` when the key is
  * absent or its value is not a `{ … }` literal.
- *
- * @param views - the file views
- * @param keyword - the key whose literal value is checked
- * @param body - the range inside the braces of the object holding the key
  */
-function checkHasSpreadInLiteralValue(
-	views: CodeViews,
-	keyword: string,
-	body: { from: number; to: number },
-): boolean {
+function checkHasSpreadInLiteralValue({
+	views,
+	keyword,
+	body,
+}: CheckHasSpreadInLiteralValueParams): boolean {
 	const key = findTopLevelKey(views.codeOnly, keyword, body)
 	if (!key || views.structureOnly[key.valueStart] !== '{') return false
 	const end = findMatchingBrace(views.structureOnly, key.valueStart)
@@ -1811,19 +1848,23 @@ function checkDoesFileCall(structureOnly: string, localName: string): boolean {
 	)
 }
 
+interface CheckHasDuplicateTopLevelKeyParams {
+	views: CodeViews
+	/** The key. */
+	keyword: string
+	/** The range inside the object's braces. */
+	body: { from: number; to: number }
+}
+
 /**
  * Whether a key is written more than once at the top level of an object's
  * body — the second one wins at runtime, and the lookups read the first.
- *
- * @param views - the file views
- * @param keyword - the key
- * @param body - the range inside the object's braces
  */
-function checkHasDuplicateTopLevelKey(
-	views: CodeViews,
-	keyword: string,
-	body: { from: number; to: number },
-): boolean {
+function checkHasDuplicateTopLevelKey({
+	views,
+	keyword,
+	body,
+}: CheckHasDuplicateTopLevelKeyParams): boolean {
 	const first = findTopLevelKey(views.codeOnly, keyword, body)
 	if (!first) return false
 	// Resume after the first value: past a literal's closing bracket, or one
@@ -1999,6 +2040,15 @@ function patchDefinePreview({
 	const isDependencyPreviewsInList = dependencyPreviewsBinding.boundNames.some(
 		(name) => checkDoesListCall(addonsValue.code, name),
 	)
+	// A call under a name only a type-only import binds registers nothing —
+	// the import is erased at build — so it is not counted above; the list
+	// needs no second entry, though, only the import promoted to a value
+	// import, which counts as an edit.
+	const isCalledUnderTypeOnlyImport =
+		!isDependencyPreviewsInList &&
+		dependencyPreviewsBinding.typeOnlyBoundNames.some((name) =>
+			checkDoesListCall(addonsValue.code, name),
+		)
 	const isAddonDocsInList = checkDoesListCall(addonsValue.code, addonDocsLocal)
 	const isRegisteredInAddons = isDependencyPreviewsInList && isAddonDocsInList
 	const hasSettingsBlock = checkHasSettingsKeyAtTopLevel(parametersValue.code)
@@ -2009,7 +2059,7 @@ function patchDefinePreview({
 	// not read (a type error in TypeScript, a lint error in JavaScript, and
 	// not a file to guess at).
 	const duplicateKey = ['addons', 'parameters'].find((keyword) =>
-		checkHasDuplicateTopLevelKey(views, keyword, body),
+		checkHasDuplicateTopLevelKey({ views, keyword, body }),
 	)
 	if (duplicateKey) {
 		return {
@@ -2020,9 +2070,14 @@ function patchDefinePreview({
 	// A name the wizard would declare — by the import it inserts — has to be
 	// free: a file that already uses it for something else (a local
 	// `addonDocs`, its own `dependenciesJson`) would get a second declaration.
+	// A name an import already binds, type-only included (the merge promotes
+	// that one rather than declaring it again), is not declared.
+	const isDependencyPreviewsLocalBound = [
+		...dependencyPreviewsBinding.boundNames,
+		...dependencyPreviewsBinding.typeOnlyBoundNames,
+	].includes(dependencyPreviewsLocal)
 	const willImportDependencyPreviews =
-		!isDependencyPreviewsInList &&
-		!dependencyPreviewsBinding.boundNames.includes(dependencyPreviewsLocal)
+		!isDependencyPreviewsInList && !isDependencyPreviewsLocalBound
 	const willImportAddonDocs = !isAddonDocsInList && !docsImportLocal
 	const willImportDependenciesJson =
 		!hasSettingsBlock &&
@@ -2048,11 +2103,11 @@ function patchDefinePreview({
 	// may carry the key, stops the run with the manual message; and a key
 	// nobody writes is created after the body's spreads, so that it runs.
 	const hasBodySpread = findSpreadsAtTopLevel(views, body).length > 0
-	const hasParametersSpread = checkHasSpreadInLiteralValue(
+	const hasParametersSpread = checkHasSpreadInLiteralValue({
 		views,
-		'parameters',
+		keyword: 'parameters',
 		body,
-	)
+	})
 	const spreadRefusal = (
 		keyword: string,
 		value: Extract<KeyValueCode, { spreadName: string }>,
@@ -2066,30 +2121,39 @@ function patchDefinePreview({
 			reason: `Preview config ${source} — please add \`addonDocs()\` and \`dependencyPreviews()\` to \`addons\` and the \`dependencyPreviews\` parameters manually.`,
 		}
 	}
-	// A refusal over a same-file literal the wizard cannot read through — one
-	// holding a bracket nothing pairs, spread into the body or named as a key's
-	// value — is only a refusal when the file does not carry both halves
-	// somewhere: a hand-configured file is reported as appearing configured
-	// rather than refused on every run, the same presumption
-	// `patchExistingPreview` makes for a config body it cannot read. A value
-	// the file can read (a same-file literal that is short) is refused as
-	// read, and a call or an import — which the wizard never reads — is
-	// refused as it always was.
+	// A refusal over a value whose walk reached a same-file literal the wizard
+	// cannot read through — one holding a bracket nothing pairs, spread into
+	// the body, named as a key's value, or spread inside a literal value — is
+	// only a refusal when the file does not carry both halves somewhere: a
+	// hand-configured file is reported as appearing configured rather than
+	// refused on every run, the same presumption `patchExistingPreview` makes
+	// for a config body it cannot read. A value the file can read (a
+	// same-file literal that is short) is refused as read, and a call or an
+	// import — which the wizard never reads — is refused as it always was.
 	const refuseUnlessPresumedConfigured = (
-		keyword: string,
 		value: KeyValueCode,
 		refusal: PreviewPatchResult,
 	): PreviewPatchResult => {
-		const isUnreadableLiteral = checkIsUnreadableLiteralValue({
-			views,
-			keyword,
-			body,
-			value,
-		})
 		const isPresumedConfigured =
-			isUnreadableLiteral && checkIsPresumedConfigured(content, views)
+			value.unreadableLiteral !== null &&
+			checkIsPresumedConfigured(content, views)
 		return isPresumedConfigured ? PRESUMED_CONFIGURED_RESULT : refusal
 	}
+	// A literal the patcher could edit is not edited when a spread inside it
+	// reaches such a literal: what that spread carries is not known, so the
+	// half it may carry would be written twice.
+	const unreadableSpreadRefusal = (
+		keyword: string,
+		value: KeyValueCode,
+	): PreviewPatchResult =>
+		refuseUnlessPresumedConfigured(
+			value,
+			spreadRefusal(keyword, {
+				...value,
+				location: 'unreadable',
+				spreadName: value.unreadableLiteral!,
+			}),
+		)
 	// What the body edits inserted — decides the imports at the end, and
 	// whether anything is written at all (nothing inserted means every half
 	// was already present, in a literal or a non-literal value).
@@ -2125,7 +2189,6 @@ function patchDefinePreview({
 		// wizard will not write a list that does not run.
 		if (!isRegisteredInAddons) {
 			return refuseUnlessPresumedConfigured(
-				'addons',
 				addonsValue,
 				spreadRefusal('addons', addonsValue),
 			)
@@ -2136,14 +2199,21 @@ function patchDefinePreview({
 			findMatchingBrace(newContent, addonsKey.valueStart) ?? listStart
 		// The list is the one the presence checks above already read (the
 		// layout pass only moved it), so their answers decide what is missing.
-		inserted.addonDocsCall = !isAddonDocsInList
-		inserted.dependencyPreviewsCall = !isDependencyPreviewsInList
+		const isDependencyPreviewsCallMissing =
+			!isDependencyPreviewsInList && !isCalledUnderTypeOnlyImport
 		const missingEntries = [
-			...(inserted.addonDocsCall ? [`${addonDocsLocal}()`] : []),
-			...(inserted.dependencyPreviewsCall
+			...(isAddonDocsInList ? [] : [`${addonDocsLocal}()`]),
+			...(isDependencyPreviewsCallMissing
 				? [`${dependencyPreviewsLocal}()`]
 				: []),
 		]
+		const isShortWithUnreadableSpread =
+			missingEntries.length > 0 && addonsValue.unreadableLiteral !== null
+		if (isShortWithUnreadableSpread) {
+			return unreadableSpreadRefusal('addons', addonsValue)
+		}
+		inserted.addonDocsCall = !isAddonDocsInList
+		inserted.dependencyPreviewsCall = isDependencyPreviewsCallMissing
 		if (missingEntries.length > 0) {
 			newContent = addListEntries({
 				content: newContent,
@@ -2158,7 +2228,7 @@ function patchDefinePreview({
 		// already holds both registrations (a same-file `const addons = [...]`),
 		// refused otherwise.
 		if (!isRegisteredInAddons) {
-			return refuseUnlessPresumedConfigured('addons', addonsValue, {
+			return refuseUnlessPresumedConfigured(addonsValue, {
 				kind: 'failed',
 				reason:
 					'Preview config defines `addons` in a non-literal-array form — please add `addonDocs()` and `dependencyPreviews()` to it manually.',
@@ -2201,7 +2271,6 @@ function patchDefinePreview({
 	if (isParametersFromSpread) {
 		if (!hasSettingsBlock) {
 			return refuseUnlessPresumedConfigured(
-				'parameters',
 				parametersValue,
 				spreadRefusal('parameters', parametersValue),
 			)
@@ -2209,6 +2278,11 @@ function patchDefinePreview({
 	} else if (paramsKey && newContent[paramsKey.valueStart] === '{') {
 		// Nothing to do when the block is already there — only `addons` needed
 		// the edit.
+		const isShortWithUnreadableSpread =
+			!hasSettingsBlock && parametersValue.unreadableLiteral !== null
+		if (isShortWithUnreadableSpread) {
+			return unreadableSpreadRefusal('parameters', parametersValue)
+		}
 		if (!hasSettingsBlock) {
 			const paramsStart = paramsKey.valueStart + 1
 			const paramsEnd =
@@ -2246,7 +2320,7 @@ function patchDefinePreview({
 		// already holds the block (a same-file `const parameters = { … }`),
 		// refused otherwise.
 		if (!hasSettingsBlock) {
-			return refuseUnlessPresumedConfigured('parameters', parametersValue, {
+			return refuseUnlessPresumedConfigured(parametersValue, {
 				kind: 'failed',
 				reason:
 					'Preview config already defines `parameters` in a non-literal-object form — please manually add the `dependencyPreviews` block to the existing parameters definition.',
@@ -2272,8 +2346,14 @@ function patchDefinePreview({
 		inserted.settingsBlock = true
 	}
 
+	// A call the body already holds under a type-only import is the one edit
+	// that inserts nothing: its import is promoted below. It is only reached
+	// through the list branch, since any other `addons` value with such a
+	// call is refused above as unregistered.
+	const needsDependencyPreviewsImport =
+		inserted.dependencyPreviewsCall || isCalledUnderTypeOnlyImport
 	const didInsertAnything =
-		inserted.dependencyPreviewsCall ||
+		needsDependencyPreviewsImport ||
 		inserted.addonDocsCall ||
 		inserted.settingsBlock
 	if (!didInsertAnything) {
@@ -2284,8 +2364,7 @@ function patchDefinePreview({
 	// body, so they come last and shift nothing the edits above relied on.
 	const importsToInsert: string[] = []
 	const shouldAddDependencyPreviewsImport =
-		inserted.dependencyPreviewsCall &&
-		!dependencyPreviewsBinding.isDefaultImport
+		needsDependencyPreviewsImport && !dependencyPreviewsBinding.isDefaultImport
 	if (shouldAddDependencyPreviewsImport) {
 		const merged = mergeAddonImport({
 			content: newContent,
