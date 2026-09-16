@@ -1272,6 +1272,31 @@ const UNPAIRED_BRACKET_IN_DEFINE_PREVIEW_REASON =
 	'The definePreview config holds a bracket nothing pairs (in JSX text, say), so the wizard cannot read its keys — please add `addonDocs()` and `dependencyPreviews()` to `addons` and the `dependencyPreviews` parameters manually.'
 const UNPAIRED_BRACKET_IN_PREVIEW_REASON =
 	'The preview config holds a bracket nothing pairs (in JSX text, say), so the wizard cannot read its keys — please add the dependencyPreviews parameters and decorators manually.'
+/** The result for a file `checkIsPresumedConfigured` says yes to. */
+const PRESUMED_CONFIGURED_RESULT: PreviewPatchResult = {
+	kind: 'skipped',
+	reason:
+		'addon appears already configured in preview (part of the definePreview config could not be read — check that `addonDocs()` and `dependencyPreviews()` are in its `addons`)',
+}
+
+/**
+ * Whether a CSF Next file the wizard cannot read through — the config itself,
+ * or a value it points at — is presumed to be configured by hand, so it is
+ * reported as such rather than refused on every run: the file calls
+ * `dependencyPreviews()` somewhere, under whatever name it imports it as, and
+ * holds the settings key somewhere. Read file-wide, which is why it only
+ * presumes; the result's message says so.
+ *
+ * @param content - the file content
+ * @param views - the file views
+ */
+function checkIsPresumedConfigured(content: string, views: CodeViews): boolean {
+	const { boundNames } = findDependencyPreviewsBinding(content, views.codeOnly)
+	const isCalledSomewhere = boundNames.some((name) =>
+		checkDoesFileCall(views.structureOnly, name),
+	)
+	return isCalledSomewhere && checkHasSettingsBlock(views.codeOnly)
+}
 
 /**
  * Two views of one file with every position shared: `codeOnly` has comments
@@ -1328,11 +1353,27 @@ function getValueCode({
 	// Only a value that is a bare identifier and nothing more resolves —
 	// `shared.addons`, `list.slice(0, 1)` or `shared as X` is something the
 	// file cannot account for, as the spread path's `isPlainName` says.
+	const bareIdentifier = getBareIdentifierValue(structureOnly, valueStart)
+	if (bareIdentifier === null) return ''
+	return getInitializerCode({ views, name: bareIdentifier, visited })
+}
+
+/**
+ * The identifier a value starting at `valueStart` is, when it is a bare
+ * identifier and nothing more (`shared` — not `shared.addons`, a call or a
+ * cast), or `null`.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param valueStart - where the value starts
+ */
+function getBareIdentifierValue(
+	structureOnly: string,
+	valueStart: number,
+): string | null {
 	const bareIdentifier = structureOnly
 		.slice(valueStart)
 		.match(/^([A-Za-z_$][\w$]*)\s*(?:[,})]|$)/)
-	if (!bareIdentifier) return ''
-	return getInitializerCode({ views, name: bareIdentifier[1]!, visited })
+	return bareIdentifier?.[1] ?? null
 }
 
 /**
@@ -1612,6 +1653,46 @@ function getKeyValueCode({
 		return { code, location: 'body' }
 	}
 	return { code: '', location: 'missing' }
+}
+
+interface CheckIsUnreadableLiteralValueParams {
+	views: CodeViews
+	/** The key whose value was looked up. */
+	keyword: string
+	/** The range inside the braces of the object holding the key. */
+	body: { from: number; to: number }
+	/** What `getKeyValueCode` answered for the key. */
+	value: KeyValueCode
+}
+
+/**
+ * Whether a key's value the file could not account for is a same-file
+ * literal holding a bracket nothing pairs (`checkHasUnpairedBracket`) — a
+ * spread the body reaches it through, or the bare identifier the body's own
+ * key names — rather than a call or an import, which the file never reads.
+ * The literal is declared (`findDeclaredLiteralRange`) but was not read
+ * (`findInitializerLiteralRange`), which is the only way the two answers
+ * differ.
+ */
+function checkIsUnreadableLiteralValue({
+	views,
+	keyword,
+	body,
+	value,
+}: CheckIsUnreadableLiteralValueParams): boolean {
+	let name: string | null = null
+	if (value.location === 'unreadable') {
+		name = value.spreadName
+	} else if (value.location === 'body' && value.code === '') {
+		const key = findTopLevelKey(views.codeOnly, keyword, body)
+		name = key
+			? getBareIdentifierValue(views.structureOnly, key.valueStart)
+			: null
+	}
+	if (name === null) return false
+	const isDeclaredLiteral = findDeclaredLiteralRange(views, name) !== null
+	const isReadLiteral = findInitializerLiteralRange(views, name) !== null
+	return isDeclaredLiteral && !isReadLiteral
 }
 
 /**
@@ -1985,6 +2066,30 @@ function patchDefinePreview({
 			reason: `Preview config ${source} — please add \`addonDocs()\` and \`dependencyPreviews()\` to \`addons\` and the \`dependencyPreviews\` parameters manually.`,
 		}
 	}
+	// A refusal over a same-file literal the wizard cannot read through — one
+	// holding a bracket nothing pairs, spread into the body or named as a key's
+	// value — is only a refusal when the file does not carry both halves
+	// somewhere: a hand-configured file is reported as appearing configured
+	// rather than refused on every run, the same presumption
+	// `patchExistingPreview` makes for a config body it cannot read. A value
+	// the file can read (a same-file literal that is short) is refused as
+	// read, and a call or an import — which the wizard never reads — is
+	// refused as it always was.
+	const refuseUnlessPresumedConfigured = (
+		keyword: string,
+		value: KeyValueCode,
+		refusal: PreviewPatchResult,
+	): PreviewPatchResult => {
+		const isUnreadableLiteral = checkIsUnreadableLiteralValue({
+			views,
+			keyword,
+			body,
+			value,
+		})
+		const isPresumedConfigured =
+			isUnreadableLiteral && checkIsPresumedConfigured(content, views)
+		return isPresumedConfigured ? PRESUMED_CONFIGURED_RESULT : refusal
+	}
 	// What the body edits inserted — decides the imports at the end, and
 	// whether anything is written at all (nothing inserted means every half
 	// was already present, in a literal or a non-literal value).
@@ -2019,7 +2124,11 @@ function patchDefinePreview({
 		// in a same-file spread, nothing to do; short there, or unreadable, the
 		// wizard will not write a list that does not run.
 		if (!isRegisteredInAddons) {
-			return spreadRefusal('addons', addonsValue)
+			return refuseUnlessPresumedConfigured(
+				'addons',
+				addonsValue,
+				spreadRefusal('addons', addonsValue),
+			)
 		}
 	} else if (addonsKey && newContent[addonsKey.valueStart] === '[') {
 		const listStart = addonsKey.valueStart + 1
@@ -2049,11 +2158,11 @@ function patchDefinePreview({
 		// already holds both registrations (a same-file `const addons = [...]`),
 		// refused otherwise.
 		if (!isRegisteredInAddons) {
-			return {
+			return refuseUnlessPresumedConfigured('addons', addonsValue, {
 				kind: 'failed',
 				reason:
 					'Preview config defines `addons` in a non-literal-array form — please add `addonDocs()` and `dependencyPreviews()` to it manually.',
-			}
+			})
 		}
 	} else {
 		const created = createKeyInBody({
@@ -2091,7 +2200,11 @@ function patchDefinePreview({
 		parametersValue.location === 'unreadable'
 	if (isParametersFromSpread) {
 		if (!hasSettingsBlock) {
-			return spreadRefusal('parameters', parametersValue)
+			return refuseUnlessPresumedConfigured(
+				'parameters',
+				parametersValue,
+				spreadRefusal('parameters', parametersValue),
+			)
 		}
 	} else if (paramsKey && newContent[paramsKey.valueStart] === '{') {
 		// Nothing to do when the block is already there — only `addons` needed
@@ -2133,11 +2246,11 @@ function patchDefinePreview({
 		// already holds the block (a same-file `const parameters = { … }`),
 		// refused otherwise.
 		if (!hasSettingsBlock) {
-			return {
+			return refuseUnlessPresumedConfigured('parameters', parametersValue, {
 				kind: 'failed',
 				reason:
 					'Preview config already defines `parameters` in a non-literal-object form — please manually add the `dependencyPreviews` block to the existing parameters definition.',
-			}
+			})
 		}
 	} else if (addonsCreatedEndOffset !== null) {
 		// Straight after the `addons:` created above, wherever that landed.
@@ -2251,23 +2364,8 @@ function patchExistingPreview(
 		csfNextBody !== null &&
 		checkHasUnpairedBracket(views.structureOnly, csfNextBody)
 	if (isUnresolvedDefinePreview || isCsfNextBodyUnreadable) {
-		// A hand-configured file the finder cannot read is not refused on every
-		// run: when the file carries both registrations somewhere — the call
-		// under whatever name the file imports it as — it is reported as
-		// configured, with the caveat that, unread, the config is only presumed
-		// to hold them.
-		const { boundNames } = findDependencyPreviewsBinding(content, codeOnly)
-		const isCalledSomewhere = boundNames.some((name) =>
-			checkDoesFileCall(views.structureOnly, name),
-		)
-		const doesCarryBothHalves =
-			isCalledSomewhere && checkHasSettingsBlock(codeOnly)
-		if (doesCarryBothHalves) {
-			return {
-				kind: 'skipped',
-				reason:
-					'addon appears already configured in preview (the definePreview config could not be read — check that `addonDocs()` and `dependencyPreviews()` are in its `addons`)',
-			}
+		if (checkIsPresumedConfigured(content, views)) {
+			return PRESUMED_CONFIGURED_RESULT
 		}
 		return {
 			kind: 'failed',
