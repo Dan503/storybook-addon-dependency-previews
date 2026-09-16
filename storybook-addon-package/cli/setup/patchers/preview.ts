@@ -308,6 +308,20 @@ function findImportInsertionIndex(content: string): number {
 
 const PKG = 'storybook-addon-dependency-previews'
 
+/** An identifier or package name made safe to put inside a regex. */
+function escapeForRegex(text: string): string {
+	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// An optional type annotation on a declaration (`: Foo<A, B>`), for a regex
+// that runs from the declared name to its `=`. It stops at `=` and `;`, so a
+// declaration with no initializer (`let x: T`) cannot reach the next `=` in
+// the file — and for the same reason it only crosses a line break where the
+// annotation plainly continues: after `<`, `,`, `(`, `{`, `[`, `|` or `&`,
+// or straight before a closing `>`, `)`, `}` or `]` (how a formatter breaks
+// a long one). A break after a bare name ends it, as it ends the statement.
+const TYPE_ANNOTATION_SOURCE = String.raw`(?::(?:[^=;\n]|[<,({\[|&][ \t\r]*\n|\n(?=[ \t]*[>)}\]]))*)?`
+
 /** The formatting of an existing preview file that inserted code has to match. */
 interface PreviewFileStyle {
 	indent: string
@@ -713,7 +727,7 @@ function findPreviewBody(text: string): { from: number; to: number } | null {
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
 	)?.[1]
 	if (!exportIdent) return null
-	const escaped = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const escaped = escapeForRegex(exportIdent)
 	const declarationMatch = stripped.match(
 		new RegExp(`(?:const|let|var)\\s+${escaped}\\s*=\\s*\\{`),
 	)
@@ -742,8 +756,6 @@ function findDefinePreviewBody(
 	// held in a string cannot pass for the config.
 	const codeOnly = stripCommentsRespectingStrings(text)
 	const stripped = blankStringContents(codeOnly)
-	const escapeForRegex = (name: string): string =>
-		name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 	const argumentStart = findDefaultExportDefinePreviewArgument(stripped)
 	if (argumentStart === null) return null
@@ -761,15 +773,12 @@ function findDefinePreviewBody(
 	configArgument.lastIndex = argumentStart
 	const configIdent = configArgument.exec(stripped)?.[1]
 	if (!configIdent) return null
-	// `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping
-	// at the statement end so a declaration with no initializer cannot reach
-	// the next `=` in the file.
-	const configDeclarationMatch = stripped.match(
-		new RegExp(
-			`(?:const|let|var)\\s+${escapeForRegex(configIdent)}\\s*(?::[^=;\\n]*)?=\\s*\\{`,
-		),
-	)
-	return objectBodyAfterMatch(text, configDeclarationMatch)
+	const views: CodeViews = { codeOnly, structureOnly: stripped }
+	const configRange = findInitializerLiteralRange(views, configIdent)
+	// The initializer has to be an object; `definePreview([…])` is no config.
+	const isObjectLiteral =
+		configRange !== null && stripped[configRange.from - 1] === '{'
+	return isObjectLiteral ? configRange : null
 }
 
 /**
@@ -794,10 +803,9 @@ function findDefaultExportDefinePreviewArgument(
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
 	)?.[1]
 	if (!exportIdent) return null
-	const escapedName = exportIdent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 	const declaredCall = structureOnly.match(
 		new RegExp(
-			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*definePreview\s*\(\s*`,
+			String.raw`(?:const|let|var)\s+${escapeForRegex(exportIdent)}\s*${TYPE_ANNOTATION_SOURCE}=\s*definePreview\s*\(\s*`,
 		),
 	)
 	if (declaredCall?.index === undefined) return null
@@ -838,7 +846,7 @@ function findDefaultImportLocalName(
 	codeOnly: string,
 	packageName: string,
 ): string | null {
-	const escapedPackageName = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const escapedPackageName = escapeForRegex(packageName)
 	const fromPackage = String.raw`\s*from\s*['"]${escapedPackageName}['"]`
 	// Anchored to a line start so an import quoted inside a string on some
 	// other line (a code sample) is not taken for a real one, and read with
@@ -1145,10 +1153,8 @@ function getValueCode({
 /**
  * The range inside the brackets of an identifier's same-file `const` / `let`
  * / `var` initializer, when that initializer is a literal `[ … ]` / `{ … }` —
- * `null` otherwise (no declaration, no initializer, a call, an import).
- * `(?::[^=;\n]*)?` allows a type annotation on the declaration, stopping at
- * the statement end so a declaration with no initializer cannot reach the
- * next `=` in the file.
+ * `null` otherwise (no declaration, no initializer, a call, an import). A
+ * type annotation on the declaration is allowed (`TYPE_ANNOTATION_SOURCE`).
  *
  * @param views - the file views
  * @param name - the identifier whose initializer is wanted
@@ -1157,10 +1163,9 @@ function findInitializerLiteralRange(
 	views: CodeViews,
 	name: string,
 ): { from: number; to: number } | null {
-	const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 	const declaration = views.structureOnly.match(
 		new RegExp(
-			String.raw`(?:const|let|var)\s+${escapedName}\s*(?::[^=;\n]*)?=\s*`,
+			String.raw`(?:const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*`,
 		),
 	)
 	if (!declaration || declaration.index === undefined) return null
@@ -1432,8 +1437,9 @@ function splitTopLevelEntries(listStructure: string): Array<string> {
  * @param localName - the identifier the call must use
  */
 function checkDoesListCall(listCode: string, localName: string): boolean {
-	const escapedName = localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	const isCallOfName = new RegExp(String.raw`^${escapedName}\s*\(`)
+	const isCallOfName = new RegExp(
+		String.raw`^${escapeForRegex(localName)}\s*\(`,
+	)
 	const listStructure = blankStringContents(listCode)
 	return splitTopLevelEntries(listStructure).some((entry) =>
 		isCallOfName.test(entry.trim()),
@@ -1448,8 +1454,9 @@ function checkDoesListCall(listCode: string, localName: string): boolean {
  * @param localName - the identifier the call must use
  */
 function checkDoesFileCall(structureOnly: string, localName: string): boolean {
-	const escapedName = localName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	return new RegExp(String.raw`\b${escapedName}\s*\(`).test(structureOnly)
+	return new RegExp(String.raw`\b${escapeForRegex(localName)}\s*\(`).test(
+		structureOnly,
+	)
 }
 
 interface PatchDefinePreviewParams {
@@ -1961,7 +1968,7 @@ function patchExistingPreview(
 		const paramsBodyEnd = findMatchingBrace(newContent, paramsKey.valueStart)
 		const paramsBodyStart = paramsKey.valueStart + 1
 		const localSpreadRegex = new RegExp(
-			String.raw`\.\.\.${defaultsLocalName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`,
+			String.raw`\.\.\.${escapeForRegex(defaultsLocalName)}\b`,
 		)
 		const hasDefaultParamsSpread =
 			paramsBodyEnd !== null &&
@@ -2017,7 +2024,7 @@ function patchExistingPreview(
 		)
 		const decoratorsBodyStart = decoratorsKey.valueStart + 1
 		const localDecoratorsSpreadRegex = new RegExp(
-			String.raw`\.\.\.${decoratorsLocalName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\b`,
+			String.raw`\.\.\.${escapeForRegex(decoratorsLocalName)}\b`,
 		)
 		const hasDecoratorsSpread =
 			decoratorsBodyEnd !== null &&
