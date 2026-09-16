@@ -636,6 +636,16 @@ export function blankStringContents(
 }
 
 /**
+ * Backslash-escape every character that has a special meaning in a regex,
+ * so the text only matches itself.
+ *
+ * @param text - an identifier, package name or path to match literally
+ */
+export function escapeForRegex(text: string): string {
+	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
  * Make an argument survive `cmd.exe` when a child process is spawned with
  * `shell: true` on Windows. `^` is the cmd.exe escape character, so a bare
  * `^src/` or `^10.2.0` loses its caret — and when the target is a `.cmd`

@@ -13,6 +13,7 @@ import {
 	detectEol,
 	detectFileIndent,
 	detectQuoteStyle,
+	escapeForRegex,
 	findMatchingBrace,
 	findTopLevelKey,
 	stripCommentsRespectingStrings,
@@ -308,18 +309,15 @@ function findImportInsertionIndex(content: string): number {
 
 const PKG = 'storybook-addon-dependency-previews'
 
-/** An identifier or package name made safe to put inside a regex. */
-function escapeForRegex(text: string): string {
-	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 // An optional type annotation on a declaration (`: Foo<A, B>`), for a regex
 // that runs from the declared name to its `=`. It stops at `=` and `;`, so a
 // declaration with no initializer (`let x: T`) cannot reach the next `=` in
 // the file — and for the same reason it only crosses a line break where the
 // annotation plainly continues: after `<`, `,`, `(`, `{`, `[`, `|` or `&`,
-// or straight before a closing `>`, `)`, `}` or `]` (how a formatter breaks
-// a long one). A break after a bare name ends it, as it ends the statement.
+// or straight before a closing `>`, `)`, `}` or `]` — how a formatter breaks
+// a long list of type arguments (`ReactPreview<⏎ A,⏎ B⏎>`). A break after a
+// bare name ends it, as it ends the statement; so a union broken with a
+// leading `|`, or an object type with one member per line, is not read.
 const TYPE_ANNOTATION_SOURCE = String.raw`(?::(?:[^=;\n]|[<,({\[|&][ \t\r]*\n|\n(?=[ \t]*[>)}\]]))*)?`
 
 /** The formatting of an existing preview file that inserted code has to match. */
@@ -784,8 +782,9 @@ function findDefinePreviewBody(
 /**
  * The position of the first character of the argument to the file's
  * default-exported `definePreview(…)` call — written directly, or through a
- * `const <name> = definePreview(…)` (with any type annotation on the const)
- * that `export default <name>` names — or `null` when the default export is
+ * `const <name> = definePreview(…)` (with a type annotation on the const, as
+ * `TYPE_ANNOTATION_SOURCE` reads one) that `export default <name>` names —
+ * or `null` when the default export is
  * not such a call.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
