@@ -891,8 +891,10 @@ interface CheckIsAssignedAfterParams {
  * literal must not be read as its value. A `const` cannot be reassigned, so
  * it is never checked: a `<name> =` at a line start after one is something
  * else that shares the name — a JSX attribute, a default parameter — and
- * must not count. (A default parameter on a `let`-named binding,
- * `function f(name = {})`, does count, and refuses; that is accepted.)
+ * must not count. An arrow parameter of that name (`items.map(name => …)`)
+ * is never counted, since the `=` of `=>` is not an assignment. (A default
+ * parameter, or a JSX attribute on its own line, on a `let`-named binding
+ * does count, and refuses; that is accepted.)
  */
 function checkIsAssignedAfter({
 	structureOnly,
@@ -905,7 +907,7 @@ function checkIsAssignedAfter({
 	// `}` (a block), an `else`, or a `=>` (an arrow body) — and an assignment
 	// used as a value sits after a `(`, which is how a formatter wraps it.
 	const assignment = new RegExp(
-		String.raw`(?:^|[;)}{(]|\belse|=>)[ \t]*${escapeForRegex(name)}\s*(?:\*\*|[-+*/%&|^]|<<|>>>?|&&|\|\||\?\?)?=(?!=)`,
+		String.raw`(?:^|[;)}{(]|\belse|=>)[ \t]*${escapeForRegex(name)}\s*(?:\*\*|[-+*/%&|^]|<<|>>>?|&&|\|\||\?\?)?=(?![=>])`,
 		'm',
 	)
 	return assignment.test(structureOnly.slice(position))
