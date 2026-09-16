@@ -835,11 +835,17 @@ interface TopLevelDeclaration {
 
 /**
  * The first `const` / `let` / `var` declaration of `name` at the module's
- * top level — outside every `{`, `[` and `(` — whose initializer starts
- * with `initializerStart`, or `null` when there is none. A same-named
- * binding inside a helper's body (a decorator's local `config`) is passed
- * over, so it is not taken for the exported one. A type annotation on the
- * declaration is allowed (`TYPE_ANNOTATION_SOURCE`).
+ * top level whose initializer starts with `initializerStart`, or `null`
+ * when there is none. Top level is read as "starts its line" — the keyword,
+ * or an `export` before it, at the first column, which is how every
+ * formatter writes one — so a same-named binding inside a helper's body (a
+ * decorator's local `config`), indented as a formatter indents it, is
+ * passed over and not taken for the exported one. Counting the brackets
+ * open before the match would answer the same question, but a bracket the
+ * scanners cannot pair somewhere above the config (a lone `)` in JSX text,
+ * say) would then hide every declaration below it; a line start cannot be
+ * hidden that way. A type annotation on the declaration is allowed
+ * (`TYPE_ANNOTATION_SOURCE`).
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  * @param name - the binding
@@ -851,36 +857,17 @@ function findTopLevelDeclaration(
 	name: string,
 	initializerStart: string,
 ): TopLevelDeclaration | null {
-	const declaration = new RegExp(
-		String.raw`(const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*${initializerStart}`,
-		'g',
+	const declaration = structureOnly.match(
+		new RegExp(
+			String.raw`^(?:export\s+)?(const|let|var)\s+${escapeForRegex(name)}\s*${TYPE_ANNOTATION_SOURCE}=\s*${initializerStart}`,
+			'm',
+		),
 	)
-	for (const match of structureOnly.matchAll(declaration)) {
-		const index = match.index!
-		if (getBracketDepthAt(structureOnly, index) !== 0) continue
-		return {
-			keyword: match[1] as DeclarationKeyword,
-			valueStart: index + match[0].length,
-		}
+	if (!declaration || declaration.index === undefined) return null
+	return {
+		keyword: declaration[1] as DeclarationKeyword,
+		valueStart: declaration.index + declaration[0].length,
 	}
-	return null
-}
-
-/**
- * How many `{`, `[` and `(` are open at `index` — `0` at the module's top
- * level.
- *
- * @param structureOnly - the file with comments stripped and strings blanked
- * @param index - the position asked about
- */
-function getBracketDepthAt(structureOnly: string, index: number): number {
-	let depth = 0
-	for (let i = 0; i < index; i++) {
-		const c = structureOnly[i]!
-		if (c === '{' || c === '[' || c === '(') depth++
-		else if (c === '}' || c === ']' || c === ')') depth--
-	}
-	return depth
 }
 
 interface CheckIsAssignedAfterParams {
@@ -1364,18 +1351,16 @@ function findSpreadsAtTopLevel(
 	let depth = 0
 	for (let i = 0; i < contents.length; i++) {
 		const c = contents[i]!
-		if (c === '{' || c === '[' || c === '(') depth++
-		else if (c === '}' || c === ']' || c === ')') depth--
-		else if (depth === 0 && contents.startsWith(SPREAD_TOKEN, i)) {
+		depth += getBracketDepthChange(c)
+		if (depth === 0 && contents.startsWith(SPREAD_TOKEN, i)) {
 			// The operand runs to the next comma at this level, or to the end.
 			const operandStart = i + SPREAD_TOKEN.length
 			let operandEnd = operandStart
 			let operandDepth = 0
 			while (operandEnd < contents.length) {
 				const oc = contents[operandEnd]!
-				if (oc === '{' || oc === '[' || oc === '(') operandDepth++
-				else if (oc === '}' || oc === ']' || oc === ')') operandDepth--
-				else if (oc === ',' && operandDepth === 0) break
+				operandDepth += getBracketDepthChange(oc)
+				if (oc === ',' && operandDepth === 0) break
 				operandEnd++
 			}
 			const operandStructure = contents.slice(operandStart, operandEnd).trim()
@@ -1393,6 +1378,18 @@ function findSpreadsAtTopLevel(
 		}
 	}
 	return spreads
+}
+
+/**
+ * What a character does to the bracket depth of a scan: `1` for an opening
+ * `{`, `[` or `(`, `-1` for the matching closers, `0` for anything else.
+ *
+ * @param c - the character being scanned
+ */
+function getBracketDepthChange(c: string): number {
+	if (c === '{' || c === '[' || c === '(') return 1
+	if (c === '}' || c === ']' || c === ')') return -1
+	return 0
 }
 
 interface GetKeyValueCodeParams {
@@ -1539,9 +1536,8 @@ function splitTopLevelEntries(listStructure: string): Array<string> {
 	let entryStart = 0
 	for (let i = 0; i < listStructure.length; i++) {
 		const c = listStructure[i]!
-		if (c === '{' || c === '[' || c === '(') depth++
-		else if (c === '}' || c === ']' || c === ')') depth--
-		else if (c === ',' && depth === 0) {
+		depth += getBracketDepthChange(c)
+		if (c === ',' && depth === 0) {
 			entries.push(listStructure.slice(entryStart, i))
 			entryStart = i + 1
 		}
