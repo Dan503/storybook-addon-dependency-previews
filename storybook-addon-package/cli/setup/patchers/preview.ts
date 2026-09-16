@@ -755,8 +755,10 @@ function findDefinePreviewBody(
 	const codeOnly = stripCommentsRespectingStrings(text)
 	const stripped = blankStringContents(codeOnly)
 
-	const argumentStart = findDefaultExportDefinePreviewArgument(stripped)
-	if (argumentStart === null) return null
+	const call = findDefaultExportDefinePreviewArgument(stripped)
+	// A reassigned binding exports some later call, which is not read.
+	if (call === null || call.isBindingReassigned) return null
+	const { argumentStart } = call
 
 	if (stripped[argumentStart] === '{') {
 		const closeIdx = findMatchingBrace(stripped, argumentStart)
@@ -780,23 +782,25 @@ function findDefinePreviewBody(
 }
 
 /**
- * The position of the first character of the argument to the file's
- * default-exported `definePreview(…)` call — written directly, or through a
- * `const <name> = definePreview(…)` (with a type annotation on the const, as
- * `TYPE_ANNOTATION_SOURCE` reads one) that `export default <name>` names —
- * or `null` when the default export is
- * not such a call.
+ * The file's default-exported `definePreview(…)` call — written directly, or
+ * through a `const <name> = definePreview(…)` (with a type annotation on the
+ * const, as `TYPE_ANNOTATION_SOURCE` reads one) that `export default <name>`
+ * names — as the position of its argument's first character, and whether
+ * that binding is assigned to again later (a `let preview` given a second
+ * `definePreview(…)` before the export exports the second, which is not
+ * read). `null` when the default export is not such a call.
  *
  * @param structureOnly - the file with comments stripped and strings blanked
  */
 function findDefaultExportDefinePreviewArgument(
 	structureOnly: string,
-): number | null {
+): { argumentStart: number; isBindingReassigned: boolean } | null {
 	const directCall = structureOnly.match(
 		/export\s+default\s+definePreview\s*\(\s*/,
 	)
 	if (directCall?.index !== undefined) {
-		return directCall.index + directCall[0].length
+		const argumentStart = directCall.index + directCall[0].length
+		return { argumentStart, isBindingReassigned: false }
 	}
 	const exportIdent = structureOnly.match(
 		/export\s+default\s+([A-Za-z_$][\w$]*)\b/,
@@ -808,7 +812,35 @@ function findDefaultExportDefinePreviewArgument(
 		),
 	)
 	if (declaredCall?.index === undefined) return null
-	return declaredCall.index + declaredCall[0].length
+	const argumentStart = declaredCall.index + declaredCall[0].length
+	const isBindingReassigned = checkIsAssignedAfter(
+		structureOnly,
+		exportIdent,
+		argumentStart,
+	)
+	return { argumentStart, isBindingReassigned }
+}
+
+/**
+ * Whether a binding is assigned to again after `position` — a statement
+ * starting `<name> =` (or `<name> +=` and the like) at a line start or after
+ * a `;`. A `let` or `var` initialised with a literal and then reassigned
+ * runs with the later value, so the literal must not be read as its value.
+ *
+ * @param structureOnly - the file with comments stripped and strings blanked
+ * @param name - the binding
+ * @param position - where to start looking
+ */
+function checkIsAssignedAfter(
+	structureOnly: string,
+	name: string,
+	position: number,
+): boolean {
+	const assignment = new RegExp(
+		String.raw`(?:^|;)[ \t]*${escapeForRegex(name)}\s*(?:\*\*|[-+*/%&|^]|<<|>>>?|&&|\|\||\?\?)?=(?!=)`,
+		'm',
+	)
+	return assignment.test(structureOnly.slice(position))
 }
 
 /**
@@ -891,22 +923,31 @@ function findAddonNamedImportLocalName(
 
 /** How a file binds the addon's `dependencyPreviews` registration function. */
 interface DependencyPreviewsBinding {
-	/** The name the file calls it by. */
-	localName: string
 	/**
-	 * Whether that name is the package's default import — one a named import
-	 * must not be merged beside, since it would declare the name twice.
+	 * The name a call the wizard inserts uses: the package's default import
+	 * when the file has one, else the named import's local name (the export's
+	 * own name when the file does not import it yet).
+	 */
+	nameToCall: string
+	/**
+	 * Every name the file already binds it to — a default import and a named
+	 * import can both be present — a call of any of which registers it.
+	 */
+	boundNames: Array<string>
+	/**
+	 * Whether `nameToCall` is the package's default import — one a named
+	 * import must not be merged beside, since it would declare the name twice.
 	 */
 	isDefaultImport: boolean
 }
 
 /**
- * The local name a file gives `dependencyPreviews`. It is also the package's
- * default export, and the docs used to show it imported that way — `import
- * dependencyPreviews from '…'` — so a default import (possibly with a named
- * list after it) is checked first, then the named import under any alias
- * (`findAddonNamedImportLocalName`), which also gives the name a fresh
- * import would bind when the file has neither.
+ * The local names a file gives `dependencyPreviews`. It is also the
+ * package's default export, and the docs used to show it imported that way
+ * — `import dependencyPreviews from '…'` — so a default import (possibly
+ * with a named list after it) is preferred for a call the wizard inserts,
+ * and the named import under any alias (`findAddonNamedImportLocalName`)
+ * is read as well, since a file may carry both and call either.
  *
  * @param content - the file content
  * @param codeOnly - the same content with comments stripped
@@ -916,13 +957,13 @@ function findDependencyPreviewsBinding(
 	codeOnly: string,
 ): DependencyPreviewsBinding {
 	const defaultImportLocal = findDefaultImportLocalName(codeOnly, PKG)
-	if (defaultImportLocal) {
-		return { localName: defaultImportLocal, isDefaultImport: true }
-	}
-	return {
-		localName: findAddonNamedImportLocalName(content, 'dependencyPreviews'),
-		isDefaultImport: false,
-	}
+	const namedImportLocal = findAddonNamedImportLocalName(
+		content,
+		'dependencyPreviews',
+	)
+	const nameToCall = defaultImportLocal ?? namedImportLocal
+	const boundNames = Array.from(new Set([nameToCall, namedImportLocal]))
+	return { nameToCall, boundNames, isDefaultImport: !!defaultImportLocal }
 }
 
 interface AddListEntriesParams {
@@ -1169,6 +1210,9 @@ function findInitializerLiteralRange(
 	)
 	if (!declaration || declaration.index === undefined) return null
 	const valueStart = declaration.index + declaration[0].length
+	// A binding written to again later holds something else by the time it
+	// is used, so its initializer is not what runs.
+	if (checkIsAssignedAfter(views.structureOnly, name, valueStart)) return null
 	const opener = views.structureOnly[valueStart]
 	if (opener !== '[' && opener !== '{') return null
 	const end = findMatchingBrace(views.structureOnly, valueStart)
@@ -1507,7 +1551,7 @@ function patchDefinePreview({
 		content,
 		codeOnly,
 	)
-	const dependencyPreviewsLocal = dependencyPreviewsBinding.localName
+	const dependencyPreviewsLocal = dependencyPreviewsBinding.nameToCall
 	// The docs addon may already be registered under any local name
 	// (`import docs from '@storybook/addon-docs'`); when it is, that name is
 	// what the `addons` scan below looks for.
@@ -1532,9 +1576,10 @@ function patchDefinePreview({
 		keyword: 'parameters',
 		body,
 	})
-	const isDependencyPreviewsInList = checkDoesListCall(
-		addonsValue.code,
-		dependencyPreviewsLocal,
+	// A call under any name the file binds it to counts (`import legacy, {
+	// dependencyPreviews as dp }` with `dp()` in the list).
+	const isDependencyPreviewsInList = dependencyPreviewsBinding.boundNames.some(
+		(name) => checkDoesListCall(addonsValue.code, name),
 	)
 	const isAddonDocsInList = checkDoesListCall(addonsValue.code, addonDocsLocal)
 	const isRegisteredInAddons = isDependencyPreviewsInList && isAddonDocsInList
@@ -1831,10 +1876,12 @@ function patchExistingPreview(
 		// under whatever name the file imports it as — it is reported as
 		// configured, with the caveat that, unread, the config is only presumed
 		// to hold them.
-		const { localName } = findDependencyPreviewsBinding(content, codeOnly)
+		const { boundNames } = findDependencyPreviewsBinding(content, codeOnly)
+		const isCalledSomewhere = boundNames.some((name) =>
+			checkDoesFileCall(views.structureOnly, name),
+		)
 		const doesCarryBothHalves =
-			checkDoesFileCall(views.structureOnly, localName) &&
-			checkHasSettingsBlock(codeOnly)
+			isCalledSomewhere && checkHasSettingsBlock(codeOnly)
 		if (doesCarryBothHalves) {
 			return {
 				kind: 'skipped',
