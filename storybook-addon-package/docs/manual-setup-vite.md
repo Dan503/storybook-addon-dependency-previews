@@ -222,7 +222,7 @@ import { definePreview } from '@storybook/react-vite' // if using React
 import { definePreview } from '@storybook/vue3-vite' // if using Vue 3
 import { definePreview } from 'storybook-solidjs-vite' // if using Solid
 import addonDocs from '@storybook/addon-docs'
-import dependencyPreviews from 'storybook-addon-dependency-previews'
+import { dependencyPreviews } from 'storybook-addon-dependency-previews'
 
 import dependenciesJson from './dependency-previews.json'
 
@@ -245,7 +245,7 @@ export default definePreview({
 })
 ```
 
-`definePreview` comes from your framework package. Not every framework package exports it yet (at the time of writing `@storybook/preact-vite`, `@storybook/sveltekit` and `@storybook/svelte-vite` do not) — for those, keep the hand-spread form. The hand-spread form remains supported on Storybook 11 (checked with the React example site on the 11 alpha), and is what the setup wizard generates.
+`definePreview` comes from your framework package. Not every framework package exports it yet (at the time of writing `@storybook/preact-vite`, `@storybook/sveltekit` and `@storybook/svelte-vite` do not) — for those, keep the hand-spread form. The hand-spread form remains supported on Storybook 11 (checked with the React example site on the 11 alpha). The setup wizard patches whichever form an existing preview file uses, and when it creates the file it writes this form on Storybook 11 for the frameworks listed in the imports above and the hand-spread form everywhere else.
 
 ## 7. Run it
 

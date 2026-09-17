@@ -491,6 +491,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		framework,
 		sourceRootUrl,
 		srcDir: effectiveSrcDir,
+		storybookMajor: detection.storybookMajor,
 	})
 	switch (previewResult.kind) {
 		case 'created':

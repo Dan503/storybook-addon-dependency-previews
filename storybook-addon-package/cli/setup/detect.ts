@@ -62,6 +62,13 @@ export type Detection = {
 	 * protocol, a GitHub shorthand, a folder path or a tarball filename).
 	 */
 	storybookAddonVersionSpec: string | null
+	/**
+	 * Major version of the `storybook` package installed in the project's
+	 * `node_modules` chain (e.g. `11`), or `null` when none is installed. The
+	 * preview patcher uses it to pick the CSF Next `definePreview` style for a
+	 * newly-created preview file on Storybook 11 and up.
+	 */
+	storybookMajor: number | null
 }
 
 const MAIN_CANDIDATES: ReadonlyArray<MainFile['lang']> = [
@@ -339,6 +346,18 @@ function getInstalledStorybookVersion(cwd: string): string | null {
 }
 
 /**
+ * The major version of an installed version string (`11.0.0-alpha.0` → `11`),
+ * or `null` when there is no installed version or it does not start with a
+ * number.
+ *
+ * @param installedVersion - the exact installed version, or `null`
+ */
+function getMajorVersion(installedVersion: string | null): number | null {
+	const major = installedVersion?.match(/^(\d+)/)?.[1]
+	return major === undefined ? null : Number(major)
+}
+
+/**
  * Work out which version the `@storybook/*` addons should be installed at, so
  * they line up with the project's Storybook core rather than with whatever
  * `@latest` happens to be — with two supported majors, `@latest` can be a
@@ -348,12 +367,14 @@ function getInstalledStorybookVersion(cwd: string): string | null {
  * `storybook`. The `@storybook/*` addons are published at every version the
  * core is, so the same specifier — a version, a range, or a dist-tag —
  * resolves to the same version for both.
+ *
+ * @param installedVersion - the exact installed `storybook` version, or `null`
+ * @param declaredStorybookRange - the `storybook` specifier in `package.json`
  */
 function getStorybookAddonVersionSpec(
-	cwd: string,
+	installedVersion: string | null,
 	declaredStorybookRange: string | undefined,
 ): string | null {
-	const installedVersion = getInstalledStorybookVersion(cwd)
 	if (installedVersion) return installedVersion
 	if (!declaredStorybookRange) return null
 	// Only a registry version, range or dist-tag can be reused for the addons.
@@ -381,6 +402,8 @@ export function detectProject(cwd: string): Detection {
 	let isEsm = false
 	let installedPackages: ReadonlySet<string> = new Set<string>()
 	let allDependencyKeys: ReadonlySet<string> = new Set<string>()
+	// Read once and shared by the addon version spec and the major below.
+	const installedStorybookVersion = getInstalledStorybookVersion(cwd)
 	let storybookAddonVersionSpec: string | null = null
 	try {
 		const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf8'))
@@ -391,7 +414,7 @@ export function detectProject(cwd: string): Detection {
 		}
 		installedPackages = new Set(Object.keys(installed))
 		storybookAddonVersionSpec = getStorybookAddonVersionSpec(
-			cwd,
+			installedStorybookVersion,
 			installed.storybook,
 		)
 		// `allDependencyKeys` additionally includes peerDependencies — used only
@@ -454,5 +477,6 @@ export function detectProject(cwd: string): Detection {
 		isEsm,
 		installedPackages,
 		storybookAddonVersionSpec,
+		storybookMajor: getMajorVersion(installedStorybookVersion),
 	}
 }

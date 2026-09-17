@@ -27,7 +27,7 @@ import {
 	type TsxFramework,
 } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
-import { findInstalledPackage } from './setup/util.js'
+import { escapeForRegex, findInstalledPackage } from './setup/util.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Args
@@ -341,11 +341,6 @@ function escapeForRegexIgnoringCase(text: string): string {
 				: escapeForRegex(char)
 		})
 		.join('')
-}
-
-/** Backslash-escape every character that has a special meaning in a regex, so the text only matches itself. */
-function escapeForRegex(text: string): string {
-	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 function buildOnce() {
