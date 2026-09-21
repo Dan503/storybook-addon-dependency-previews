@@ -175,7 +175,8 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	/**
 	 * Other Storybook framework packages built on this same core package. The
 	 * one the project declares wins over `framework`, which is the default when
-	 * none of them (or more than one of them) is declared.
+	 * none is declared; more than one declared is ambiguous, and the
+	 * `.storybook/main.*` regex decides. See `pickDeclaredFrameworkPackage`.
 	 */
 	alternatives?: ReadonlyArray<string>
 }> = [
@@ -245,7 +246,7 @@ function frameworkFromRaw(raw: string | null): Framework {
  *     pick whichever of its Storybook packages the project declares (see
  *     `pickDeclaredFrameworkPackage`).
  *
- * If exactly one match survives, that's the winner. Zero matches → no
+ * If exactly one match survives, pass 3 names the winner. Zero matches → no
  * recognised framework. **Multiple unrelated matches** (e.g. a polyglot
  * monorepo with both `vue` and `react` in the dep surface) → ambiguous, so
  * return `null` and let the `.storybook/main.*` regex decide based on the
@@ -334,10 +335,9 @@ export type TsxFramework = NonNullable<SbDepsConfig['tsxFramework']>
  *
  * Everything else is React. That is the right answer for React itself (on Vite
  * or on webpack) and for Next.js, the only others here that author `.tsx` at
- * all. For the rest the
- * value is never consulted: a `.tsx` file in a Svelte, Vue or Angular project
- * is turned away before any template is chosen, and one in a project whose
- * framework was never recognised is not scaffolded either.
+ * all. For the rest the value is never consulted: a `.tsx` file in a Svelte,
+ * Vue or Angular project is turned away before any template is chosen, and one
+ * in a project whose framework was never recognised is not scaffolded either.
  */
 export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
 	if (framework === 'solid-vite') return 'solid'
