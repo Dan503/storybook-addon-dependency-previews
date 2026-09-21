@@ -154,8 +154,8 @@ const FRAMEWORK_REGEX =
  * served by more than one Storybook framework package (`react` by
  * `@storybook/react-vite` or `@storybook/react-webpack5`). The core package
  * alone cannot tell them apart, so a detector lists the alternatives and the
- * one the project's dependencies declare wins — see
- * `pickDeclaredFrameworkPackage`.
+ * one the project declares — in `package.json`, or failing that in
+ * `.storybook/main.*` — wins. See `pickDeclaredFrameworkPackage`.
  *
  * This list is the input to the `package.json` scan only. It is NOT a gate on
  * the regex path: the regex captures any `framework:` string literal it finds
@@ -174,9 +174,11 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	subsumes?: string
 	/**
 	 * Other Storybook framework packages built on this same core package. The
-	 * one the project declares wins over `framework`, which is the default when
-	 * none is declared; more than one declared is ambiguous, and the
-	 * `.storybook/main.*` regex decides. See `pickDeclaredFrameworkPackage`.
+	 * one `package.json` declares wins over `framework`; when it declares none,
+	 * the `.storybook/main.*` declaration decides, and `framework` is the
+	 * default when that names none of them either. More than one declared in
+	 * `package.json` is ambiguous, and the `.storybook/main.*` regex decides.
+	 * See `pickDeclaredFrameworkPackage`.
 	 */
 	alternatives?: ReadonlyArray<string>
 }> = [
@@ -230,6 +232,32 @@ function frameworkFromRaw(raw: string | null): Framework {
 }
 
 /**
+ * The `framework:` string literal declared in `.storybook/main.*`, or `null`
+ * when the file is missing, unreadable, or declares none. Comments are
+ * stripped first so a commented-out `framework: ...` example (or a code
+ * snippet inside a block comment) can't be read as the active framework.
+ *
+ * @param mainFile - the project's `.storybook/main.*`, when one was found
+ */
+function readMainFileFramework(mainFile: MainFile | null): string | null {
+	if (!mainFile) return null
+	try {
+		const content = readFileSync(mainFile.path, 'utf8')
+		const codeOnly = stripCommentsRespectingStrings(content)
+		const match = codeOnly.match(FRAMEWORK_REGEX)
+		return match?.[1] || match?.[2] || null
+	} catch {
+		return null
+	}
+}
+
+/** What the dependency scan decided, and which file settled it. */
+type DependencyScanResult = {
+	frameworkRaw: string
+	source: FrameworkDetectionSource
+}
+
+/**
  * Scan a project's full dependency surface (deps + devDeps + peerDeps) for
  * recognised core framework packages and return the unambiguous winner's
  * `@storybook/<framework>` value, or `null` if no recognised package is
@@ -254,10 +282,15 @@ function frameworkFromRaw(raw: string | null): Framework {
  * would silently pick whichever detector happened to come first in the
  * array, which is fragile and produced exactly that bug for `vue` + `react`
  * before this fix.
+ *
+ * @param allDependencyKeys - every package the project declares, peers included
+ * @param mainFileFrameworkRaw - the `framework:` declared in `.storybook/main.*`,
+ * consulted only by pass 3 when `package.json` leaves the choice open
  */
 function findFrameworkInDeps(
 	allDependencyKeys: ReadonlySet<string>,
-): string | null {
+	mainFileFrameworkRaw: string | null,
+): DependencyScanResult | null {
 	const matches = CORE_FRAMEWORK_DETECTORS.filter((d) =>
 		allDependencyKeys.has(d.corePackage),
 	)
@@ -267,7 +300,11 @@ function findFrameworkInDeps(
 	)
 	const survivors = matches.filter((m) => !subsumedCores.has(m.corePackage))
 	if (survivors.length === 1) {
-		return pickDeclaredFrameworkPackage(survivors[0]!, allDependencyKeys)
+		return pickDeclaredFrameworkPackage(
+			survivors[0]!,
+			allDependencyKeys,
+			mainFileFrameworkRaw,
+		)
 	}
 	// Zero (every match was subsumed, which can only happen if a detector
 	// `subsumes` is its own corePackage — guard anyway) or multiple
@@ -276,26 +313,38 @@ function findFrameworkInDeps(
 }
 
 /**
- * Which of a detector's Storybook packages the project actually uses. When the
- * project declares exactly one of the detector's `framework` and
- * `alternatives`, that one; when it declares none, the detector's `framework`
- * (the default — a minimal Storybook install need not name a framework
- * package at all); when it declares more than one, `null`, so the caller
- * falls back to the `.storybook/main.*` regex the same way it does for two
- * unrelated frameworks.
+ * Which of a detector's Storybook packages the project actually uses. When
+ * `package.json` declares exactly one of the detector's `framework` and
+ * `alternatives`, that one. When it declares more than one, `null`, so the
+ * caller falls back to the `.storybook/main.*` regex the same way it does for
+ * two unrelated frameworks. When it declares none (a minimal Storybook install
+ * need not name a framework package at all), the `.storybook/main.*`
+ * declaration settles it if it names one of the candidates — a project whose
+ * `package.json` says only `react` while its main file says
+ * `@storybook/react-webpack5` is a webpack project — and otherwise the
+ * detector's `framework` is the default.
  *
  * @param detector - the single surviving `CORE_FRAMEWORK_DETECTORS` entry
  * @param allDependencyKeys - every package the project declares, peers included
+ * @param mainFileFrameworkRaw - the `framework:` declared in `.storybook/main.*`
  */
 function pickDeclaredFrameworkPackage(
 	detector: (typeof CORE_FRAMEWORK_DETECTORS)[number],
 	allDependencyKeys: ReadonlySet<string>,
-): string | null {
+	mainFileFrameworkRaw: string | null,
+): DependencyScanResult | null {
 	const candidates = [detector.framework, ...(detector.alternatives ?? [])]
 	const declared = candidates.filter((pkg) => allDependencyKeys.has(pkg))
-	if (declared.length === 0) return detector.framework
-	if (declared.length === 1) return declared[0]!
-	return null
+	if (declared.length > 1) return null
+	if (declared.length === 1) {
+		return { frameworkRaw: declared[0]!, source: 'package.json' }
+	}
+	const doesMainFileNameACandidate =
+		mainFileFrameworkRaw !== null && candidates.includes(mainFileFrameworkRaw)
+	if (doesMainFileNameACandidate) {
+		return { frameworkRaw: mainFileFrameworkRaw, source: '.storybook/main' }
+	}
+	return { frameworkRaw: detector.framework, source: 'package.json' }
 }
 
 function bundlerFromFramework(framework: Framework): Detection['bundler'] {
@@ -479,38 +528,34 @@ export function detectProject(cwd: string): Detection {
 		// no package.json or unreadable — leave defaults (empty sets)
 	}
 
+	// Read once: the dependency scan consults it when `package.json` leaves the
+	// choice between one core package's Storybook packages open, and the
+	// fallback below uses it outright.
+	const mainFileFrameworkRaw = readMainFileFramework(mainFile)
+
 	// Primary signal: scan the project's dependency surface for exactly one
 	// recognised Storybook framework package. This works even when the
 	// `.storybook/main.*` config file is missing (minimal setups) or formatted
-	// in a way the regex below can't parse.
-	let frameworkRaw: string | null = findFrameworkInDeps(allDependencyKeys)
+	// in a way the regex can't parse.
+	const dependencyScan = findFrameworkInDeps(
+		allDependencyKeys,
+		mainFileFrameworkRaw,
+	)
+	let frameworkRaw: string | null = dependencyScan?.frameworkRaw ?? null
 	let frameworkDetectionSource: FrameworkDetectionSource =
-		frameworkRaw ? 'package.json' : 'none'
+		dependencyScan?.source ?? 'none'
 
-	// Fallback: regex-match the `.storybook/main.*` config file. Runs when the
-	// dependency scan above found nothing it recognised, and also when it could
-	// not choose — between independent matches, or between two Storybook
-	// packages declared for one core package (`@storybook/react-vite` and
+	// Fallback: the `.storybook/main.*` declaration. Used when the dependency
+	// scan above found nothing it recognised, and also when it could not choose
+	// — between independent matches, or between two Storybook packages declared
+	// for one core package (`@storybook/react-vite` and
 	// `@storybook/react-webpack5` both present). `findFrameworkInDeps` returns
 	// null for all of those, and the explicit `framework:` declaration is the
 	// reliable answer in the ambiguous cases. A meta-framework and the base it
 	// `subsumes` are not one of those cases: that pair resolves in the scan.
-	if (frameworkRaw === null && mainFile) {
-		try {
-			const content = readFileSync(mainFile.path, 'utf8')
-			// Strip comments first so a commented-out `framework: ...` example
-			// (or a code snippet inside a block comment) can't be detected as the
-			// active framework.
-			const codeOnly = stripCommentsRespectingStrings(content)
-			const match = codeOnly.match(FRAMEWORK_REGEX)
-			const matched = match?.[1] || match?.[2] || null
-			if (matched) {
-				frameworkRaw = matched
-				frameworkDetectionSource = '.storybook/main'
-			}
-		} catch {
-			// leave frameworkRaw as null
-		}
+	if (frameworkRaw === null && mainFileFrameworkRaw) {
+		frameworkRaw = mainFileFrameworkRaw
+		frameworkDetectionSource = '.storybook/main'
 	}
 
 	const framework = frameworkFromRaw(frameworkRaw)
