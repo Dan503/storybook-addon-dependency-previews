@@ -259,10 +259,10 @@ type DependencyScanResult = {
 
 /**
  * Scan a project's full dependency surface (deps + devDeps + peerDeps) for
- * recognised core framework packages and return the unambiguous winner's
- * `@storybook/<framework>` value, or `null` if no recognised package is
- * present *or* if the result is ambiguous (caller falls back to the
- * `.storybook/main.*` regex).
+ * recognised core framework packages and return the unambiguous winner — its
+ * `@storybook/<framework>` value and which file settled it — or `null` if no
+ * recognised package is present *or* if the result is ambiguous (caller falls
+ * back to the `.storybook/main.*` regex).
  *
  * The decision is three-pass:
  *
@@ -313,13 +313,15 @@ function findFrameworkInDeps(
 }
 
 /**
- * Which of a detector's Storybook packages the project actually uses. When
- * `package.json` declares exactly one of the detector's `framework` and
- * `alternatives`, that one. When it declares more than one, `null`, so the
- * caller falls back to the `.storybook/main.*` regex the same way it does for
- * two unrelated frameworks. When it declares none (a minimal Storybook install
- * need not name a framework package at all), the `.storybook/main.*`
- * declaration settles it if it names one of the candidates — a project whose
+ * Which of a detector's Storybook packages the project actually uses. A
+ * detector with no `alternatives` leaves nothing to choose: its one
+ * `framework` is the answer. Otherwise, when `package.json` declares exactly
+ * one of the detector's `framework` and `alternatives`, that one. When it
+ * declares more than one, `null`, so the caller falls back to the
+ * `.storybook/main.*` regex the same way it does for two unrelated
+ * frameworks. When it declares none (a minimal Storybook install need not
+ * name a framework package at all), the `.storybook/main.*` declaration
+ * settles it if it names one of the candidates — a project whose
  * `package.json` says only `react` while its main file says
  * `@storybook/react-webpack5` is a webpack project — and otherwise the
  * detector's `framework` is the default.
@@ -333,7 +335,10 @@ function pickDeclaredFrameworkPackage(
 	allDependencyKeys: ReadonlySet<string>,
 	mainFileFrameworkRaw: string | null,
 ): DependencyScanResult | null {
-	const candidates = [detector.framework, ...(detector.alternatives ?? [])]
+	if (!detector.alternatives) {
+		return { frameworkRaw: detector.framework, source: 'package.json' }
+	}
+	const candidates = [detector.framework, ...detector.alternatives]
 	const declared = candidates.filter((pkg) => allDependencyKeys.has(pkg))
 	if (declared.length > 1) return null
 	if (declared.length === 1) {
