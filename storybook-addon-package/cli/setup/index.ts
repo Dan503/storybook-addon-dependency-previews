@@ -212,7 +212,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// required for the addon's `import.meta.glob` story-discovery. They share a
 	// single manual-setup doc that walks through the webpack additions (custom
 	// CSS-modules loader, `__PROJECT_ROOT__` define) with framework-specific
-	// callouts where Angular, Next.js and React on webpack diverge.
+	// callouts where Angular and Next.js diverge (React on webpack follows the
+	// Next.js lines).
 	if (detection.bundler === 'webpack5') {
 		log(
 			'Webpack-based Storybook projects are not supported by the wizard — Vite is required.',

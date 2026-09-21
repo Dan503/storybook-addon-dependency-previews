@@ -41,7 +41,7 @@ You'll also need a `css-modules-loader.cjs` file alongside your `.storybook/main
 ```ts
 import type { StorybookConfig } from '@storybook/angular' // if using Angular
 import type { StorybookConfig } from '@storybook/nextjs' // if using Next.js
-import { createRequire } from 'module' // if using Angular (delete for Next.js)
+import { createRequire } from 'module'
 import { fileURLToPath } from 'url'
 import path from 'path'
 
