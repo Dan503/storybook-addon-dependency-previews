@@ -1,8 +1,10 @@
-# Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)
+# Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`, `@storybook/react-webpack5`)
 
-> The automated `sb-deps setup` wizard only supports Vite-based Storybook frameworks. If your Storybook is webpack-based, follow the steps below. The same instructions cover both `@storybook/angular` and `@storybook/nextjs` — anywhere the two diverge, both options are inlined into the same code block with `// if using Angular` / `// if using Next.js` comments. **Pick one of each pair when you copy/paste.**
+> The automated `sb-deps setup` wizard only supports Vite-based Storybook frameworks. If your Storybook is webpack-based, follow the steps below. The same instructions cover `@storybook/angular`, `@storybook/nextjs` and `@storybook/react-webpack5` — anywhere Angular and Next.js diverge, both options are inlined into the same code block with `// if using Angular` / `// if using Next.js` comments. **Pick one of each pair when you copy/paste.**
 >
-> **Verification status.** This addon's Angular path is exercised against the [`example-site/angular/`](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/angular) project, so the Angular instructions are verified end-to-end. The `@storybook/nextjs` path follows the same shape but **has not been formally tested** — please open an issue if anything in your Next.js project doesn't line up.
+> **React on webpack** (`@storybook/react-webpack5`) is not called out separately: it follows every `// if using Next.js` line, with `@storybook/nextjs` replaced by `@storybook/react-webpack5`.
+>
+> **Verification status.** This addon's Angular path is exercised against the [`example-site/angular/`](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/angular) project, so the Angular instructions are verified end-to-end. The `@storybook/nextjs` and `@storybook/react-webpack5` paths follow the same shape but **have not been formally tested** — please open an issue if anything in your project doesn't line up.
 
 ## 1. Install the addon
 
@@ -29,12 +31,12 @@ bun add -d storybook-addon-dependency-previews dependency-cruiser
 
 ## 2. Register the addon in `.storybook/main.ts`
 
-Both webpack-based Storybook frameworks need two additions in `webpackFinal`:
+Every webpack-based Storybook framework needs two additions in `webpackFinal`:
 
 1. A `DefinePlugin` to inject `__PROJECT_ROOT__` (used by the VS Code "open file" shortcut in the addon's UI).
 2. A custom CSS-modules loader for the addon's own `*.module.css` files. style-loader's webpack5 ESM pitch output otherwise produces a circular TDZ error.
 
-You'll also need a `css-modules-loader.cjs` file alongside your `.storybook/main.ts`. **Copy it from the [Angular example source](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site/angular/.storybook/css-modules-loader.cjs)** — the file is framework-agnostic, so the same copy works for both Angular and Next.js.
+You'll also need a `css-modules-loader.cjs` file alongside your `.storybook/main.ts`. **Copy it from the [Angular example source](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/example-site/angular/.storybook/css-modules-loader.cjs)** — the file is framework-agnostic, so the same copy works for Angular, Next.js and React on webpack.
 
 ```ts
 import type { StorybookConfig } from '@storybook/angular' // if using Angular
@@ -118,7 +120,7 @@ export default config
 
 ## 3. Bare-minimum story example
 
-Save the file as `.stories.ts` for Angular or `.stories.tsx` for Next.js.
+Save the file as `.stories.ts` for Angular or `.stories.tsx` for Next.js and React on webpack.
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/angular' // if using Angular
@@ -182,7 +184,7 @@ parameters: {
 - `npm run sb:build` — one-off compile of the static Storybook site.
 - `npm run sb:deps` — generate a fresh `dependency-previews.json` on demand.
 
-**Optional** — add this manually if your default port (6006) is in use. The `--sb-port` flag is appended to the Storybook launch command, so it works for both frameworks:
+**Optional** — add this manually if your default port (6006) is in use. The `--sb-port` flag is appended to the Storybook launch command, so it works for every framework:
 
 ```json
 "sb:alt-port": "sb-deps --watch --run-storybook --sb-port 7020"

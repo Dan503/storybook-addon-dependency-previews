@@ -63,6 +63,7 @@ function exampleStoryFileExtension(framework: Framework): string {
 		// `storyPathForComponent`, which always spells the story `.tsx` — so the
 		// example has to say `.tsx` for all of them, Solid and Preact included.
 		case 'react-vite':
+		case 'react-webpack5':
 		case 'preact-vite':
 		case 'solid-vite':
 		case 'nextjs-webpack':
@@ -211,7 +212,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// required for the addon's `import.meta.glob` story-discovery. They share a
 	// single manual-setup doc that walks through the webpack additions (custom
 	// CSS-modules loader, `__PROJECT_ROOT__` define) with framework-specific
-	// callouts where Angular and Next.js diverge.
+	// callouts where Angular, Next.js and React on webpack diverge.
 	if (detection.bundler === 'webpack5') {
 		log(
 			'Webpack-based Storybook projects are not supported by the wizard — Vite is required.',
@@ -243,7 +244,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			`This setup wizard currently supports React, Preact, Svelte, Vue 3, and Solid (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
-			'The addon itself also supports Angular and Next.js with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
+			'The addon itself also supports Angular, Next.js and React on webpack with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
 		)
 		log(
 			'If you would like to see wizard support added for your framework, please open an issue on GitHub.',
