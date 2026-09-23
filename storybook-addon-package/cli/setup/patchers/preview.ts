@@ -140,8 +140,12 @@ function buildTemplate(
  * template.
  *
  * `@storybook/web-components-vite` does export it, though its `exports` map
- * does not list it — the built files were read to settle that, since the map
- * alone gives the opposite answer.
+ * does not list it — the map alone gives the opposite answer, so the built
+ * files were read instead. At 10.6.0 both halves are there: `dist/index.js`
+ * has `export { __definePreview as definePreview }`, and `dist/index.d.ts`
+ * re-exports the same name, which is the half that matters because the file
+ * this writes is a `preview.ts` and so gets type-checked. Confirmed by
+ * type-checking that import against the installed package.
  */
 const DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK: Partial<
 	Record<SupportedFramework, string>

@@ -59,25 +59,18 @@ export interface WriteSbDepsConfigOptions {
 	 * setting one asks for. Left out for a project that isn't Lit.
 	 */
 	litComponentSuffix?: string
-	/**
-	 * The prefix put in front of a Lit component's tag. Only a non-default value
-	 * triggers a config write. The wizard never asks for this — it is accepted so
-	 * that everything the config file can carry can be written from one place.
-	 * @default 'app-'
-	 */
-	litTagPrefix?: string
 }
 
 /**
  * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`,
  * the `tsxFramework` scaffolder signal, a non-default `storybookFileExtension`,
- * and/or a Lit project's component marker and tag prefix. No-op when there's
- * nothing worth persisting — i.e. `srcDir === 'src'` (bundled default) AND
- * `tsxFramework` is the default `'react'` AND `storybookFileExtension` is the
- * default `'stories'` AND no Lit marker or non-default tag prefix was asked
- * for — or when any of the candidate config filenames already exist (the loader at
- * `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never overwrite a user's
- * existing config without their say-so).
+ * and/or a Lit project's component marker. No-op when there's nothing worth
+ * persisting — i.e. `srcDir === 'src'` (bundled default) AND `tsxFramework` is
+ * the default `'react'` AND `storybookFileExtension` is the default
+ * `'stories'` AND no Lit marker was asked for — or when any of the candidate
+ * config filenames already exist (the loader at `sb-deps.ts` accepts `.js`,
+ * `.mjs`, and `.cjs`; we never overwrite a user's existing config without
+ * their say-so).
  */
 export function writeSbDepsConfigIfNeeded(
 	opts: WriteSbDepsConfigOptions,
@@ -89,7 +82,6 @@ export function writeSbDepsConfigIfNeeded(
 		tsxFramework = 'react',
 		storybookFileExtension = 'stories',
 		litComponentSuffix,
-		litTagPrefix,
 	} = opts
 
 	const needsSrcDir = srcDir !== 'src'
@@ -97,19 +89,16 @@ export function writeSbDepsConfigIfNeeded(
 	const needsStorybookFileExtension = storybookFileExtension === 'story'
 	// Any marker at all is worth writing, because the code's own default is none.
 	const needsLitComponentSuffix = !!litComponentSuffix
-	const needsLitTagPrefix =
-		litTagPrefix !== undefined && litTagPrefix !== 'app-'
 	const hasNothingWorthWriting =
 		!needsSrcDir &&
 		!needsTsxFramework &&
 		!needsStorybookFileExtension &&
-		!needsLitComponentSuffix &&
-		!needsLitTagPrefix
+		!needsLitComponentSuffix
 	if (hasNothingWorthWriting) {
 		return {
 			kind: 'skipped',
 			reason:
-				'srcDir is the default (src), tsxFramework is the default (react), storybookFileExtension is the default (stories), and no Lit component marker or tag prefix was asked for — no config file needed',
+				'srcDir is the default (src), tsxFramework is the default (react), storybookFileExtension is the default (stories), and no Lit component marker was asked for — no config file needed',
 		}
 	}
 
@@ -158,13 +147,6 @@ export function writeSbDepsConfigIfNeeded(
 		fields.push({
 			line: `\tlitComponentSuffix: ${litComponentSuffixLiteral},`,
 			summary: `litComponentSuffix: ${litComponentSuffixLiteral}`,
-		})
-	}
-	if (needsLitTagPrefix) {
-		const litTagPrefixLiteral = toSingleQuotedLiteral(litTagPrefix)
-		fields.push({
-			line: `\tlitTagPrefix: ${litTagPrefixLiteral},`,
-			summary: `litTagPrefix: ${litTagPrefixLiteral}`,
 		})
 	}
 	const configBody = fields.map((f) => f.line).join('\n')

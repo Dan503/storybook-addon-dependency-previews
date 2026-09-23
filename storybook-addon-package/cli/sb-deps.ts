@@ -198,9 +198,11 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
  * default `'app-'` when it asked for nothing usable.
  *
  * Only the type is checked here, not the characters: a prefix is a fragment
- * rather than a tag, so it cannot be judged on its own — `app` is fine in front
- * of `-shell` and useless in front of `button`. What has to be true is checked
- * where it can be, against each finished tag, by `getLitTagError`.
+ * rather than a tag, so most of what matters cannot be settled from the prefix
+ * alone — `app` is fine in front of `-shell` and useless in front of `button`.
+ * What has to be true is checked where it can be, against each finished tag,
+ * by `getLitTagError` — asked by every scaffolder that writes that tag into a
+ * file.
  */
 function readLitTagPrefix(configuredPrefix: unknown): string {
 	const defaultPrefix = 'app-'
@@ -2210,8 +2212,21 @@ declare global {
 }
 
 /**
+ * Components already warned about, so that one file being created cannot print
+ * the same line twice. A component and its story both hardcode the tag and are
+ * written by separate functions that each work it out, so both have to ask —
+ * and on the paths where both run, one of the two asks second.
+ *
+ * Only ever grows by one entry per component whose tag is unusable, and the
+ * prefix that usually causes it is read once at boot, so nothing that would
+ * make the answer change mid-run can happen without a restart.
+ */
+const litComponentsWarnedAboutTheirTag = new Set<string>()
+
+/**
  * Say so when the tag worked out for a component is one a browser will not
- * register, and name which of the rules it breaks.
+ * register, and name which of the rules it breaks. Says it once per component,
+ * however many files carrying that tag get written.
  *
  * The file is still written: the tag is built from the component's own name
  * and the user's own `litTagPrefix`, and quietly overriding either would leave
@@ -2222,6 +2237,8 @@ declare global {
 function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
 	const tagError = getLitTagError(tagName)
 	if (!tagError) return
+	if (litComponentsWarnedAboutTheirTag.has(absCompPath)) return
+	litComponentsWarnedAboutTheirTag.add(absCompPath)
 	warn(
 		`"${rel(absCompPath)}" registers the tag "${tagName}", which a browser will ` +
 			`refuse — ${tagError}. Rename the component, or set litTagPrefix to ` +
@@ -2265,6 +2282,10 @@ function scaffoldStoryForLitComponent(
 	const base = componentBaseFromLitComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const tagName = getLitTagName(base)
+	// The story hardcodes the tag as well, and reaches here on paths that never
+	// write the component — one created with content already in it, or a story
+	// created beside a component that is already there.
+	warnIfLitTagIsUnusable(tagName, absCompPath)
 	const componentImportPath = litComponentImportName(absCompPath)
 	const title = makeTitleFromComponent(absCompPath, base)
 	const atomic = detectAtomicTag(absCompPath)
@@ -2932,11 +2953,11 @@ function startWatcher() {
 			handle: (absPath, relPath) =>
 				handleAngularComponentCreation(absPath, relPath, 'internal'),
 		},
-		// Last, because with no marker set its check matches any plain `.ts` file
-		// — including an Angular `Foo.component.ts`, which the branch above has
-		// already claimed. Its own check only answers in a Lit project, so in
-		// practice the two never meet; the ordering is what makes that true by
-		// construction rather than by agreement between two checks.
+		// Last, because with no marker set its check is the broadest here — any
+		// plain `.ts` file, where every other branch names an extension or an
+		// ending nothing else writes. It overlaps none of them as they stand:
+		// an Angular `Foo.component.ts` carries a second dotted part, which this
+		// check excludes either way.
 		{
 			checkIsMatch: isComponentsLitTs,
 			family: 'lit',
@@ -3281,7 +3302,6 @@ function startWatcher() {
 			kick('create:story', createdStory)
 		}
 	}
-
 }
 
 // ───────────────────────────────────────────────────────────────────────────────

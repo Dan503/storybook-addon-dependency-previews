@@ -231,10 +231,12 @@ export interface SbDepsConfig {
 	 * case it is used as it stands, so `app-button-atom.ts` gives
 	 * `app-button-atom` rather than `app-app-button-atom`.
 	 *
-	 * A browser only accepts a tag containing a hyphen, which is what the
-	 * default supplies for a one-word name like `Button.ts`. Clear the prefix
-	 * and it is on you to give every component a hyphenated name; the
-	 * scaffolder warns when the tag it works out has no hyphen.
+	 * A browser accepts a tag only when it contains a hyphen, starts with a
+	 * lower-case letter, and holds nothing outside the characters a tag name
+	 * allows. The default prefix supplies the hyphen and the leading letter for
+	 * even a one-word name like `Button.ts`. Clear it and that becomes yours to
+	 * get right; the scaffolder warns, naming whichever of the three the tag it
+	 * worked out breaks, and writes the file anyway.
 	 *
 	 * @example 'app-'  →  tag: 'app-button-atom'
 	 * @example 'my-'   →  tag: 'my-button-atom'

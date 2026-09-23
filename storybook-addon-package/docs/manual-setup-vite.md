@@ -166,9 +166,9 @@ export const Primary: Story = {
 
 The `.lit` in the file name is what `sb-deps` uses to tell a component from any other `.ts` file, set by the `litComponentSuffix` option in `sb-deps.config` — the setup wizard asks for it and writes `'lit'` unless you ask for something else. Leave the option out and every plain `.ts` file under your source folder is treated as a component, in which case the imports above are `'./ComponentName'`.
 
-The `app-` on the tag comes from the `litTagPrefix` option, which defaults to `'app-'`. It is put in front of the component's name in hyphenated form, unless the name already starts with it — so `ComponentName.lit.ts`, `component-name.lit.ts` and `app-component-name.lit.ts` all register `app-component-name`. A browser only accepts a tag containing a hyphen, which is what the prefix guarantees for a one-word name.
+The `app-` on the tag comes from the `litTagPrefix` option, which defaults to `'app-'`. It is put in front of the component's name in hyphenated form, unless the name already starts with it — so `ComponentName.lit.ts`, `component-name.lit.ts` and `app-component-name.lit.ts` all register `app-component-name`. A browser accepts a tag only when it contains a hyphen, starts with a lower-case letter, and holds nothing outside the characters a tag name allows — the default prefix supplies the first two for even a one-word name. `sb-deps` warns when the tag it works out breaks any of the three, naming which, and writes the file anyway.
 
-Scaffolded Lit components use the shorthand `@customElement` / `@property` annotations, which is what Lit's own TypeScript starter sets up. A project assembled by hand needs `"experimentalDecorators": true` in its `tsconfig.json` — or, on TypeScript 5.2 and up, `"useDefineForClassFields": false` with the standard decorators instead.
+Scaffolded Lit components use the shorthand `@customElement` / `@property` annotations, which is what Lit's own TypeScript starter sets up. A project assembled by hand needs the same two settings that starter uses — `"experimentalDecorators": true` and `"useDefineForClassFields": false` — in its `tsconfig.json`. Lit's own documentation is the place to check what a newer TypeScript wants here; this guide only records what the scaffolded component was written against.
 
 ### Optional: `__filePath` fallback
 
