@@ -10,7 +10,6 @@ import {
 	SUPPORTED_FRAMEWORKS,
 	tsxFrameworkFromFramework,
 	type Framework,
-	type MainFile,
 	type SupportedFramework,
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
@@ -18,7 +17,6 @@ import { installMissingPackages } from './install.js'
 import {
 	patchMainFile,
 	patchStoriesGlobForStoryExtension,
-	readStoriesGlobEntries,
 } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
@@ -494,7 +492,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 	}
 
-	warnIfStoriesGlobMissesSrcDir(detection.mainFile, effectiveSrcDir)
+	logStoriesGlobReminder(effectiveSrcDir)
 
 	rule()
 	log('Step 3/5: configuring preview file')
@@ -661,42 +659,39 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 }
 
 /**
- * Say so when Storybook's own `stories` array does not cover the source folder
- * the wizard resolved.
+ * Remind the user to point Storybook's own `stories` array at a source folder
+ * that is not `src`.
  *
  * The addon's story glob and the dependency scan both get the resolved folder,
- * but Storybook's sidebar glob is the project's own and the wizard does not
- * rewrite it — where stories live is the project's decision, and a project may
- * keep them outside its source folder on purpose. What the wizard can do is
- * stop the two drifting apart silently: with a `stories` array still pointing
- * at `src/` in a project whose source is in `app/`, Storybook lists none of the
- * project's stories, so there is no page for the previews panel to appear on,
- * and every step of this wizard still prints a tick.
+ * but the `stories` array is the project's own and the wizard does not rewrite
+ * it — where stories live is the project's decision, and a project may keep
+ * them outside its source folder on purpose. The failure worth heading off is
+ * silent: with that array still pointing at `src/` in a project whose source is
+ * in `app/`, Storybook lists none of the project's stories, so there is no page
+ * for the previews panel to appear on, and every step of this wizard prints a
+ * tick regardless.
  *
- * Only for a named folder other than `src`. The default needs no warning, and
- * for project-root mode there is no folder name to look for — a glob may
- * legitimately name any subfolder there, so anything said would be a guess.
+ * Said rather than checked, deliberately. Storybook's entries are a string glob
+ * or an object naming a directory, either can hold glob syntax that decides the
+ * answer, and the file may be written any way its author likes — so a check
+ * would be wrong in both directions, and the expensive direction is the false
+ * warning that sends someone with a correct config to go and break it. A line
+ * that makes no claim about what the array says cannot be wrong about it.
  *
- * @param mainFile - the project's `.storybook/main.*`
+ * Only for a named folder other than `src`: the default needs no reminder, and
+ * in project-root mode the dependency scan covers the whole project, so no
+ * stories path inside it can be missed.
+ *
  * @param srcDir - the resolved source folder, after any edit-flow override
  */
-function warnIfStoriesGlobMissesSrcDir(mainFile: MainFile, srcDir: string) {
+function logStoriesGlobReminder(srcDir: string) {
 	if (srcDir === '' || srcDir === 'src') return
-	const entries = readStoriesGlobEntries(mainFile)
-	// Unreadable or not a literal array — nothing to compare against, and the
-	// `.story.` widener above already reports that shape when it matters.
-	if (!entries || entries.length === 0) return
-	const doesAnyEntryCoverSrcDir = entries.some((entry) =>
-		entry.includes(`/${srcDir}/`),
-	)
-	if (doesAnyEntryCoverSrcDir) return
 	log(
-		`  ⚠ the \`stories\` array in main.ts does not mention '${srcDir}/': ${entries.join(', ')}`,
+		`  • Storybook lists stories from the \`stories\` array in main.ts, which is`,
 	)
 	log(
-		`    Storybook lists stories from those paths only, so point one at '${srcDir}/'`,
+		`    yours to set — check it covers '${srcDir}/', or it will list none of them.`,
 	)
-	log(`    if that is where your stories live.`)
 }
 
 /**

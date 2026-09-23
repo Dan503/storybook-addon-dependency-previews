@@ -545,41 +545,6 @@ export type StoriesGlobPatchResult =
 	| { kind: 'failed'; reason: string }
 
 /**
- * The string entries of Storybook's own `stories` array in `main.*`, exactly as
- * written. `null` when the file cannot be read, the config object cannot be
- * found, or `stories` is not a literal array — the same three cases the widener
- * below reports as failures, collapsed here because the caller only wants to
- * compare the entries against a folder name and has nothing to do when they
- * cannot be read.
- *
- * Read-only: nothing is written and the file is not modified.
- *
- * @param mainFile - the project's `.storybook/main.*`
- */
-export function readStoriesGlobEntries(
-	mainFile: MainFile,
-): ReadonlyArray<string> | null {
-	let content: string
-	try {
-		content = readFileSync(mainFile.path, 'utf8')
-	} catch {
-		return null
-	}
-	const bodyRange = findConfigBodyRange(content)
-	if (!bodyRange) return null
-	const key = findTopLevelKey(content, 'stories', {
-		from: bodyRange.bodyStart,
-		to: bodyRange.bodyEnd,
-	})
-	if (!key || content[key.valueStart] !== '[') return null
-	const closeIndex = findMatchingBrace(content, key.valueStart)
-	if (closeIndex === null) return null
-	const arrayBody = content.slice(key.valueStart + 1, closeIndex)
-	// Every quote style, since this reads a file the wizard did not write.
-	return [...arrayBody.matchAll(/['"`]([^'"`]*)['"`]/g)].map((m) => m[1]!)
-}
-
-/**
  * Widen Storybook's own `stories` glob so it discovers singular `.story.*`
  * files in addition to the default plural `.stories.*`. Called only when the
  * project uses `storybookFileExtension: 'story'` — without it Storybook's
