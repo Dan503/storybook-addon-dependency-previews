@@ -17,7 +17,28 @@ export type SbDepsConfigPatchResult =
 			 */
 			fields: ReadonlyArray<string>
 	  }
-	| { kind: 'skipped'; reason: string }
+	/**
+	 * Every value was already the default, so there was nothing to write and
+	 * nothing to say — the callers deliberately print nothing for this, which is
+	 * why it carries no reason string.
+	 */
+	| { kind: 'skipped' }
+	| {
+			/**
+			 * A config file is already there, so nothing was written — but there
+			 * were values worth writing. Separate from `skipped` because the two
+			 * need opposite treatment: `skipped` means every value was the default
+			 * and there was nothing to say, while this one means the wizard worked
+			 * something out (often a source folder the user typed at the prompt)
+			 * and could not record it, so the user has to be told or the value is
+			 * silently lost.
+			 */
+			kind: 'blocked'
+			/** The existing file's name, so the message can name what to edit. */
+			existingFileName: string
+			/** Same summaries as `created`, for the fields that were NOT written. */
+			fields: ReadonlyArray<string>
+	  }
 	| { kind: 'failed'; reason: string }
 
 export interface WriteSbDepsConfigOptions {
@@ -57,12 +78,18 @@ export interface WriteSbDepsConfigOptions {
 /**
  * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`,
  * the `tsxFramework` scaffolder signal, and/or a non-default
- * `storybookFileExtension`. No-op when there's nothing worth persisting — i.e.
- * `srcDir === 'src'` (bundled default) AND `tsxFramework` is the default
- * `'react'` AND `storybookFileExtension` is the default `'stories'` — or when
- * any of the candidate config filenames already exist (the loader at
- * `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never overwrite a user's
- * existing config without their say-so).
+ * `storybookFileExtension`. Reports `skipped` when there's nothing worth
+ * persisting — i.e. `srcDir === 'src'` (bundled default) AND `tsxFramework` is
+ * the default `'react'` AND `storybookFileExtension` is the default
+ * `'stories'`.
+ *
+ * Reports `blocked` when one of the candidate config filenames already exists
+ * (the loader at `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never
+ * overwrite a user's existing config without their say-so) *and* there was
+ * something to write. That is deliberately not the same answer as `skipped`:
+ * the wizard may have just asked the user for a source folder, and a blocked
+ * write means the value they typed reaches the preview file but never reaches
+ * the dependency scan — so the caller has to say so rather than finish quietly.
  */
 export function writeSbDepsConfigIfNeeded(
 	opts: WriteSbDepsConfigOptions,
@@ -80,34 +107,17 @@ export function writeSbDepsConfigIfNeeded(
 	const needsStorybookFileExtension = storybookFileExtension === 'story'
 	const hasNothingWorthWriting =
 		!needsSrcDir && !needsTsxFramework && !needsStorybookFileExtension
-	if (hasNothingWorthWriting) {
-		return {
-			kind: 'skipped',
-			reason:
-				'srcDir is the default (src), tsxFramework is the default (react), and storybookFileExtension is the default (stories) — no config file needed',
-		}
-	}
-
-	// Match the candidate list `sb-deps.ts` already loads from, so we don't
-	// stomp on a file the runtime would otherwise pick up.
-	const candidates = ['sb-deps.config.js', 'sb-deps.config.mjs', 'sb-deps.config.cjs']
-	for (const name of candidates) {
-		if (existsSync(resolve(cwd, name))) {
-			return { kind: 'skipped', reason: `${name} already exists` }
-		}
-	}
-
-	const ext = isEsm ? 'js' : 'cjs'
-	const path = resolve(cwd, `sb-deps.config.${ext}`)
+	if (hasNothingWorthWriting) return { kind: 'skipped' }
 
 	// Collect each non-default field once as both its file line and a
-	// human-readable summary, so the written file and the caller's success log
-	// share a single source of truth for "which fields differ from the
-	// defaults": `srcDir` when it's non-default, `tsxFramework` for a Solid or
-	// Preact project (so the scaffolder picks that framework's templates for
-	// `.tsx` files), and `storybookFileExtension: 'story'` for a non-default
-	// story extension. Adding a field later updates both outputs from this one
-	// list.
+	// human-readable summary, so the written file and the caller's log share a
+	// single source of truth for "which fields differ from the defaults":
+	// `srcDir` when it's non-default, `tsxFramework` for a Solid or Preact
+	// project (so the scaffolder picks that framework's templates for `.tsx`
+	// files), and `storybookFileExtension: 'story'` for a non-default story
+	// extension. Adding a field later updates both outputs from this one list.
+	// Built before the existing-file check below so a blocked write can say
+	// which values went unrecorded, not merely that one was blocked.
 	const fields: Array<{ line: string; summary: string }> = []
 	if (needsSrcDir) {
 		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
@@ -128,6 +138,25 @@ export function writeSbDepsConfigIfNeeded(
 			summary: `storybookFileExtension: 'story'`,
 		})
 	}
+	// Match the candidate list `sb-deps.ts` already loads from, so we don't
+	// stomp on a file the runtime would otherwise pick up.
+	const candidates = [
+		'sb-deps.config.js',
+		'sb-deps.config.mjs',
+		'sb-deps.config.cjs',
+	]
+	for (const name of candidates) {
+		if (existsSync(resolve(cwd, name))) {
+			return {
+				kind: 'blocked',
+				existingFileName: name,
+				fields: fields.map((f) => f.summary),
+			}
+		}
+	}
+
+	const ext = isEsm ? 'js' : 'cjs'
+	const path = resolve(cwd, `sb-deps.config.${ext}`)
 	const configBody = fields.map((f) => f.line).join('\n')
 
 	const content = isEsm

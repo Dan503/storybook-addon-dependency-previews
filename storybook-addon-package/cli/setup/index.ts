@@ -247,6 +247,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			})
 			if (cfg.kind === 'created') {
 				log(`✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
+			} else if (cfg.kind === 'blocked') {
+				logBlockedConfigNote(cfg.existingFileName, cfg.fields)
 			} else if (cfg.kind === 'failed') {
 				log(`⚠ ${cfg.reason}`)
 			}
@@ -587,6 +589,12 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log(
 			`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`,
 		)
+	} else if (sbDepsConfigResult.kind === 'blocked') {
+		rule()
+		logBlockedConfigNote(
+			sbDepsConfigResult.existingFileName,
+			sbDepsConfigResult.fields,
+		)
 	} else if (sbDepsConfigResult.kind === 'failed') {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
@@ -643,6 +651,28 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		rule()
 		process.exit(1)
 	}
+}
+
+/**
+ * Tell the user that an existing config file stopped the wizard recording what
+ * it worked out, and name the values it could not write.
+ *
+ * The one that matters is the source folder: the wizard may have just asked for
+ * it, and a blocked write means it reaches the preview file's story glob but
+ * never reaches the dependency scan, which goes on scanning `src/`. On a
+ * project whose source is in `app/` that scan matches nothing and the graph
+ * comes out empty, with every step still reporting success — so saying nothing
+ * here would leave the user with a broken setup and no sign of why.
+ *
+ * @param existingFileName - the config file already in the project root
+ * @param fields - the field summaries that went unwritten, e.g. `["srcDir: 'app'"]`
+ */
+function logBlockedConfigNote(
+	existingFileName: string,
+	fields: ReadonlyArray<string>,
+) {
+	log(`  ⚠ ${existingFileName} already exists, so it was left alone.`)
+	log(`    Add these to it yourself: ${fields.join(', ')}`)
 }
 
 /**
