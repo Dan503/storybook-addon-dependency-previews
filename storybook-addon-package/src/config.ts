@@ -186,8 +186,11 @@ export interface SbDepsConfig {
 	 *
 	 * Leave it out and detection decides: a project `sb-deps` reads as Solid or
 	 * Preact gets that framework's templates anyway, and anything else gets
-	 * React ones. So the key is worth setting when your project's framework
-	 * isn't obvious from its files.
+	 * React ones. So the key is worth setting where that reading lands on the
+	 * wrong one — a project declaring both `react` and `solid-js`, say, or one
+	 * reaching Preact through a `react` alias. It does not rescue a project
+	 * `sb-deps` cannot place at all: there no `.tsx` file is scaffolded, with or
+	 * without the key.
 	 *
 	 * @example 'react'
 	 * @example 'solid'

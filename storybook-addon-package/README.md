@@ -151,7 +151,7 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 
 Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Preact, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
 
-React, Preact and Solid all author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) and a Preact project gets Preact ones (`preact/hooks`, `@storybook/preact-vite`) without being told; anything it reads as neither gets React templates. Set `tsxFramework` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
+React, Preact and Solid all author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) and a Preact project gets Preact ones (`preact/hooks`, `@storybook/preact-vite`) without being told; anything it reads as neither gets React templates. Set `tsxFramework` in your `sb-deps` config to say so outright — worth doing where `sb-deps` reads your project as a framework whose `.tsx` templates are not the ones you want, such as a project declaring both `react` and `solid-js`, or one reaching Preact through a `react` alias. (It does not help a project `sb-deps` cannot place at all: there it scaffolds nothing, with or without the key.)
 
 ### What the scaffolded components assume
 
@@ -293,7 +293,7 @@ export default defineSbDepsConfig({
 
 Which flavor to scaffold for `.tsx` component and story files — `'react'`, `'solid'` or `'preact'`. All three author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports), or to `'preact'` in a Preact project for Preact ones (`preact/hooks` `useState`, `@storybook/preact-vite` story imports), instead of React. The setup wizard sets it for you when it detects a Solid or Preact project. Per-template overrides go under the matching [`scaffold.solid` / `scaffold.preact`](#scaffold) key.
 
-**Default:** `'solid'` when `sb-deps` detects a Solid project, `'preact'` when it detects a Preact one, `'react'` otherwise — so either gets its own templates without the key being set. Setting the key is worth it where the framework isn't obvious from your project's files.
+**Default:** `'solid'` when `sb-deps` detects a Solid project, `'preact'` when it detects a Preact one, `'react'` otherwise — so either gets its own templates without the key being set. Setting the key is worth it where that detection lands on a framework whose `.tsx` templates are not the ones you want — not where it comes up empty, since a project `sb-deps` cannot place is one it scaffolds nothing for either way.
 
 ```js
 // sb-deps.config.mjs
