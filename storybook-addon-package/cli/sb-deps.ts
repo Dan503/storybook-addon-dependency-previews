@@ -1152,7 +1152,7 @@ function storyPathForLitComponent(absCompPath: string) {
  * Takes `base` (the component's name without its extension) rather than working
  * it out, because each framework strips a different extension and every caller
  * already has it to hand. That parameter is the *only* thing that differed
- * between the four per-framework builders this replaces.
+ * between the per-framework builders this replaced.
  */
 function makeTitleFromComponent(absCompPath: string, base: string) {
 	const relFromSrc = getPathRelativeToSrcRoot(absCompPath)

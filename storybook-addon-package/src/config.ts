@@ -197,21 +197,32 @@ export interface SbDepsConfig {
 	angularSelectorPrefix?: string
 
 	/**
-	 * What marks a file as a Lit component, written without its dot. With
-	 * `'lit'`, only `Button.lit.ts` is treated as a component. Leave it out, or
-	 * set it to the empty string, and a plain `.ts` file counts instead —
-	 * meaning one under the source folder that is not a story, carries no other
-	 * dotted part in its name, and is created empty. So `Button.test.ts` and
-	 * `Button.d.ts` are left alone either way, and so is a `helpers.ts` that
-	 * arrives with something already in it.
+	 * What marks a file as a Lit component, written without its dot. Every
+	 * answer is about files under the source folder; nothing outside it is a
+	 * component whatever it is called.
+	 *
+	 * With `'lit'`, only `Button.lit.ts` there is treated as a component. Leave
+	 * it out, or set it to the empty string, and a plain `.ts` file counts
+	 * instead — meaning one that is not a story, carries no other dotted part
+	 * in its name, and is created empty. So `Button.test.ts` and `Button.d.ts`
+	 * are left alone either way, and so is a `helpers.ts` that arrives with
+	 * something already in it.
 	 *
 	 * That last condition is only there where there is no marker, and it is
 	 * what tells a component from an ordinary source file when the name says
 	 * nothing: a file created empty is this tool's own signal for "fill this
 	 * in", while one that arrives with content made no such request. Set a
 	 * marker and the name carries the claim, so a non-empty `Button.lit.ts`
-	 * still gets its story. Either way you can ask for a story for any file by
-	 * creating the empty story file beside it.
+	 * still gets its story. Either way, creating the empty story file beside a
+	 * component is how you ask for a story for one this tool would otherwise
+	 * leave alone — `helpers.stories.ts` finds `helpers.ts` whatever is in it.
+	 *
+	 * A dotted name is the exception, and it is silent about it. With no marker
+	 * `Button.test.stories.ts` writes nothing, because `Button.test.ts` is not
+	 * a component here and nothing else it could mean is either; with a marker
+	 * it writes a new `Button.test.lit.ts` rather than finding your
+	 * `Button.test.ts`. Name a component without dots if you want a story for
+	 * it.
 	 *
 	 * Only read in a Lit project, so it changes nothing for any other
 	 * framework.

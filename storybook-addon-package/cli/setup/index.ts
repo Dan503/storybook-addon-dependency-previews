@@ -755,7 +755,7 @@ function logLitComponentSuffixNote(litComponentSuffix: string) {
 		`    that key any plain .ts file you create empty under your source folder is`,
 	)
 	log(
-		`    treated as a component, rather than only those named *.${litComponentSuffix}.ts.`,
+		`    treated as a component, rather than only the ones there named *.${litComponentSuffix}.ts.`,
 	)
 }
 
