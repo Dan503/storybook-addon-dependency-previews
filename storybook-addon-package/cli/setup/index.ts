@@ -486,8 +486,6 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 	}
 
-	logStoriesGlobReminder(effectiveSrcDir)
-
 	rule()
 	log('Step 3/5: configuring preview file')
 	// The runtime concatenates `sourceRootUrl + '/' + componentPath` (where
@@ -609,10 +607,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		buildSucceeded = true
 	}
 
-	// Last, so it sits beside the "next steps" lines rather than above a package
-	// manager's install output, and so it only reaches a user who went through
-	// with the setup.
-	if (!wasFrameworkDetected) logNoScaffoldingNote()
+	logClosingNotes(effectiveSrcDir, wasFrameworkDetected)
 
 	rule()
 	const runCmd =
@@ -636,6 +631,31 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 }
 
 /**
+ * Print whichever of the run's closing notes apply, under one divider.
+ *
+ * Last in the run, so they sit beside the "next steps" lines rather than
+ * scrolling away above a package manager's install output and the dependency
+ * build's own, and so they only reach a user who went through with the setup.
+ * Neither has an ordering dependency — each is self-contained text, and both
+ * values they read are final well before here.
+ *
+ * One owner so the divider is drawn once when either applies and not at all
+ * when neither does, rather than each note deciding for itself and the pair
+ * printing two.
+ *
+ * @param srcDir - the resolved source folder, after any edit-flow override
+ * @param wasFrameworkDetected - false when the user had to pick the framework
+ */
+function logClosingNotes(srcDir: string, wasFrameworkDetected: boolean) {
+	const doesStoriesGlobApply = srcDir !== 'src'
+	const doesScaffoldingApply = !wasFrameworkDetected
+	if (!doesStoriesGlobApply && !doesScaffoldingApply) return
+	rule()
+	if (doesStoriesGlobApply) logStoriesGlobReminder(srcDir)
+	if (doesScaffoldingApply) logNoScaffoldingNote()
+}
+
+/**
  * Remind the user to point Storybook's own `stories` array at a source folder
  * that is not `src`.
  *
@@ -656,16 +676,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
  * warning that sends someone with a correct config to go and break it. A line
  * that makes no claim about what the array says cannot be wrong about it.
  *
- * Skipped only for the `src` default, which is what the array already names in
- * a project that has one. Project-root mode gets it like any other answer —
- * nothing in the wizard makes that array agree with the source folder, whatever
- * the folder turned out to be, and an array naming `src/` in a project whose
- * components sit at the root matches nothing.
+ * Whether it applies at all is `logClosingNotes`' decision, since the divider
+ * depends on it: skipped for the `src` default, where the wizard has told the
+ * user nothing they did not already have — that is the folder it assumes and
+ * the one their array was written against. Project-root mode gets it like any
+ * other answer: nothing in the wizard makes that array agree with the source
+ * folder, whatever the folder turned out to be, and an array naming `src/` in a
+ * project whose components sit at the root matches nothing.
  *
  * @param srcDir - the resolved source folder, after any edit-flow override
  */
 function logStoriesGlobReminder(srcDir: string) {
-	if (srcDir === 'src') return
 	const target = srcDir === '' ? 'the project root' : `'${srcDir}/'`
 	log(
 		`  • Storybook lists stories from the \`stories\` array in main.ts, which is`,
@@ -682,8 +703,9 @@ function logStoriesGlobReminder(srcDir: string) {
  * One owner rather than a switch at each site: the two say the same things
  * about the same result type, and the one time they were written out separately
  * they drifted, the outcomes of a single write printing at two indents. Every
- * line here is indented two spaces so they line up with each other and with the
- * step's own lines.
+ * line here is indented two spaces so the outcomes line up with each other
+ * wherever they print — which also matches Step 4's own lines, though not the
+ * webpack bail-out's, whose guide links are flush left.
  *
  * `skipped` prints nothing on purpose — it means there was nothing worth
  * writing and nothing to tell the user.
@@ -704,10 +726,11 @@ function logSbDepsConfigOutcome(
 		logBlockedConfigNote(result.existingFileName, result.fields)
 	} else {
 		log(`  ⚠ ${result.reason}`)
-		// Name what was lost rather than one field of three — `srcDir` may be the
-		// one value that was never going in. And no promise about what happens
-		// next: this runs at Step 4, where the wizard carries on, and at the
-		// webpack bail-out, which returns immediately afterwards.
+		// Name what was lost and is worth putting back, rather than one field of
+		// three — `srcDir` may be the one value that was never going in. And no
+		// promise about what happens next: this runs at Step 4, where the wizard
+		// carries on, and at the webpack bail-out, which returns immediately
+		// afterwards.
 		if (result.fields.length > 0) {
 			log(
 				`    Set these in an sb-deps.config yourself: ${result.fields.join(', ')}`,
@@ -762,7 +785,6 @@ function logBlockedConfigNote(
  * answer the user gave.
  */
 function logNoScaffoldingNote() {
-	rule()
 	log(`  ⚠ Auto-scaffolding of new components and stories will not run in this`)
 	log(
 		`    project. sb-deps works the framework out from the project's own files`,
