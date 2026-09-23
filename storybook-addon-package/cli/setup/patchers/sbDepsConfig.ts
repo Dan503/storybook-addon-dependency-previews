@@ -17,7 +17,24 @@ export type SbDepsConfigPatchResult =
 			 */
 			fields: ReadonlyArray<string>
 	  }
-	| { kind: 'skipped'; reason: string }
+	| {
+			kind: 'skipped'
+			reason: string
+			/**
+			 * Which of the two skips this was, for callers that have to tell them
+			 * apart.
+			 *
+			 * `'nothing-to-write'` means every value was the default, so the config
+			 * this would have written is the one the code already behaves as if it
+			 * had — nothing is unrecorded. `'config-exists'` means a file is there
+			 * that this never read, so an answer the user gave may be contradicted
+			 * by whatever it holds, and only they can tell.
+			 *
+			 * Matched on rather than the `reason` string, which is prose for a
+			 * human and not a thing to branch on.
+			 */
+			cause: 'nothing-to-write' | 'config-exists'
+	  }
 	| { kind: 'failed'; reason: string }
 
 export interface WriteSbDepsConfigOptions {
@@ -94,20 +111,30 @@ export function writeSbDepsConfigIfNeeded(
 		!needsTsxFramework &&
 		!needsStorybookFileExtension &&
 		!needsLitComponentSuffix
-	if (hasNothingWorthWriting) {
-		return {
-			kind: 'skipped',
-			reason:
-				'srcDir is the default (src), tsxFramework is the default (react), storybookFileExtension is the default (stories), and no Lit component marker was asked for — no config file needed',
-		}
-	}
-
-	// Match the candidate list `sb-deps.ts` already loads from, so we don't
-	// stomp on a file the runtime would otherwise pick up.
+	// Asked BEFORE `hasNothingWorthWriting`, even though either would end the
+	// call, so that `cause` says which situation the project is actually in. A
+	// caller checking whether an answer got recorded needs "a file is there
+	// that I never read" to win over "I had nothing to write": the second reads
+	// as *nothing is unrecorded*, which is only true when there is no file to
+	// contradict it. Match the candidate list `sb-deps.ts` already loads from,
+	// so we don't stomp on a file the runtime would otherwise pick up.
 	const candidates = ['sb-deps.config.js', 'sb-deps.config.mjs', 'sb-deps.config.cjs']
 	for (const name of candidates) {
 		if (existsSync(resolve(cwd, name))) {
-			return { kind: 'skipped', reason: `${name} already exists` }
+			return {
+				kind: 'skipped',
+				cause: 'config-exists',
+				reason: `${name} already exists`,
+			}
+		}
+	}
+
+	if (hasNothingWorthWriting) {
+		return {
+			kind: 'skipped',
+			cause: 'nothing-to-write',
+			reason:
+				'srcDir is the default (src), tsxFramework is the default (react), storybookFileExtension is the default (stories), and no Lit component marker was asked for — no config file needed',
 		}
 	}
 

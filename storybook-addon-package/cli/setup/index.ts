@@ -572,15 +572,22 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		storybookFileExtension: effectiveStorybookFileExtension,
 		litComponentSuffix,
 	})
-	// Only worth saying for a marker the user actually asked for. Without the key
-	// the scaffolder treats any plain `.ts` file created empty as a component,
-	// which is the opposite of what they just chose — whereas someone who
-	// cleared the marker gets that behaviour from an absent key anyway.
+	// A marker the user asked FOR needs the key, and without it the scaffolder
+	// does the opposite of what they chose. A CLEARED marker needs the key
+	// absent, which it will be wherever the write simply had nothing to do — but
+	// not where a config file was already there, since that file may set the key
+	// and this never read it to find out. So the two answers need telling apart
+	// from each other and the two skips need telling apart as well.
+	const isLitProject = litComponentSuffix !== undefined
 	const doesLitComponentSuffixNeedTheKey = !!litComponentSuffix
 	const doesSkippedConfigNeedTsxFrameworkNote =
 		sbDepsConfigResult.kind === 'skipped' && doesTsxFrameworkNeedTheKey
+	// Either answer is at risk here: one needs a key that was not written, the
+	// other needs one that may already be there.
 	const doesSkippedConfigNeedLitSuffixNote =
-		sbDepsConfigResult.kind === 'skipped' && doesLitComponentSuffixNeedTheKey
+		sbDepsConfigResult.kind === 'skipped' &&
+		sbDepsConfigResult.cause === 'config-exists' &&
+		isLitProject
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
 		log(
@@ -712,17 +719,29 @@ async function readLitComponentMarkerAnswer(): Promise<string> {
 }
 
 /**
- * Tell a Lit user to set `litComponentSuffix` themselves.
+ * Tell a Lit user that their answer to the marker question was not recorded,
+ * and what their config has to say for it to hold.
  *
  * Printed when the wizard finished without writing the key — the write failed,
- * or an existing config blocked it — and the user asked for a marker. Nothing
- * else records that answer, and an absent key means the opposite of it: any
- * plain `.ts` file created empty under the source folder is treated as a
- * component. The
- * wizard does not read an existing config, so this asks the user to check
- * rather than claiming the key is absent.
+ * or an existing config blocked it. **Both answers need it**, for opposite
+ * reasons: a marker needs the key present, and clearing one needs it absent,
+ * which an existing config may well contradict. Either way the wizard does not
+ * read that file, so this asks the user to check rather than telling them what
+ * it holds.
+ *
+ * @param litComponentSuffix - the answer, or the empty string for no marker
  */
 function logLitComponentSuffixNote(litComponentSuffix: string) {
+	if (!litComponentSuffix) {
+		log(
+			`    Ensure your sb-deps.config does NOT set \`litComponentSuffix\` — you asked`,
+		)
+		log(
+			`    for no marker, and that is what an absent key means. With one set, only`,
+		)
+		log(`    files named for it are components.`)
+		return
+	}
 	log(
 		`    Ensure your sb-deps.config sets \`litComponentSuffix: '${litComponentSuffix}'\` — without`,
 	)
