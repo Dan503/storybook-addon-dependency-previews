@@ -1104,8 +1104,8 @@ export const Primary: Story = {
 
 /**
  * The Storybook package a React project's stories import their types from, by
- * detected framework. Only the frameworks whose package is not the Vite one
- * are listed; everything else falls back to `@storybook/react-vite`.
+ * detected framework. Only the frameworks whose types come from somewhere other
+ * than `@storybook/react-vite` are listed; everything else falls back to it.
  */
 const REACT_STORY_TYPES_PACKAGE_BY_FRAMEWORK: Partial<
 	Record<Framework, string>
