@@ -6,6 +6,7 @@ import { relative as pathRelative } from 'node:path'
 import {
 	detectProject,
 	isFrameworkSupported,
+	isNextjsFramework,
 	SUPPORTED_FRAMEWORKS,
 	tsxFrameworkFromFramework,
 	type Framework,
@@ -32,6 +33,15 @@ function log(line: string) {
 
 function rule() {
 	console.log('────────────────────────────────────────────')
+}
+
+/**
+ * How a resolved source folder is shown to the user. The empty string is the
+ * sentinel for "the project root is the source folder", which would otherwise
+ * print as nothing at all.
+ */
+function displaySrcDir(srcDir: string): string {
+	return srcDir === '' ? '(project root)' : srcDir
 }
 
 /**
@@ -158,7 +168,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// without bothering the user except for the Next.js-without-`src/` edge
 	// case where `resolveSrcDir` may prompt for a folder name. That prompt
 	// fires after the framework has already been printed above so the
-	// context is established.
+	// context is established. The framework picker further down resolves the
+	// source folder a second time when the user picks Next.js, since the answer
+	// here was reached without knowing that.
 	const detectedRepoUrl = detectProjectRepoUrl(cwd)
 	if (detectedRepoUrl?.url) {
 		log(`Git project root URL: ${detectedRepoUrl.url}`)
@@ -175,10 +187,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		)
 	}
 
-	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
-	const displaySrcDir =
-		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
-	log(`Source folder       : ${displaySrcDir}`)
+	let resolvedSrcDir = await resolveSrcDir(cwd, framework)
+	log(`Source folder       : ${displaySrcDir(resolvedSrcDir.srcDir)}`)
 	// Assumed default; the user can change it in the edit flow below. The
 	// example filename uses the story extension the scaffolder emits for the
 	// detected framework, so it is printed only where that extension is known.
@@ -286,6 +296,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			return
 		}
 		framework = choice
+		// The source folder was resolved above against the framework detection
+		// produced, which here was `unknown` — so it fell through to the default
+		// `'src'` without probing anything. Next.js is the one framework that
+		// answer can be wrong for (its source can sit in `app/`, `pages/`, or the
+		// project root), so resolve it again now the user has said what the
+		// project is, and show the answer that replaces the one printed above.
+		if (isNextjsFramework(framework)) {
+			resolvedSrcDir = await resolveSrcDir(cwd, framework)
+			log(`Source folder       : ${displaySrcDir(resolvedSrcDir.srcDir)}`)
+			logClientDirectiveNote()
+		}
 	}
 
 	if (!isFrameworkSupported(framework)) {
@@ -626,6 +647,30 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		rule()
 		process.exit(1)
 	}
+}
+
+/**
+ * Warn a Next.js user who had to pick their framework that scaffolded
+ * components will not carry the `'use client'` line.
+ *
+ * Printed only on the picker path, which is reached when the wizard could not
+ * work the framework out from the project's own files. The scaffolder repeats
+ * that same detection every run and has nothing but the project to go on — the
+ * config file carries a source folder and a `.tsx` flavour, neither of which
+ * says "Next.js" — so where the wizard had to ask, the scaffolder comes up
+ * empty too and writes the component without the directive. Under the App
+ * Router that build fails as soon as a server component imports it, so the user
+ * needs to know to add the line themselves.
+ */
+function logClientDirectiveNote() {
+	rule()
+	log(
+		`  ⚠ Add \`'use client'\` to the top of scaffolded components yourself — this`,
+	)
+	log(
+		`    project's framework could not be read from its files, so the sb-deps`,
+	)
+	log(`    scaffolder cannot tell it is Next.js and omits the directive.`)
 }
 
 /**

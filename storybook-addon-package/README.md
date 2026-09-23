@@ -140,7 +140,7 @@ export default definePreview({
 })
 ```
 
-The setup wizard recognises both preview styles: an existing `definePreview({ ... })` file gets `addonDocs()` and `dependencyPreviews()` added to its `addons` list and the settings block added to its `parameters`, and a classic `const preview = { ... }` file gets the hand-spread form (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`), which remains supported. When there is no preview file yet, the wizard writes the `definePreview` style on Storybook 11 for frameworks whose package exports `definePreview` (React, Vue 3 and Solid), and the hand-spread style everywhere else — it works on both majors. Both manual setup guides show the full CSF Next config for their frameworks.
+The setup wizard recognises both preview styles: an existing `definePreview({ ... })` file gets `addonDocs()` and `dependencyPreviews()` added to its `addons` list and the settings block added to its `parameters`, and a classic `const preview = { ... }` file gets the hand-spread form (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`), which remains supported. When there is no preview file yet, the wizard writes the `definePreview` style on Storybook 11 for frameworks whose package exports `definePreview`, and the hand-spread style everywhere else — it works on both majors. Both manual setup guides show the full CSF Next config for their frameworks.
 
 ## Auto-scaffolding new components and stories
 
