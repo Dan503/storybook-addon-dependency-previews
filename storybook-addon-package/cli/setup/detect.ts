@@ -119,6 +119,18 @@ function detectPackageManager(cwd: string): PackageManager {
 	return 'npm'
 }
 
+/**
+ * Reads the `framework:` declaration out of `.storybook/main.*`, in the two
+ * shapes that name the package as a plain string — `framework: '<package>'`
+ * and `framework: { name: '<package>', … }`.
+ *
+ * It does not read a package name passed through a call, which is the shape
+ * Storybook's own setup writes for some projects
+ * (`name: getAbsolutePath('<package>')`). So a main file may hold a framework
+ * this cannot see, and every fallback to this regex can come back with
+ * nothing — which is why they all end at `'unknown'` rather than promising an
+ * answer.
+ */
 const FRAMEWORK_REGEX =
 	/framework\s*:\s*(?:\{\s*name\s*:\s*['"]([^'"]+)['"]|['"]([^'"]+)['"])/
 
@@ -214,7 +226,8 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	 * one `package.json` declares wins over `framework`; when it declares none,
 	 * the `.storybook/main.*` declaration decides, and `framework` is the
 	 * default when that names none of them either. More than one declared in
-	 * `package.json` is ambiguous, and the `.storybook/main.*` regex decides.
+	 * `package.json` is ambiguous, and the `.storybook/main.*` declaration is
+	 * asked instead — see `FRAMEWORK_REGEX` for what it can read.
 	 * See `pickDeclaredFrameworkPackage`.
 	 */
 	alternatives?: ReadonlyArray<StorybookFramework>
@@ -324,8 +337,10 @@ type DependencyScanResult = {
  * If exactly one match survives, pass 3 names the winner. Zero matches → no
  * recognised framework. **Multiple unrelated matches** (e.g. a polyglot
  * monorepo with both `vue` and `react` in the dep surface) → ambiguous, so
- * return `null` and let the `.storybook/main.*` regex decide based on the
- * explicit `framework:` declaration. Without this ambiguity check the scan
+ * return `null` and ask the explicit `framework:` declaration in
+ * `.storybook/main.*` instead — which answers for the shapes `FRAMEWORK_REGEX`
+ * can read, and leaves the framework `'unknown'` otherwise. Without this
+ * ambiguity check the scan
  * would silently pick whichever detector happened to come first in the
  * array, which is fragile and produced exactly that bug for `vue` + `react`
  * before this fix.
@@ -603,9 +618,12 @@ export function detectProject(cwd: string): Detection {
 	// — between independent matches, or between two Storybook packages declared
 	// for one core package (`@storybook/react-vite` and
 	// `@storybook/react-webpack5` both present). `findFrameworkInDeps` returns
-	// null for all of those, and the explicit `framework:` declaration is the
-	// reliable answer in the ambiguous cases. A meta-framework and the base it
-	// `subsumes` are not one of those cases: that pair resolves in the scan.
+	// null for all of those, and in the ambiguous cases the project's own
+	// `framework:` declaration is the one statement of intent left to go on —
+	// when `FRAMEWORK_REGEX` can read it, which is not every main file, so this
+	// can still finish with nothing and leave the framework `'unknown'`. A
+	// meta-framework and the base it `subsumes` are not one of those cases:
+	// that pair resolves in the scan.
 	if (frameworkRaw === null && mainFileFrameworkRaw) {
 		frameworkRaw = mainFileFrameworkRaw
 		frameworkDetectionSource = '.storybook/main'
