@@ -888,12 +888,16 @@ function getNameEndingContext(): NameEndingContext {
  * both routes into those scaffolders, since a created story is not the file
  * whose name they use (see `getLitClassNameSources`).
  *
- * React, Vue and Svelte scaffold from the whole name, so this question is
- * already their question. Angular strips `.component` but then appends
- * `Component`, so its class name cannot come out empty. The Svelte decorator
- * path does strip to a base that could be empty — it takes the segment before
- * the first dot — but that predates this and is left alone rather than swept
- * in here.
+ * Only Lit is asked the extra question, and that is a scope decision rather
+ * than a claim that the others cannot reach the same shape. On the **component**
+ * route they cannot: React, Vue and Svelte scaffold from the whole name, so
+ * this check is already asking their question, and Angular strips `.component`
+ * but appends `Component`, so its class name cannot come out empty. On the
+ * **story** route every family strips the story part, so an `_.stories.tsx`
+ * clears this check as `Stories` and then backfills an `_.tsx` whose own name
+ * is empty — the same hole, in code this branch does not touch. It is
+ * pre-existing and left alone deliberately, along with the Svelte decorator
+ * path, which strips to the segment before the first dot for the same reason.
  *
  * It warns where the capitals check errors, because a bracketed page name is a
  * framework's own convention rather than a mistake — there is nothing to
@@ -2895,8 +2899,9 @@ function getSiblingProbeOrder(): Array<StoryFramework> {
  * the file to have been created empty, and this deliberately does not: the
  * question there is whether a file nobody asked about is a component, while
  * the question here is which component a story the user *did* ask for belongs
- * to. Creating `helpers.stories.ts` is that request, so it finds `helpers.ts`
- * whatever is in it.
+ * to. Creating `helpers.stories.ts` is that request, so with no marker set it
+ * finds `helpers.ts` whatever is in it. With one set it looks for the marked
+ * name instead, which is the whole of what a marker means.
  */
 function getComponentPathForFamily(
 	storyBase: string,

@@ -673,11 +673,13 @@ const NO_LIT_COMPONENT_MARKER_ANSWER = 'none'
 /**
  * Ask a Lit project what marks a component file, and return the answer without
  * its dot — `'lit'` for `Button.lit.ts`, or the empty string for no marker at
- * all, where any plain `.ts` file created empty counts.
+ * all, where any plain `.ts` file created empty counts instead. Either answer
+ * is about files under the source folder; nothing outside it is a component
+ * whichever is given.
  *
  * Asked every time rather than only where it would change something, so
  * `.lit.ts` is the shape a set-up project ends up with, while anyone who would
- * rather every `.ts` file were a component can say so.
+ * rather a plain `.ts` file there were a component can say so.
  *
  * Built on `ask` rather than `input` because `input` returns its default for a
  * blank answer, so it has no way to tell "keep the suggestion" from "I want

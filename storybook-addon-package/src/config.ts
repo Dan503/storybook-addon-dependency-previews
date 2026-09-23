@@ -213,16 +213,23 @@ export interface SbDepsConfig {
 	 * nothing: a file created empty is this tool's own signal for "fill this
 	 * in", while one that arrives with content made no such request. Set a
 	 * marker and the name carries the claim, so a non-empty `Button.lit.ts`
-	 * still gets its story. Either way, creating the empty story file beside a
-	 * component is how you ask for a story for one this tool would otherwise
-	 * leave alone — `helpers.stories.ts` finds `helpers.ts` whatever is in it.
+	 * still gets its story.
 	 *
-	 * A dotted name is the exception, and it is silent about it. With no marker
-	 * `Button.test.stories.ts` writes nothing, because `Button.test.ts` is not
-	 * a component here and nothing else it could mean is either; with a marker
-	 * it writes a new `Button.test.lit.ts` rather than finding your
-	 * `Button.test.ts`. Name a component without dots if you want a story for
-	 * it.
+	 * **Creating the empty story file yourself asks for a story**, and what it
+	 * finds depends on the marker, which is worth knowing before you reach for
+	 * it:
+	 *
+	 * - **With no marker**, `helpers.stories.ts` finds `helpers.ts` whatever is
+	 *   in it. That is how you get a story for a file this tool would otherwise
+	 *   leave alone. A dotted name is the exception and says nothing about
+	 *   itself: `Button.test.stories.ts` writes nothing at all, because
+	 *   `Button.test.ts` is not a component here.
+	 * - **With a marker**, it looks for the marked name and writes one if it is
+	 *   not there. `helpers.stories.ts` gives you a new `helpers.lit.ts` stub
+	 *   and a story for that, and your own `helpers.ts` is neither found nor
+	 *   mentioned — a plain `.ts` file is not a component in that project, so
+	 *   there is no spelling by which it could be found. Rename it to
+	 *   `helpers.lit.ts` if you want it storied.
 	 *
 	 * Only read in a Lit project, so it changes nothing for any other
 	 * framework.
