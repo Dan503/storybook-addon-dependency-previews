@@ -259,12 +259,23 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
  */
 function frameworkFromRaw(raw: string | null): Framework {
 	if (!raw) return 'unknown'
-	// Widened before the lookup: the table's keys are literal types, so reading
-	// it with a name that may match none of them needs a plain string key type,
-	// and a value type that admits the miss.
-	const frameworkByPackage: Record<string, Framework | undefined> =
-		FRAMEWORK_BY_STORYBOOK_PACKAGE
-	return frameworkByPackage[raw] ?? 'unsupported'
+	if (!checkIsStorybookFramework(raw)) return 'unsupported'
+	return FRAMEWORK_BY_STORYBOOK_PACKAGE[raw]
+}
+
+/**
+ * Whether a name is one of the Storybook framework packages the addon
+ * recognises — a key of `FRAMEWORK_BY_STORYBOOK_PACKAGE`.
+ *
+ * `Object.hasOwn` rather than reading the name straight off the table: every
+ * object literal inherits members such as `constructor` and `toString`, so a
+ * name someone typed into `.storybook/main.*` could otherwise be answered with
+ * one of those instead of being reported as a package the addon does not know.
+ *
+ * @param name - the package name read from `package.json` or `.storybook/main.*`
+ */
+function checkIsStorybookFramework(name: string): name is StorybookFramework {
+	return Object.hasOwn(FRAMEWORK_BY_STORYBOOK_PACKAGE, name)
 }
 
 /**
