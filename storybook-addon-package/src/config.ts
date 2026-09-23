@@ -149,9 +149,10 @@ export interface SbDepsConfig {
 	 * with a warning + fallback to `'src'`. So are `'.'` and `'..'`, which the
 	 * allow-list would otherwise let through: they are path-traversal segments
 	 * rather than folder names, and would build a broken include-only pattern.
-	 * Whitespace-only values are rejected too — say project-root mode with `''`. With a non-empty value, every key
-	 * in `dependency-previews.json` starts with `<srcDir>/`. With `''`, keys
-	 * are still project-relative paths (e.g. `components/Foo.tsx`,
+	 * Whitespace-only values are rejected too — say project-root mode with
+	 * `''`. With a non-empty value, every key in `dependency-previews.json`
+	 * starts with `<srcDir>/`. With `''`, keys are still project-relative
+	 * paths (e.g. `components/Foo.tsx`,
 	 * `packages/foo/Bar.tsx`) — there's just no fixed `srcDir` prefix
 	 * constraining which top-level folders appear.
 	 *

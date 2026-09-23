@@ -20,7 +20,10 @@ import {
 } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
-import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
+import {
+	writeSbDepsConfigIfNeeded,
+	type SbDepsConfigPatchResult,
+} from './patchers/sbDepsConfig.js'
 import { ask, choose, confirm, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
 
@@ -245,16 +248,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				srcDir: resolvedSrcDir.srcDir,
 				isEsm: detection.isEsm,
 			})
-			// Indented two spaces, like the other outcomes of this same write and
-			// like the Step 4 call site, so the three of them line up with each
-			// other rather than with the guide links above.
-			if (cfg.kind === 'created') {
-				log(`  ✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
-			} else if (cfg.kind === 'blocked') {
-				logBlockedConfigNote(cfg.existingFileName, cfg.fields)
-			} else if (cfg.kind === 'failed') {
-				log(`  ⚠ ${cfg.reason}`)
-			}
+			logSbDepsConfigOutcome(cfg, { separateWithRule: false })
 		}
 		return
 	}
@@ -589,24 +583,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		tsxFramework,
 		storybookFileExtension: effectiveStorybookFileExtension,
 	})
-	if (sbDepsConfigResult.kind === 'created') {
-		rule()
-		log(
-			`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`,
-		)
-	} else if (sbDepsConfigResult.kind === 'blocked') {
-		rule()
-		logBlockedConfigNote(
-			sbDepsConfigResult.existingFileName,
-			sbDepsConfigResult.fields,
-		)
-	} else if (sbDepsConfigResult.kind === 'failed') {
-		rule()
-		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		log(
-			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
-		)
-	}
+	logSbDepsConfigOutcome(sbDepsConfigResult, { separateWithRule: true })
 
 	rule()
 	log('Step 5/5: generating .storybook/dependency-previews.json')
@@ -663,13 +640,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
  * that is not `src`.
  *
  * The addon's story glob and the dependency scan both get the resolved folder,
- * but the `stories` array is the project's own and the wizard does not rewrite
- * it — where stories live is the project's decision, and a project may keep
- * them outside its source folder on purpose. The failure worth heading off is
- * silent: with that array still pointing at `src/` in a project whose source is
- * in `app/`, Storybook lists none of the project's stories, so there is no page
- * for the previews panel to appear on, and every step of this wizard prints a
- * tick regardless.
+ * but the `stories` array is the project's own: the wizard never rewrites the
+ * folder segment of it — it only ever widens the file extension there, for the
+ * `.story.` naming — and where stories live is the project's decision, since a
+ * project may keep them outside its source folder on purpose. The failure worth
+ * heading off is silent: with that array still pointing at `src/` in a project
+ * whose source is in `app/`, Storybook lists none of the project's stories, so
+ * there is no page for the previews panel to appear on, and every step of this
+ * wizard prints a tick regardless.
  *
  * Said rather than checked, deliberately. Storybook's entries are a string glob
  * or an object naming a directory, either can hold glob syntax that decides the
@@ -678,20 +656,57 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
  * warning that sends someone with a correct config to go and break it. A line
  * that makes no claim about what the array says cannot be wrong about it.
  *
- * Only for a named folder other than `src`: the default needs no reminder, and
- * in project-root mode the dependency scan covers the whole project, so no
- * stories path inside it can be missed.
+ * Skipped only for the `src` default, which is what the array already names in
+ * a project that has one. Project-root mode gets it too, and has the strongest
+ * claim to it: that answer is only ever reached after `resolveSrcDir` has found
+ * no `src/` folder, so an array still naming `src/` there matches nothing.
  *
  * @param srcDir - the resolved source folder, after any edit-flow override
  */
 function logStoriesGlobReminder(srcDir: string) {
-	if (srcDir === '' || srcDir === 'src') return
+	if (srcDir === 'src') return
+	const target = srcDir === '' ? 'the project root' : `'${srcDir}/'`
 	log(
 		`  • Storybook lists stories from the \`stories\` array in main.ts, which is`,
 	)
 	log(
-		`    yours to set — check it covers '${srcDir}/', or it will list none of them.`,
+		`    yours to set — check it covers ${target}, or it will list none of them.`,
 	)
+}
+
+/**
+ * Report what came of a `sb-deps.config` write, at whichever of the two places
+ * the wizard attempts one — the webpack bail-out and Step 4.
+ *
+ * One owner rather than a switch at each site: the two say the same things
+ * about the same result type, and the one time they were written out separately
+ * they drifted, the outcomes of a single write printing at two indents. Every
+ * line here is indented two spaces so they line up with each other and with the
+ * step's own lines.
+ *
+ * `skipped` prints nothing on purpose — it means there was nothing worth
+ * writing and nothing to tell the user.
+ *
+ * @param result - what `writeSbDepsConfigIfNeeded` returned
+ * @param separateWithRule - whether to draw a divider first; Step 4 sits in a
+ * run of them, while the bail-out has already printed its own lines
+ */
+function logSbDepsConfigOutcome(
+	result: SbDepsConfigPatchResult,
+	{ separateWithRule }: { separateWithRule: boolean },
+) {
+	if (result.kind === 'skipped') return
+	if (separateWithRule) rule()
+	if (result.kind === 'created') {
+		log(`  ✓ wrote ${result.path} (${result.fields.join(', ')})`)
+	} else if (result.kind === 'blocked') {
+		logBlockedConfigNote(result.existingFileName, result.fields)
+	} else {
+		log(`  ⚠ ${result.reason}`)
+		log(
+			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
+		)
+	}
 }
 
 /**
