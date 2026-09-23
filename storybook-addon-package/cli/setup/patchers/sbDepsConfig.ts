@@ -117,11 +117,9 @@ export function writeSbDepsConfigIfNeeded(
 	// Collect each non-default field once as both its file line and a
 	// human-readable summary, so the written file and the caller's success log
 	// share a single source of truth for "which fields differ from the
-	// defaults": `srcDir` when it's non-default, `tsxFramework` for a Solid or
-	// Preact project (so the scaffolder picks that framework's templates for
-	// `.tsx` files), and `storybookFileExtension: 'story'` for a non-default
-	// story extension. Adding a field later updates both outputs from this one
-	// list.
+	// defaults". The blocks below are that list — each one says which field it
+	// is for and what makes it worth writing — so adding a field later means
+	// adding a block, and both outputs follow.
 	const fields: Array<{ line: string; summary: string }> = []
 	if (needsSrcDir) {
 		const srcDirLiteral = toSingleQuotedLiteral(srcDir)

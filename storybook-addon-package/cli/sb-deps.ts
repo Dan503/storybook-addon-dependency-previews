@@ -216,9 +216,9 @@ function readLitTagPrefix(configuredPrefix: unknown): string {
 
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 // What marks a Lit component file, without its dot (`'lit'` for
-// `Button.lit.ts`), or `null` when this project asked for no marker and every
-// plain `.ts` file under the source folder counts. Only ever read in a Lit
-// project.
+// `Button.lit.ts`), or `null` when this project asked for no marker and any
+// plain `.ts` file created empty under the source folder counts. Only ever
+// read in a Lit project.
 let LIT_COMPONENT_SUFFIX: string | null = null
 let LIT_TAG_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
@@ -739,7 +739,8 @@ function isComponentsLitTs(relPath: string, absPath: string) {
 	// This is deliberately stricter than `isComponentsAngularTs`, which does
 	// speak up about a `Foo.component.ts` outside an Angular project. It can
 	// afford to, because `.component` is a spelling nothing else here writes by
-	// accident; with no marker set, every `utils.ts` in the project would be one.
+	// accident; with no marker set, a `utils.ts` created anywhere under the
+	// source folder would be one.
 	if (getProjectFrameworkFamily() !== 'lit') return false
 	if (STORY_FILE_REGEX.test(relPath)) return false
 	if (LIT_COMPONENT_SUFFIX)
@@ -3073,9 +3074,10 @@ function startWatcher() {
 			handle: (absPath, relPath) =>
 				handleAngularComponentCreation(absPath, relPath, 'internal'),
 		},
-		// Last, because with no marker set its check is the broadest here — any
-		// plain `.ts` file, where every other branch names an extension or an
-		// ending nothing else writes. It overlaps none of them as they stand:
+		// Last, because with no marker set the name half of its check is the
+		// broadest here — a plain `.ts` file, where every other branch names an
+		// extension or an ending nothing else writes. It overlaps none of them
+		// as they stand:
 		// an Angular `Foo.component.ts` carries a second dotted part, which this
 		// check excludes either way.
 		{

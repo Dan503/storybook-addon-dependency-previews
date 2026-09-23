@@ -683,7 +683,7 @@ async function askLitComponentMarker(): Promise<string> {
 	log(
 		marker
 			? `  ✓ Files named *.${marker}.ts will be treated as Lit components.`
-			: '  ✓ Every plain .ts file under your source folder will be treated as a Lit component.',
+			: '  ✓ Any plain .ts file you create empty under your source folder will be treated as a Lit component.',
 	)
 	return marker
 }
@@ -716,8 +716,9 @@ async function readLitComponentMarkerAnswer(): Promise<string> {
  *
  * Printed when the wizard finished without writing the key — the write failed,
  * or an existing config blocked it — and the user asked for a marker. Nothing
- * else records that answer, and an absent key means the opposite of it: every
- * plain `.ts` file under the source folder is treated as a component. The
+ * else records that answer, and an absent key means the opposite of it: any
+ * plain `.ts` file created empty under the source folder is treated as a
+ * component. The
  * wizard does not read an existing config, so this asks the user to check
  * rather than claiming the key is absent.
  */
