@@ -10,6 +10,7 @@ import {
 	SUPPORTED_FRAMEWORKS,
 	tsxFrameworkFromFramework,
 	type Framework,
+	type MainFile,
 	type SupportedFramework,
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
@@ -17,6 +18,7 @@ import { installMissingPackages } from './install.js'
 import {
 	patchMainFile,
 	patchStoriesGlobForStoryExtension,
+	readStoriesGlobEntries,
 } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
@@ -492,6 +494,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 	}
 
+	warnIfStoriesGlobMissesSrcDir(detection.mainFile, effectiveSrcDir)
+
 	rule()
 	log('Step 3/5: configuring preview file')
 	// The runtime concatenates `sourceRootUrl + '/' + componentPath` (where
@@ -657,6 +661,45 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 }
 
 /**
+ * Say so when Storybook's own `stories` array does not cover the source folder
+ * the wizard resolved.
+ *
+ * The addon's story glob and the dependency scan both get the resolved folder,
+ * but Storybook's sidebar glob is the project's own and the wizard does not
+ * rewrite it — where stories live is the project's decision, and a project may
+ * keep them outside its source folder on purpose. What the wizard can do is
+ * stop the two drifting apart silently: with a `stories` array still pointing
+ * at `src/` in a project whose source is in `app/`, Storybook lists none of the
+ * project's stories, so there is no page for the previews panel to appear on,
+ * and every step of this wizard still prints a tick.
+ *
+ * Only for a named folder other than `src`. The default needs no warning, and
+ * for project-root mode there is no folder name to look for — a glob may
+ * legitimately name any subfolder there, so anything said would be a guess.
+ *
+ * @param mainFile - the project's `.storybook/main.*`
+ * @param srcDir - the resolved source folder, after any edit-flow override
+ */
+function warnIfStoriesGlobMissesSrcDir(mainFile: MainFile, srcDir: string) {
+	if (srcDir === '' || srcDir === 'src') return
+	const entries = readStoriesGlobEntries(mainFile)
+	// Unreadable or not a literal array — nothing to compare against, and the
+	// `.story.` widener above already reports that shape when it matters.
+	if (!entries || entries.length === 0) return
+	const doesAnyEntryCoverSrcDir = entries.some((entry) =>
+		entry.includes(`/${srcDir}/`),
+	)
+	if (doesAnyEntryCoverSrcDir) return
+	log(
+		`  ⚠ the \`stories\` array in main.ts does not mention '${srcDir}/': ${entries.join(', ')}`,
+	)
+	log(
+		`    Storybook lists stories from those paths only, so point one at '${srcDir}/'`,
+	)
+	log(`    if that is where your stories live.`)
+}
+
+/**
  * Tell the user that an existing config file stopped the wizard recording what
  * it worked out, and name the values it could not write.
  *
@@ -675,7 +718,10 @@ function logBlockedConfigNote(
 	fields: ReadonlyArray<string>,
 ) {
 	log(`  ⚠ ${existingFileName} already exists, so it was left alone.`)
-	log(`    Add these to it yourself: ${fields.join(', ')}`)
+	// "Check that it sets", not "add these": the file is never opened, so the
+	// key may already be there — most likely written by a previous run of this
+	// same wizard, which would have resolved the same value.
+	log(`    Check that it sets: ${fields.join(', ')}`)
 }
 
 /**
