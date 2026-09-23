@@ -38,9 +38,10 @@ export interface WriteSbDepsConfigOptions {
 	 * Which templates the project's `.tsx` files should be scaffolded from.
 	 * Anything other than `'react'` gets the config written even for the default
 	 * `srcDir`, so it can carry `tsxFramework`, which tells the `sb-deps`
-	 * scaffolder outright which framework's `.tsx` templates to emit. The
-	 * scaffolder works that out for itself as well, so the key is what settles
-	 * it where that detection comes up empty.
+	 * scaffolder outright which framework's `.tsx` templates to emit. It is not
+	 * a rescue for a project the scaffolder cannot recognise: a `.tsx` file in
+	 * one of those is turned away before any template is chosen, so the key only
+	 * ever settles which templates a *recognised* project gets.
 	 * @default 'react'
 	 */
 	tsxFramework?: TsxFramework
