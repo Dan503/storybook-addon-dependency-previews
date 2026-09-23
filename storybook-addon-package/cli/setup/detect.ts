@@ -125,10 +125,12 @@ const FRAMEWORK_REGEX =
 /**
  * Every Storybook framework package the addon recognises, and the `Framework`
  * value each one means. Written once here: `frameworkFromRaw` reads it, and the
- * `StorybookFramework` type below is derived from its keys, so everywhere a
- * package name is stored or returned — a detector entry, a scaffolded story's
- * types import, a `definePreview` import — can only name a package on this
- * list.
+ * `StorybookFramework` type below is derived from its keys, so the code that
+ * picks a package by framework — a detector entry, the story-types lookup, the
+ * `definePreview` table — can only pick one from this list. (The Vue and
+ * Angular story templates spell their own package inside the file they write,
+ * since each of those families has exactly one, so they are not checked
+ * against it.)
  *
  * `as const` is what gives the keys their literal types so the type below can
  * be derived; `satisfies` is what still checks each value against `Framework`,
