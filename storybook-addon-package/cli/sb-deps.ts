@@ -2326,20 +2326,24 @@ const litComponentsWarnedAboutTheirTag = new Set<string>()
  * what is wrong is more use than guessing what they meant, and the failure is
  * loud — `customElements.define` throws, so the story does not render at all.
  *
- * Of the two halves a bad character can come from, one is closed here and one
- * is not, so do not read this as a promise that the file will compile.
+ * Every tag reaching here is one a browser will not register, rather than one
+ * that breaks the file it is written into — both halves that could break it
+ * are closed before this runs. `readLitTagPrefix` refuses a prefix holding a
+ * character no tag may contain, and `getUnusableNameWarning` refuses the file
+ * outright, ahead of every scaffolder, when the component's name is not one
+ * the generated code can carry. So a name with an apostrophe or a backtick is
+ * never written at all, rather than written into a `@customElement('…')` it
+ * would break.
  *
- * The **prefix** half is closed: `readLitTagPrefix` refuses a prefix holding a
- * character no tag may contain, so one can never reach the generated
- * `@customElement('…')`. The **name** half is open, and deliberately — a
- * component named with an apostrophe closes that decorator's string early, and
- * one named with a backtick ends the story's `html` template literal. Nothing
- * strips either on the way to the tag, because `toWords` splits only on
- * `[_-./]` and whitespace.
+ * `$` is the one character that is legal in a name and illegal in a tag, so it
+ * is the only way to reach this function through the name — and it closes no
+ * string and is never followed by `{` in either template, so that file still
+ * compiles.
  *
- * That is left alone because it is neither new nor Lit's: every framework here
- * writes the component's name into generated source unescaped, so narrowing it
- * is a change to the shared scaffolders rather than to this one.
+ * None of that covers a **folder** name: `makeTitleFromComponent` title-cases
+ * the folders into the story's `title` with nothing checking them, so one
+ * holding an apostrophe writes a story that will not parse. That is shared
+ * with every family here and untouched by this change.
  */
 function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
 	const tagError = getLitTagError(tagName, LIT_TAG_PREFIX)
@@ -2360,10 +2364,13 @@ function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
  * time, long after the file was written.
  *
  * Out of reach under the default `'app-'`, which puts `app-` in front and
- * makes `app-font-face`. What reaches it is any `litTagPrefix` whose value,
- * joined to the file's name, spells one of these exactly — a prefix cleared to
- * `''` in front of a `font-face.lit.ts`, and equally a prefix of `font-` in
- * front of a `Face.lit.ts`.
+ * makes `app-font-face`. What reaches it is any `litTagPrefix` that leaves the
+ * finished tag spelling one of these exactly — which is not only the prefix
+ * joined to the name, because `getLitTagName` does not join when the name
+ * already starts with the prefix. So `''` in front of a `font-face.lit.ts`
+ * reaches it, `font-` in front of a `Face.lit.ts` reaches it, and so does any
+ * prefix that `font-face.lit.ts` already starts with, such as `font-` or `f`,
+ * where the name is used as it stands.
  */
 const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
 	'annotation-xml',
@@ -2390,18 +2397,19 @@ const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
  * capital, a space and a `$` are all caught, and a component named in another
  * language is not refused on a guess.
  *
- * The first three rules name which half of the tag is at fault rather than
- * offering both, because for them only one half can be the answer: the prefix
- * goes in front, so nothing done to it can take a bad character off the tail,
- * and nothing done to the component's name can change a first character the
- * prefix supplied. Which half it is can be worked out here — the prefix is a
- * known string sitting at the front — so it is, rather than being left to the
- * reader.
+ * Two of the rules name which half of the tag is at fault rather than offering
+ * both, and they are the first-character and character rules. For those only
+ * one half can be the answer: the prefix goes in front, so nothing done to it
+ * can take a bad character off the tail, and nothing done to the component's
+ * name can change a first character the prefix supplied. Which half it is can
+ * be worked out here — the prefix is a known string sitting at the front — so
+ * it is, rather than being left to the reader.
  *
- * The reserved-name rule is the exception and offers both, because for it both
- * genuinely work: the name is reserved as a whole, so renaming the file fixes
- * it and so does changing the prefix in front of it. Naming one half there
- * would be picking arbitrarily between two real answers.
+ * The other two name both halves, because for them both genuinely work. A
+ * missing hyphen is supplied by either one. A reserved name is reserved as a
+ * whole, so renaming the file fixes it and so does changing the prefix in
+ * front of it. Naming one half for either would be picking arbitrarily
+ * between two real answers.
  *
  * @param tagName - the finished tag, prefix included
  * @param tagPrefix - the prefix that went in front of it, possibly empty
