@@ -2360,9 +2360,10 @@ function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
  * time, long after the file was written.
  *
  * Out of reach under the default `'app-'`, which puts `app-` in front and
- * makes `app-font-face`. Two settings reach it: a prefix cleared to `''`, so
- * the file's own name is the whole tag, and a prefix that happens to complete
- * one of these names — `font-` in front of a `Face.lit.ts` gives `font-face`.
+ * makes `app-font-face`. What reaches it is any `litTagPrefix` whose value,
+ * joined to the file's name, spells one of these exactly — a prefix cleared to
+ * `''` in front of a `font-face.lit.ts`, and equally a prefix of `font-` in
+ * front of a `Face.lit.ts`.
  */
 const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
 	'annotation-xml',
