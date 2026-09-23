@@ -24,6 +24,7 @@ import {
 	detectProject,
 	tsxFrameworkFromFramework,
 	type Framework,
+	type StorybookFramework,
 	type TsxFramework,
 } from './setup/detect.js'
 import { runSetup } from './setup/index.js'
@@ -1106,7 +1107,7 @@ export const Primary: Story = {
  * are listed; everything else falls back to `@storybook/react-vite`.
  */
 const REACT_STORY_TYPES_PACKAGE_BY_FRAMEWORK: Partial<
-	Record<Framework, string>
+	Record<Framework, StorybookFramework>
 > = {
 	'nextjs-webpack': '@storybook/nextjs',
 	'react-webpack5': '@storybook/react-webpack5',
@@ -1119,7 +1120,7 @@ const REACT_STORY_TYPES_PACKAGE_BY_FRAMEWORK: Partial<
  * project on webpack's in `@storybook/react-webpack5`, not in the Vite package,
  * so importing the Vite one there produces a story that doesn't type-check.
  */
-function getTsxStoryTypesPackage(flavor: TsxFramework): string {
+function getTsxStoryTypesPackage(flavor: TsxFramework): StorybookFramework {
 	if (flavor === 'solid') return 'storybook-solidjs-vite'
 	if (flavor === 'preact') return '@storybook/preact-vite'
 	return (

@@ -123,6 +123,41 @@ const FRAMEWORK_REGEX =
 	/framework\s*:\s*(?:\{\s*name\s*:\s*['"]([^'"]+)['"]|['"]([^'"]+)['"])/
 
 /**
+ * Every Storybook framework package the addon recognises, and the `Framework`
+ * value each one means. Written once here: `frameworkFromRaw` reads it, and the
+ * `StorybookFramework` type below is derived from its keys, so everywhere a
+ * package name is stored or returned — a detector entry, a scaffolded story's
+ * types import, a `definePreview` import — can only name a package on this
+ * list.
+ *
+ * `as const` is what gives the keys their literal types so the type below can
+ * be derived; `satisfies` is what still checks each value against `Framework`,
+ * so a typo there is a compile error rather than a silently new pairing.
+ */
+const FRAMEWORK_BY_STORYBOOK_PACKAGE = {
+	'@storybook/react-vite': 'react-vite',
+	'@storybook/react-webpack5': 'react-webpack5',
+	'@storybook/preact-vite': 'preact-vite',
+	'@storybook/sveltekit': 'sveltekit',
+	'@storybook/svelte-vite': 'svelte-vite',
+	'@storybook/vue3-vite': 'vue3-vite',
+	// Solid uses the community `storybook-solidjs-vite` package (Vite-only).
+	'storybook-solidjs-vite': 'solid-vite',
+	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
+	// framework value for the future Vite-based Angular Storybook framework if it
+	// ships — current Angular goes in as `'angular-webpack'`.
+	'@storybook/angular': 'angular-webpack',
+	'@storybook/nextjs': 'nextjs-webpack',
+} as const satisfies Record<string, Framework>
+
+/**
+ * The npm name of a Storybook framework package the addon recognises — one of
+ * the keys above. Use it wherever such a name is held, so the value is checked
+ * against that list instead of being any string at all.
+ */
+export type StorybookFramework = keyof typeof FRAMEWORK_BY_STORYBOOK_PACKAGE
+
+/**
  * Maps the **core framework package** (e.g. `react`, `@angular/core`,
  * `@sveltejs/kit`) declared in the consumer's `package.json` to the
  * corresponding `@storybook/<framework>` value that `frameworkFromRaw` knows
@@ -164,7 +199,7 @@ const FRAMEWORK_REGEX =
  */
 const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	corePackage: string
-	framework: string
+	framework: StorybookFramework
 	/**
 	 * Core package this detector subsumes when both are present in deps —
 	 * i.e. the more-general framework that this one builds on top of. A
@@ -180,7 +215,7 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	 * `package.json` is ambiguous, and the `.storybook/main.*` regex decides.
 	 * See `pickDeclaredFrameworkPackage`.
 	 */
-	alternatives?: ReadonlyArray<string>
+	alternatives?: ReadonlyArray<StorybookFramework>
 }> = [
 	{ corePackage: '@angular/core', framework: '@storybook/angular' },
 	{ corePackage: 'next', framework: '@storybook/nextjs', subsumes: 'react' },
@@ -213,22 +248,21 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	{ corePackage: 'solid-js', framework: 'storybook-solidjs-vite' },
 ]
 
+/**
+ * The `Framework` a declared package name means — `'unknown'` when nothing was
+ * declared, `'unsupported'` when what was declared is not a package the addon
+ * recognises.
+ *
+ * @param raw - the package name read from `package.json` or `.storybook/main.*`
+ */
 function frameworkFromRaw(raw: string | null): Framework {
 	if (!raw) return 'unknown'
-	if (raw === '@storybook/react-vite') return 'react-vite'
-	if (raw === '@storybook/react-webpack5') return 'react-webpack5'
-	if (raw === '@storybook/preact-vite') return 'preact-vite'
-	if (raw === '@storybook/sveltekit') return 'sveltekit'
-	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
-	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
-	// Solid uses the community `storybook-solidjs-vite` package (Vite-only).
-	if (raw === 'storybook-solidjs-vite') return 'solid-vite'
-	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
-	// framework value for the future Vite-based Angular Storybook framework if it
-	// ships — current Angular goes in as `'angular-webpack'`.
-	if (raw === '@storybook/angular') return 'angular-webpack'
-	if (raw === '@storybook/nextjs') return 'nextjs-webpack'
-	return 'unsupported'
+	// Widened before the lookup: the table's keys are literal types, so reading
+	// it with a name that may match none of them needs a plain string key type,
+	// and a value type that admits the miss.
+	const frameworkByPackage: Record<string, Framework | undefined> =
+		FRAMEWORK_BY_STORYBOOK_PACKAGE
+	return frameworkByPackage[raw] ?? 'unsupported'
 }
 
 /**
@@ -253,7 +287,7 @@ function readMainFileFramework(mainFile: MainFile | null): string | null {
 
 /** What the dependency scan decided, and which file settled it. */
 type DependencyScanResult = {
-	frameworkRaw: string
+	frameworkRaw: StorybookFramework
 	source: FrameworkDetectionSource
 }
 
@@ -344,10 +378,11 @@ function pickDeclaredFrameworkPackage(
 	if (declared.length === 1) {
 		return { frameworkRaw: declared[0]!, source: 'package.json' }
 	}
-	const doesMainFileNameACandidate =
-		mainFileFrameworkRaw !== null && candidates.includes(mainFileFrameworkRaw)
-	if (doesMainFileNameACandidate) {
-		return { frameworkRaw: mainFileFrameworkRaw, source: '.storybook/main' }
+	const candidateNamedByMainFile = candidates.find(
+		(pkg) => pkg === mainFileFrameworkRaw,
+	)
+	if (candidateNamedByMainFile) {
+		return { frameworkRaw: candidateNamedByMainFile, source: '.storybook/main' }
 	}
 	return { frameworkRaw: detector.framework, source: 'package.json' }
 }
