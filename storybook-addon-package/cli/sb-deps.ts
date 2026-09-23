@@ -180,7 +180,7 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	if (configuredSuffix === undefined) return null
 	if (typeof configuredSuffix !== 'string') {
 		error(
-			`litComponentSuffix must be a string — every plain .ts file under the source folder will be treated as a component.`,
+			`litComponentSuffix must be a string — no component marker is set, so in a Lit project every plain .ts file under the source folder counts as a component.`,
 		)
 		return null
 	}
@@ -188,7 +188,7 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	const markerError = getComponentMarkerError(configuredSuffix)
 	if (!markerError) return configuredSuffix
 	error(
-		`litComponentSuffix "${configuredSuffix}" is invalid — ${markerError}. Every plain .ts file under the source folder will be treated as a component instead.`,
+		`litComponentSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project every plain .ts file under the source folder counts as a component.`,
 	)
 	return null
 }
@@ -848,13 +848,25 @@ function getNameEndingContext(): NameEndingContext {
  *
  * This drops only the extension, via `basename`'s own suffix argument, so it
  * asks the question of the whole rest of the name rather than of whichever
- * part a given scaffolder would have used.
- * The endings are all plain letters and `toWords` treats a dot as a word break,
- * so `.stories` and Angular's `.component` can't change the answer either way.
- * A middle segment can: a hypothetical `Button.[id].decorator.svelte` is turned
- * away even though the decorator scaffolder would only have used `Button`.
- * That is the safe direction to be wrong in — nothing is written, and the line
- * below says why.
+ * part a given scaffolder would have used. A middle segment can still turn a
+ * name away that a scaffolder would have coped with: a hypothetical
+ * `Button.[id].decorator.svelte` is refused even though the decorator
+ * scaffolder would only have used `Button`. That is the safe direction to be
+ * wrong in — nothing is written, and the line below says why.
+ *
+ * Being wrong the *other* way is not safe, and one family can be: an ending is
+ * made of plain letters, so it contributes a word of its own to the PascalCase
+ * name, and it can carry a base that contributes none. Lit's scaffolders build
+ * their class name from the base with the marker taken off, so `_.lit.ts`
+ * would pass here as `Lit` and then be written as `export class ` with nothing
+ * after it. So in a Lit project the stripped base is asked as well.
+ *
+ * React, Vue and Svelte scaffold from the whole name, so this question is
+ * already their question. Angular strips `.component` but then appends
+ * `Component`, so its class name cannot come out empty. The Svelte decorator
+ * path does strip to a base that could be empty — it takes the segment before
+ * the first dot — but that predates this and is left alone rather than swept
+ * in here.
  *
  * It warns where the capitals check errors, because a bracketed page name is a
  * framework's own convention rather than a mistake — there is nothing to
@@ -866,8 +878,14 @@ function getUnusableNameWarning(absPath: string): string | null {
 	// interchangeable and the line below prints the other one: the branch turns
 	// on the PascalCase spelling, while the message quotes the name as the user
 	// typed it, which is the one they can act on.
-	const componentName = toPascalCase(nameWithoutExtension)
-	if (CODE_NAME_REGEX.test(componentName)) return null
+	const namesTheScaffoldersWouldUse =
+		getProjectFrameworkFamily() === 'lit'
+			? [nameWithoutExtension, componentBaseFromLitComponent(absPath)]
+			: [nameWithoutExtension]
+	const isEveryNameUsable = namesTheScaffoldersWouldUse.every((name) =>
+		CODE_NAME_REGEX.test(toPascalCase(name)),
+	)
+	if (isEveryNameUsable) return null
 	return `left "${rel(absPath)}" alone — "${nameWithoutExtension}" can't be used as a component name in the generated code, so nothing was scaffolded for it. Page file names like "[id]" and "+page" are the usual reason; add a path pattern to scaffoldIgnore in your sb-deps config to stop this being mentioned.`
 }
 
@@ -2235,20 +2253,19 @@ const litComponentsWarnedAboutTheirTag = new Set<string>()
  * loud — `customElements.define` throws, so the story does not render at all.
  */
 function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
-	const tagError = getLitTagError(tagName)
+	const tagError = getLitTagError(tagName, LIT_TAG_PREFIX)
 	if (!tagError) return
 	if (litComponentsWarnedAboutTheirTag.has(absCompPath)) return
 	litComponentsWarnedAboutTheirTag.add(absCompPath)
 	warn(
 		`"${rel(absCompPath)}" registers the tag "${tagName}", which a browser will ` +
-			`refuse — ${tagError}. Rename the component, or set litTagPrefix to ` +
-			`something that gives it a usable tag.`,
+			`refuse — ${tagError}.`,
 	)
 }
 
 /**
- * Why a browser will not register this tag, phrased to follow the caller's own
- * naming of it, or `null` when it will.
+ * Why a browser will not register this tag, and what to do about it — phrased
+ * to follow the caller's own naming of the tag — or `null` when it will.
  *
  * A custom element tag has to contain a hyphen, start with a lower-case
  * letter, and carry nothing a tag name may not hold. The last of those is a
@@ -2258,14 +2275,47 @@ function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
  * That is generous in the rare direction and exact in the common one: a
  * capital, a space and a `$` are all caught, and a component named in another
  * language is not refused on a guess.
+ *
+ * The remedy is worked out per rule rather than offered as a pair, because the
+ * two halves of the tag can only be reached by different settings: the prefix
+ * goes in front, so nothing done to it can take a bad character off the tail,
+ * and nothing done to the component's name can change a first character the
+ * prefix supplied. Which half is at fault is answerable here — the prefix is a
+ * known string sitting at the front — so it is answered rather than left to
+ * the reader.
+ *
+ * @param tagName - the finished tag, prefix included
+ * @param tagPrefix - the prefix that went in front of it, possibly empty
  */
-function getLitTagError(tagName: string): string | null {
-	if (!tagName.includes('-')) return 'a tag has to contain a hyphen'
+function getLitTagError(tagName: string, tagPrefix: string): string | null {
+	if (!tagName.includes('-'))
+		return (
+			'a tag has to contain a hyphen, and neither the component name nor ' +
+			'litTagPrefix supplies one'
+		)
 	if (!/^[a-z]/.test(tagName))
-		return 'a tag has to start with a lower-case letter'
+		return `a tag has to start with a lower-case letter, and this one starts with the first character of ${getLitTagPartDescription(tagPrefix !== '')}`
 	const unusableCharacter = [...tagName].find(checkIsUnusableInTag)
-	if (unusableCharacter) return `a tag cannot contain "${unusableCharacter}"`
+	if (unusableCharacter) {
+		const isCharacterFromPrefix =
+			tagPrefix !== '' &&
+			tagName.startsWith(tagPrefix) &&
+			tagPrefix.includes(unusableCharacter)
+		return `a tag cannot contain "${unusableCharacter}", which came from ${getLitTagPartDescription(isCharacterFromPrefix)}`
+	}
 	return null
+}
+
+/**
+ * Which half of the tag to point the user at — the setting they change, or the
+ * file they rename.
+ *
+ * @param isFromPrefix - whether the offending part came from `litTagPrefix`
+ */
+function getLitTagPartDescription(isFromPrefix: boolean): string {
+	return isFromPrefix
+		? 'litTagPrefix, which is what to change'
+		: "the component's name, so renaming the file is what fixes it"
 }
 
 /** Is this one character one a tag may not hold? See `getLitTagError` for what is and isn't judged. */
