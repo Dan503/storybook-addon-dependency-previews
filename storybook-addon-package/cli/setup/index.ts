@@ -48,6 +48,7 @@ const FRAMEWORK_PICKER_LABELS: Record<SupportedFramework, string> = {
 	sveltekit: 'Svelte with SvelteKit (@storybook/sveltekit)',
 	'svelte-vite': 'Svelte without SvelteKit (@storybook/svelte-vite)',
 	'solid-vite': 'Solid (storybook-solidjs-vite)',
+	'nextjs-vite': 'Next.js on Vite (@storybook/nextjs-vite)',
 }
 
 // The story-file extension the scaffolder generates for each framework — used
@@ -67,6 +68,7 @@ function exampleStoryFileExtension(framework: Framework): string {
 		case 'preact-vite':
 		case 'solid-vite':
 		case 'nextjs-webpack':
+		case 'nextjs-vite':
 			return 'tsx'
 		// Angular and Vue fall through to `ts` — the Angular scaffolder strips
 		// `.component` and emits `<Name>.stories.ts`, and Vue emits
@@ -242,10 +244,10 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This setup wizard currently supports React, Preact, Svelte, Vue 3, and Solid (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
+			`This setup wizard currently supports React, Preact, Svelte, Vue 3, Solid, and Next.js on Vite (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
-			'The addon itself also supports Angular, Next.js and React on webpack with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
+			'The addon itself also supports Angular, Next.js on webpack and React on webpack with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
 		)
 		log(
 			'If you would like to see wizard support added for your framework, please open an issue on GitHub.',

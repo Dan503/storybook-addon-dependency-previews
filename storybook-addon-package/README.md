@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid) end-to-end. Webpack-based projects (Angular, Next.js, React on webpack) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
+Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite) end-to-end. Webpack-based projects (Angular, Next.js on webpack, React on webpack) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -62,7 +62,7 @@ Vue version built for Vue 3.
 
 ## Installation guide
 
-### Quick start (React, Preact, Svelte, Vue 3, and Solid)
+### Quick start (React, Preact, Svelte, Vue 3, Solid, and Next.js on Vite)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
@@ -104,9 +104,9 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), and Solid (`storybook-solidjs-vite`) — all Vite-based. **Angular (`@storybook/angular`), Next.js (`@storybook/nextjs`) and React on webpack (`@storybook/react-webpack5`) projects are all webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), Solid (`storybook-solidjs-vite`), and Next.js on Vite (`@storybook/nextjs-vite`) — all Vite-based. **Angular (`@storybook/angular`), Next.js on webpack (`@storybook/nextjs`) and React on webpack (`@storybook/react-webpack5`) projects are all webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
 
-- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
+- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`, `@storybook/react-webpack5`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
 ### Storybook 11 / CSF Next preview configs

@@ -1,4 +1,4 @@
-# Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)
+# Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
 >
@@ -8,7 +8,9 @@
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.
 >
-> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Preact, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Preact` / `// if using Svelte` / `// if using Vue` / `// if using Solid` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Preact, Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/preact-vite`, `@storybook/vue3-vite` or `storybook-solidjs-vite`) and the component import for your Preact `.tsx`, `.vue` SFC or Solid `.tsx`).
+> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Preact, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid, Next.js on Vite). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Preact` / `// if using Svelte` / `// if using Vue` / `// if using Solid` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Preact, Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/preact-vite`, `@storybook/vue3-vite` or `storybook-solidjs-vite`) and the component import for your Preact `.tsx`, `.vue` SFC or Solid `.tsx`).
+>
+> **Next.js on Vite** (`@storybook/nextjs-vite`) is not called out separately: it follows every `// if using React` line, with `@storybook/react-vite` replaced by `@storybook/nextjs-vite`.
 
 ## 1. Install the addon
 

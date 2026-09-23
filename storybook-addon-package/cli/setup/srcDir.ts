@@ -1,7 +1,7 @@
 import { statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import type { Framework } from './detect.js'
+import { isNextjsFramework, type Framework } from './detect.js'
 import { ask } from './prompt.js'
 
 export type ResolvedSrcDir = {
@@ -44,7 +44,7 @@ export async function resolveSrcDir(
 	cwd: string,
 	framework: Framework,
 ): Promise<ResolvedSrcDir> {
-	if (framework !== 'nextjs-webpack') {
+	if (!isNextjsFramework(framework)) {
 		return { srcDir: 'src', promptedUser: false, isCustom: false }
 	}
 

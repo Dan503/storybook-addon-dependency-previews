@@ -145,6 +145,7 @@ const DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK: Partial<
 	'react-vite': '@storybook/react-vite',
 	'vue3-vite': '@storybook/vue3-vite',
 	'solid-vite': 'storybook-solidjs-vite',
+	'nextjs-vite': '@storybook/nextjs-vite',
 }
 
 /** The first Storybook major whose default `preview.ts` style is CSF Next. */
