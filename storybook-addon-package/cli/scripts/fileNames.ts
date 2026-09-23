@@ -95,7 +95,7 @@ export type NameEndingContext = {
 	/**
 	 * What marks a Lit component file, with its dot (`'.lit'`), when the
 	 * project is Lit and has a marker set. `null` otherwise — including in a
-	 * Lit project that asked for no marker, where every plain `.ts` file is a
+	 * Lit project that asked for no marker, where a plain `.ts` file is a
 	 * component and so no ending distinguishes one.
 	 */
 	litComponentEnding: string | null

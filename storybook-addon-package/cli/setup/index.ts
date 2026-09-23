@@ -573,9 +573,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		litComponentSuffix,
 	})
 	// Only worth saying for a marker the user actually asked for. Without the key
-	// the scaffolder treats every plain `.ts` file as a component, which is the
-	// opposite of what they just chose — whereas someone who cleared the marker
-	// gets that behaviour from an absent key anyway.
+	// the scaffolder treats any plain `.ts` file created empty as a component,
+	// which is the opposite of what they just chose — whereas someone who
+	// cleared the marker gets that behaviour from an absent key anyway.
 	const doesLitComponentSuffixNeedTheKey = !!litComponentSuffix
 	const doesSkippedConfigNeedTsxFrameworkNote =
 		sbDepsConfigResult.kind === 'skipped' && doesTsxFrameworkNeedTheKey
@@ -666,7 +666,7 @@ const NO_LIT_COMPONENT_MARKER_ANSWER = 'none'
 /**
  * Ask a Lit project what marks a component file, and return the answer without
  * its dot — `'lit'` for `Button.lit.ts`, or the empty string for no marker at
- * all, where every plain `.ts` file counts.
+ * all, where any plain `.ts` file created empty counts.
  *
  * Asked every time rather than only where it would change something, so
  * `.lit.ts` is the shape a set-up project ends up with, while anyone who would
@@ -695,7 +695,7 @@ async function readLitComponentMarkerAnswer(): Promise<string> {
 		`  A marker of "${DEFAULT_LIT_COMPONENT_MARKER}" means only Button.${DEFAULT_LIT_COMPONENT_MARKER}.ts is a component.`,
 	)
 	log(
-		`  Answer "${NO_LIT_COMPONENT_MARKER_ANSWER}" and every plain .ts file under your source folder is one.`,
+		`  Answer "${NO_LIT_COMPONENT_MARKER_ANSWER}" and any plain .ts file you create empty under your source folder is one.`,
 	)
 	while (true) {
 		const answer = (
@@ -726,9 +726,11 @@ function logLitComponentSuffixNote(litComponentSuffix: string) {
 		`    Ensure your sb-deps.config sets \`litComponentSuffix: '${litComponentSuffix}'\` — without`,
 	)
 	log(
-		`    that key every plain .ts file under your source folder is treated as a`,
+		`    that key any plain .ts file you create empty under your source folder is`,
 	)
-	log(`    component, rather than only those named *.${litComponentSuffix}.ts.`)
+	log(
+		`    treated as a component, rather than only those named *.${litComponentSuffix}.ts.`,
+	)
 }
 
 /**

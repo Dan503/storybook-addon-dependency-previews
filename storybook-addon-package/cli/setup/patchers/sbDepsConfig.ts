@@ -54,9 +54,9 @@ export interface WriteSbDepsConfigOptions {
 	/**
 	 * What marks a Lit component file, without its dot. Anything non-empty gets
 	 * the config written even for the default `srcDir`, because the code's own
-	 * default is no marker: without the key every plain `.ts` file under the
-	 * source folder is treated as a component, which is the opposite of what
-	 * setting one asks for. Left out for a project that isn't Lit.
+	 * default is no marker: without the key any plain `.ts` file created empty
+	 * under the source folder is treated as a component, which is the opposite
+	 * of what setting one asks for. Left out for a project that isn't Lit.
 	 */
 	litComponentSuffix?: string
 }

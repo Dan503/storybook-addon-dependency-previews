@@ -172,15 +172,17 @@ function getChoicesPhrase(choices: ReadonlyArray<string>): string {
  * unusable value all mean.
  *
  * An unusable value is refused rather than repaired, and it falls back the same
- * way an absent key does: every plain `.ts` file under the source folder counts
- * as a component. That is the wider of the two behaviours, so nothing a user
- * expected to be scaffolded quietly stops being.
+ * way an absent key does: a plain `.ts` file created empty under the source
+ * folder counts as a component. That is the wider of the two behaviours for
+ * what a user asked to be scaffolded, so nothing they expected quietly stops
+ * being — and the emptiness condition is what stops it also claiming files
+ * they never asked about (see `isComponentsLitTs`).
  */
 function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	if (configuredSuffix === undefined) return null
 	if (typeof configuredSuffix !== 'string') {
 		error(
-			`litComponentSuffix must be a string — no component marker is set, so in a Lit project every plain .ts file under the source folder counts as a component.`,
+			`litComponentSuffix must be a string — no component marker is set, so in a Lit project a plain .ts file created empty under the source folder counts as a component.`,
 		)
 		return null
 	}
@@ -188,7 +190,7 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	const markerError = getComponentMarkerError(configuredSuffix)
 	if (!markerError) return configuredSuffix
 	error(
-		`litComponentSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project every plain .ts file under the source folder counts as a component.`,
+		`litComponentSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project a plain .ts file created empty under the source folder counts as a component.`,
 	)
 	return null
 }
@@ -705,11 +707,30 @@ function isComponentsAngularHtml(relPath: string) {
 }
 
 /**
- * Is this a Lit component file — `<srcDir>/**​/Thing.lit.ts` where the project
- * set `lit` as its marker, or any plain `<srcDir>/**​/Thing.ts` where it set
- * none?
+ * Is this a just-created Lit component file — `<srcDir>/**​/Thing.lit.ts` where
+ * the project set `lit` as its marker, or an empty plain `<srcDir>/**​/Thing.ts`
+ * where it set none?
+ *
+ * **The emptiness half applies only where there is no marker**, and it is what
+ * separates a component from an ordinary source file there. Every other family
+ * is named by an extension, or by an ending nothing else writes, so a file
+ * carrying one says what it is however much is in it — a full `Button.vue` is
+ * a component, and gets a story. With no marker a `.ts` file says nothing, and
+ * the only thing left that distinguishes `Button.ts` from `helpers.ts` is that
+ * the watcher has just seen it appear with nothing in it, which is this tool's
+ * own signal for "fill this in". A file that arrived with content — copied,
+ * checked out, or written by a generator — made no such request, and writing a
+ * story next to it that names a type it does not export is worse than writing
+ * nothing. Someone who does want a story for one can create the empty story
+ * file, which still finds it.
+ *
+ * With a marker the name carries the claim, so a non-empty `Button.lit.ts`
+ * gets its story exactly as a non-empty `Button.vue` does.
+ *
+ * @param relPath - the project-relative path, for the name checks
+ * @param absPath - the same file, for the one check that has to read it
  */
-function isComponentsLitTs(relPath: string) {
+function isComponentsLitTs(relPath: string, absPath: string) {
 	// Only asked in a Lit project, the same rule `.component` follows in
 	// scripts/fileNames.ts and for the same reason: a `.ts` file names no
 	// framework on its own, so without this every helper file created in a React
@@ -727,10 +748,13 @@ function isComponentsLitTs(relPath: string) {
 		// `readLitComponentSuffix` when it read the config — and none of those
 		// mean anything to a pattern.
 		return srcSubpathRegex(`\\.${LIT_COMPONENT_SUFFIX}\\.ts$`).test(relPath)
-	// No marker: any `.ts` file whose name carries no other dotted part, so a
-	// `Button.test.ts` or a `Button.d.ts` is left alone either way.
+	// No marker: an empty `.ts` file whose name carries no other dotted part, so
+	// a `Button.test.ts` or a `Button.d.ts` is left alone either way, and so is
+	// anything that turned up with content in it.
 	return (
-		srcSubpathRegex('\\.ts$').test(relPath) && !checkHasDottedNamePart(relPath)
+		srcSubpathRegex('\\.ts$').test(relPath) &&
+		!checkHasDottedNamePart(relPath) &&
+		isEmptyOrWhitespace(absPath)
 	)
 }
 
@@ -876,19 +900,22 @@ function getNameEndingContext(): NameEndingContext {
  */
 function getUnusableNameWarning(absPath: string): string | null {
 	const nameWithoutExtension = basename(absPath, extname(absPath))
-	// Named rather than tested inline, because the two forms are not
-	// interchangeable and the line below prints the other one: the branch turns
-	// on the PascalCase spelling, while the message quotes the name as the user
-	// typed it, which is the one they can act on.
 	const namesTheScaffoldersWouldUse =
 		getProjectFrameworkFamily() === 'lit'
 			? [nameWithoutExtension, ...getLitClassNameSources(absPath)]
 			: [nameWithoutExtension]
-	const isEveryNameUsable = namesTheScaffoldersWouldUse.every((name) =>
-		CODE_NAME_REGEX.test(toPascalCase(name)),
+	// The one that failed is found rather than counted, because it is what the
+	// message quotes. Quoting the file's own name instead would be wrong for
+	// two of the three ways here: `_.lit.ts` fails on the `_` its marker is
+	// taken off to reach, and `_.stories.ts` on the `_` of the component it
+	// would have been written beside — and `_.lit` and `_.stories` are both
+	// perfectly good component names, so a message naming those says something
+	// untrue. The file itself is still named, at the front of the line.
+	const unusableName = namesTheScaffoldersWouldUse.find(
+		(name) => !CODE_NAME_REGEX.test(toPascalCase(name)),
 	)
-	if (isEveryNameUsable) return null
-	return `left "${rel(absPath)}" alone — "${nameWithoutExtension}" can't be used as a component name in the generated code, so nothing was scaffolded for it. Page file names like "[id]" and "+page" are the usual reason; add a path pattern to scaffoldIgnore in your sb-deps config to stop this being mentioned.`
+	if (unusableName === undefined) return null
+	return `left "${rel(absPath)}" alone — "${unusableName}" can't be used as a component name in the generated code, so nothing was scaffolded for it. Page file names like "[id]" and "+page" are the usual reason; add a path pattern to scaffoldIgnore in your sb-deps config to stop this being mentioned.`
 }
 
 /**
@@ -2862,6 +2889,13 @@ function getSiblingProbeOrder(): Array<StoryFramework> {
  * to differ, an empty `Button.utils.stories.ts` would have a component written
  * into `Button.utils.ts` that creating that same file by hand would not
  * produce.
+ *
+ * Only that half of the rule is shared. `isComponentsLitTs` additionally wants
+ * the file to have been created empty, and this deliberately does not: the
+ * question there is whether a file nobody asked about is a component, while
+ * the question here is which component a story the user *did* ask for belongs
+ * to. Creating `helpers.stories.ts` is that request, so it finds `helpers.ts`
+ * whatever is in it.
  */
 function getComponentPathForFamily(
 	storyBase: string,
@@ -2998,7 +3032,11 @@ function startWatcher() {
 	 * extra template-migration logic, so it stays inline below.
 	 */
 	const COMPONENT_CREATE_BRANCHES: Array<{
-		checkIsMatch: (relPath: string) => boolean
+		// Takes the absolute path as well because one check needs to read the
+		// file, not just its name: with no marker set, an ordinary `.ts` file is
+		// only a Lit component if it was created empty. Every other check
+		// answers from the name alone and ignores the second argument.
+		checkIsMatch: (relPath: string, absPath: string) => boolean
 		family: StoryFramework
 		handle: (absPath: string, relPath: string) => Promise<void>
 	}> = [
@@ -3041,7 +3079,7 @@ function startWatcher() {
 		// an Angular `Foo.component.ts` carries a second dotted part, which this
 		// check excludes either way.
 		{
-			checkIsMatch: isComponentsLitTs,
+			checkIsMatch: (relPath, absPath) => isComponentsLitTs(relPath, absPath),
 			family: 'lit',
 			handle: (absPath, relPath) =>
 				handleSingleFileComponentCreation(
@@ -3117,7 +3155,7 @@ function startWatcher() {
 						const isCreate = ev.type === 'create'
 						const componentBranch = isCreate
 							? COMPONENT_CREATE_BRANCHES.find((branch) =>
-									branch.checkIsMatch(relPath),
+									branch.checkIsMatch(relPath, abs),
 								)
 							: undefined
 						const isStoryCreate = isCreate && isStoryFileUnderSrc(relPath)

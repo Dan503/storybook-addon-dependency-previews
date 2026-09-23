@@ -199,13 +199,22 @@ export interface SbDepsConfig {
 	/**
 	 * What marks a file as a Lit component, written without its dot. With
 	 * `'lit'`, only `Button.lit.ts` is treated as a component. Leave it out, or
-	 * set it to the empty string, and every plain `.ts` file under the source
-	 * folder counts — meaning one that is not a story and carries no other
-	 * dotted part in its name, so `Button.test.ts` and `Button.d.ts` are left
-	 * alone either way.
+	 * set it to the empty string, and a plain `.ts` file counts instead —
+	 * meaning one under the source folder that is not a story, carries no other
+	 * dotted part in its name, and is created empty. So `Button.test.ts` and
+	 * `Button.d.ts` are left alone either way, and so is a `helpers.ts` that
+	 * arrives with something already in it.
 	 *
-	 * Only read in a Lit project, the way `.component` is only read in an
-	 * Angular one, so it changes nothing for any other framework.
+	 * That last condition is only there where there is no marker, and it is
+	 * what tells a component from an ordinary source file when the name says
+	 * nothing: a file created empty is this tool's own signal for "fill this
+	 * in", while one that arrives with content made no such request. Set a
+	 * marker and the name carries the claim, so a non-empty `Button.lit.ts`
+	 * still gets its story. Either way you can ask for a story for any file by
+	 * creating the empty story file beside it.
+	 *
+	 * Only read in a Lit project, so it changes nothing for any other
+	 * framework.
 	 *
 	 * The `sb-deps setup` wizard asks for this in a Lit project and writes
 	 * `'lit'` unless you ask it for something else, so `Button.lit.ts` is the
@@ -218,7 +227,7 @@ export interface SbDepsConfig {
 	 * `Lit` would be honoured in some places and missed in others.
 	 *
 	 * @example 'lit'  →  `Button.lit.ts` is a component, `Button.ts` is not
-	 * @example ''     →  every plain `.ts` file is a component
+	 * @example ''     →  a plain `.ts` file created empty is a component
 	 */
 	litComponentSuffix?: string
 
