@@ -4,6 +4,20 @@ import { resolve } from 'node:path'
 import type { SbDepsConfig } from '../../../src/config.js'
 import type { TsxFramework } from '../detect.js'
 
+/**
+ * The config filenames a project may already have. Matches the list `sb-deps.ts`
+ * loads from, so we never write a file the runtime would ignore and never stomp
+ * on one it would pick up.
+ */
+const CONFIG_FILE_CANDIDATES = [
+	'sb-deps.config.js',
+	'sb-deps.config.mjs',
+	'sb-deps.config.cjs',
+] as const
+
+/** One of the config filenames above. */
+type ConfigFileName = (typeof CONFIG_FILE_CANDIDATES)[number]
+
 export type SbDepsConfigPatchResult =
 	| {
 			kind: 'created'
@@ -18,25 +32,28 @@ export type SbDepsConfigPatchResult =
 			fields: ReadonlyArray<string>
 	  }
 	/**
-	 * Every value was already the default, so there was nothing to write and
-	 * nothing to say — the callers deliberately print nothing for this, which is
-	 * why it carries no reason string.
+	 * Nothing was written and there is nothing to tell the user — either every
+	 * value was already the default, or the only non-default one is a value they
+	 * could not usefully add by hand (see `handAddable` below). The callers
+	 * deliberately print nothing for this, which is why it carries no reason.
 	 */
 	| { kind: 'skipped' }
 	| {
 			/**
-			 * A config file is already there, so nothing was written — but there
-			 * were values worth writing. Separate from `skipped` because the two
-			 * need opposite treatment: `skipped` means every value was the default
-			 * and there was nothing to say, while this one means the wizard worked
-			 * something out (often a source folder the user typed at the prompt)
-			 * and could not record it, so the user has to be told or the value is
-			 * silently lost.
+			 * A config file is already there, so nothing was written — and at least
+			 * one value that was lost is one the user can put back. Separate from
+			 * `skipped` because the two need opposite treatment: `skipped` has
+			 * nothing to say, while this one means the wizard worked something out
+			 * (often a source folder the user typed at the prompt) and could not
+			 * record it, so the user has to be told or the value is silently lost.
 			 */
 			kind: 'blocked'
 			/** The existing file's name, so the message can name what to edit. */
-			existingFileName: string
-			/** Same summaries as `created`, for the fields that were NOT written. */
+			existingFileName: ConfigFileName
+			/**
+			 * Summaries of the unwritten fields the user can usefully add by hand —
+			 * not every unwritten field. See `handAddable`.
+			 */
 			fields: ReadonlyArray<string>
 	  }
 	| { kind: 'failed'; reason: string }
@@ -118,39 +135,56 @@ export function writeSbDepsConfigIfNeeded(
 	// extension. Adding a field later updates both outputs from this one list.
 	// Built before the existing-file check below so a blocked write can say
 	// which values went unrecorded, not merely that one was blocked.
-	const fields: Array<{ line: string; summary: string }> = []
+	//
+	// `handAddable` says whether telling the user to put the field in an existing
+	// config by hand would change anything. It would for `srcDir` (nothing else
+	// records it, so the dependency scan stays pointed at the wrong folder) and
+	// for `storybookFileExtension` (read only from the config, with no detection
+	// fallback). It would not for `tsxFramework`: where the scaffolder recognises
+	// the project it already falls back to the same value the wizard computed,
+	// and where it does not, no `.tsx` file is scaffolded at all — so asking for
+	// the key would send the user after something that cannot help either way.
+	// The field is still written when the file is writable, where it costs
+	// nothing and records the intent.
+	const fields: Array<{
+		line: string
+		summary: string
+		handAddable: boolean
+	}> = []
 	if (needsSrcDir) {
 		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
 		fields.push({
 			line: `\tsrcDir: ${srcDirLiteral},`,
 			summary: `srcDir: ${srcDirLiteral}`,
+			handAddable: true,
 		})
 	}
 	if (needsTsxFramework) {
 		fields.push({
 			line: `\ttsxFramework: '${tsxFramework}',`,
 			summary: `tsxFramework: '${tsxFramework}'`,
+			handAddable: false,
 		})
 	}
 	if (needsStorybookFileExtension) {
 		fields.push({
 			line: `\tstorybookFileExtension: 'story',`,
 			summary: `storybookFileExtension: 'story'`,
+			handAddable: true,
 		})
 	}
-	// Match the candidate list `sb-deps.ts` already loads from, so we don't
-	// stomp on a file the runtime would otherwise pick up.
-	const candidates = [
-		'sb-deps.config.js',
-		'sb-deps.config.mjs',
-		'sb-deps.config.cjs',
-	]
-	for (const name of candidates) {
+	for (const name of CONFIG_FILE_CANDIDATES) {
 		if (existsSync(resolve(cwd, name))) {
+			const handAddableFields = fields
+				.filter((f) => f.handAddable)
+				.map((f) => f.summary)
+			// Nothing the user can act on, so nothing to say — same answer as a
+			// write that was never needed.
+			if (handAddableFields.length === 0) return { kind: 'skipped' }
 			return {
 				kind: 'blocked',
 				existingFileName: name,
-				fields: fields.map((f) => f.summary),
+				fields: handAddableFields,
 			}
 		}
 	}

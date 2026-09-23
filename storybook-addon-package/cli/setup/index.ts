@@ -245,12 +245,15 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				srcDir: resolvedSrcDir.srcDir,
 				isEsm: detection.isEsm,
 			})
+			// Indented two spaces, like the other outcomes of this same write and
+			// like the Step 4 call site, so the three of them line up with each
+			// other rather than with the guide links above.
 			if (cfg.kind === 'created') {
-				log(`✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
+				log(`  ✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
 			} else if (cfg.kind === 'blocked') {
 				logBlockedConfigNote(cfg.existingFileName, cfg.fields)
 			} else if (cfg.kind === 'failed') {
-				log(`⚠ ${cfg.reason}`)
+				log(`  ⚠ ${cfg.reason}`)
 			}
 		}
 		return
@@ -659,13 +662,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
  *
  * The one that matters is the source folder: the wizard may have just asked for
  * it, and a blocked write means it reaches the preview file's story glob but
- * never reaches the dependency scan, which goes on scanning `src/`. On a
- * project whose source is in `app/` that scan matches nothing and the graph
- * comes out empty, with every step still reporting success — so saying nothing
- * here would leave the user with a broken setup and no sign of why.
+ * never reaches the dependency scan. Where the scan then looks depends on what
+ * the existing config says, and on a project whose source is in `app/` it can
+ * match nothing at all — with every step still reporting success, so saying
+ * nothing here would leave the user with a broken setup and no sign of why.
  *
  * @param existingFileName - the config file already in the project root
- * @param fields - the field summaries that went unwritten, e.g. `["srcDir: 'app'"]`
+ * @param fields - the unwritten values the user can put back, e.g. `["srcDir: 'app'"]`
  */
 function logBlockedConfigNote(
 	existingFileName: string,
