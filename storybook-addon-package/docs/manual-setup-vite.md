@@ -1,4 +1,4 @@
-# Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)
+# Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Lit)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
 >
@@ -8,7 +8,7 @@
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.
 >
-> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Preact, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Preact` / `// if using Svelte` / `// if using Vue` / `// if using Solid` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the one place where React's `.stories.tsx` and Svelte CSF's `.stories.svelte` are too different to inline, so it has separate code blocks (Preact, Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/preact-vite`, `@storybook/vue3-vite` or `storybook-solidjs-vite`) and the component import for your Preact `.tsx`, `.vue` SFC or Solid `.tsx`).
+> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Preact, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid, Lit / web components). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Preact` / `// if using Svelte` / `// if using Vue` / `// if using Solid` / `// if using Lit` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the place where three shapes are too different to inline — React's `.stories.tsx`, Svelte CSF's `.stories.svelte`, and Lit's `.stories.ts` (which names a browser tag rather than a component object, renders with Lit's `html`, and imports its component on two lines) — so each has its own code block (Preact, Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/preact-vite`, `@storybook/vue3-vite` or `storybook-solidjs-vite`) and the component import for your Preact `.tsx`, `.vue` SFC or Solid `.tsx`).
 
 ## 1. Install the addon
 
@@ -42,14 +42,15 @@ import type { StorybookConfig } from '@storybook/sveltekit' // if using Svelte (
 import type { StorybookConfig } from '@storybook/svelte-vite' // if using Svelte (without SvelteKit)
 import type { StorybookConfig } from '@storybook/vue3-vite' // if using Vue 3
 import type { StorybookConfig } from 'storybook-solidjs-vite' // if using Solid
+import type { StorybookConfig } from '@storybook/web-components-vite' // if using Lit
 
 const config: StorybookConfig = {
-	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React, Preact, Vue, or Solid
+	stories: ['../src/**/*.stories.@(ts|tsx|mdx)'], // if using React, Preact, Vue, Solid, or Lit
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'], // if using Svelte
 	addons: [
 		// autodocs is required for this addon to work
 		'@storybook/addon-docs',
-		// required for .stories.svelte CSF format (Svelte projects only — delete if using React, Preact, Vue, or Solid)
+		// required for .stories.svelte CSF format (Svelte projects only — delete if using React, Preact, Vue, Solid, or Lit)
 		'@storybook/addon-svelte-csf',
 		// the storybook dependency previews addon registration
 		'storybook-addon-dependency-previews/addon',
@@ -60,6 +61,7 @@ const config: StorybookConfig = {
 	framework: '@storybook/svelte-vite', // if using Svelte (without SvelteKit)
 	framework: '@storybook/vue3-vite', // if using Vue 3
 	framework: 'storybook-solidjs-vite', // if using Solid
+	framework: '@storybook/web-components-vite', // if using Lit
 }
 
 export default config
@@ -67,7 +69,7 @@ export default config
 
 ## 3. Bare-minimum story example
 
-The React and Svelte story formats are different enough that inlining them isn't useful — pick the section matching your framework.
+The React, Svelte and Lit story formats are different enough that inlining them isn't useful — pick the section matching your framework.
 
 ### React `.stories.tsx`
 
@@ -118,6 +120,55 @@ export const Primary: Story = {
 
 <Story name="Primary" />
 ```
+
+### Lit `.stories.ts`
+
+A Lit component registers itself as a browser tag, so the story names that tag rather than a component object, and renders it with Lit's `html`. The component is imported twice on purpose — see the comment in the example.
+
+```ts
+import type { Meta, StoryObj } from '@storybook/web-components-vite'
+import type { StoryParameters } from 'storybook-addon-dependency-previews'
+import { html } from 'lit'
+
+// Imported twice on purpose: the first line runs the file, which is what
+// registers the tag, and the second gives the story its type. An import used
+// only as a type is dropped when the code is built, so without the first line
+// the tag would never be registered.
+import './ComponentName.lit'
+import type { ComponentName } from './ComponentName.lit'
+
+const meta: Meta<ComponentName> = {
+	// You can use spaces here to make the title of the story page more human readable
+	title: 'Component Name',
+	// The tag the component registers itself as, not the class
+	component: 'app-component-name',
+	// autodocs tag is required
+	tags: ['autodocs'],
+	parameters: {
+		layout: 'padded',
+	} satisfies StoryParameters,
+	render: (args) => html`
+		<app-component-name .text=${args.text}>ComponentName</app-component-name>
+	`,
+}
+
+export default meta
+
+// Named after the component rather than `typeof meta`: this framework's `Meta`
+// and `StoryObj` both take the story's argument type, and neither reads it back
+// off the meta object.
+type Story = StoryObj<ComponentName>
+
+export const Primary: Story = {
+	args: { text: 'ComponentName' },
+}
+```
+
+The `.lit` in the file name is what `sb-deps` uses to tell a component from any other `.ts` file, set by the `litComponentSuffix` option in `sb-deps.config` — the setup wizard asks for it and writes `'lit'` unless you ask for something else. Leave the option out and every plain `.ts` file under your source folder is treated as a component, in which case the imports above are `'./ComponentName'`.
+
+The `app-` on the tag comes from the `litTagPrefix` option, which defaults to `'app-'`. It is put in front of the component's name in hyphenated form, unless the name already starts with it — so `ComponentName.lit.ts`, `component-name.lit.ts` and `app-component-name.lit.ts` all register `app-component-name`. A browser only accepts a tag containing a hyphen, which is what the prefix guarantees for a one-word name.
+
+Scaffolded Lit components use the shorthand `@customElement` / `@property` annotations, which is what Lit's own TypeScript starter sets up. A project assembled by hand needs `"experimentalDecorators": true` in its `tsconfig.json` — or, on TypeScript 5.2 and up, `"useDefineForClassFields": false` with the standard decorators instead.
 
 ### Optional: `__filePath` fallback
 
@@ -221,6 +272,7 @@ From Storybook 11 the default `preview.ts` style is CSF Next — a `definePrevie
 import { definePreview } from '@storybook/react-vite' // if using React
 import { definePreview } from '@storybook/vue3-vite' // if using Vue 3
 import { definePreview } from 'storybook-solidjs-vite' // if using Solid
+import { definePreview } from '@storybook/web-components-vite' // if using Lit
 import addonDocs from '@storybook/addon-docs'
 import { dependencyPreviews } from 'storybook-addon-dependency-previews'
 
