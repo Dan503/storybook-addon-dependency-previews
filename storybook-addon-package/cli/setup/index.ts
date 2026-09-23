@@ -301,10 +301,15 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		// `'src'` without probing anything. Next.js is the one framework that
 		// answer can be wrong for (its source can sit in `app/`, `pages/`, or the
 		// project root), so resolve it again now the user has said what the
-		// project is, and show the answer that replaces the one printed above.
+		// project is, and show the answer where it replaces the one printed above
+		// — a project that has a `src/` folder resolves to the same value again,
+		// and re-printing it would read as though something had changed.
 		if (isNextjsFramework(framework)) {
+			const srcDirBeforePick = resolvedSrcDir.srcDir
 			resolvedSrcDir = await resolveSrcDir(cwd, framework)
-			log(`Source folder       : ${displaySrcDir(resolvedSrcDir.srcDir)}`)
+			if (resolvedSrcDir.srcDir !== srcDirBeforePick) {
+				log(`Source folder       : ${displaySrcDir(resolvedSrcDir.srcDir)}`)
+			}
 			logClientDirectiveNote()
 		}
 	}
