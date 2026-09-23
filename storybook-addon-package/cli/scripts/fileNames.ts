@@ -58,8 +58,11 @@ const RESERVED_NAME_ENDINGS: ReadonlyArray<string> = NAME_ENDINGS.map((entry) =>
 )
 
 /**
- * Why this Lit component marker can't be used, phrased as a sentence, or
- * `null` when it can be.
+ * Why this Lit component marker can't be used, or `null` when it can be.
+ *
+ * Phrased to follow the caller's own naming of the marker — `it can only
+ * contain…`, not `"foo" can only contain…` — so that a caller which has
+ * already quoted the value does not say it twice.
  *
  * Asked by the setup wizard of what the user typed, and by the watcher of what
  * the config file holds, so both refuse the same words. Anything this accepts
@@ -72,7 +75,7 @@ export function getComponentMarkerError(marker: string): string | null {
 	if (!/^[A-Za-z0-9_-]+$/.test(marker))
 		return 'it can only contain letters, digits, "_" and "-"'
 	if (RESERVED_NAME_ENDINGS.includes(marker.toLowerCase()))
-		return `"${marker}" already means something to this tool — pick a word other than ${RESERVED_NAME_ENDINGS.map((word) => `"${word}"`).join(', ')}`
+		return `it already means something to this tool; pick a word other than ${RESERVED_NAME_ENDINGS.map((word) => `"${word}"`).join(', ')}`
 	return null
 }
 

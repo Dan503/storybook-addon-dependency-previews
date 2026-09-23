@@ -621,7 +621,7 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  */
 const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`)
 
-/** Splits a `.ts` story path into its base and story suffix, for building Angular's `.component`-carrying spelling. */
+/** Splits a `.ts` story path into its base and story suffix, for building the spelling that carries a family's component ending. */
 const COMPONENT_STORY_TS_REGEX = new RegExp(`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts)$`)
 
 /**

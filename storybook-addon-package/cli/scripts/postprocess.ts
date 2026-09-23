@@ -16,8 +16,8 @@ const [
 	projectFamilyArg,
 	litComponentSuffixArg,
 ] = process.argv
-// Only the two component-marking endings need this, and only to tell a
-// component file from an ordinary dotted `.ts` name: `.component` in an Angular
+// Only the endings that mark a component file need this, and only to tell such
+// a file from an ordinary dotted `.ts` name: `.component` in an Angular
 // project, and whatever `litComponentSuffix` is set to in a Lit project.
 // `sb-deps.ts` passes the family it detected, or an empty string when it could
 // not detect one, and the Lit marker without its dot, empty when there is none;
