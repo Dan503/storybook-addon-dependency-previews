@@ -36,12 +36,15 @@ function rule() {
 }
 
 /**
- * How a resolved source folder is shown to the user. The empty string is the
- * sentinel for "the project root is the source folder", which would otherwise
- * print as nothing at all.
+ * Print the resolved source folder as one of the detection block's aligned
+ * lines. Owns the label, the padding that lines it up with its neighbours, and
+ * the empty-string sentinel for "the project root is the source folder" — which
+ * would otherwise print as nothing at all. The framework picker prints this
+ * line a second time when the pick changes the answer, so a single owner is
+ * what stops the two drifting apart.
  */
-function displaySrcDir(srcDir: string): string {
-	return srcDir === '' ? '(project root)' : srcDir
+function logSrcDir(srcDir: string) {
+	log(`Source folder       : ${srcDir === '' ? '(project root)' : srcDir}`)
 }
 
 /**
@@ -188,7 +191,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	let resolvedSrcDir = await resolveSrcDir(cwd, framework)
-	log(`Source folder       : ${displaySrcDir(resolvedSrcDir.srcDir)}`)
+	logSrcDir(resolvedSrcDir.srcDir)
 	// Assumed default; the user can change it in the edit flow below. The
 	// example filename uses the story extension the scaffolder emits for the
 	// detected framework, so it is printed only where that extension is known.
@@ -266,10 +269,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Whether the framework was worked out from the project's own files, or
-	// supplied by the user below. It decides whether the `tsxFramework` note
-	// further down is worth printing: the scaffolder runs the same detection, so
-	// it only needs telling which `.tsx` templates to use when that detection
-	// came up empty.
+	// supplied by the user below. Both of the closing notes turn on it, because
+	// the scaffolder runs the same detection: where that came up empty it needs
+	// telling which `.tsx` templates to use, and it scaffolds nothing at all.
 	const wasFrameworkDetected = framework !== 'unknown'
 
 	if (framework === 'unknown') {
@@ -308,9 +310,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			const srcDirBeforePick = resolvedSrcDir.srcDir
 			resolvedSrcDir = await resolveSrcDir(cwd, framework)
 			if (resolvedSrcDir.srcDir !== srcDirBeforePick) {
-				log(`Source folder       : ${displaySrcDir(resolvedSrcDir.srcDir)}`)
+				logSrcDir(resolvedSrcDir.srcDir)
 			}
-			logClientDirectiveNote()
 		}
 	}
 
@@ -633,6 +634,11 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		buildSucceeded = true
 	}
 
+	// Last, so it sits beside the "next steps" lines rather than above a package
+	// manager's install output, and so it only reaches a user who went through
+	// with the setup.
+	if (!wasFrameworkDetected) logNoScaffoldingNote()
+
 	rule()
 	const runCmd =
 		detection.packageManager === 'npm'
@@ -655,27 +661,38 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 }
 
 /**
- * Warn a Next.js user who had to pick their framework that scaffolded
- * components will not carry the `'use client'` line.
+ * Warn a user who had to pick their framework that auto-scaffolding will not
+ * run in this project.
  *
- * Printed only on the picker path, which is reached when the wizard could not
- * work the framework out from the project's own files. The scaffolder repeats
- * that same detection every run and has nothing but the project to go on — the
- * config file carries a source folder and a `.tsx` flavour, neither of which
- * says "Next.js" — so where the wizard had to ask, the scaffolder comes up
- * empty too and writes the component without the directive. Under the App
- * Router that build fails as soon as a server component imports it, so the user
- * needs to know to add the line themselves.
+ * Printed on the picker path, which is reached when the wizard could not work
+ * the framework out from the project's own files. The scaffolder repeats that
+ * same detection on every run and has nothing but the project to go on — the
+ * config file it may write carries a source folder, a `.tsx` flavour and a
+ * story-file extension, none of which name the framework — so it comes up
+ * `unknown` too, and `checkDoesFileFrameworkMatchProject` in `sb-deps.ts` turns
+ * every new component and story file away rather than scaffolding it as the
+ * wrong framework. Nothing else about the setup is affected: the dependency
+ * graph, the previews panel and the story links all work.
+ *
+ * Not framework-specific — it holds for every framework the picker offers,
+ * because what defeats the scaffolder is the failed detection rather than the
+ * answer the user gave.
  */
-function logClientDirectiveNote() {
+function logNoScaffoldingNote() {
 	rule()
 	log(
-		`  ⚠ Add \`'use client'\` to the top of scaffolded components yourself — this`,
+		`  ⚠ Auto-scaffolding of new components and stories will not run in this`,
 	)
 	log(
-		`    project's framework could not be read from its files, so the sb-deps`,
+		`    project. sb-deps works the framework out from the project's own files`,
 	)
-	log(`    scaffolder cannot tell it is Next.js and omits the directive.`)
+	log(
+		`    each run, the same way this wizard could not, so it turns new files`,
+	)
+	log(
+		`    away rather than scaffolding them as the wrong framework. Everything`,
+	)
+	log(`    else — the dependency graph and the previews panel — works as usual.`)
 }
 
 /**
