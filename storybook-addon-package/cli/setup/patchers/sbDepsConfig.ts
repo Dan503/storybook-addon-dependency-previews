@@ -118,7 +118,11 @@ export function writeSbDepsConfigIfNeeded(
 	// as *nothing is unrecorded*, which is only true when there is no file to
 	// contradict it. Match the candidate list `sb-deps.ts` already loads from,
 	// so we don't stomp on a file the runtime would otherwise pick up.
-	const candidates = ['sb-deps.config.js', 'sb-deps.config.mjs', 'sb-deps.config.cjs']
+	const candidates = [
+		'sb-deps.config.js',
+		'sb-deps.config.mjs',
+		'sb-deps.config.cjs',
+	]
 	for (const name of candidates) {
 		if (existsSync(resolve(cwd, name))) {
 			return {

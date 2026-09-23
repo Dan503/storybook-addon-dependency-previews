@@ -574,7 +574,7 @@ function getPathRelativeToSrcRoot(absCompPath: string): string {
 /**
  * Built patterns, keyed by suffix. `SRC_DIR` is fixed once the boot block
  * finishes, so every pattern this can produce is constant for the life of the
- * watcher — and a single create event consults up to six of the checks below.
+ * watcher — and a single create event consults most of the checks below.
  */
 const srcSubpathRegexCache = new Map<string, RegExp>()
 
@@ -2519,7 +2519,7 @@ function getFrameworkFamily(framework: Framework): StoryFramework | null {
 /**
  * Per-framework scaffolders + story-path helper, keyed by `StoryFramework`. Lets
  * `ensureStoryFor` and `scaffoldStoryFromCreatedStoryFile` pick the right trio
- * without four near-identical branches per operation. Angular's component
+ * without a near-identical branch per family per operation. Angular's component
  * scaffolder takes a template-style arg, wrapped here to `'internal'` (inline
  * template) to match the signature.
  */

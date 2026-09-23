@@ -689,7 +689,7 @@ async function askLitComponentMarker(): Promise<string> {
 	// scaffolded and nothing else in the wizard's output would show it.
 	log(
 		marker
-			? `  ✓ Files named *.${marker}.ts will be treated as Lit components.`
+			? `  ✓ Files named *.${marker}.ts under your source folder will be treated as Lit components.`
 			: '  ✓ Any plain .ts file you create empty under your source folder will be treated as a Lit component.',
 	)
 	return marker
@@ -699,7 +699,7 @@ async function askLitComponentMarker(): Promise<string> {
 async function readLitComponentMarkerAnswer(): Promise<string> {
 	log('\nWhat marks a file as a Lit component?')
 	log(
-		`  A marker of "${DEFAULT_LIT_COMPONENT_MARKER}" means only Button.${DEFAULT_LIT_COMPONENT_MARKER}.ts is a component.`,
+		`  A marker of "${DEFAULT_LIT_COMPONENT_MARKER}" means only Button.${DEFAULT_LIT_COMPONENT_MARKER}.ts under your source folder is a component.`,
 	)
 	log(
 		`  Answer "${NO_LIT_COMPONENT_MARKER_ANSWER}" and any plain .ts file you create empty under your source folder is one.`,
@@ -722,12 +722,18 @@ async function readLitComponentMarkerAnswer(): Promise<string> {
  * Tell a Lit user that their answer to the marker question was not recorded,
  * and what their config has to say for it to hold.
  *
- * Printed when the wizard finished without writing the key — the write failed,
- * or an existing config blocked it. **Both answers need it**, for opposite
- * reasons: a marker needs the key present, and clearing one needs it absent,
- * which an existing config may well contradict. Either way the wizard does not
- * read that file, so this asks the user to check rather than telling them what
- * it holds.
+ * Printed when the wizard finished without writing the key, which happens two
+ * ways, and **the two put different answers at risk**:
+ *
+ * - **An existing config blocked the write.** Both answers are at risk. A
+ *   marker needs the key present and clearing one needs it absent, and that
+ *   file may say either — this never reads it, so the note asks the user to
+ *   check rather than telling them what it holds.
+ * - **The write failed.** Only a marker is at risk. That throw is reachable
+ *   only past the existing-file check, so there is no config file, the key is
+ *   absent, and a cleared answer already holds without being told. The caller
+ *   gates that site on a marker for exactly this reason, which is why the two
+ *   gates differ and neither is the other's bug.
  *
  * @param litComponentSuffix - the answer, or the empty string for no marker
  */
