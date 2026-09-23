@@ -259,11 +259,18 @@ export interface SbDepsConfig {
 	 * `app-button-atom` rather than `app-app-button-atom`.
 	 *
 	 * A browser accepts a tag only when it contains a hyphen, starts with a
-	 * lower-case letter, and holds nothing outside the characters a tag name
-	 * allows. The default prefix supplies the hyphen and the leading letter for
-	 * even a one-word name like `Button.ts`. Clear it and that becomes yours to
-	 * get right; the scaffolder warns, naming whichever of the three the tag it
-	 * worked out breaks, and writes the file anyway.
+	 * lower-case letter, holds nothing outside the characters a tag name
+	 * allows, and is not one of the handful of names the specification keeps
+	 * for itself (`font-face` and its relatives). The default prefix supplies
+	 * the hyphen and the leading letter for even a one-word name like
+	 * `Button.ts`, and puts every reserved name out of reach. Clear it and all
+	 * four become yours to get right; the scaffolder warns, naming whichever
+	 * one the tag it worked out breaks, and writes the file anyway.
+	 *
+	 * The one thing it will not take from you is a prefix holding a character
+	 * no tag may contain. That is refused outright, with a message, and this
+	 * falls back to `'app-'` — because the prefix is written into the generated
+	 * source, so honouring it would leave you a file that does not compile.
 	 *
 	 * @example 'app-'  →  tag: 'app-button-atom'
 	 * @example 'my-'   →  tag: 'my-button-atom'

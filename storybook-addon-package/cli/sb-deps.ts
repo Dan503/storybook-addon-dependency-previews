@@ -199,19 +199,36 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
  * The prefix the config asked to put in front of a Lit component's tag, or the
  * default `'app-'` when it asked for nothing usable.
  *
- * Only the type is checked here, not the characters: a prefix is a fragment
- * rather than a tag, so most of what matters cannot be settled from the prefix
- * alone — `app` is fine in front of `-shell` and useless in front of `button`.
- * What has to be true is checked where it can be, against each finished tag,
- * by `getLitTagError` — asked by every scaffolder that writes that tag into a
- * file.
+ * The shape of the finished tag is not judged here, because it cannot be: a
+ * prefix is a fragment, so whether there is a hyphen and what the tag starts
+ * with depend on what follows — `app` is fine in front of `-shell` and useless
+ * in front of `button`. Those are left to `getLitTagError`, asked about each
+ * finished tag by every scaffolder that writes one into a file.
+ *
+ * The characters are the exception, and they are checked here for two reasons.
+ * They can be settled from the prefix alone, since appending to a character a
+ * tag may never hold can never make it acceptable. And they have to be settled
+ * before anything is written: `getLitTagError` warns and lets the file be
+ * written anyway, which is the right answer for a tag that is merely
+ * unregisterable, but a prefix carrying a quote, a backtick or a line break is
+ * written into `@customElement('…')` and would leave a file that does not
+ * compile.
  */
 function readLitTagPrefix(configuredPrefix: unknown): string {
 	const defaultPrefix = 'app-'
 	if (configuredPrefix === undefined) return defaultPrefix
-	if (typeof configuredPrefix === 'string') return configuredPrefix
-	error(`litTagPrefix must be a string — falling back to '${defaultPrefix}'.`)
-	return defaultPrefix
+	if (typeof configuredPrefix !== 'string') {
+		error(`litTagPrefix must be a string — falling back to '${defaultPrefix}'.`)
+		return defaultPrefix
+	}
+	const unusableCharacter = [...configuredPrefix].find(checkIsUnusableInTag)
+	if (unusableCharacter) {
+		error(
+			`litTagPrefix "${configuredPrefix}" is invalid — a tag cannot contain "${unusableCharacter}" — falling back to '${defaultPrefix}'.`,
+		)
+		return defaultPrefix
+	}
+	return configuredPrefix
 }
 
 let ANGULAR_SELECTOR_PREFIX = 'app-'
@@ -2308,6 +2325,13 @@ const litComponentsWarnedAboutTheirTag = new Set<string>()
  * them with a tag they never asked for and no idea where it came from. Saying
  * what is wrong is more use than guessing what they meant, and the failure is
  * loud — `customElements.define` throws, so the story does not render at all.
+ *
+ * Everything reaching here is a tag that is merely unregisterable, so a file
+ * carrying it still compiles. The one kind that would not — a prefix holding a
+ * character no tag may contain, which would be written straight into
+ * `@customElement('…')` — is refused by `readLitTagPrefix` at boot and never
+ * arrives. A component *name* can still carry such a character, and that is
+ * where the reachable half of the character rule comes from.
  */
 function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
 	const tagError = getLitTagError(tagName, LIT_TAG_PREFIX)
@@ -2321,11 +2345,34 @@ function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
 }
 
 /**
+ * The handful of names the specification keeps for itself, which a browser
+ * refuses to register however well-formed they look. All of them are older SVG
+ * and MathML element names that happen to contain a hyphen, so every other
+ * rule passes them and only `customElements.define` would object — at run
+ * time, long after the file was written.
+ *
+ * Only reachable with a `litTagPrefix` that leaves the name as it stands: the
+ * default `'app-'` puts `app-` in front, and `app-font-face` is not on the
+ * list.
+ */
+const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
+	'annotation-xml',
+	'color-profile',
+	'font-face',
+	'font-face-src',
+	'font-face-uri',
+	'font-face-format',
+	'font-face-name',
+	'missing-glyph',
+]
+
+/**
  * Why a browser will not register this tag, and what to do about it — phrased
  * to follow the caller's own naming of the tag — or `null` when it will.
  *
  * A custom element tag has to contain a hyphen, start with a lower-case
- * letter, and carry nothing a tag name may not hold. The last of those is a
+ * letter, carry nothing a tag name may not hold, and not be one of the names
+ * the specification keeps for itself. The third of those is a
  * long list in the specification and most of it is letters from outside ASCII,
  * which this tool deliberately allows in a component name — so the check names
  * the ASCII characters a tag may hold and lets anything outside ASCII through.
@@ -2360,6 +2407,8 @@ function getLitTagError(tagName: string, tagPrefix: string): string | null {
 			tagPrefix.includes(unusableCharacter)
 		return `a tag cannot contain "${unusableCharacter}", which came from ${getLitTagPartDescription(isCharacterFromPrefix)}`
 	}
+	if (RESERVED_TAG_NAMES.includes(tagName))
+		return 'a tag cannot be one of the names the specification keeps for itself, and this is one of them — renaming the file fixes it, as does giving litTagPrefix a value to put in front'
 	return null
 }
 

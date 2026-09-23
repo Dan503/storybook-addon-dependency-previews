@@ -394,6 +394,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			? await askLitComponentMarker()
 			: undefined
 
+	// The answer above only takes effect in a project the scaffolder can see is
+	// a Lit one, and nothing here can make it one — so say so while the answer
+	// is still on screen.
+	const isLitFrameworkUndetected =
+		framework === 'web-components-vite' &&
+		detection.frameworkDetectionSource === 'none'
+	if (isLitFrameworkUndetected) logLitFrameworkNotDetectedNote()
+
 	rule()
 	log('Step 1/5: installing dependencies')
 	const installResult = installMissingPackages({
@@ -695,6 +703,33 @@ async function askLitComponentMarker(): Promise<string> {
 			: '  ✓ Any plain .ts file you create empty under your source folder will be treated as a Lit component.',
 	)
 	return marker
+}
+
+/**
+ * Warn that the marker answer will do nothing until the project says which
+ * framework it is.
+ *
+ * Printed when the framework came from the picker rather than from the
+ * project, which is the one case where the wizard knows the scaffolder will
+ * disagree with it. Lit is the only framework this has to be said for: every
+ * other one is recognised from the file being created — a `.tsx`, a `.vue`, a
+ * `.svelte` — whereas a plain `.ts` file names no framework, so the whole Lit
+ * check is only consulted in a project already known to be Lit.
+ *
+ * Nothing the wizard writes settles it, because the wizard never writes a
+ * `framework` field, so the remedy has to be the user's. In practice a project
+ * that runs Storybook at all already declares one; this is for the half-built
+ * project where setup ran first.
+ */
+function logLitFrameworkNotDetectedNote() {
+	log(
+		`\n  ! Your project does not say it is a Lit project, so sb-deps will not`,
+	)
+	log(`    scaffold Lit files and the answer above will have no effect.`)
+	log(
+		`    Set \`framework: '@storybook/web-components-vite'\` in .storybook/main.*`,
+	)
+	log(`    (or add "lit" to your package.json dependencies) to fix that.`)
 }
 
 /** The component-marker question itself, re-asked until the answer can be used. */
