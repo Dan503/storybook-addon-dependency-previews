@@ -21,6 +21,7 @@ import {
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
 import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
+import { getComponentMarkerError } from '../scripts/fileNames.js'
 import { ask, choose, confirm, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
 
@@ -48,6 +49,8 @@ const FRAMEWORK_PICKER_LABELS: Record<SupportedFramework, string> = {
 	sveltekit: 'Svelte with SvelteKit (@storybook/sveltekit)',
 	'svelte-vite': 'Svelte without SvelteKit (@storybook/svelte-vite)',
 	'solid-vite': 'Solid (storybook-solidjs-vite)',
+	'web-components-vite':
+		'Lit / web components (@storybook/web-components-vite)',
 }
 
 // The story-file extension the scaffolder generates for each framework — used
@@ -67,10 +70,11 @@ function exampleStoryFileExtension(framework: Framework): string {
 		case 'solid-vite':
 		case 'nextjs-webpack':
 			return 'tsx'
-		// Angular and Vue fall through to `ts` — the Angular scaffolder strips
-		// `.component` and emits `<Name>.stories.ts`, and Vue emits
-		// `<Name>.stories.ts`, so `ComponentName.stories.ts` is the accurate
-		// example. `unsupported` and `unknown` land here too, and for those it is
+		// Angular, Vue and Lit fall through to `ts` — the Angular scaffolder strips
+		// `.component` and emits `<Name>.stories.ts`, Vue emits
+		// `<Name>.stories.ts`, and Lit strips its own component marker and emits
+		// the same, so `ComponentName.stories.ts` is the accurate example for all
+		// three. `unsupported` and `unknown` land here too, and for those it is
 		// a guess rather than an answer — which is why the caller asks whether the
 		// extension is known before printing an example at all.
 		default:
@@ -240,7 +244,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (framework === 'unsupported') {
 		log(
-			`This setup wizard currently supports React, Preact, Svelte, Vue 3, and Solid (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
+			`This setup wizard currently supports React, Preact, Svelte, Vue 3, Solid, and Lit / web components (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
 			'The addon itself also supports Angular and Next.js with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
@@ -381,6 +385,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 		rule()
 	}
+
+	// Asked after the confirmation above rather than among the detected values,
+	// because it is a new decision rather than something detected — and asking it
+	// here means a cancelled setup never asks it at all.
+	const litComponentSuffix =
+		framework === 'web-components-vite'
+			? await askLitComponentMarker()
+			: undefined
 
 	rule()
 	log('Step 1/5: installing dependencies')
@@ -558,9 +570,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		isEsm: detection.isEsm,
 		tsxFramework,
 		storybookFileExtension: effectiveStorybookFileExtension,
+		litComponentSuffix,
 	})
+	// Only worth saying for a marker the user actually asked for. Without the key
+	// the scaffolder treats every plain `.ts` file as a component, which is the
+	// opposite of what they just chose — whereas someone who cleared the marker
+	// gets that behaviour from an absent key anyway.
+	const doesLitComponentSuffixNeedTheKey = !!litComponentSuffix
 	const doesSkippedConfigNeedTsxFrameworkNote =
 		sbDepsConfigResult.kind === 'skipped' && doesTsxFrameworkNeedTheKey
+	const doesSkippedConfigNeedLitSuffixNote =
+		sbDepsConfigResult.kind === 'skipped' && doesLitComponentSuffixNeedTheKey
 	if (sbDepsConfigResult.kind === 'created') {
 		rule()
 		log(
@@ -573,10 +593,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
 		)
 		if (doesTsxFrameworkNeedTheKey) logTsxFrameworkNote(tsxFramework)
-	} else if (doesSkippedConfigNeedTsxFrameworkNote) {
+		if (doesLitComponentSuffixNeedTheKey)
+			logLitComponentSuffixNote(litComponentSuffix)
+	} else if (
+		doesSkippedConfigNeedTsxFrameworkNote ||
+		doesSkippedConfigNeedLitSuffixNote
+	) {
 		rule()
 		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		logTsxFrameworkNote(tsxFramework)
+		if (doesSkippedConfigNeedTsxFrameworkNote) logTsxFrameworkNote(tsxFramework)
+		if (doesSkippedConfigNeedLitSuffixNote)
+			logLitComponentSuffixNote(litComponentSuffix)
 	}
 
 	rule()
@@ -622,6 +649,86 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		rule()
 		process.exit(1)
 	}
+}
+
+/** What the wizard suggests as a Lit project's component marker. */
+const DEFAULT_LIT_COMPONENT_MARKER = 'lit'
+
+/**
+ * The word the user types to ask for no marker at all, since an empty answer
+ * already means "keep the suggestion". The source-folder question above pays
+ * the same small cost for its own `.`: a project that genuinely wanted to mark
+ * its components with the word `none` cannot have it, which is why the prompt
+ * says so rather than leaving it to be discovered.
+ */
+const NO_LIT_COMPONENT_MARKER_ANSWER = 'none'
+
+/**
+ * Ask a Lit project what marks a component file, and return the answer without
+ * its dot — `'lit'` for `Button.lit.ts`, or the empty string for no marker at
+ * all, where every plain `.ts` file counts.
+ *
+ * Asked every time rather than only where it would change something, so
+ * `.lit.ts` is the shape a set-up project ends up with, while anyone who would
+ * rather every `.ts` file were a component can say so.
+ *
+ * Built on `ask` rather than `input` because `input` returns its default for a
+ * blank answer, so it has no way to tell "keep the suggestion" from "I want
+ * nothing".
+ */
+async function askLitComponentMarker(): Promise<string> {
+	const marker = await readLitComponentMarkerAnswer()
+	// Said back either way, because the answer decides which files get
+	// scaffolded and nothing else in the wizard's output would show it.
+	log(
+		marker
+			? `  ✓ Files named *.${marker}.ts will be treated as Lit components.`
+			: '  ✓ Every plain .ts file under your source folder will be treated as a Lit component.',
+	)
+	return marker
+}
+
+/** The component-marker question itself, re-asked until the answer can be used. */
+async function readLitComponentMarkerAnswer(): Promise<string> {
+	log('\nWhat marks a file as a Lit component?')
+	log(
+		`  A marker of "${DEFAULT_LIT_COMPONENT_MARKER}" means only Button.${DEFAULT_LIT_COMPONENT_MARKER}.ts is a component.`,
+	)
+	log(
+		`  Answer "${NO_LIT_COMPONENT_MARKER_ANSWER}" and every plain .ts file under your source folder is one.`,
+	)
+	while (true) {
+		const answer = (
+			await ask(
+				`  Enter a marker, "${NO_LIT_COMPONENT_MARKER_ANSWER}", or press Enter to keep "${DEFAULT_LIT_COMPONENT_MARKER}": `,
+			)
+		).trim()
+		if (answer === '') return DEFAULT_LIT_COMPONENT_MARKER
+		if (answer.toLowerCase() === NO_LIT_COMPONENT_MARKER_ANSWER) return ''
+		const markerError = getComponentMarkerError(answer)
+		if (!markerError) return answer
+		log(`  "${answer}" can't be used — ${markerError}.`)
+	}
+}
+
+/**
+ * Tell a Lit user to set `litComponentSuffix` themselves.
+ *
+ * Printed when the wizard finished without writing the key — the write failed,
+ * or an existing config blocked it — and the user asked for a marker. Nothing
+ * else records that answer, and an absent key means the opposite of it: every
+ * plain `.ts` file under the source folder is treated as a component. The
+ * wizard does not read an existing config, so this asks the user to check
+ * rather than claiming the key is absent.
+ */
+function logLitComponentSuffixNote(litComponentSuffix: string) {
+	log(
+		`    Ensure your sb-deps.config sets \`litComponentSuffix: '${litComponentSuffix}'\` — without`,
+	)
+	log(
+		`    that key every plain .ts file under your source folder is treated as a`,
+	)
+	log(`    component, rather than only those named *.${litComponentSuffix}.ts.`)
 }
 
 /**

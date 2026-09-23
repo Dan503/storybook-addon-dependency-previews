@@ -12,6 +12,7 @@ export type Framework =
 	| 'svelte-vite'
 	| 'vue3-vite'
 	| 'solid-vite'
+	| 'web-components-vite'
 	| 'angular-webpack'
 	| 'nextjs-webpack'
 	| 'unsupported'
@@ -190,6 +191,13 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	// (not under the `@storybook/` scope). It's an independent framework — nothing
 	// subsumes it and it subsumes nothing.
 	{ corePackage: 'solid-js', framework: 'storybook-solidjs-vite' },
+	// Lit subsumes nothing and is subsumed by nothing: it is a standalone way of
+	// writing browser elements rather than something built on another framework
+	// here, so a project holding both `lit` and another framework's core package
+	// is genuinely ambiguous and falls through to the `.storybook/main.*` regex.
+	// `lit` is the umbrella package — `lit-element` and `lit-html` are its parts
+	// and come with it — so keying on `lit` alone is enough.
+	{ corePackage: 'lit', framework: '@storybook/web-components-vite' },
 ]
 
 function frameworkFromRaw(raw: string | null): Framework {
@@ -201,6 +209,7 @@ function frameworkFromRaw(raw: string | null): Framework {
 	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
 	// Solid uses the community `storybook-solidjs-vite` package (Vite-only).
 	if (raw === 'storybook-solidjs-vite') return 'solid-vite'
+	if (raw === '@storybook/web-components-vite') return 'web-components-vite'
 	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
 	// framework value for the future Vite-based Angular Storybook framework if it
 	// ships — current Angular goes in as `'angular-webpack'`.
@@ -258,6 +267,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'svelte-vite':
 		case 'vue3-vite':
 		case 'solid-vite':
+		case 'web-components-vite':
 			return 'vite'
 		case 'angular-webpack':
 		case 'nextjs-webpack':
@@ -286,9 +296,9 @@ export type TsxFramework = NonNullable<SbDepsConfig['tsxFramework']>
  *
  * Everything else is React. That is the right answer for React itself and for
  * Next.js, the only others here that author `.tsx` at all. For the rest the
- * value is never consulted: a `.tsx` file in a Svelte, Vue or Angular project
- * is turned away before any template is chosen, and one in a project whose
- * framework was never recognised is not scaffolded either.
+ * value is never consulted: a `.tsx` file in a Svelte, Vue, Angular or Lit
+ * project is turned away before any template is chosen, and one in a project
+ * whose framework was never recognised is not scaffolded either.
  */
 export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
 	if (framework === 'solid-vite') return 'solid'
@@ -316,6 +326,7 @@ export const SUPPORTED_FRAMEWORKS = [
 	'sveltekit',
 	'svelte-vite',
 	'solid-vite',
+	'web-components-vite',
 ] as const satisfies ReadonlyArray<Framework>
 
 /**

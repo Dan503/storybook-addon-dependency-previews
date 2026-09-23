@@ -138,6 +138,10 @@ function buildTemplate(
  * classic template (which works on Storybook 10 and 11 alike). Adding a
  * framework here is what switches its Storybook 11 projects to the CSF Next
  * template.
+ *
+ * `@storybook/web-components-vite` does export it, though its `exports` map
+ * does not list it — the built files were read to settle that, since the map
+ * alone gives the opposite answer.
  */
 const DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK: Partial<
 	Record<SupportedFramework, string>
@@ -145,6 +149,7 @@ const DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK: Partial<
 	'react-vite': '@storybook/react-vite',
 	'vue3-vite': '@storybook/vue3-vite',
 	'solid-vite': 'storybook-solidjs-vite',
+	'web-components-vite': '@storybook/web-components-vite',
 }
 
 /** The first Storybook major whose default `preview.ts` style is CSF Next. */

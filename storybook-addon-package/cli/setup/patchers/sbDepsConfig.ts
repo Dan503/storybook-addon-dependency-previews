@@ -51,15 +51,31 @@ export interface WriteSbDepsConfigOptions {
 	 * @default 'stories'
 	 */
 	storybookFileExtension?: NonNullable<SbDepsConfig['storybookFileExtension']>
+	/**
+	 * What marks a Lit component file, without its dot. Anything non-empty gets
+	 * the config written even for the default `srcDir`, because the code's own
+	 * default is no marker: without the key every plain `.ts` file under the
+	 * source folder is treated as a component, which is the opposite of what
+	 * setting one asks for. Left out for a project that isn't Lit.
+	 */
+	litComponentSuffix?: string
+	/**
+	 * The prefix put in front of a Lit component's tag. Only a non-default value
+	 * triggers a config write. The wizard never asks for this — it is accepted so
+	 * that everything the config file can carry can be written from one place.
+	 * @default 'app-'
+	 */
+	litTagPrefix?: string
 }
 
 /**
  * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`,
- * the `tsxFramework` scaffolder signal, and/or a non-default
- * `storybookFileExtension`. No-op when there's nothing worth persisting — i.e.
- * `srcDir === 'src'` (bundled default) AND `tsxFramework` is the default
- * `'react'` AND `storybookFileExtension` is the default `'stories'` — or when
- * any of the candidate config filenames already exist (the loader at
+ * the `tsxFramework` scaffolder signal, a non-default `storybookFileExtension`,
+ * and/or a Lit project's component marker and tag prefix. No-op when there's
+ * nothing worth persisting — i.e. `srcDir === 'src'` (bundled default) AND
+ * `tsxFramework` is the default `'react'` AND `storybookFileExtension` is the
+ * default `'stories'` AND no Lit marker or non-default tag prefix was asked
+ * for — or when any of the candidate config filenames already exist (the loader at
  * `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never overwrite a user's
  * existing config without their say-so).
  */
@@ -72,18 +88,28 @@ export function writeSbDepsConfigIfNeeded(
 		isEsm,
 		tsxFramework = 'react',
 		storybookFileExtension = 'stories',
+		litComponentSuffix,
+		litTagPrefix,
 	} = opts
 
 	const needsSrcDir = srcDir !== 'src'
 	const needsTsxFramework = tsxFramework !== 'react'
 	const needsStorybookFileExtension = storybookFileExtension === 'story'
+	// Any marker at all is worth writing, because the code's own default is none.
+	const needsLitComponentSuffix = !!litComponentSuffix
+	const needsLitTagPrefix =
+		litTagPrefix !== undefined && litTagPrefix !== 'app-'
 	const hasNothingWorthWriting =
-		!needsSrcDir && !needsTsxFramework && !needsStorybookFileExtension
+		!needsSrcDir &&
+		!needsTsxFramework &&
+		!needsStorybookFileExtension &&
+		!needsLitComponentSuffix &&
+		!needsLitTagPrefix
 	if (hasNothingWorthWriting) {
 		return {
 			kind: 'skipped',
 			reason:
-				'srcDir is the default (src), tsxFramework is the default (react), and storybookFileExtension is the default (stories) — no config file needed',
+				'srcDir is the default (src), tsxFramework is the default (react), storybookFileExtension is the default (stories), and no Lit component marker or tag prefix was asked for — no config file needed',
 		}
 	}
 
@@ -109,7 +135,7 @@ export function writeSbDepsConfigIfNeeded(
 	// list.
 	const fields: Array<{ line: string; summary: string }> = []
 	if (needsSrcDir) {
-		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+		const srcDirLiteral = toSingleQuotedLiteral(srcDir)
 		fields.push({
 			line: `\tsrcDir: ${srcDirLiteral},`,
 			summary: `srcDir: ${srcDirLiteral}`,
@@ -125,6 +151,20 @@ export function writeSbDepsConfigIfNeeded(
 		fields.push({
 			line: `\tstorybookFileExtension: 'story',`,
 			summary: `storybookFileExtension: 'story'`,
+		})
+	}
+	if (needsLitComponentSuffix) {
+		const litComponentSuffixLiteral = toSingleQuotedLiteral(litComponentSuffix)
+		fields.push({
+			line: `\tlitComponentSuffix: ${litComponentSuffixLiteral},`,
+			summary: `litComponentSuffix: ${litComponentSuffixLiteral}`,
+		})
+	}
+	if (needsLitTagPrefix) {
+		const litTagPrefixLiteral = toSingleQuotedLiteral(litTagPrefix)
+		fields.push({
+			line: `\tlitTagPrefix: ${litTagPrefixLiteral},`,
+			summary: `litTagPrefix: ${litTagPrefixLiteral}`,
 		})
 	}
 	const configBody = fields.map((f) => f.line).join('\n')
@@ -152,4 +192,13 @@ ${configBody}
 		}
 	}
 	return { kind: 'created', path, fields: fields.map((f) => f.summary) }
+}
+
+/**
+ * A value as a single-quoted string the generated config file can hold, with
+ * backslashes and single quotes escaped — a Windows `srcDir` carries the first
+ * and a folder name can carry the second.
+ */
+function toSingleQuotedLiteral(value: string): string {
+	return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
 }

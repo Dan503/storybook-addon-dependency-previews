@@ -90,6 +90,34 @@ export interface SvelteDecoratorScaffoldContext {
 	componentImportPath: string
 }
 
+export interface LitComponentScaffoldContext {
+	/** PascalCase component name, e.g. `"ButtonAtom"` */
+	componentName: string
+	/** Browser element tag the component registers itself as, e.g. `"app-button-atom"` */
+	tagName: string
+	/**
+	 * Base file name without its extension or its component marker, e.g.
+	 * `"ButtonAtom"` for both `ButtonAtom.ts` and `ButtonAtom.lit.ts`.
+	 */
+	base: string
+}
+
+export interface LitStoryScaffoldContext extends LitComponentScaffoldContext {
+	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
+	title: string
+	/** Story tags, e.g. `["autodocs", "atom"]` */
+	tags: string[]
+	/**
+	 * What to import the component from, relative to the story file, without a
+	 * leading `./` and without the `.ts` extension — e.g. `"ButtonAtom.lit"`.
+	 *
+	 * Use this rather than building the path out of `base`, which drops the
+	 * component marker: with `litComponentSuffix` set to `'lit'` the file is
+	 * `ButtonAtom.lit.ts` while the base is `ButtonAtom`.
+	 */
+	componentImportPath: string
+}
+
 export interface AngularBaseScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
 	componentName: string
@@ -167,6 +195,49 @@ export interface SbDepsConfig {
 	 * @example ''      →  selector: 'button-atom'
 	 */
 	angularSelectorPrefix?: string
+
+	/**
+	 * What marks a file as a Lit component, written without its dot. With
+	 * `'lit'`, only `Button.lit.ts` is treated as a component. Leave it out, or
+	 * set it to the empty string, and every plain `.ts` file under the source
+	 * folder counts — meaning one that is not a story and carries no other
+	 * dotted part in its name, so `Button.test.ts` and `Button.d.ts` are left
+	 * alone either way.
+	 *
+	 * Only read in a Lit project, the way `.component` is only read in an
+	 * Angular one, so it changes nothing for any other framework.
+	 *
+	 * The `sb-deps setup` wizard asks for this in a Lit project and writes
+	 * `'lit'` unless you ask it for something else, so `Button.lit.ts` is the
+	 * shape a project set up by the wizard ends up with. Must contain only
+	 * letters, digits, `_` and `-`, and may not be `stories`, `story`,
+	 * `component` or `decorator` — those already mean something to this tool;
+	 * anything else is rejected at load time with a warning and no marker.
+	 *
+	 * @example 'lit'  →  `Button.lit.ts` is a component, `Button.ts` is not
+	 * @example ''     →  every plain `.ts` file is a component
+	 */
+	litComponentSuffix?: string
+
+	/**
+	 * Prefix put in front of the tag a Lit component registers itself as.
+	 * Defaults to `'app-'`. Set to `''` for no prefix.
+	 *
+	 * The tag is the component's file name in hyphenated form with this prefix
+	 * in front of it — unless the name already starts with the prefix, in which
+	 * case it is used as it stands, so `app-button-atom.ts` gives
+	 * `app-button-atom` rather than `app-app-button-atom`.
+	 *
+	 * A browser only accepts a tag containing a hyphen, which is what the
+	 * default supplies for a one-word name like `Button.ts`. Clear the prefix
+	 * and it is on you to give every component a hyphenated name; the
+	 * scaffolder warns when the tag it works out has no hyphen.
+	 *
+	 * @example 'app-'  →  tag: 'app-button-atom'
+	 * @example 'my-'   →  tag: 'my-button-atom'
+	 * @example ''      →  tag: 'button-atom'
+	 */
+	litTagPrefix?: string
 
 	/**
 	 * Which flavor to scaffold for `.tsx` component and story files.
@@ -278,6 +349,12 @@ export interface SbDepsConfig {
 			component?: (ctx: PreactComponentScaffoldContext) => string
 			/** Template for the `.stories.tsx` story file (Preact projects) */
 			story?: (ctx: PreactStoryScaffoldContext) => string
+		}
+		lit?: {
+			/** Template for the component `.ts` file (Lit projects) */
+			component?: (ctx: LitComponentScaffoldContext) => string
+			/** Template for the `.stories.ts` story file (Lit projects) */
+			story?: (ctx: LitStoryScaffoldContext) => string
 		}
 		angular?: {
 			/** Template for the `.component.ts` file */
