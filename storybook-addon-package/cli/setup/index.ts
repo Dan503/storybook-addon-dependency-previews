@@ -671,8 +671,10 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
  * story-file extension, none of which name the framework — so it comes up
  * `unknown` too, and `checkDoesFileFrameworkMatchProject` in `sb-deps.ts` turns
  * every new component and story file away rather than scaffolding it as the
- * wrong framework. Nothing else about the setup is affected: the dependency
- * graph, the previews panel and the story links all work.
+ * wrong framework. Nothing else depends on scaffolding — the dependency graph,
+ * the previews panel and the story links do not — so the note says so rather
+ * than claiming this particular run succeeded, since it also prints after a
+ * failed Step 5.
  *
  * Not framework-specific — it holds for every framework the picker offers,
  * because what defeats the scaffolder is the failed detection rather than the
@@ -680,19 +682,15 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
  */
 function logNoScaffoldingNote() {
 	rule()
-	log(
-		`  ⚠ Auto-scaffolding of new components and stories will not run in this`,
-	)
+	log(`  ⚠ Auto-scaffolding of new components and stories will not run in this`)
 	log(
 		`    project. sb-deps works the framework out from the project's own files`,
 	)
+	log(`    each run, the same way this wizard could not, so it turns new files`)
 	log(
-		`    each run, the same way this wizard could not, so it turns new files`,
+		`    away rather than scaffolding them as the wrong framework. Nothing else`,
 	)
-	log(
-		`    away rather than scaffolding them as the wrong framework. Everything`,
-	)
-	log(`    else — the dependency graph and the previews panel — works as usual.`)
+	log(`    depends on it — the dependency graph and the previews panel do not.`)
 }
 
 /**
