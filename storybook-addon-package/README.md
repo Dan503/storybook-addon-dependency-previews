@@ -227,7 +227,7 @@ export default defineSbDepsConfig({
 
 ### `srcDir`
 
-The top-level source directory (relative to your project root) that the addon scans for components and stories. Every key in the generated `.storybook/dependency-previews.json` starts with this prefix.
+The top-level source directory (relative to your project root) that the addon scans for components and stories. With a folder name, every key in the generated `.storybook/dependency-previews.json` starts with it — `src/components/Foo.tsx`. With the empty string (see **Project-root layouts** below) the keys are still project-relative, just with no fixed prefix in front of them — `components/Foo.tsx`.
 
 **Default:** `'src'`
 

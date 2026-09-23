@@ -657,9 +657,10 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
  * that makes no claim about what the array says cannot be wrong about it.
  *
  * Skipped only for the `src` default, which is what the array already names in
- * a project that has one. Project-root mode gets it too, and has the strongest
- * claim to it: that answer is only ever reached after `resolveSrcDir` has found
- * no `src/` folder, so an array still naming `src/` there matches nothing.
+ * a project that has one. Project-root mode gets it like any other answer —
+ * nothing in the wizard makes that array agree with the source folder, whatever
+ * the folder turned out to be, and an array naming `src/` in a project whose
+ * components sit at the root matches nothing.
  *
  * @param srcDir - the resolved source folder, after any edit-flow override
  */
@@ -703,9 +704,15 @@ function logSbDepsConfigOutcome(
 		logBlockedConfigNote(result.existingFileName, result.fields)
 	} else {
 		log(`  ⚠ ${result.reason}`)
-		log(
-			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
-		)
+		// Name what was lost rather than one field of three — `srcDir` may be the
+		// one value that was never going in. And no promise about what happens
+		// next: this runs at Step 4, where the wizard carries on, and at the
+		// webpack bail-out, which returns immediately afterwards.
+		if (result.fields.length > 0) {
+			log(
+				`    Set these in an sb-deps.config yourself: ${result.fields.join(', ')}`,
+			)
+		}
 	}
 }
 

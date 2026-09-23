@@ -56,7 +56,17 @@ export type SbDepsConfigPatchResult =
 			 */
 			fields: ReadonlyArray<string>
 	  }
-	| { kind: 'failed'; reason: string }
+	| {
+			/** The file could not be written. */
+			kind: 'failed'
+			reason: string
+			/**
+			 * The same list `blocked` carries, for the same reason: a failed write
+			 * loses values too, and the user can only put back the ones worth
+			 * putting back. Empty when nothing lost was worth naming.
+			 */
+			fields: ReadonlyArray<string>
+	  }
 
 export interface WriteSbDepsConfigOptions {
 	cwd: string
@@ -173,11 +183,12 @@ export function writeSbDepsConfigIfNeeded(
 			canUserAddByHand: true,
 		})
 	}
+	const fieldsToNameInTheMessage = fields
+		.filter((f) => f.canUserAddByHand)
+		.map((f) => f.summary)
+
 	for (const name of CONFIG_FILE_CANDIDATES) {
 		if (existsSync(resolve(cwd, name))) {
-			const fieldsToNameInTheMessage = fields
-				.filter((f) => f.canUserAddByHand)
-				.map((f) => f.summary)
 			// Nothing the user can act on, so nothing to say — same answer as a
 			// write that was never needed.
 			if (fieldsToNameInTheMessage.length === 0) return { kind: 'skipped' }
@@ -213,6 +224,7 @@ ${configBody}
 		return {
 			kind: 'failed',
 			reason: `Could not write ${path}: ${(e as Error).message}`,
+			fields: fieldsToNameInTheMessage,
 		}
 	}
 	return { kind: 'created', path, fields: fields.map((f) => f.summary) }
