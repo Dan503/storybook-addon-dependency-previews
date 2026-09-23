@@ -859,7 +859,9 @@ function getNameEndingContext(): NameEndingContext {
  * name, and it can carry a base that contributes none. Lit's scaffolders build
  * their class name from the base with the marker taken off, so `_.lit.ts`
  * would pass here as `Lit` and then be written as `export class ` with nothing
- * after it. So in a Lit project the stripped base is asked as well.
+ * after it. So in a Lit project the stripped base is asked as well — and on
+ * both routes into those scaffolders, since a created story is not the file
+ * whose name they use (see `getLitClassNameSources`).
  *
  * React, Vue and Svelte scaffold from the whole name, so this question is
  * already their question. Angular strips `.component` but then appends
@@ -880,13 +882,36 @@ function getUnusableNameWarning(absPath: string): string | null {
 	// typed it, which is the one they can act on.
 	const namesTheScaffoldersWouldUse =
 		getProjectFrameworkFamily() === 'lit'
-			? [nameWithoutExtension, componentBaseFromLitComponent(absPath)]
+			? [nameWithoutExtension, ...getLitClassNameSources(absPath)]
 			: [nameWithoutExtension]
 	const isEveryNameUsable = namesTheScaffoldersWouldUse.every((name) =>
 		CODE_NAME_REGEX.test(toPascalCase(name)),
 	)
 	if (isEveryNameUsable) return null
 	return `left "${rel(absPath)}" alone — "${nameWithoutExtension}" can't be used as a component name in the generated code, so nothing was scaffolded for it. Page file names like "[id]" and "+page" are the usual reason; add a path pattern to scaffoldIgnore in your sb-deps config to stop this being mentioned.`
+}
+
+/**
+ * The names a Lit scaffolder would build a class name from, for a created file
+ * that might reach one — none when nothing would be written.
+ *
+ * There are two routes in and the created file is a different thing on each.
+ * Create a component and it is the component, so its own base is the answer.
+ * Create a story and it is the story: the component is worked out from it
+ * afterwards, so its base is the name to ask about and the story's own tells
+ * you nothing. Asking only the created file covers the first route and leaves
+ * the second writing `export class ` with nothing after it.
+ *
+ * Empty where a created story maps to no component at all, which in a Lit
+ * project means a dotted base with no marker set — there is no class name to
+ * judge, because there is no file to write.
+ */
+function getLitClassNameSources(absPath: string): Array<string> {
+	if (!STORY_FILE_REGEX.test(absPath))
+		return [componentBaseFromLitComponent(absPath)]
+	const storyBase = absPath.replace(STORY_FILE_REGEX, '')
+	const compPath = getComponentPathForFamily(storyBase, 'lit')
+	return compPath ? [componentBaseFromLitComponent(compPath)] : []
 }
 
 /**
@@ -2676,7 +2701,14 @@ function checkIsScaffoldableStoryFile(absStoryPath: string): boolean {
 	if (extension !== '.ts') return true
 	const projectFamily = getProjectFrameworkFamily()
 	// The same set a `.ts` story can name through a sibling, reused rather than
-	// spelled again — `getComponentPathForFamily` answers for exactly these.
+	// spelled again. Membership is necessary rather than sufficient: a family
+	// on this list can still decline one particular path, which Lit does for a
+	// dotted base when no marker is set. So a story can clear this and still
+	// have nothing written for it — the cost is that such a story gets the
+	// unusable-name check run against it, and where its name is also one this
+	// tool cannot use, the line it prints blames the name for an outcome the
+	// dotted base had already settled.
+	//
 	// Read whole rather than through `getSiblingProbeOrder`, which drops Lit
 	// outside a Lit project: the question here is whether the project's OWN
 	// family can be named, and for a Lit project the answer is yes.
