@@ -210,9 +210,12 @@ export interface SbDepsConfig {
 	 * The `sb-deps setup` wizard asks for this in a Lit project and writes
 	 * `'lit'` unless you ask it for something else, so `Button.lit.ts` is the
 	 * shape a project set up by the wizard ends up with. Must contain only
-	 * letters, digits, `_` and `-`, and may not be `stories`, `story`,
-	 * `component` or `decorator` — those already mean something to this tool;
-	 * anything else is rejected at load time with a warning and no marker.
+	 * lower-case letters, digits, `_` and `-`, and may not be `stories`,
+	 * `story`, `component` or `decorator` — those already mean something to
+	 * this tool; anything else is rejected at load time with a warning and no
+	 * marker. Capitals are refused rather than quietly lowered, because a name
+	 * ending is read in lower case everywhere in this tool and a marker spelled
+	 * `Lit` would be honoured in some places and missed in others.
 	 *
 	 * @example 'lit'  →  `Button.lit.ts` is a component, `Button.ts` is not
 	 * @example ''     →  every plain `.ts` file is a component

@@ -193,6 +193,23 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	return null
 }
 
+/**
+ * The prefix the config asked to put in front of a Lit component's tag, or the
+ * default `'app-'` when it asked for nothing usable.
+ *
+ * Only the type is checked here, not the characters: a prefix is a fragment
+ * rather than a tag, so it cannot be judged on its own — `app` is fine in front
+ * of `-shell` and useless in front of `button`. What has to be true is checked
+ * where it can be, against each finished tag, by `getLitTagError`.
+ */
+function readLitTagPrefix(configuredPrefix: unknown): string {
+	const defaultPrefix = 'app-'
+	if (configuredPrefix === undefined) return defaultPrefix
+	if (typeof configuredPrefix === 'string') return configuredPrefix
+	error(`litTagPrefix must be a string — falling back to '${defaultPrefix}'.`)
+	return defaultPrefix
+}
+
 let ANGULAR_SELECTOR_PREFIX = 'app-'
 // What marks a Lit component file, without its dot (`'lit'` for
 // `Button.lit.ts`), or `null` when this project asked for no marker and every
@@ -704,7 +721,7 @@ function isComponentsLitTs(relPath: string) {
 	if (STORY_FILE_REGEX.test(relPath)) return false
 	if (LIT_COMPONENT_SUFFIX)
 		// Not escaped for the pattern: the marker has already been bounded to
-		// letters, digits, `_` and `-` — by the wizard when it asked, and by
+		// lower-case letters, digits, `_` and `-` — by the wizard when it asked, and by
 		// `readLitComponentSuffix` when it read the config — and none of those
 		// mean anything to a pattern.
 		return srcSubpathRegex(`\\.${LIT_COMPONENT_SUFFIX}\\.ts$`).test(relPath)
@@ -1447,9 +1464,8 @@ function getComponentSuffixedStoryNaming(
  * The ending that marks a component file for this family, with its dot, or
  * `null` for a family whose component files carry none.
  *
- * Written once because three places need the same answer — the story naming a
- * component file maps to, the component path a story file maps back to, and
- * whether either expansion applies at all.
+ * Written once because its callers all need the same answer, and a second copy
+ * of the rule is how two of them would come to disagree about one file.
  */
 function getComponentEndingForFamily(family: StoryFramework): string | null {
 	if (family === 'angular') return '.component'
@@ -2151,7 +2167,7 @@ function scaffoldLitComponent(absCompPath: string) {
 	const base = componentBaseFromLitComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const tagName = getLitTagName(base)
-	warnIfLitTagHasNoHyphen(tagName, absCompPath)
+	warnIfLitTagIsUnusable(tagName, absCompPath)
 
 	const tpl =
 		SCAFFOLD_CONFIG?.lit?.component?.({ componentName, tagName, base }) ??
@@ -2194,23 +2210,52 @@ declare global {
 }
 
 /**
- * Say so when the tag worked out for a component has no hyphen in it, which a
- * browser refuses to register.
+ * Say so when the tag worked out for a component is one a browser will not
+ * register, and name which of the rules it breaks.
  *
- * Only reachable with `litTagPrefix` set to something without a hyphen — the
- * default `app-` supplies one for even a one-word name. The file is still
- * written: the prefix is the user's own setting, and quietly overriding it
- * would leave them with a tag they never asked for and no idea where it came
- * from.
+ * The file is still written: the tag is built from the component's own name
+ * and the user's own `litTagPrefix`, and quietly overriding either would leave
+ * them with a tag they never asked for and no idea where it came from. Saying
+ * what is wrong is more use than guessing what they meant, and the failure is
+ * loud — `customElements.define` throws, so the story does not render at all.
  */
-function warnIfLitTagHasNoHyphen(tagName: string, absCompPath: string) {
-	if (tagName.includes('-')) return
+function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
+	const tagError = getLitTagError(tagName)
+	if (!tagError) return
 	warn(
 		`"${rel(absCompPath)}" registers the tag "${tagName}", which a browser will ` +
-			`refuse — a custom element tag has to contain a hyphen. Give the ` +
-			`component a hyphenated name, or set litTagPrefix to a prefix ending in ` +
-			`a hyphen.`,
+			`refuse — ${tagError}. Rename the component, or set litTagPrefix to ` +
+			`something that gives it a usable tag.`,
 	)
+}
+
+/**
+ * Why a browser will not register this tag, phrased to follow the caller's own
+ * naming of it, or `null` when it will.
+ *
+ * A custom element tag has to contain a hyphen, start with a lower-case
+ * letter, and carry nothing a tag name may not hold. The last of those is a
+ * long list in the specification and most of it is letters from outside ASCII,
+ * which this tool deliberately allows in a component name — so the check names
+ * the ASCII characters a tag may hold and lets anything outside ASCII through.
+ * That is generous in the rare direction and exact in the common one: a
+ * capital, a space and a `$` are all caught, and a component named in another
+ * language is not refused on a guess.
+ */
+function getLitTagError(tagName: string): string | null {
+	if (!tagName.includes('-')) return 'a tag has to contain a hyphen'
+	if (!/^[a-z]/.test(tagName))
+		return 'a tag has to start with a lower-case letter'
+	const unusableCharacter = [...tagName].find(checkIsUnusableInTag)
+	if (unusableCharacter) return `a tag cannot contain "${unusableCharacter}"`
+	return null
+}
+
+/** Is this one character one a tag may not hold? See `getLitTagError` for what is and isn't judged. */
+function checkIsUnusableInTag(character: string): boolean {
+	const HIGHEST_ASCII_CODE = 127
+	const isAscii = character.charCodeAt(0) <= HIGHEST_ASCII_CODE
+	return isAscii && !/[a-z0-9._-]/.test(character)
 }
 
 function scaffoldStoryForLitComponent(
@@ -2706,6 +2751,14 @@ function getSiblingProbeOrder(): Array<StoryFramework> {
  * ones: a `Foo.component.stories.ts` story leaves the base as `Foo.component`,
  * so the ending is only appended when it isn't already there — otherwise this
  * builds a junk `Foo.component.component.ts`.
+ *
+ * A family with no ending at all — Lit where the project set no marker — is
+ * the one case that can answer `null` for a reason other than the family: it
+ * calls a plain `.ts` file a component, and `isComponentsLitTs` reads "plain"
+ * as carrying no other dotted part, so this has to read it the same way. Left
+ * to differ, an empty `Button.utils.stories.ts` would have a component written
+ * into `Button.utils.ts` that creating that same file by hand would not
+ * produce.
  */
 function getComponentPathForFamily(
 	storyBase: string,
@@ -2715,7 +2768,15 @@ function getComponentPathForFamily(
 	if (family === 'vue') return `${storyBase}.vue`
 	if (family !== 'angular' && family !== 'lit') return null
 	const componentEnding = getComponentEndingForFamily(family)
-	if (!componentEnding) return `${storyBase}.ts`
+	if (!componentEnding) {
+		const plainComponentPath = `${storyBase}.ts`
+		// Asked of the path this would name, through the same helper
+		// `isComponentsLitTs` asks it of a created file, so the two cannot
+		// disagree about what "plain" means.
+		return checkHasDottedNamePart(plainComponentPath)
+			? null
+			: plainComponentPath
+	}
 	const doesStoryBaseCarryEnding = storyBase.endsWith(componentEnding)
 	return doesStoryBaseCarryEnding
 		? `${storyBase}.ts`
@@ -2841,7 +2902,13 @@ function startWatcher() {
 		{
 			checkIsMatch: isComponentsTsx,
 			family: 'react',
-			handle: handleComponentCreation,
+			handle: (absPath, relPath) =>
+				handleSingleFileComponentCreation(
+					'react',
+					'Component',
+					absPath,
+					relPath,
+				),
 		},
 		{
 			checkIsMatch: isComponentsSvelte,
@@ -2851,7 +2918,13 @@ function startWatcher() {
 		{
 			checkIsMatch: isComponentsVue,
 			family: 'vue',
-			handle: handleVueComponentCreation,
+			handle: (absPath, relPath) =>
+				handleSingleFileComponentCreation(
+					'vue',
+					'Vue component',
+					absPath,
+					relPath,
+				),
 		},
 		{
 			checkIsMatch: isComponentsAngularTs,
@@ -2867,7 +2940,13 @@ function startWatcher() {
 		{
 			checkIsMatch: isComponentsLitTs,
 			family: 'lit',
-			handle: handleLitComponentCreation,
+			handle: (absPath, relPath) =>
+				handleSingleFileComponentCreation(
+					'lit',
+					'Lit component',
+					absPath,
+					relPath,
+				),
 		},
 	]
 
@@ -3137,13 +3216,33 @@ function startWatcher() {
 		return false
 	}
 
-	async function handleComponentCreation(abs: string, relPath: string) {
+	/**
+	 * Scaffold a created component file and make sure it has a story — the
+	 * whole of what a framework whose component is one plain file has to do.
+	 *
+	 * Written once for the three families that fit that description. Svelte and
+	 * Angular keep their own handlers: Svelte's also answers for a created
+	 * decorator file, and Angular's carries the template style its `.html`
+	 * branch calls it with.
+	 *
+	 * @param family - the scaffold family, which picks the component scaffolder
+	 * @param logLabel - how the console line names the file. Passed rather than
+	 *   worked out from the family, because React's line has said "Component
+	 *   creation detected" since long before the others named their framework,
+	 *   and this is not the change to reword someone's console output in.
+	 */
+	async function handleSingleFileComponentCreation(
+		family: StoryFramework,
+		logLabel: string,
+		abs: string,
+		relPath: string,
+	) {
 		if (isEmptyOrWhitespace(abs)) {
-			scaffoldComponent(abs)
+			STORY_SCAFFOLDERS[family].component(abs)
 		}
 
-		console.log('Component creation detected:', relPath)
-		const createdStory = ensureStoryFor('react', abs)
+		console.log(`${logLabel} creation detected:`, relPath)
+		const createdStory = ensureStoryFor(family, abs)
 		if (createdStory) {
 			kick('create:story', createdStory)
 		}
@@ -3167,18 +3266,6 @@ function startWatcher() {
 		}
 	}
 
-	async function handleVueComponentCreation(abs: string, relPath: string) {
-		if (isEmptyOrWhitespace(abs)) {
-			scaffoldVueComponent(abs)
-		}
-
-		console.log('Vue component creation detected:', relPath)
-		const createdStory = ensureStoryFor('vue', abs)
-		if (createdStory) {
-			kick('create:story', createdStory)
-		}
-	}
-
 	async function handleAngularComponentCreation(
 		abs: string,
 		relPath: string,
@@ -3195,17 +3282,6 @@ function startWatcher() {
 		}
 	}
 
-	async function handleLitComponentCreation(abs: string, relPath: string) {
-		if (isEmptyOrWhitespace(abs)) {
-			scaffoldLitComponent(abs)
-		}
-
-		console.log('Lit component creation detected:', relPath)
-		const createdStory = ensureStoryFor('lit', abs)
-		if (createdStory) {
-			kick('create:story', createdStory)
-		}
-	}
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -3259,7 +3335,7 @@ async function startStorybook() {
 
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
-	LIT_TAG_PREFIX = cfg.litTagPrefix ?? 'app-'
+	LIT_TAG_PREFIX = readLitTagPrefix(cfg.litTagPrefix)
 	LIT_COMPONENT_SUFFIX = readLitComponentSuffix(cfg.litComponentSuffix)
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
 	// `cfg.srcDir` can take three meaningfully-different shapes:

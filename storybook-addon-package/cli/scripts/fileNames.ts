@@ -69,12 +69,22 @@ const RESERVED_NAME_ENDINGS: ReadonlyArray<string> = NAME_ENDINGS.map((entry) =>
  * is safe to drop into a pattern as it stands: the characters it allows mean
  * nothing to one.
  *
+ * **Capitals are refused rather than lower-cased**, because a marker is a name
+ * ending and every ending here is read in lower case. A capital in one would be
+ * honoured by the watcher, whose file-ending patterns are deliberately exact,
+ * and missed by `getNameEnding` below, which compares a lower-cased name
+ * against the ending as written — so the watcher would scaffold `Button.Lit.ts`
+ * while the graph filter failed to pair it with its story, which is the precise
+ * disagreement between the two processes this module exists to prevent.
+ *
  * @param marker - the marker without its dot, e.g. `"lit"`
  */
 export function getComponentMarkerError(marker: string): string | null {
-	if (!/^[A-Za-z0-9_-]+$/.test(marker))
-		return 'it can only contain letters, digits, "_" and "-"'
-	if (RESERVED_NAME_ENDINGS.includes(marker.toLowerCase()))
+	if (!/^[a-z0-9_-]+$/.test(marker))
+		return 'it can only contain lower-case letters, digits, "_" and "-"'
+	// No `toLowerCase` here: the check above has already refused every capital,
+	// so the marker is lower case by the time this runs.
+	if (RESERVED_NAME_ENDINGS.includes(marker))
 		return `it already means something to this tool; pick a word other than ${RESERVED_NAME_ENDINGS.map((word) => `"${word}"`).join(', ')}`
 	return null
 }
