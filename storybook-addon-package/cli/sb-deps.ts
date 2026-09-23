@@ -2326,12 +2326,20 @@ const litComponentsWarnedAboutTheirTag = new Set<string>()
  * what is wrong is more use than guessing what they meant, and the failure is
  * loud — `customElements.define` throws, so the story does not render at all.
  *
- * Everything reaching here is a tag that is merely unregisterable, so a file
- * carrying it still compiles. The one kind that would not — a prefix holding a
- * character no tag may contain, which would be written straight into
- * `@customElement('…')` — is refused by `readLitTagPrefix` at boot and never
- * arrives. A component *name* can still carry such a character, and that is
- * where the reachable half of the character rule comes from.
+ * Of the two halves a bad character can come from, one is closed here and one
+ * is not, so do not read this as a promise that the file will compile.
+ *
+ * The **prefix** half is closed: `readLitTagPrefix` refuses a prefix holding a
+ * character no tag may contain, so one can never reach the generated
+ * `@customElement('…')`. The **name** half is open, and deliberately — a
+ * component named with an apostrophe closes that decorator's string early, and
+ * one named with a backtick ends the story's `html` template literal. Nothing
+ * strips either on the way to the tag, because `toWords` splits only on
+ * `[_-./]` and whitespace.
+ *
+ * That is left alone because it is neither new nor Lit's: every framework here
+ * writes the component's name into generated source unescaped, so narrowing it
+ * is a change to the shared scaffolders rather than to this one.
  */
 function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
 	const tagError = getLitTagError(tagName, LIT_TAG_PREFIX)
@@ -2351,9 +2359,10 @@ function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
  * rule passes them and only `customElements.define` would object — at run
  * time, long after the file was written.
  *
- * Only reachable with a `litTagPrefix` that leaves the name as it stands: the
- * default `'app-'` puts `app-` in front, and `app-font-face` is not on the
- * list.
+ * Out of reach under the default `'app-'`, which puts `app-` in front and
+ * makes `app-font-face`. Two settings reach it: a prefix cleared to `''`, so
+ * the file's own name is the whole tag, and a prefix that happens to complete
+ * one of these names — `font-` in front of a `Face.lit.ts` gives `font-face`.
  */
 const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
 	'annotation-xml',
@@ -2380,13 +2389,18 @@ const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
  * capital, a space and a `$` are all caught, and a component named in another
  * language is not refused on a guess.
  *
- * The remedy is worked out per rule rather than offered as a pair, because the
- * two halves of the tag can only be reached by different settings: the prefix
+ * The first three rules name which half of the tag is at fault rather than
+ * offering both, because for them only one half can be the answer: the prefix
  * goes in front, so nothing done to it can take a bad character off the tail,
  * and nothing done to the component's name can change a first character the
- * prefix supplied. Which half is at fault is answerable here — the prefix is a
- * known string sitting at the front — so it is answered rather than left to
- * the reader.
+ * prefix supplied. Which half it is can be worked out here — the prefix is a
+ * known string sitting at the front — so it is, rather than being left to the
+ * reader.
+ *
+ * The reserved-name rule is the exception and offers both, because for it both
+ * genuinely work: the name is reserved as a whole, so renaming the file fixes
+ * it and so does changing the prefix in front of it. Naming one half there
+ * would be picking arbitrarily between two real answers.
  *
  * @param tagName - the finished tag, prefix included
  * @param tagPrefix - the prefix that went in front of it, possibly empty
@@ -2401,14 +2415,15 @@ function getLitTagError(tagName: string, tagPrefix: string): string | null {
 		return `a tag has to start with a lower-case letter, and this one starts with the first character of ${getLitTagPartDescription(tagPrefix !== '')}`
 	const unusableCharacter = [...tagName].find(checkIsUnusableInTag)
 	if (unusableCharacter) {
-		const isCharacterFromPrefix =
-			tagPrefix !== '' &&
-			tagName.startsWith(tagPrefix) &&
-			tagPrefix.includes(unusableCharacter)
-		return `a tag cannot contain "${unusableCharacter}", which came from ${getLitTagPartDescription(isCharacterFromPrefix)}`
+		// The component's name every time, never the prefix: `readLitTagPrefix`
+		// refuses a prefix carrying anything `checkIsUnusableInTag` rejects, so
+		// by the time a tag reaches here its prefix is built only from accepted
+		// characters and cannot be where this one came from.
+		const didCharacterComeFromPrefix = false
+		return `a tag cannot contain "${unusableCharacter}", which came from ${getLitTagPartDescription(didCharacterComeFromPrefix)}`
 	}
 	if (RESERVED_TAG_NAMES.includes(tagName))
-		return 'a tag cannot be one of the names the specification keeps for itself, and this is one of them — renaming the file fixes it, as does giving litTagPrefix a value to put in front'
+		return 'a tag cannot be one of the names the specification keeps for itself, and this is one of them — renaming the file fixes it, as does changing litTagPrefix'
 	return null
 }
 

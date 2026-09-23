@@ -396,11 +396,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	// The answer above only takes effect in a project the scaffolder can see is
 	// a Lit one, and nothing here can make it one — so say so while the answer
-	// is still on screen.
-	const isLitFrameworkUndetected =
-		framework === 'web-components-vite' &&
-		detection.frameworkDetectionSource === 'none'
-	if (isLitFrameworkUndetected) logLitFrameworkNotDetectedNote()
+	// is still on screen. `wasFrameworkDetected` is the pre-picker fact, which
+	// is exactly the question being asked: the scaffolder runs the same
+	// detection, so where that came up empty for the wizard it comes up empty
+	// for the scaffolder too.
+	const isLitChosenFromThePicker =
+		framework === 'web-components-vite' && !wasFrameworkDetected
+	if (isLitChosenFromThePicker) logLitFrameworkNotDetectedNote()
 
 	rule()
 	log('Step 1/5: installing dependencies')
@@ -720,6 +722,13 @@ async function askLitComponentMarker(): Promise<string> {
  * `framework` field, so the remedy has to be the user's. In practice a project
  * that runs Storybook at all already declares one; this is for the half-built
  * project where setup ran first.
+ *
+ * The `framework` field is the only remedy offered, though adding `lit` to the
+ * dependencies would also do it in most projects. Detection reads the
+ * dependencies first and the field only when they answer nothing — and one way
+ * they answer nothing is two frameworks' core packages sitting side by side,
+ * where `lit` is already present and adding it again changes nothing. The
+ * field settles every case, so it is the one worth naming.
  */
 function logLitFrameworkNotDetectedNote() {
 	log(
@@ -729,7 +738,7 @@ function logLitFrameworkNotDetectedNote() {
 	log(
 		`    Set \`framework: '@storybook/web-components-vite'\` in .storybook/main.*`,
 	)
-	log(`    (or add "lit" to your package.json dependencies) to fix that.`)
+	log(`    to fix that.`)
 }
 
 /** The component-marker question itself, re-asked until the answer can be used. */
