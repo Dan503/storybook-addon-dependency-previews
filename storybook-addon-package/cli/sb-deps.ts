@@ -847,16 +847,15 @@ const SET_LIT_MARKER_STEP = `set litComponentSuffix to '${DEFAULT_LIT_COMPONENT_
  * A name that already carries the marker (`Button.lit.ts`, from someone using
  * the marked naming before setting the key) needs no rename — only to be
  * created again once the watcher knows the marker, since it acts on a file
- * when it appears. One carrying it in other capitals (`Button.Lit.ts`) is told
- * to rename to the lower-case spelling instead, because once the marker is set
- * the watcher refuses the capitals — so the advised name is always one the
- * tool will accept, never a second marker stacked on the first.
+ * when it appears. One carrying it in other capitals (`Button.Lit.ts`,
+ * `Button.Lit.Lit.ts`) is told to rename to the spelling the capitals check
+ * will accept once the marker is set — see `getNameAcceptedOnceMarked`.
  */
 function getExtraDotNote(absPath: string): string {
 	const fileName = basename(absPath)
-	const nameWithoutExtension = fileName.replace(/\.ts$/, '')
+	const acceptedFileName = getNameAcceptedOnceMarked(fileName)
 	const markedFileName = getMarkedTsComponentPath(
-		getBaseWithMarkerCaseCorrected(nameWithoutExtension),
+		acceptedFileName.replace(/\.ts$/, ''),
 		`.${DEFAULT_LIT_COMPONENT_MARKER}`,
 	)
 	const isAlreadyMarked = markedFileName === fileName
@@ -867,25 +866,31 @@ function getExtraDotNote(absPath: string): string {
 }
 
 /**
- * `base` with a trailing marker written in other capitals put into lower
- * case (`Button.Lit` → `Button.lit`), and any other base unchanged.
+ * `fileName` spelled the way the capitals check will accept it once the
+ * suggested marker is set: every ending that will then mean something — the
+ * marker among them — in lower case, and the rest of the name untouched. So
+ * `Button.Lit.ts` gives `Button.lit.ts`, `Button.Lit.Lit.ts` gives
+ * `Button.lit.lit.ts`, and `Button.primary.ts` comes back unchanged.
  *
  * Only for the extra-dot lines, which advise a name before the marker is set.
- * Every reading of a name ending elsewhere in this tool ignores capitals, so
- * once the marker is set a `.Lit` is recognised and refused as the marker
- * spelled wrongly; the advice has to see it the same way, or it would stack a
- * second marker onto the first. The scaffolder's own `getMarkedTsComponentPath`
- * deliberately stays exact, because by the time it runs a wrongly-capitalised
- * name has already been turned away.
+ * Worked out by the capitals check's own rule, `getNameWithLowerCasedEndings`,
+ * given the context the project will be in once the marker is set — not by a
+ * copy of that rule — so the advice and the check cannot disagree. That check
+ * is the one place a name ending is read regardless of capitals, and it does so
+ * in order to refuse a wrong spelling; every reading that acts on an ending,
+ * `getMarkedTsComponentPath` included, is exact on purpose.
+ *
+ * It says nothing about whether the rest of the name can become a component —
+ * a name the generated code cannot carry is refused by
+ * `getUnusableNameWarning` once it is created with the advised spelling, and
+ * that refusal says why.
  */
-function getBaseWithMarkerCaseCorrected(base: string): string {
-	const markerEnding = `.${DEFAULT_LIT_COMPONENT_MARKER}`
-	const doesEndWithMarkerInAnyCase = base.toLowerCase().endsWith(markerEnding)
-	const isMarkerMiscased =
-		doesEndWithMarkerInAnyCase && !base.endsWith(markerEnding)
-	if (!isMarkerMiscased) return base
-	const baseWithoutMarker = base.slice(0, -markerEnding.length)
-	return `${baseWithoutMarker}${markerEnding}`
+function getNameAcceptedOnceMarked(fileName: string): string {
+	const contextOnceMarked: NameEndingContext = {
+		...getNameEndingContext(),
+		litComponentEnding: `.${DEFAULT_LIT_COMPONENT_MARKER}`,
+	}
+	return getNameWithLowerCasedEndings(fileName, contextOnceMarked)
 }
 
 /**
@@ -2994,20 +2999,20 @@ function resolveTsStoryComponent(
 		// that spelling, so the line names the corrected one to create instead.
 		if (projectFamily === 'lit') {
 			const namedComponentPath = `${storyBase}.ts`
-			const storyNameEnding = absStoryPath.slice(storyBase.length)
-			const correctedStoryBase = getBaseWithMarkerCaseCorrected(storyBase)
-			const isStoryNameMiscased = correctedStoryBase !== storyBase
-			const correctedStoryFileName = basename(
-				`${correctedStoryBase}${storyNameEnding}`,
-			)
+			const storyFileName = basename(absStoryPath)
+			const acceptedStoryFileName = getNameAcceptedOnceMarked(storyFileName)
+			const isStoryNameMiscased = acceptedStoryFileName !== storyFileName
 			const recreateStep = isStoryNameMiscased
-				? `then delete this story file and create it again as "${correctedStoryFileName}"`
+				? `then delete this story file and create it again as "${acceptedStoryFileName}"`
 				: 'then delete this story file and create it again'
-			// Through the helper `getComponentPathForFamily` will use once the
-			// marker is set, so a `Button.lit.stories.ts` is promised
-			// `Button.lit.ts`, which is what will actually be written.
+			// The story as it will be created, run through the helper
+			// `getComponentPathForFamily` will use once the marker is set — so a
+			// `Button.lit.stories.ts` is promised `Button.lit.ts`, which is what
+			// will actually be written.
+			const acceptedStoryPath = `${absStoryPath.slice(0, -storyFileName.length)}${acceptedStoryFileName}`
+			const acceptedStoryBase = acceptedStoryPath.replace(STORY_FILE_REGEX, '')
 			const markedComponentPath = getMarkedTsComponentPath(
-				correctedStoryBase,
+				acceptedStoryBase,
 				`.${DEFAULT_LIT_COMPONENT_MARKER}`,
 			)
 			warn(
