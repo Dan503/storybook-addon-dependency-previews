@@ -7,6 +7,7 @@ import type { SbDepsConfig } from '../../src/config.js'
 
 export type Framework =
 	| 'react-vite'
+	| 'react-webpack5'
 	| 'preact-vite'
 	| 'sveltekit'
 	| 'svelte-vite'
@@ -15,6 +16,7 @@ export type Framework =
 	| 'web-components-vite'
 	| 'angular-webpack'
 	| 'nextjs-webpack'
+	| 'nextjs-vite'
 	| 'unsupported'
 	| 'unknown'
 
@@ -119,8 +121,59 @@ function detectPackageManager(cwd: string): PackageManager {
 	return 'npm'
 }
 
+/**
+ * Reads the `framework:` declaration out of `.storybook/main.*`, in the two
+ * shapes that name the package as a plain string — `framework: '<package>'`
+ * and `framework: { name: '<package>', … }`.
+ *
+ * It does not read a package name passed through a call, which is the shape
+ * Storybook's own setup writes for some projects
+ * (`name: getAbsolutePath('<package>')`). So a main file may hold a framework
+ * this cannot see, and every fallback to this regex can come back with
+ * nothing — which is why they all end at `'unknown'` rather than promising an
+ * answer.
+ */
 const FRAMEWORK_REGEX =
 	/framework\s*:\s*(?:\{\s*name\s*:\s*['"]([^'"]+)['"]|['"]([^'"]+)['"])/
+
+/**
+ * Every Storybook framework package the addon recognises, and the `Framework`
+ * value each one means. Written once here: `frameworkFromRaw` reads it, and the
+ * `StorybookFramework` type below is derived from its keys, so the code that
+ * picks a package by framework — a detector entry, the story-types lookup, the
+ * `definePreview` table — can only pick one from this list. (The Vue and
+ * Angular story templates spell their own package inside the file they write,
+ * since each of those families has exactly one, so they are not checked
+ * against it.)
+ *
+ * `as const` is what gives the keys their literal types so the type below can
+ * be derived; `satisfies` is what still checks each value against `Framework`,
+ * so a typo there is a compile error rather than a silently new pairing.
+ */
+const FRAMEWORK_BY_STORYBOOK_PACKAGE = {
+	'@storybook/react-vite': 'react-vite',
+	'@storybook/react-webpack5': 'react-webpack5',
+	'@storybook/preact-vite': 'preact-vite',
+	'@storybook/sveltekit': 'sveltekit',
+	'@storybook/svelte-vite': 'svelte-vite',
+	'@storybook/vue3-vite': 'vue3-vite',
+	// Solid uses the community `storybook-solidjs-vite` package (Vite-only).
+	'storybook-solidjs-vite': 'solid-vite',
+	'@storybook/web-components-vite': 'web-components-vite',
+	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
+	// framework value for the future Vite-based Angular Storybook framework if it
+	// ships — current Angular goes in as `'angular-webpack'`.
+	'@storybook/angular': 'angular-webpack',
+	'@storybook/nextjs': 'nextjs-webpack',
+	'@storybook/nextjs-vite': 'nextjs-vite',
+} as const satisfies Record<string, Framework>
+
+/**
+ * The npm name of a Storybook framework package the addon recognises — one of
+ * the keys above. Use it wherever such a name is held, so the value is checked
+ * against that list instead of being any string at all.
+ */
+export type StorybookFramework = keyof typeof FRAMEWORK_BY_STORYBOOK_PACKAGE
 
 /**
  * Maps the **core framework package** (e.g. `react`, `@angular/core`,
@@ -150,6 +203,14 @@ const FRAMEWORK_REGEX =
  * Array order is now purely a human-readable convention (meta-frameworks
  * listed above their base): it carries no logic.
  *
+ * **Alternative Storybook packages** (`alternatives`): one core package can be
+ * served by more than one Storybook framework package (`react` by
+ * `@storybook/react-vite` or `@storybook/react-webpack5`, `next` by
+ * `@storybook/nextjs` or `@storybook/nextjs-vite`). The core package
+ * alone cannot tell them apart, so a detector lists the alternatives and the
+ * one the project declares — in `package.json`, or failing that in
+ * `.storybook/main.*` — wins. See `pickDeclaredFrameworkPackage`.
+ *
  * This list is the input to the `package.json` scan only. It is NOT a gate on
  * the regex path: the regex captures any `framework:` string literal it finds
  * in `.storybook/main.*`, and `frameworkFromRaw` is what decides whether the
@@ -157,7 +218,7 @@ const FRAMEWORK_REGEX =
  */
 const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	corePackage: string
-	framework: string
+	framework: StorybookFramework
 	/**
 	 * Core package this detector subsumes when both are present in deps —
 	 * i.e. the more-general framework that this one builds on top of. A
@@ -165,9 +226,24 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	 * `@sveltejs/kit` subsumes `svelte`; future `nuxt` will subsume `vue`.
 	 */
 	subsumes?: string
+	/**
+	 * Other Storybook framework packages built on this same core package. The
+	 * one `package.json` declares wins over `framework`; when it declares none,
+	 * the `.storybook/main.*` declaration decides, and `framework` is the
+	 * default when that names none of them either. More than one declared in
+	 * `package.json` is ambiguous, and the `.storybook/main.*` declaration is
+	 * asked instead — see `FRAMEWORK_REGEX` for what it can read.
+	 * See `pickDeclaredFrameworkPackage`.
+	 */
+	alternatives?: ReadonlyArray<StorybookFramework>
 }> = [
 	{ corePackage: '@angular/core', framework: '@storybook/angular' },
-	{ corePackage: 'next', framework: '@storybook/nextjs', subsumes: 'react' },
+	{
+		corePackage: 'next',
+		framework: '@storybook/nextjs',
+		subsumes: 'react',
+		alternatives: ['@storybook/nextjs-vite'],
+	},
 	{
 		corePackage: '@sveltejs/kit',
 		framework: '@storybook/sveltekit',
@@ -178,7 +254,11 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	// subsumes: 'vue' }`) will slot in here in the follow-up Nuxt PR. The
 	// `subsumes` field is what makes Nuxt win over Vue when both are present.
 	{ corePackage: 'vue', framework: '@storybook/vue3-vite' },
-	{ corePackage: 'react', framework: '@storybook/react-vite' },
+	{
+		corePackage: 'react',
+		framework: '@storybook/react-vite',
+		alternatives: ['@storybook/react-webpack5'],
+	},
 	// Preact subsumes nothing and is subsumed by nothing: it does not build on
 	// React the way Next.js does, so a project holding both `preact` and `react`
 	// is genuinely ambiguous rather than one framework wrapping the other, and
@@ -200,50 +280,96 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	{ corePackage: 'lit', framework: '@storybook/web-components-vite' },
 ]
 
+/**
+ * The `Framework` a declared package name means — `'unknown'` when nothing was
+ * declared, `'unsupported'` when what was declared is not a package the addon
+ * recognises.
+ *
+ * @param raw - the package name read from `package.json` or `.storybook/main.*`
+ */
 function frameworkFromRaw(raw: string | null): Framework {
 	if (!raw) return 'unknown'
-	if (raw === '@storybook/react-vite') return 'react-vite'
-	if (raw === '@storybook/preact-vite') return 'preact-vite'
-	if (raw === '@storybook/sveltekit') return 'sveltekit'
-	if (raw === '@storybook/svelte-vite') return 'svelte-vite'
-	if (raw === '@storybook/vue3-vite') return 'vue3-vite'
-	// Solid uses the community `storybook-solidjs-vite` package (Vite-only).
-	if (raw === 'storybook-solidjs-vite') return 'solid-vite'
-	if (raw === '@storybook/web-components-vite') return 'web-components-vite'
-	// `@storybook/angular` is webpack5-only today. Reserving the bare `'angular'`
-	// framework value for the future Vite-based Angular Storybook framework if it
-	// ships — current Angular goes in as `'angular-webpack'`.
-	if (raw === '@storybook/angular') return 'angular-webpack'
-	if (raw === '@storybook/nextjs') return 'nextjs-webpack'
-	return 'unsupported'
+	if (!checkIsStorybookFramework(raw)) return 'unsupported'
+	return FRAMEWORK_BY_STORYBOOK_PACKAGE[raw]
+}
+
+/**
+ * Whether a name is one of the Storybook framework packages the addon
+ * recognises — a key of `FRAMEWORK_BY_STORYBOOK_PACKAGE`.
+ *
+ * `Object.hasOwn` rather than reading the name straight off the table: every
+ * object literal inherits members such as `constructor` and `toString`, so a
+ * name someone typed into `.storybook/main.*` could otherwise be answered with
+ * one of those instead of being reported as a package the addon does not know.
+ *
+ * @param name - the package name read from `package.json` or `.storybook/main.*`
+ */
+function checkIsStorybookFramework(name: string): name is StorybookFramework {
+	return Object.hasOwn(FRAMEWORK_BY_STORYBOOK_PACKAGE, name)
+}
+
+/**
+ * The `framework:` string literal declared in `.storybook/main.*`, or `null`
+ * when the file is missing, unreadable, or declares none. Comments are
+ * stripped first so a commented-out `framework: ...` example (or a code
+ * snippet inside a block comment) can't be read as the active framework.
+ *
+ * @param mainFile - the project's `.storybook/main.*`, when one was found
+ */
+function readMainFileFramework(mainFile: MainFile | null): string | null {
+	if (!mainFile) return null
+	try {
+		const content = readFileSync(mainFile.path, 'utf8')
+		const codeOnly = stripCommentsRespectingStrings(content)
+		const match = codeOnly.match(FRAMEWORK_REGEX)
+		return match?.[1] || match?.[2] || null
+	} catch {
+		return null
+	}
+}
+
+/** What the dependency scan decided, and which file settled it. */
+type DependencyScanResult = {
+	frameworkRaw: StorybookFramework
+	source: FrameworkDetectionSource
 }
 
 /**
  * Scan a project's full dependency surface (deps + devDeps + peerDeps) for
- * recognised core framework packages and return the unambiguous winner's
- * `@storybook/<framework>` value, or `null` if no recognised package is
- * present *or* if the result is ambiguous (caller falls back to the
- * `.storybook/main.*` regex).
+ * recognised core framework packages and return the unambiguous winner — its
+ * `@storybook/<framework>` value and which file settled it — or `null` if no
+ * recognised package is present *or* if the result is ambiguous (caller falls
+ * back to the `.storybook/main.*` regex).
  *
- * The decision is two-pass:
+ * The decision is three-pass:
  *
  *  1. Collect every detector whose `corePackage` is in deps.
  *  2. For each meta-framework match with a `subsumes` field, drop the
  *     subsumed core's match (e.g. `next` match drops `react` match;
  *     `@sveltejs/kit` drops `svelte`; future `nuxt` will drop `vue`).
+ *  3. When exactly one match survives and its detector lists `alternatives`,
+ *     pick whichever of its Storybook packages the project declares (see
+ *     `pickDeclaredFrameworkPackage`).
  *
- * If exactly one match survives, that's the winner. Zero matches → no
+ * If exactly one match survives, pass 3 names the winner. Zero matches → no
  * recognised framework. **Multiple unrelated matches** (e.g. a polyglot
  * monorepo with both `vue` and `react` in the dep surface) → ambiguous, so
- * return `null` and let the `.storybook/main.*` regex decide based on the
- * explicit `framework:` declaration. Without this ambiguity check the scan
+ * return `null` and ask the explicit `framework:` declaration in
+ * `.storybook/main.*` instead — which answers for the shapes `FRAMEWORK_REGEX`
+ * can read, and leaves the framework `'unknown'` otherwise. Without this
+ * ambiguity check the scan
  * would silently pick whichever detector happened to come first in the
  * array, which is fragile and produced exactly that bug for `vue` + `react`
  * before this fix.
+ *
+ * @param allDependencyKeys - every package the project declares, peers included
+ * @param mainFileFrameworkRaw - the `framework:` declared in `.storybook/main.*`,
+ * consulted only by pass 3 when `package.json` leaves the choice open
  */
 function findFrameworkInDeps(
 	allDependencyKeys: ReadonlySet<string>,
-): string | null {
+	mainFileFrameworkRaw: string | null,
+): DependencyScanResult | null {
 	const matches = CORE_FRAMEWORK_DETECTORS.filter((d) =>
 		allDependencyKeys.has(d.corePackage),
 	)
@@ -252,11 +378,58 @@ function findFrameworkInDeps(
 		matches.map((m) => m.subsumes).filter((s): s is string => !!s),
 	)
 	const survivors = matches.filter((m) => !subsumedCores.has(m.corePackage))
-	if (survivors.length === 1) return survivors[0]!.framework
+	if (survivors.length === 1) {
+		return pickDeclaredFrameworkPackage(
+			survivors[0]!,
+			allDependencyKeys,
+			mainFileFrameworkRaw,
+		)
+	}
 	// Zero (every match was subsumed, which can only happen if a detector
 	// `subsumes` is its own corePackage — guard anyway) or multiple
 	// independent matches → ambiguous; let the regex path decide.
 	return null
+}
+
+/**
+ * Which of a detector's Storybook packages the project actually uses. A
+ * detector with no `alternatives` leaves nothing to choose: its one
+ * `framework` is the answer. Otherwise, when `package.json` declares exactly
+ * one of the detector's `framework` and `alternatives`, that one. When it
+ * declares more than one, `null`, so the caller falls back to the
+ * `.storybook/main.*` regex the same way it does for two unrelated
+ * frameworks. When it declares none (a minimal Storybook install need not
+ * name a framework package at all), the `.storybook/main.*` declaration
+ * settles it if it names one of the candidates — a project whose
+ * `package.json` says only `react` while its main file says
+ * `@storybook/react-webpack5` is a webpack project — and otherwise the
+ * detector's `framework` is the default.
+ *
+ * @param detector - the single surviving `CORE_FRAMEWORK_DETECTORS` entry
+ * @param allDependencyKeys - every package the project declares, peers included
+ * @param mainFileFrameworkRaw - the `framework:` declared in `.storybook/main.*`
+ */
+function pickDeclaredFrameworkPackage(
+	detector: (typeof CORE_FRAMEWORK_DETECTORS)[number],
+	allDependencyKeys: ReadonlySet<string>,
+	mainFileFrameworkRaw: string | null,
+): DependencyScanResult | null {
+	if (!detector.alternatives) {
+		return { frameworkRaw: detector.framework, source: 'package.json' }
+	}
+	const candidates = [detector.framework, ...detector.alternatives]
+	const declared = candidates.filter((pkg) => allDependencyKeys.has(pkg))
+	if (declared.length > 1) return null
+	if (declared.length === 1) {
+		return { frameworkRaw: declared[0]!, source: 'package.json' }
+	}
+	const candidateNamedByMainFile = candidates.find(
+		(pkg) => pkg === mainFileFrameworkRaw,
+	)
+	if (candidateNamedByMainFile) {
+		return { frameworkRaw: candidateNamedByMainFile, source: '.storybook/main' }
+	}
+	return { frameworkRaw: detector.framework, source: 'package.json' }
 }
 
 function bundlerFromFramework(framework: Framework): Detection['bundler'] {
@@ -268,9 +441,11 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'vue3-vite':
 		case 'solid-vite':
 		case 'web-components-vite':
+		case 'nextjs-vite':
 			return 'vite'
 		case 'angular-webpack':
 		case 'nextjs-webpack':
+		case 'react-webpack5':
 			return 'webpack5'
 		default:
 			return 'unknown'
@@ -294,11 +469,12 @@ export type TsxFramework = NonNullable<SbDepsConfig['tsxFramework']>
  * wizard uses it for the value it writes into that key — a copy each is how the
  * two would come to disagree about the same project.
  *
- * Everything else is React. That is the right answer for React itself and for
- * Next.js, the only others here that author `.tsx` at all. For the rest the
- * value is never consulted: a `.tsx` file in a Svelte, Vue, Angular or Lit
- * project is turned away before any template is chosen, and one in a project
- * whose framework was never recognised is not scaffolded either.
+ * Everything else is React. That is the right answer for React itself (on Vite
+ * or on webpack) and for Next.js, the only others here that author `.tsx` at
+ * all. For the rest the value is never consulted: a `.tsx` file in a Svelte,
+ * Vue, Angular or Lit project is turned away before any template is chosen, and
+ * one in a project whose framework was never recognised is not scaffolded
+ * either.
  */
 export function tsxFrameworkFromFramework(framework: Framework): TsxFramework {
 	if (framework === 'solid-vite') return 'solid'
@@ -326,6 +502,7 @@ export const SUPPORTED_FRAMEWORKS = [
 	'sveltekit',
 	'svelte-vite',
 	'solid-vite',
+	'nextjs-vite',
 	'web-components-vite',
 ] as const satisfies ReadonlyArray<Framework>
 
@@ -344,6 +521,17 @@ export function isFrameworkSupported(
 	// question being asked rather than something the caller can promise.
 	const supportedFrameworks: ReadonlyArray<Framework> = SUPPORTED_FRAMEWORKS
 	return supportedFrameworks.includes(framework)
+}
+
+/**
+ * Whether the framework is Next.js on either bundler. The Next.js-only
+ * behaviour — the `'use client'` line on scaffolded components and the `app/`
+ * vs `pages/` source-folder prompt — follows Next.js itself rather than the
+ * bundler it builds with, so it asks this rather than naming one of the two
+ * values.
+ */
+export function isNextjsFramework(framework: Framework): boolean {
+	return framework === 'nextjs-webpack' || framework === 'nextjs-vite'
 }
 
 /**
@@ -441,36 +629,37 @@ export function detectProject(cwd: string): Detection {
 		// no package.json or unreadable — leave defaults (empty sets)
 	}
 
+	// Read once: the dependency scan consults it when `package.json` leaves the
+	// choice between one core package's Storybook packages open, and the
+	// fallback below uses it outright.
+	const mainFileFrameworkRaw = readMainFileFramework(mainFile)
+
 	// Primary signal: scan the project's dependency surface for exactly one
 	// recognised Storybook framework package. This works even when the
 	// `.storybook/main.*` config file is missing (minimal setups) or formatted
-	// in a way the regex below can't parse.
-	let frameworkRaw: string | null = findFrameworkInDeps(allDependencyKeys)
+	// in a way the regex can't parse.
+	const dependencyScan = findFrameworkInDeps(
+		allDependencyKeys,
+		mainFileFrameworkRaw,
+	)
+	let frameworkRaw: string | null = dependencyScan?.frameworkRaw ?? null
 	let frameworkDetectionSource: FrameworkDetectionSource =
-		frameworkRaw ? 'package.json' : 'none'
+		dependencyScan?.source ?? 'none'
 
-	// Fallback: regex-match the `.storybook/main.*` config file. Runs when the
-	// dependency scan above found nothing it recognised, and also when it could
-	// not choose between independent matches — `findFrameworkInDeps` returns
-	// null for both, and the explicit `framework:` declaration is the reliable
-	// answer in the second case. A meta-framework and the base it
-	// `subsumes` are not one of those cases: that pair resolves in the scan.
-	if (frameworkRaw === null && mainFile) {
-		try {
-			const content = readFileSync(mainFile.path, 'utf8')
-			// Strip comments first so a commented-out `framework: ...` example
-			// (or a code snippet inside a block comment) can't be detected as the
-			// active framework.
-			const codeOnly = stripCommentsRespectingStrings(content)
-			const match = codeOnly.match(FRAMEWORK_REGEX)
-			const matched = match?.[1] || match?.[2] || null
-			if (matched) {
-				frameworkRaw = matched
-				frameworkDetectionSource = '.storybook/main'
-			}
-		} catch {
-			// leave frameworkRaw as null
-		}
+	// Fallback: the `.storybook/main.*` declaration. Used when the dependency
+	// scan above found nothing it recognised, and also when it could not choose
+	// — between independent matches, or between two Storybook packages declared
+	// for one core package (`@storybook/react-vite` and
+	// `@storybook/react-webpack5` both present). `findFrameworkInDeps` returns
+	// null for all of those, and in the ambiguous cases the project's own
+	// `framework:` declaration is the one statement of intent left to go on —
+	// when `FRAMEWORK_REGEX` can read it, which is not every main file, so this
+	// can still finish with nothing and leave the framework `'unknown'`. A
+	// meta-framework and the base it `subsumes` are not one of those cases:
+	// that pair resolves in the scan.
+	if (frameworkRaw === null && mainFileFrameworkRaw) {
+		frameworkRaw = mainFileFrameworkRaw
+		frameworkDetectionSource = '.storybook/main'
 	}
 
 	const framework = frameworkFromRaw(frameworkRaw)

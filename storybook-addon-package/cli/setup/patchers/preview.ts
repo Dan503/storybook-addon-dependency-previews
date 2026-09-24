@@ -6,6 +6,7 @@ import {
 	type Framework,
 	type MainFile,
 	type PreviewFile,
+	type StorybookFramework,
 	type SupportedFramework,
 } from '../detect.js'
 import {
@@ -148,11 +149,12 @@ function buildTemplate(
  * type-checking that import against the installed package.
  */
 const DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK: Partial<
-	Record<SupportedFramework, string>
+	Record<SupportedFramework, StorybookFramework>
 > = {
 	'react-vite': '@storybook/react-vite',
 	'vue3-vite': '@storybook/vue3-vite',
 	'solid-vite': 'storybook-solidjs-vite',
+	'nextjs-vite': '@storybook/nextjs-vite',
 	'web-components-vite': '@storybook/web-components-vite',
 }
 
@@ -163,7 +165,7 @@ interface BuildDefinePreviewTemplateParams {
 	/** Decides the story glob in the settings block. */
 	framework: SupportedFramework
 	/** The package `definePreview` is imported from (see `DEFINE_PREVIEW_PACKAGE_BY_FRAMEWORK`). */
-	definePreviewPackage: string
+	definePreviewPackage: StorybookFramework
 	/** The project's source-root URL, written into the settings block. */
 	sourceRootUrl: string
 	/** The resolved source folder, written into the story glob. */

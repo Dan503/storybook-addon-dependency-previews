@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid) end-to-end. Webpack-based projects (Angular, Next.js) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
+Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite) end-to-end. Webpack-based projects (Angular, Next.js on webpack, React on webpack) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -62,7 +62,7 @@ Vue version built for Vue 3.
 
 ## Installation guide
 
-### Quick start (React, Preact, Svelte, Vue 3, and Solid)
+### Quick start (React, Preact, Svelte, Vue 3, Solid, and Next.js on Vite)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
@@ -104,10 +104,10 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), and Solid (`storybook-solidjs-vite`) — all Vite-based. **Angular (`@storybook/angular`) and Next.js (`@storybook/nextjs`) projects are both webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), Solid (`storybook-solidjs-vite`), and Next.js on Vite (`@storybook/nextjs-vite`) — all Vite-based. **Angular (`@storybook/angular`), Next.js on webpack (`@storybook/nextjs`) and React on webpack (`@storybook/react-webpack5`) projects are all webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
 
-- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
-- [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
+- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
+- [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`, `@storybook/react-webpack5`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
 ### Storybook 11 / CSF Next preview configs
 
@@ -140,7 +140,7 @@ export default definePreview({
 })
 ```
 
-The setup wizard recognises both preview styles: an existing `definePreview({ ... })` file gets `addonDocs()` and `dependencyPreviews()` added to its `addons` list and the settings block added to its `parameters`, and a classic `const preview = { ... }` file gets the hand-spread form (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`), which remains supported. When there is no preview file yet, the wizard writes the `definePreview` style on Storybook 11 for frameworks whose package exports `definePreview` (React, Vue 3 and Solid), and the hand-spread style everywhere else — it works on both majors. Both manual setup guides show the full CSF Next config for their frameworks.
+The setup wizard recognises both preview styles: an existing `definePreview({ ... })` file gets `addonDocs()` and `dependencyPreviews()` added to its `addons` list and the settings block added to its `parameters`, and a classic `const preview = { ... }` file gets the hand-spread form (spreading `defaultPreviewParameters` and `dependencyPreviewDecorators`), which remains supported. When there is no preview file yet, the wizard writes the `definePreview` style on Storybook 11 for frameworks whose package exports `definePreview`, and the hand-spread style everywhere else — it works on both majors. Both manual setup guides show the full CSF Next config for their frameworks.
 
 ## Auto-scaffolding new components and stories
 
@@ -151,7 +151,7 @@ While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fi
 
 Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Preact, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
 
-React, Preact and Solid all author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) and a Preact project gets Preact ones (`preact/hooks`, `@storybook/preact-vite`) without being told; anything it reads as neither gets React templates. Set `tsxFramework` in your `sb-deps` config to say so outright — worth doing where your project's framework isn't obvious from its files.
+React, Preact and Solid all author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) and a Preact project gets Preact ones (`preact/hooks`, `@storybook/preact-vite`) without being told; anything it reads as neither gets React templates. Set `tsxFramework` in your `sb-deps` config to say so outright — worth doing where `sb-deps` reads your project as a framework whose `.tsx` templates are not the ones you want, such as a project declaring both `react` and `solid-js`, or one reaching Preact through a `react` alias. (It does not help a project `sb-deps` cannot place at all: there it scaffolds nothing, with or without the key.)
 
 ### What the scaffolded components assume
 
@@ -227,7 +227,7 @@ export default defineSbDepsConfig({
 
 ### `srcDir`
 
-The top-level source directory (relative to your project root) that the addon scans for components and stories. Every key in the generated `.storybook/dependency-previews.json` starts with this prefix.
+The top-level source directory (relative to your project root) that the addon scans for components and stories. With a folder name, every key in the generated `.storybook/dependency-previews.json` starts with it — `src/components/Foo.tsx`. With the empty string (see **Project-root layouts** below) the keys are still project-relative, just with no fixed prefix in front of them — `components/Foo.tsx`.
 
 **Default:** `'src'`
 
@@ -242,7 +242,9 @@ export default defineSbDepsConfig({
 })
 ```
 
-**Constraints.** Must be a single directory name (no path separators) made of alphanumerics, `.`, `_`, or `-`. Anything containing glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`) or shell metacharacters (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is rejected at load time — the CLI warns and falls back to `'src'`. Examples that are fine: `'src'`, `'app'`, `'source'`, `'my-source'`, `'app.v2'`. Examples that are rejected: `'src/components'`, `'src/*'`, `'%PROJECT%'`, `''`.
+**Project-root layouts.** Set it to the empty string — `srcDir: ''` — when your components live directly at the project root with no source folder above them. The scan then covers the whole project (minus `node_modules`) and graph keys carry no prefix. This is what the setup wizard writes when you answer its source-folder prompt with `.`.
+
+**Constraints.** Either the empty string, or a single directory name (no path separators) made of alphanumerics, `.`, `_`, or `-`. Anything containing glob metacharacters (`*`, `?`, `[`, `]`, `{`, `}`) or shell metacharacters (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is rejected at load time — the CLI warns and falls back to `'src'`. Examples that are fine: `'src'`, `'app'`, `'source'`, `'my-source'`, `'app.v2'`, `''`. Examples that are rejected: `'src/components'`, `'src/*'`, `'%PROJECT%'`, `'.'`, `'..'`, and whitespace-only values such as `'   '` — a blank-looking value is far likelier to be a typo than a request for project-root mode, so say it with `''`.
 
 **Note for non-`src` layouts.** The `srcDir` option re-points the dep-cruiser scan, the watcher globs, and the dependency-graph lookup. It does **not** rewrite the bundled `cli/scripts/depcruise.config.ts`'s `warn`-level `forbidden` rules — those still reference `^src` literally and won't fire on a non-`src` tree. If you want those warnings (`no-orphans-in-components`, `no-node-modules-imports`) to fire against your custom layout, drop your own `depcruise.config.cjs` (or `.dependency-cruiser.{js,cjs}`) in your project root with the matching `path:` patterns — the CLI picks up project-root overrides automatically. The dependency-previews graph itself works fine in either case.
 
@@ -291,7 +293,7 @@ export default defineSbDepsConfig({
 
 Which flavor to scaffold for `.tsx` component and story files — `'react'`, `'solid'` or `'preact'`. All three author components in `.tsx`, so the extension alone can't tell them apart; set this to `'solid'` in a Solid project and scaffolded `.tsx` files get Solid templates (`solid-js` `createSignal`/`mergeProps`, `storybook-solidjs-vite` story imports), or to `'preact'` in a Preact project for Preact ones (`preact/hooks` `useState`, `@storybook/preact-vite` story imports), instead of React. The setup wizard sets it for you when it detects a Solid or Preact project. Per-template overrides go under the matching [`scaffold.solid` / `scaffold.preact`](#scaffold) key.
 
-**Default:** `'solid'` when `sb-deps` detects a Solid project, `'preact'` when it detects a Preact one, `'react'` otherwise — so either gets its own templates without the key being set. Setting the key is worth it where the framework isn't obvious from your project's files.
+**Default:** `'solid'` when `sb-deps` detects a Solid project, `'preact'` when it detects a Preact one, `'react'` otherwise — so either gets its own templates without the key being set. Setting the key is worth it where that detection lands on a framework whose `.tsx` templates are not the ones you want — not where it comes up empty, since a project `sb-deps` cannot place is one it scaffolds nothing for either way.
 
 ```js
 // sb-deps.config.mjs

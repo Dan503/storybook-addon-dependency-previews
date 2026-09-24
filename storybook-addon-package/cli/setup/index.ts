@@ -6,11 +6,11 @@ import { relative as pathRelative } from 'node:path'
 import {
 	detectProject,
 	isFrameworkSupported,
+	isNextjsFramework,
 	SUPPORTED_FRAMEWORKS,
 	tsxFrameworkFromFramework,
 	type Framework,
 	type SupportedFramework,
-	type TsxFramework,
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
 import { installMissingPackages } from './install.js'
@@ -20,7 +20,11 @@ import {
 } from './patchers/main.js'
 import { patchPackageJson } from './patchers/packageJson.js'
 import { patchPreviewFile } from './patchers/preview.js'
-import { writeSbDepsConfigIfNeeded } from './patchers/sbDepsConfig.js'
+import {
+	writeSbDepsConfigIfNeeded,
+	findExistingConfigFileName,
+	type SbDepsConfigPatchResult,
+} from './patchers/sbDepsConfig.js'
 import { getComponentMarkerError } from '../scripts/fileNames.js'
 import { ask, choose, confirm, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
@@ -33,6 +37,18 @@ function log(line: string) {
 
 function rule() {
 	console.log('────────────────────────────────────────────')
+}
+
+/**
+ * Print the resolved source folder as one of the detection block's aligned
+ * lines. Owns the label, the padding that lines it up with its neighbours, and
+ * the empty-string sentinel for "the project root is the source folder" — which
+ * would otherwise print as nothing at all. The framework picker prints this
+ * line a second time when the pick changes the answer, so a single owner is
+ * what stops the two drifting apart.
+ */
+function logSrcDir(srcDir: string) {
+	log(`Source folder       : ${srcDir === '' ? '(project root)' : srcDir}`)
 }
 
 /**
@@ -49,6 +65,7 @@ const FRAMEWORK_PICKER_LABELS: Record<SupportedFramework, string> = {
 	sveltekit: 'Svelte with SvelteKit (@storybook/sveltekit)',
 	'svelte-vite': 'Svelte without SvelteKit (@storybook/svelte-vite)',
 	'solid-vite': 'Solid (storybook-solidjs-vite)',
+	'nextjs-vite': 'Next.js on Vite (@storybook/nextjs-vite)',
 	'web-components-vite':
 		'Lit / web components (@storybook/web-components-vite)',
 }
@@ -74,9 +91,11 @@ function exampleStoryFileExtension(framework: Framework): string {
 		// `storyPathForComponent`, which always spells the story `.tsx` — so the
 		// example has to say `.tsx` for all of them, Solid and Preact included.
 		case 'react-vite':
+		case 'react-webpack5':
 		case 'preact-vite':
 		case 'solid-vite':
 		case 'nextjs-webpack':
+		case 'nextjs-vite':
 			return 'tsx'
 		// Angular, Vue and Lit fall through to `ts` — the Angular scaffolder strips
 		// `.component` and emits `<Name>.stories.ts`, Vue emits
@@ -167,7 +186,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// without bothering the user except for the Next.js-without-`src/` edge
 	// case where `resolveSrcDir` may prompt for a folder name. That prompt
 	// fires after the framework has already been printed above so the
-	// context is established.
+	// context is established. The framework picker further down resolves the
+	// source folder a second time when the user picks Next.js, since the answer
+	// here was reached without knowing that.
 	const detectedRepoUrl = detectProjectRepoUrl(cwd)
 	if (detectedRepoUrl?.url) {
 		log(`Git project root URL: ${detectedRepoUrl.url}`)
@@ -184,10 +205,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		)
 	}
 
-	const resolvedSrcDir = await resolveSrcDir(cwd, framework)
-	const displaySrcDir =
-		resolvedSrcDir.srcDir === '' ? '(project root)' : resolvedSrcDir.srcDir
-	log(`Source folder       : ${displaySrcDir}`)
+	let resolvedSrcDir = await resolveSrcDir(cwd, framework)
+	logSrcDir(resolvedSrcDir.srcDir)
 	// Assumed default; the user can change it in the edit flow below. The
 	// example filename uses the story extension the scaffolder emits for the
 	// detected framework, so it is printed only where that extension is known.
@@ -231,7 +250,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// required for the addon's `import.meta.glob` story-discovery. They share a
 	// single manual-setup doc that walks through the webpack additions (custom
 	// CSS-modules loader, `__PROJECT_ROOT__` define) with framework-specific
-	// callouts where Angular and Next.js diverge.
+	// callouts where Angular and Next.js diverge (React on webpack follows the
+	// Next.js lines).
 	if (detection.bundler === 'webpack5') {
 		log(
 			'Webpack-based Storybook projects are not supported by the wizard — Vite is required.',
@@ -249,21 +269,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 				srcDir: resolvedSrcDir.srcDir,
 				isEsm: detection.isEsm,
 			})
-			if (cfg.kind === 'created') {
-				log(`✓ wrote ${cfg.path} (${cfg.fields.join(', ')})`)
-			} else if (cfg.kind === 'failed') {
-				log(`⚠ ${cfg.reason}`)
-			}
+			logSbDepsConfigOutcome(cfg, { separateWithRule: false })
 		}
 		return
 	}
 
 	if (framework === 'unsupported') {
 		log(
-			`This setup wizard currently supports React, Preact, Svelte, Vue 3, Solid, and Lit / web components (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
+			`This setup wizard currently supports React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, and Lit / web components (all Vite-based) only. Detected "${detection.frameworkRaw}".`,
 		)
 		log(
-			'The addon itself also supports Angular and Next.js with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
+			'The addon itself also supports Angular, Next.js on webpack and React on webpack with a one-time manual setup — see https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md.',
 		)
 		log(
 			'If you would like to see wizard support added for your framework, please open an issue on GitHub.',
@@ -272,10 +288,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 
 	// Whether the framework was worked out from the project's own files, or
-	// supplied by the user below. It decides whether the `tsxFramework` note
-	// further down is worth printing: the scaffolder runs the same detection, so
-	// it only needs telling which `.tsx` templates to use when that detection
-	// came up empty.
+	// supplied by the user below. The closing note turns on it: the scaffolder
+	// runs the same detection on every run, so where that came up empty it
+	// scaffolds nothing at all and the user needs telling.
 	const wasFrameworkDetected = framework !== 'unknown'
 
 	if (framework === 'unknown') {
@@ -302,6 +317,21 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			return
 		}
 		framework = choice
+		// The source folder was resolved above against the framework detection
+		// produced, which here was `unknown` — so it fell through to the default
+		// `'src'` without probing anything. Next.js is the one framework that
+		// answer can be wrong for (its source can sit in `app/`, `pages/`, or the
+		// project root), so resolve it again now the user has said what the
+		// project is, and show the answer where it replaces the one printed above
+		// — a project that has a `src/` folder resolves to the same value again,
+		// and re-printing it would read as though something had changed.
+		if (isNextjsFramework(framework)) {
+			const srcDirBeforePick = resolvedSrcDir.srcDir
+			resolvedSrcDir = await resolveSrcDir(cwd, framework)
+			if (resolvedSrcDir.srcDir !== srcDirBeforePick) {
+				logSrcDir(resolvedSrcDir.srcDir)
+			}
+		}
 	}
 
 	if (!isFrameworkSupported(framework)) {
@@ -409,16 +439,6 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		framework === 'web-components-vite'
 			? await askLitComponentMarker()
 			: undefined
-
-	// The answer above only takes effect in a project the scaffolder can see is
-	// a Lit one, and nothing here can make it one — so say so while the answer
-	// is still on screen. `wasFrameworkDetected` is the pre-picker fact, which
-	// is exactly the question being asked: the scaffolder runs the same
-	// detection, so where that came up empty for the wizard it comes up empty
-	// for the scaffolder too.
-	const isLitChosenFromThePicker =
-		framework === 'web-components-vite' && !wasFrameworkDetected
-	if (isLitChosenFromThePicker) logLitFrameworkNotDetectedNote()
 
 	rule()
 	log('Step 1/5: installing dependencies')
@@ -576,20 +596,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// Write `sb-deps.config.{js,cjs}` when the effective srcDir isn't the
 	// default `'src'`, when the project's `.tsx` files aren't React's (the config
 	// records `tsxFramework` outright, so the scaffolder emits Solid or Preact —
-	// not React — templates for `.tsx` files even where its own detection of the
-	// framework comes up empty), or when the user chose a non-default
-	// story-file extension. Must happen before Step 5 so the sb-deps build below
-	// picks up the configured values on its first run. Silent no-op when
-	// everything is default so setups without overrides don't see an extra log
-	// line. Uses `effectiveSrcDir` so a user-edited value via the edit flow is
-	// what gets persisted, not the auto-detected one.
+	// not React — templates for `.tsx` files), when the user chose a
+	// non-default story-file extension, or when a Lit project was given a
+	// component marker. Must happen before Step 5 so the sb-deps
+	// build below picks up the configured values on its first run. Silent no-op
+	// when everything is default so setups without overrides don't see an extra
+	// log line. Uses `effectiveSrcDir` so a user-edited value via the edit flow
+	// is what gets persisted, not the auto-detected one.
 	const tsxFramework = tsxFrameworkFromFramework(framework)
-	// Only worth saying where the scaffolder's own detection will come up empty
-	// too. Where it can see which framework the project is, it emits that
-	// framework's templates with or without the config key, so the note would be
-	// telling the user to guard against something that cannot happen to them.
-	const doesTsxFrameworkNeedTheKey =
-		tsxFramework !== 'react' && !wasFrameworkDetected
 	const sbDepsConfigResult = writeSbDepsConfigIfNeeded({
 		cwd,
 		srcDir: effectiveSrcDir,
@@ -598,45 +612,19 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		storybookFileExtension: effectiveStorybookFileExtension,
 		litComponentSuffix,
 	})
-	// A marker the user asked FOR needs the key, and without it the scaffolder
-	// does the opposite of what they chose. A CLEARED marker needs the key
-	// absent, which it will be wherever the write simply had nothing to do — but
-	// not where a config file was already there, since that file may set the key
-	// and this never read it to find out. So the two answers need telling apart
-	// from each other and the two skips need telling apart as well.
-	const isLitProject = litComponentSuffix !== undefined
-	const doesLitComponentSuffixNeedTheKey = !!litComponentSuffix
-	const doesSkippedConfigNeedTsxFrameworkNote =
-		sbDepsConfigResult.kind === 'skipped' && doesTsxFrameworkNeedTheKey
-	// Either answer is at risk here: one needs a key that was not written, the
-	// other needs one that may already be there.
-	const doesSkippedConfigNeedLitSuffixNote =
-		sbDepsConfigResult.kind === 'skipped' &&
-		sbDepsConfigResult.cause === 'config-exists' &&
-		isLitProject
-	if (sbDepsConfigResult.kind === 'created') {
-		rule()
-		log(
-			`  ✓ wrote ${sbDepsConfigResult.path} (${sbDepsConfigResult.fields.join(', ')})`,
-		)
-	} else if (sbDepsConfigResult.kind === 'failed') {
-		rule()
-		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		log(
-			`    Continuing — you can set srcDir manually in sb-deps.config.{js,cjs}.`,
-		)
-		if (doesTsxFrameworkNeedTheKey) logTsxFrameworkNote(tsxFramework)
-		if (doesLitComponentSuffixNeedTheKey)
-			logLitComponentSuffixNote(litComponentSuffix)
-	} else if (
-		doesSkippedConfigNeedTsxFrameworkNote ||
-		doesSkippedConfigNeedLitSuffixNote
-	) {
-		rule()
-		log(`  ⚠ ${sbDepsConfigResult.reason}`)
-		if (doesSkippedConfigNeedTsxFrameworkNote) logTsxFrameworkNote(tsxFramework)
-		if (doesSkippedConfigNeedLitSuffixNote)
-			logLitComponentSuffixNote(litComponentSuffix)
+	logSbDepsConfigOutcome(sbDepsConfigResult, { separateWithRule: true })
+	// A cleared Lit marker is the one answer the write cannot record, because it
+	// is recorded by the key being absent. That holds wherever there is no config
+	// file; where one is there, it may set the key, and this never reads it. A
+	// file being there means the write was `skipped` or `blocked`, never
+	// `created` or `failed`, and only `blocked` has drawn a divider already.
+	const isLitMarkerCleared = litComponentSuffix === ''
+	const existingConfigFileName = isLitMarkerCleared
+		? findExistingConfigFileName(cwd)
+		: null
+	if (existingConfigFileName) {
+		if (sbDepsConfigResult.kind === 'skipped') rule()
+		logClearedLitMarkerNote(existingConfigFileName)
 	}
 
 	rule()
@@ -662,6 +650,8 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		log('  ✓ dependency-previews.json generated')
 		buildSucceeded = true
 	}
+
+	logClosingNotes(effectiveSrcDir, wasFrameworkDetected)
 
 	rule()
 	const runCmd =
@@ -720,40 +710,6 @@ async function askLitComponentMarker(): Promise<string> {
 	return marker
 }
 
-/**
- * Warn that the marker answer will do nothing until the project says which
- * framework it is.
- *
- * Printed when the framework came from the picker rather than from the
- * project, which is the one case where the wizard knows the scaffolder will
- * disagree with it. Lit is the only framework this has to be said for: every
- * other one is recognised from the file being created — a `.tsx`, a `.vue`, a
- * `.svelte` — whereas a plain `.ts` file names no framework, so the whole Lit
- * check is only consulted in a project already known to be Lit.
- *
- * Nothing the wizard writes settles it, because the wizard never writes a
- * `framework` field, so the remedy has to be the user's. In practice a project
- * that runs Storybook at all already declares one; this is for the half-built
- * project where setup ran first.
- *
- * The `framework` field is the only remedy offered, though adding `lit` to the
- * dependencies would also do it in most projects. Detection reads the
- * dependencies first and the field only when they answer nothing — and one way
- * they answer nothing is two frameworks' core packages sitting side by side,
- * where `lit` is already present and adding it again changes nothing. The
- * field settles every case, so it is the one worth naming.
- */
-function logLitFrameworkNotDetectedNote() {
-	log(
-		`\n  ! Your project does not say it is a Lit project, so sb-deps will not`,
-	)
-	log(`    scaffold Lit files and the answer above will have no effect.`)
-	log(
-		`    Set \`framework: '@storybook/web-components-vite'\` in .storybook/main.*`,
-	)
-	log(`    to fix that.`)
-}
-
 /** The component-marker question itself, re-asked until the answer can be used. */
 async function readLitComponentMarkerAnswer(): Promise<string> {
 	log('\nWhat marks a file as a Lit component?')
@@ -786,76 +742,191 @@ async function readLitComponentMarkerAnswer(): Promise<string> {
 }
 
 /**
- * Tell a Lit user that their answer to the marker question was not recorded,
- * and what their config has to say for it to hold.
+ * Tell a Lit user who asked for no component marker that an existing config
+ * file may undo that answer.
  *
- * Printed when the wizard finished without writing the key, which happens two
- * ways, and **the two put different answers at risk**:
+ * A marker the user asked for is covered by the config write's own messages,
+ * which name every value it could not record. No marker is the one answer those
+ * messages cannot cover, because it is recorded by the key being absent rather
+ * than by anything written — so nothing is ever reported unrecorded, even where
+ * the existing file sets the key. The file is never read, so the note asks the
+ * user to check rather than telling them what it holds.
  *
- * - **An existing config blocked the write.** Both answers are at risk. A
- *   marker needs the key present and clearing one needs it absent, and that
- *   file may say either — this never reads it, so the note asks the user to
- *   check rather than telling them what it holds.
- * - **The write failed.** Only a marker is at risk. That throw is reachable
- *   only past the existing-file check, so there is no config file, the key is
- *   absent, and a cleared answer already holds without being told. The caller
- *   gates that site on a marker for exactly this reason, which is why the two
- *   gates differ and neither is the other's bug.
- *
- * @param litComponentSuffix - the answer, or the empty string for no marker
+ * @param existingFileName - the config file already in the project root
  */
-function logLitComponentSuffixNote(litComponentSuffix: string) {
-	if (!litComponentSuffix) {
-		log(
-			`    Ensure your sb-deps.config does NOT set \`litComponentSuffix\` — you asked`,
-		)
-		log(
-			`    for no marker, and that is what an absent key means. With one set, only`,
-		)
-		log(`    files named for it are components.`)
-		return
+function logClearedLitMarkerNote(existingFileName: string) {
+	log(
+		`  ⚠ Check that ${existingFileName} does NOT set \`litComponentSuffix\` — you asked`,
+	)
+	log(
+		`    for no marker, and that is what an absent key means. With one set, only`,
+	)
+	log(`    files named for it are components.`)
+}
+
+/**
+ * Print whichever of the run's closing notes apply, under one divider.
+ *
+ * Last in the run, so they sit beside the "next steps" lines rather than
+ * scrolling away above a package manager's install output and the dependency
+ * build's own, and so they only reach a user who went through with the setup.
+ * Neither has an ordering dependency — each is self-contained text, and both
+ * values they read are final well before here.
+ *
+ * One owner so the divider is drawn once when either applies and not at all
+ * when neither does, rather than each note deciding for itself and the pair
+ * printing two.
+ *
+ * @param srcDir - the resolved source folder, after any edit-flow override
+ * @param wasFrameworkDetected - false when the user had to pick the framework
+ */
+function logClosingNotes(srcDir: string, wasFrameworkDetected: boolean) {
+	const doesStoriesGlobApply = srcDir !== 'src'
+	const doesScaffoldingApply = !wasFrameworkDetected
+	if (!doesStoriesGlobApply && !doesScaffoldingApply) return
+	rule()
+	if (doesStoriesGlobApply) logStoriesGlobReminder(srcDir)
+	if (doesScaffoldingApply) logNoScaffoldingNote()
+}
+
+/**
+ * Remind the user to point Storybook's own `stories` array at a source folder
+ * that is not `src`.
+ *
+ * The addon's story glob and the dependency scan both get the resolved folder,
+ * but the `stories` array is the project's own: the wizard never rewrites the
+ * folder segment of it — it only ever widens the file extension there, for the
+ * `.story.` naming — and where stories live is the project's decision, since a
+ * project may keep them outside its source folder on purpose. The failure worth
+ * heading off is silent: with that array still pointing at `src/` in a project
+ * whose source is in `app/`, Storybook lists none of the project's stories, so
+ * there is no page for the previews panel to appear on, and every step of this
+ * wizard prints a tick regardless.
+ *
+ * Said rather than checked, deliberately. Storybook's entries are a string glob
+ * or an object naming a directory, either can hold glob syntax that decides the
+ * answer, and the file may be written any way its author likes — so a check
+ * would be wrong in both directions, and the expensive direction is the false
+ * warning that sends someone with a correct config to go and break it. A line
+ * that makes no claim about what the array says cannot be wrong about it.
+ *
+ * Whether it applies at all is `logClosingNotes`' decision, since the divider
+ * depends on it: skipped for the `src` default, where the wizard has told the
+ * user nothing they did not already have — that is the folder it assumes and
+ * the one their array was written against. Project-root mode gets it like any
+ * other answer: nothing in the wizard makes that array agree with the source
+ * folder, whatever the folder turned out to be, and an array naming `src/` in a
+ * project whose components sit at the root matches nothing.
+ *
+ * @param srcDir - the resolved source folder, after any edit-flow override
+ */
+function logStoriesGlobReminder(srcDir: string) {
+	const target = srcDir === '' ? 'the project root' : `'${srcDir}/'`
+	log(
+		`  • Storybook lists stories from the \`stories\` array in main.ts, which is`,
+	)
+	log(
+		`    yours to set — check it covers ${target}, or it will list none of them.`,
+	)
+}
+
+/**
+ * Report what came of a `sb-deps.config` write, at whichever of the two places
+ * the wizard attempts one — the webpack bail-out and Step 4.
+ *
+ * One owner rather than a switch at each site: the two say the same things
+ * about the same result type, and the one time they were written out separately
+ * they drifted, the outcomes of a single write printing at two indents. Every
+ * line here is indented two spaces so the outcomes line up with each other
+ * wherever they print — which also matches Step 4's own lines, though not the
+ * webpack bail-out's, whose guide links are flush left.
+ *
+ * `skipped` prints nothing on purpose — it means there was nothing worth
+ * writing and nothing to tell the user.
+ *
+ * @param result - what `writeSbDepsConfigIfNeeded` returned
+ * @param separateWithRule - whether to draw a divider first; Step 4 sits in a
+ * run of them, while the bail-out has already printed its own lines
+ */
+function logSbDepsConfigOutcome(
+	result: SbDepsConfigPatchResult,
+	{ separateWithRule }: { separateWithRule: boolean },
+) {
+	if (result.kind === 'skipped') return
+	if (separateWithRule) rule()
+	if (result.kind === 'created') {
+		log(`  ✓ wrote ${result.path} (${result.fields.join(', ')})`)
+	} else if (result.kind === 'blocked') {
+		logBlockedConfigNote(result.existingFileName, result.fields)
+	} else {
+		log(`  ⚠ ${result.reason}`)
+		// Name what was lost and is worth putting back, rather than one field of
+		// three — `srcDir` may be the one value that was never going in. And no
+		// promise about what happens next: this runs at Step 4, where the wizard
+		// carries on, and at the webpack bail-out, which returns immediately
+		// afterwards.
+		if (result.fields.length > 0) {
+			log(
+				`    Set these in an sb-deps.config yourself: ${result.fields.join(', ')}`,
+			)
+		}
 	}
-	log(
-		`    Ensure your sb-deps.config sets \`litComponentSuffix: '${litComponentSuffix}'\` — without`,
-	)
-	log(
-		`    that key any plain *.ts file you create empty under your source folder is`,
-	)
-	log(
-		`    treated as a component, rather than only the ones there named *.${litComponentSuffix}.ts.`,
-	)
 }
 
 /**
- * How each `.tsx` flavor is spelled in the note below. A lookup rather than a
- * capitalisation of the config value, so nothing has to work out where the
- * capitals go.
- */
-const TSX_FRAMEWORK_NAMES: Record<TsxFramework, string> = {
-	react: 'React',
-	solid: 'Solid',
-	preact: 'Preact',
-}
-
-/**
- * Tell a Solid or Preact user to set `tsxFramework` themselves.
+ * Tell the user that an existing config file stopped the wizard recording what
+ * it worked out, and name the values it could not write.
  *
- * Printed when the wizard finished without writing the key — the write failed,
- * or an existing config blocked it — AND the wizard could not work the
- * framework out from the project's own files, so the user supplied it. The
- * scaffolder repeats that same detection, so where it succeeds it emits that
- * framework's templates whether or not the key is there; where it came up
- * empty, the key is the only thing left saying so, and a missing one is silent.
- * The wizard does not read an existing config, so this asks the user to check
- * rather than claiming the key is absent.
+ * The one that matters is the source folder: the wizard may have just asked for
+ * it, and a blocked write means it reaches the preview file's story glob but
+ * never reaches the dependency scan. Where the scan then looks depends on what
+ * the existing config says, and on a project whose source is in `app/` it can
+ * match nothing at all — with every step still reporting success, so saying
+ * nothing here would leave the user with a broken setup and no sign of why.
+ *
+ * @param existingFileName - the config file already in the project root
+ * @param fields - the unwritten values the user can put back, e.g. `["srcDir: 'app'"]`
  */
-function logTsxFrameworkNote(tsxFramework: TsxFramework) {
-	const frameworkName = TSX_FRAMEWORK_NAMES[tsxFramework]
+function logBlockedConfigNote(
+	existingFileName: string,
+	fields: ReadonlyArray<string>,
+) {
+	log(`  ⚠ ${existingFileName} already exists, so it was left alone.`)
+	// "Check that it sets", not "add these": the file is never opened, so the
+	// key may already be there — most likely written by a previous run of this
+	// same wizard, which would have resolved the same value.
+	log(`    Check that it sets: ${fields.join(', ')}`)
+}
+
+/**
+ * Warn a user who had to pick their framework that auto-scaffolding will not
+ * run in this project.
+ *
+ * Printed on the picker path, which is reached when the wizard could not work
+ * the framework out from the project's own files. The scaffolder repeats that
+ * same detection on every run and has nothing but the project to go on — the
+ * config file it may write carries a source folder, a `.tsx` flavour, a
+ * story-file extension and a Lit component marker, none of which name the
+ * framework — so it comes up
+ * `unknown` too, and `checkDoesFileFrameworkMatchProject` in `sb-deps.ts` turns
+ * every new component and story file away rather than scaffolding it as the
+ * wrong framework. Nothing else depends on scaffolding — the dependency graph,
+ * the previews panel and the story links do not — so the note says so rather
+ * than claiming this particular run succeeded, since it also prints after a
+ * failed Step 5.
+ *
+ * Not framework-specific — it holds for every framework the picker offers,
+ * because what defeats the scaffolder is the failed detection rather than the
+ * answer the user gave.
+ */
+function logNoScaffoldingNote() {
+	log(`  ⚠ Auto-scaffolding of new components and stories will not run in this`)
 	log(
-		`    Ensure your sb-deps.config sets \`tsxFramework: '${tsxFramework}'\` — the scaffolder`,
+		`    project. sb-deps works the framework out from the project's own files`,
 	)
+	log(`    each run, the same way this wizard could not, so it turns new files`)
 	log(
-		`    could not tell this is a ${frameworkName} project, so without that key it emits`,
+		`    away rather than scaffolding them as the wrong framework. Nothing else`,
 	)
-	log(`    React (not ${frameworkName}) templates for .tsx files.`)
+	log(`    depends on it — the dependency graph and the previews panel do not.`)
 }

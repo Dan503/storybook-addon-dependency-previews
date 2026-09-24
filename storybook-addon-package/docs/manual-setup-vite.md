@@ -1,4 +1,4 @@
-# Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Lit)
+# Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, Lit)
 
 > **Tip:** for most Vite-based projects you can use the automated wizard instead:
 >
@@ -8,7 +8,9 @@
 >
 > The steps below describe what the wizard does, in case you'd rather configure things by hand or the wizard couldn't recognise your existing config.
 >
-> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Preact, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid, Lit / web components). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Preact` / `// if using Svelte` / `// if using Vue` / `// if using Solid` / `// if using Lit` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the place where three shapes are too different to inline — React's `.stories.tsx`, Svelte CSF's `.stories.svelte`, and Lit's `.stories.ts` (which names a browser tag rather than a component object, renders with Lit's `html`, and imports its component on two lines) — so each has its own code block (Preact, Vue and Solid stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/preact-vite`, `@storybook/vue3-vite` or `storybook-solidjs-vite`) and the component import for your Preact `.tsx`, `.vue` SFC or Solid `.tsx`).
+> The same instructions cover all currently-supported Vite-based Storybook frameworks (React, Preact, Svelte with SvelteKit, vanilla Svelte, Vue 3, Solid, Next.js on Vite, Lit / web components). Anywhere they diverge, both/all options are inlined into the same code block with `// if using React` / `// if using Preact` / `// if using Svelte` / `// if using Vue` / `// if using Solid` / `// if using Lit` comments — **pick one of each pair when you copy/paste**. Step 3 (the story example) is the place where three shapes are too different to inline — React's `.stories.tsx`, Svelte CSF's `.stories.svelte`, and Lit's `.stories.ts` (which names a browser tag rather than a component object, renders with Lit's `html`, and imports its component on two lines) — so each has its own code block (Preact, Vue, Solid and Next.js-on-Vite stories use the same `.stories.ts`/`.stories.tsx` shape as React — see the React example and swap the framework import for your framework's package (`@storybook/preact-vite`, `@storybook/vue3-vite`, `storybook-solidjs-vite` or `@storybook/nextjs-vite`) and the component import for your Preact `.tsx`, `.vue` SFC, Solid `.tsx` or Next.js `.tsx`).
+>
+> **Next.js on Vite** (`@storybook/nextjs-vite`) is not called out separately: it follows every `// if using React` line, with `@storybook/react-vite` replaced by `@storybook/nextjs-vite`. One thing beyond the package name does differ — the source folder. This guide writes `src/` into its `stories` list and its story globs, and a Next.js project's source often sits in `app/` or `pages/` instead, or directly at the project root. Put your own folder name wherever `src/` appears. For a project-root layout you drop the folder segment instead, and the two glob styles in this guide drop it differently: the `stories` array in `main.ts` is relative to `.storybook/`, so `'../src/**/…'` becomes `'../**/…'`, while the addon's `import.meta.glob` resolves from the project root, so `'/src/**/…'` becomes `'/**/…'`. Then set [`srcDir`](../README.md#srcdir) to that same folder in an `sb-deps.config` file at your project root — it is what scopes the dependency scan, and left at its `src` default in a project that has no `src/` folder the scan matches nothing and the graph comes out empty. For the project-root case the value is the empty string, `srcDir: ''`.
 
 ## 1. Install the addon
 
@@ -303,7 +305,7 @@ export default definePreview({
 })
 ```
 
-`definePreview` comes from your framework package. Not every framework package exports it yet (at the time of writing `@storybook/preact-vite`, `@storybook/sveltekit` and `@storybook/svelte-vite` do not) — for those, keep the hand-spread form. The hand-spread form remains supported on Storybook 11 (checked with the React example site on the 11 alpha). The setup wizard patches whichever form an existing preview file uses, and when it creates the file it writes this form on Storybook 11 for the frameworks listed in the imports above and the hand-spread form everywhere else.
+`definePreview` comes from your framework package. Not every framework package exports it yet (at the time of writing `@storybook/preact-vite`, `@storybook/sveltekit` and `@storybook/svelte-vite` do not) — for those, keep the hand-spread form. The hand-spread form remains supported on Storybook 11 (checked with the React example site on the 11 alpha). The setup wizard patches whichever form an existing preview file uses, and when it creates the file it writes this form on Storybook 11 for every framework whose package exports `definePreview`, and the hand-spread form everywhere else.
 
 ## 7. Run it
 
@@ -313,4 +315,4 @@ npm run sb
 
 As you create new component files the wizard auto-scaffolds matching story files and the dependency-previews JSON updates on the fly.
 
-See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file. **Solid and Preact projects:** `sb-deps` works the framework out from your project, so it scaffolds that framework's `.tsx` templates without being told. Setting [`tsxFramework`](../README.md#tsxframework) there says so outright, which is worth doing where your project's framework isn't obvious from its files — React, Solid and Preact all use `.tsx`, so the extension alone can't settle it.
+See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file. **Solid and Preact projects:** `sb-deps` works the framework out from your project, so it scaffolds that framework's `.tsx` templates without being told. Setting [`tsxFramework`](../README.md#tsxframework) there says so outright, which is worth doing where that detection lands on the wrong one — React, Solid and Preact all use `.tsx`, so the extension alone can't settle it, and a project declaring both `react` and `solid-js` can be read as either.
