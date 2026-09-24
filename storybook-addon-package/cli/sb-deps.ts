@@ -847,14 +847,16 @@ const SET_LIT_MARKER_STEP = `set litComponentSuffix to '${DEFAULT_LIT_COMPONENT_
  * A name that already carries the marker (`Button.lit.ts`, from someone using
  * the marked naming before setting the key) needs no rename — only to be
  * created again once the watcher knows the marker, since it acts on a file
- * when it appears. The marked name comes from `getMarkedTsComponentPath`, the
- * same rule the scaffolder uses, so this can never advise a `Button.lit.lit.ts`.
+ * when it appears. One carrying it in other capitals (`Button.Lit.ts`) is told
+ * to rename to the lower-case spelling instead, because once the marker is set
+ * the watcher refuses the capitals — so the advised name is always one the
+ * tool will accept, never a second marker stacked on the first.
  */
 function getExtraDotNote(absPath: string): string {
 	const fileName = basename(absPath)
 	const nameWithoutExtension = fileName.replace(/\.ts$/, '')
 	const markedFileName = getMarkedTsComponentPath(
-		nameWithoutExtension,
+		getBaseWithMarkerCaseCorrected(nameWithoutExtension),
 		`.${DEFAULT_LIT_COMPONENT_MARKER}`,
 	)
 	const isAlreadyMarked = markedFileName === fileName
@@ -862,6 +864,28 @@ function getExtraDotNote(absPath: string): string {
 		? `then delete it and create it again, since its name already carries the '${DEFAULT_LIT_COMPONENT_MARKER}' marker`
 		: `then rename it to "${markedFileName}"`
 	return `left "${rel(absPath)}" alone — ${EXTRA_DOT_RULE}. If you meant it as one, ${SET_LIT_MARKER_STEP}, ${lastStep}.`
+}
+
+/**
+ * `base` with a trailing marker written in other capitals put into lower
+ * case (`Button.Lit` → `Button.lit`), and any other base unchanged.
+ *
+ * Only for the extra-dot lines, which advise a name before the marker is set.
+ * Every reading of a name ending elsewhere in this tool ignores capitals, so
+ * once the marker is set a `.Lit` is recognised and refused as the marker
+ * spelled wrongly; the advice has to see it the same way, or it would stack a
+ * second marker onto the first. The scaffolder's own `getMarkedTsComponentPath`
+ * deliberately stays exact, because by the time it runs a wrongly-capitalised
+ * name has already been turned away.
+ */
+function getBaseWithMarkerCaseCorrected(base: string): string {
+	const markerEnding = `.${DEFAULT_LIT_COMPONENT_MARKER}`
+	const doesEndWithMarkerInAnyCase = base.toLowerCase().endsWith(markerEnding)
+	const isMarkerMiscased =
+		doesEndWithMarkerInAnyCase && !base.endsWith(markerEnding)
+	if (!isMarkerMiscased) return base
+	const baseWithoutMarker = base.slice(0, -markerEnding.length)
+	return `${baseWithoutMarker}${markerEnding}`
 }
 
 /**
@@ -2961,21 +2985,33 @@ function resolveTsStoryComponent(
 		// version of this line is `getExtraDotNote`.
 		//
 		// The remedy differs from the component version's. Here setting the
-		// marker IS enough, because a story finds the marked name by appending
-		// the marker to its own base — but only for a story created afterwards,
-		// since the watcher acts on a file when it appears and this one already
-		// has. Hence "delete it and create it again".
+		// marker is usually enough, because a story finds the marked name by
+		// adding the marker to its own base — but only for a story created
+		// afterwards, since the watcher acts on a file when it appears and this
+		// one already has. Hence "delete it and create it again". The exception
+		// is a story whose base carries the marker in other capitals
+		// (`Button.Lit.stories.ts`): once the marker is set, the watcher refuses
+		// that spelling, so the line names the corrected one to create instead.
 		if (projectFamily === 'lit') {
 			const namedComponentPath = `${storyBase}.ts`
+			const storyNameEnding = absStoryPath.slice(storyBase.length)
+			const correctedStoryBase = getBaseWithMarkerCaseCorrected(storyBase)
+			const isStoryNameMiscased = correctedStoryBase !== storyBase
+			const correctedStoryFileName = basename(
+				`${correctedStoryBase}${storyNameEnding}`,
+			)
+			const recreateStep = isStoryNameMiscased
+				? `then delete this story file and create it again as "${correctedStoryFileName}"`
+				: 'then delete this story file and create it again'
 			// Through the helper `getComponentPathForFamily` will use once the
 			// marker is set, so a `Button.lit.stories.ts` is promised
 			// `Button.lit.ts`, which is what will actually be written.
 			const markedComponentPath = getMarkedTsComponentPath(
-				storyBase,
+				correctedStoryBase,
 				`.${DEFAULT_LIT_COMPONENT_MARKER}`,
 			)
 			warn(
-				`left "${rel(absStoryPath)}" empty — it names "${rel(namedComponentPath)}", and ${EXTRA_DOT_RULE}. To get one, ${SET_LIT_MARKER_STEP}, then delete this story file and create it again: that will write "${rel(markedComponentPath)}" for it.`,
+				`left "${rel(absStoryPath)}" empty — it names "${rel(namedComponentPath)}", and ${EXTRA_DOT_RULE}. To get one, ${SET_LIT_MARKER_STEP}, ${recreateStep}: that will write "${rel(markedComponentPath)}" for it.`,
 			)
 		}
 		return null
