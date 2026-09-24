@@ -10,8 +10,8 @@ import { css } from 'lit'
  * instead, and the same markup would come out with gaps and underlines the
  * other sites do not have.
  *
- * So each component lists this first in its `static styles`, and its own rules
- * follow. The rules are Tailwind's own, copied from its `preflight.css`, and
+ * So a component that draws any of the elements below lists this first in its
+ * `static styles`, and its own rules follow. The rules are Tailwind's own, copied from its `preflight.css`, and
  * only the ones that touch an element these components draw — a rule for an
  * element nobody here uses would be one more thing to keep in step for nothing.
  * Lit shares one copy of it between every component that lists it.

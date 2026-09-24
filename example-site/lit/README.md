@@ -15,7 +15,7 @@ It shows the same meal-browsing site as the other demos, drawing on the same sha
 **It does not use Tailwind.** Each Lit element draws into a shadow root, the element's own private area of the page, and a stylesheet loaded for the page does not reach inside one. So each component carries its own CSS in `static styles`, written out from the Tailwind classes on the Svelte original with the values taken from Tailwind's theme, so the look matches. Two things are shared instead of repeated:
 
 - `src/app.css` declares the colours as CSS custom properties, because those do reach inside.
-- `src/lib/baseStyles.ts` holds the handful of Tailwind's base rules the components rely on, such as removing the browser's default margins, and every component lists it first.
+- `src/lib/baseStyles.ts` holds the handful of Tailwind's base rules the components rely on, such as removing the browser's default margins. A component that draws headings, paragraphs, lists, links, pictures or buttons lists it first.
 
 **Its conventions come from Lit's own starter project**: the `override` keyword on `styles` and `render`, a tag-name declaration under each component, and doc comments on each class that name its slots.
 
