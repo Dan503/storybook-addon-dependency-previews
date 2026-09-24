@@ -206,7 +206,11 @@ export interface SbDepsConfig {
 	 * instead — meaning one that is not a story, carries no other dotted part
 	 * in its name, and is created empty. So `Button.test.ts` and `Button.d.ts`
 	 * are left alone either way, and so is a `helpers.ts` that arrives with
-	 * something already in it.
+	 * something already in it. With no marker, an empty `Button.test.ts` also
+	 * gets a line saying the extra dot is why, because the dot is all that
+	 * stopped it — which is what someone who meant `Button.primary.ts` as a
+	 * component needs to know. A `.d.ts` file does not, since it is never a
+	 * component.
 	 *
 	 * That last condition is only there where there is no marker, and it is
 	 * what tells a component from an ordinary source file when the name says
@@ -221,9 +225,9 @@ export interface SbDepsConfig {
 	 *
 	 * - **With no marker**, `helpers.stories.ts` finds `helpers.ts` whatever is
 	 *   in it. That is how you get a story for a file this tool would otherwise
-	 *   leave alone. A dotted name is the exception and says nothing about
-	 *   itself: `Button.test.stories.ts` writes nothing at all, because
-	 *   `Button.test.ts` is not a component here.
+	 *   leave alone. A dotted name is the exception: `Button.test.stories.ts`
+	 *   writes nothing, because `Button.test.ts` is not a component here, and
+	 *   the watcher prints a line saying so.
 	 * - **With a marker**, it looks for the marked name and writes one if it is
 	 *   not there. `helpers.stories.ts` gives you a new `helpers.lit.ts` stub
 	 *   and a story for that, and your own `helpers.ts` is neither found nor

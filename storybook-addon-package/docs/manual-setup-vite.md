@@ -164,11 +164,11 @@ export const Primary: Story = {
 }
 ```
 
-The `.lit` in the file name is what `sb-deps` uses to tell a component from any other `.ts` file, set by the `litComponentSuffix` option in `sb-deps.config` — the setup wizard asks for it and writes `'lit'` unless you ask for something else. Only files under your source folder are considered either way. With the option set, that means the ones named `*.lit.ts`; leave it out and it means any plain `.ts` file you create empty, in which case the imports above are `'./ComponentName'`. A `.ts` file that arrives with something already in it is left alone — with no marker its name says nothing about what it is, and creating it empty is the only signal `sb-deps` has that you want it filled in.
+The `.lit` in the file name is what `sb-deps` uses to tell a component from any other `.ts` file, set by the `litComponentSuffix` option in `sb-deps.config` — the setup wizard asks for it and writes `'lit'` unless you ask for something else. Only files under your source folder are considered either way. With the option set, that means the ones named `*.lit.ts`; leave it out and it means any plain `.ts` file you create empty, in which case the imports above are `'./ComponentName'`. "Plain" means no other dot in the name: `helper.test.ts` is left alone, with a line saying the extra dot is why, so a component you name `Button.primary.ts` will not be scaffolded without a marker. A `.ts` file that arrives with something already in it is left alone — with no marker its name says nothing about what it is, and creating it empty is the only signal `sb-deps` has that you want it filled in.
 
 Creating the empty story file yourself is how you ask for a story, and what it finds depends on the marker.
 
-With no marker, `helpers.stories.ts` finds `helpers.ts` whatever is in it — that is how you get a story for a file `sb-deps` would otherwise leave alone. A dotted name is the exception and `sb-deps` says nothing about it: `Button.test.stories.ts` writes nothing at all, since `Button.test.ts` is not a component here.
+With no marker, `helpers.stories.ts` finds `helpers.ts` whatever is in it — that is how you get a story for a file `sb-deps` would otherwise leave alone. A dotted name is the exception: `Button.test.stories.ts` writes nothing, since `Button.test.ts` is not a component here, and `sb-deps` prints a line saying so.
 
 With a marker set, it looks for the marked name and writes one if it is not there. `helpers.stories.ts` gives you a new `helpers.lit.ts` stub and a story for that, and your own `helpers.ts` is neither found nor mentioned — a plain `.ts` file is not a component in that project, so there is no spelling by which it could be found. Rename it to `helpers.lit.ts` if you want it storied.
 

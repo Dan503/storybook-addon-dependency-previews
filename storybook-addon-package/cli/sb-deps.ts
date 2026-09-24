@@ -748,6 +748,28 @@ function isComponentsAngularHtml(relPath: string) {
  * @param absPath - the same file, for the one check that has to read it
  */
 function isComponentsLitTs(relPath: string, absPath: string) {
+	return getLitTsFileKind(relPath, absPath) === 'component'
+}
+
+/**
+ * What the Lit component check makes of a created `.ts` file:
+ *
+ * - `'component'` — scaffold it.
+ * - `'skipped-for-extra-dot'` — no marker is set, and this is an empty `.ts`
+ *   file under the source folder that would have counted but for a dot in its
+ *   name (`helper.test.ts`, `Button.primary.ts`). Never the answer with a
+ *   marker set, because then the name decides and there is no near miss.
+ * - `'not-a-component'` — anything else. That includes a type declaration file
+ *   (`shapes.d.ts`), which is never a component, so its extra dot is not worth
+ *   explaining.
+ *
+ * Kept apart from `isComponentsLitTs` so that the watcher can explain the one
+ * near miss worth mentioning, using the same checks that decided it. If the
+ * message worked the rule out a second time, the two could drift apart.
+ */
+type LitTsFileKind = 'component' | 'skipped-for-extra-dot' | 'not-a-component'
+
+function getLitTsFileKind(relPath: string, absPath: string): LitTsFileKind {
 	// Only asked in a Lit project, the same rule `.component` follows in
 	// scripts/fileNames.ts and for the same reason: a `.ts` file names no
 	// framework on its own, so without this every helper file created in a React
@@ -758,22 +780,27 @@ function isComponentsLitTs(relPath: string, absPath: string) {
 	// afford to, because `.component` is a spelling nothing else here writes by
 	// accident; with no marker set, a `utils.ts` created anywhere under the
 	// source folder would be one.
-	if (getProjectFrameworkFamily() !== 'lit') return false
-	if (STORY_FILE_REGEX.test(relPath)) return false
-	if (LIT_COMPONENT_SUFFIX)
+	if (getProjectFrameworkFamily() !== 'lit') return 'not-a-component'
+	if (STORY_FILE_REGEX.test(relPath)) return 'not-a-component'
+	if (LIT_COMPONENT_SUFFIX) {
 		// Not escaped for the pattern: the marker has already been bounded to
 		// lower-case letters, digits, `_` and `-` — by the wizard when it asked, and by
 		// `readLitComponentSuffix` when it read the config — and none of those
 		// mean anything to a pattern.
-		return srcSubpathRegex(`\\.${LIT_COMPONENT_SUFFIX}\\.ts$`).test(relPath)
+		const isMarked = srcSubpathRegex(`\\.${LIT_COMPONENT_SUFFIX}\\.ts$`).test(
+			relPath,
+		)
+		return isMarked ? 'component' : 'not-a-component'
+	}
 	// No marker: an empty `.ts` file whose name carries no other dotted part, so
 	// a `Button.test.ts` or a `Button.d.ts` is left alone either way, and so is
 	// anything that turned up with content in it.
-	return (
-		srcSubpathRegex('\\.ts$').test(relPath) &&
-		!checkHasDottedNamePart(relPath) &&
-		isEmptyOrWhitespace(absPath)
-	)
+	const isEmptyTsUnderSrc =
+		srcSubpathRegex('\\.ts$').test(relPath) && isEmptyOrWhitespace(absPath)
+	if (!isEmptyTsUnderSrc) return 'not-a-component'
+	if (!checkHasDottedNamePart(relPath)) return 'component'
+	const isTypeDeclarationFile = relPath.endsWith('.d.ts')
+	return isTypeDeclarationFile ? 'not-a-component' : 'skipped-for-extra-dot'
 }
 
 /**
@@ -787,6 +814,31 @@ function checkHasDottedNamePart(relPath: string): boolean {
 	const fileName = basename(relPath)
 	const nameWithoutExtension = fileName.slice(0, fileName.lastIndexOf('.'))
 	return nameWithoutExtension.includes('.')
+}
+
+/**
+ * How both extra-dot lines end: what the rule is, and how to stop it
+ * deciding. One string, so the component version and the story version
+ * cannot describe the rule differently.
+ */
+const EXTRA_DOT_NOTE_ENDING =
+	"isn't scaffolded as a Lit component while no component marker is set. Set litComponentSuffix (for example to 'lit') in your sb-deps config to choose components by name instead."
+
+/**
+ * The line to print when a created file was left alone only because of an
+ * extra dot in its name, or `null` when that is not why.
+ *
+ * With no marker set, that dot is all that stops an empty `helper.test.ts`
+ * from being scaffolded as a component. That is right for a test file, but
+ * someone who meant `Button.primary.ts` as a component would otherwise get
+ * nothing and no reason. The story version of this line is printed by
+ * `resolveTsStoryComponent`.
+ */
+function getExtraDotNote(relPath: string, absPath: string): string | null {
+	const isSkippedForExtraDot =
+		getLitTsFileKind(relPath, absPath) === 'skipped-for-extra-dot'
+	if (!isSkippedForExtraDot) return null
+	return `left "${rel(absPath)}" alone — the extra dot in its name means it ${EXTRA_DOT_NOTE_ENDING}`
 }
 
 /**
@@ -2878,7 +2930,20 @@ function resolveTsStoryComponent(
 	const projectFamily = getProjectFrameworkFamily()
 	if (!projectFamily) return null
 	const compPath = getComponentPathForFamily(storyBase, projectFamily)
-	if (!compPath) return null
+	if (!compPath) {
+		// For a Lit project, no path means exactly one thing: no marker is set,
+		// and the component this story names has an extra dot in its name. With
+		// a marker the marked name is always returned. The user asked for this
+		// story by creating it, so say why nothing came of it — the component
+		// version of this line is `getExtraDotNote`.
+		if (projectFamily === 'lit') {
+			const namedComponentPath = `${storyBase}.ts`
+			warn(
+				`left "${rel(absStoryPath)}" empty — the component it names, "${rel(namedComponentPath)}", has an extra dot in its name, so it ${EXTRA_DOT_NOTE_ENDING}`,
+			)
+		}
+		return null
+	}
 	return { compPath, framework: projectFamily }
 }
 
@@ -3294,6 +3359,20 @@ function startWatcher() {
 							kick(ev.type, abs)
 							continue
 						}
+
+						// With no component marker, an extra dot in the name is all that
+						// stops an empty `.ts` file being scaffolded as a Lit component.
+						// Said as information rather than a warning, because for the
+						// commonest case — a new test file — being left alone is right.
+						// Only asked when no branch claimed the file: an Angular
+						// `Foo.component.ts` in a Lit project has a dot too, and already
+						// gets its own line from the framework-mismatch check below. The
+						// rebuild at the bottom still runs.
+						const extraDotNote =
+							isCreate && !componentBranch
+								? getExtraDotNote(relPath, abs)
+								: null
+						if (extraDotNote) info(extraDotNote)
 
 						// STORY CREATE — fill the story (and its component if missing).
 						// Limited to SRC_DIR like the component-create branches below, so a story
