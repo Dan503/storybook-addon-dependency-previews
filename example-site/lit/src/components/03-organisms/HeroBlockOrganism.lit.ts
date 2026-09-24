@@ -1,6 +1,5 @@
 import { LitElement, css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import { ifDefined } from 'lit/directives/if-defined.js'
 import { baseStyles } from '../../lib/baseStyles'
 import '../01-atoms/BgImageContainerAtom.lit'
 import '../01-atoms/ScreenPaddingAtom.lit'
@@ -18,13 +17,14 @@ export class HeroBlockOrganism extends LitElement {
 	/** A description of the picture, for screen readers. */
 	@property() altText = ''
 	/**
-	 * The colour of the wash over the picture. Left out, the picture container's
-	 * own default applies — which is why this and the one below are handed on as
-	 * attributes, which can be left off, rather than as properties, which would
-	 * pass the empty value on and replace that default.
+	 * The colour of the wash over the picture. Left out, the picture
+	 * container's own default applies.
 	 */
 	@property() tintColor?: string
-	/** How strongly the wash covers the picture, from 0 to 100. */
+	/**
+	 * How strongly the wash covers the picture, from 0 to 100. Left out, the
+	 * picture container's own default applies.
+	 */
 	@property({ type: Number }) tintPercent?: number
 
 	static override styles = [
@@ -56,8 +56,8 @@ export class HeroBlockOrganism extends LitElement {
 			class="HeroBlockOrganism"
 			.imgSrc=${this.imgSrc}
 			.altText=${this.altText}
-			tintColor=${ifDefined(this.tintColor)}
-			tintPercent=${ifDefined(this.tintPercent)}
+			.tintColor=${this.tintColor}
+			.tintPercent=${this.tintPercent}
 		>
 			<app-screen-padding-atom padVertical>
 				<h1><slot name="title"></slot></h1>

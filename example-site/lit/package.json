@@ -12,7 +12,7 @@
 		"sb:build": "pnpm --filter storybook-addon-dependency-previews build && pnpm run sb:docs && node ../../storybook-addon-package/dist/cli/sb-deps.cjs && storybook build",
 		"format": "prettier --write .",
 		"typecheck": "tsc --noEmit",
-		"lint": "lit-analyzer",
+		"lint": "lit-analyzer --strict",
 		"check": "pnpm run typecheck && pnpm run lint"
 	},
 	"dependencies": {

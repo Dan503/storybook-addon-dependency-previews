@@ -35,7 +35,8 @@
 		// `static override styles` and `override render()`.
 		"noImplicitOverride": true,
 		// Checks the markup inside `html` templates in an editor. Editors only:
-		// `pnpm lint` runs the same checks from the command line.
+		// `pnpm lint` runs the same strict checks from the command line, and
+		// its `--strict` has to stay in step with the setting here.
 		"plugins": [{ "name": "ts-lit-plugin", "strict": true }],
 
 		/* Linting */

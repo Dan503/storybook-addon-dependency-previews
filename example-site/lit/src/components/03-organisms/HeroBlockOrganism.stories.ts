@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import { html } from 'lit'
-import { ifDefined } from 'lit/directives/if-defined.js'
 
 // Imported twice on purpose: the first line runs the file, which is what
 // registers the tag, and the second gives the story its type. An import used
@@ -22,8 +21,8 @@ const meta: Meta<HeroBlockOrganism> = {
 		html`<app-hero-block-organism
 			.imgSrc=${args.imgSrc}
 			.altText=${args.altText}
-			tintColor=${ifDefined(args.tintColor)}
-			tintPercent=${ifDefined(args.tintPercent)}
+			.tintColor=${args.tintColor}
+			.tintPercent=${args.tintPercent}
 		>
 			<span slot="title">Hero Block Title</span>
 			<p>This is where the hero block content goes.</p>
