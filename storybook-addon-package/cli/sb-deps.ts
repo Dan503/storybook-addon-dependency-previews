@@ -22,6 +22,7 @@ import {
 } from './scripts/fileNames.js'
 import {
 	detectProject,
+	isNextjsFramework,
 	tsxFrameworkFromFramework,
 	type Framework,
 	type StorybookFramework,
@@ -988,8 +989,9 @@ export function ${componentName}(props: ${propsName}) {
 	// gets a file without one. It is inert under the Pages Router, which is why
 	// the framework alone decides it. Preact never reaches this line, so its
 	// template above carries no directive.
-	const clientDirective =
-		getProjectFramework() === 'nextjs-webpack' ? "'use client'\n\n" : ''
+	const clientDirective = isNextjsFramework(getProjectFramework())
+		? "'use client'\n\n"
+		: ''
 
 	return reactLikeComponentTemplate({
 		componentName,
@@ -1103,22 +1105,24 @@ export const Primary: Story = {
 
 /**
  * The Storybook package a React project's stories import their types from, by
- * detected framework. Only the frameworks whose package is not the Vite one
- * are listed; everything else falls back to `@storybook/react-vite`.
+ * detected framework. Only the frameworks whose types come from somewhere other
+ * than `@storybook/react-vite` are listed; everything else falls back to it.
  */
 const REACT_STORY_TYPES_PACKAGE_BY_FRAMEWORK: Partial<
 	Record<Framework, StorybookFramework>
 > = {
 	'nextjs-webpack': '@storybook/nextjs',
+	'nextjs-vite': '@storybook/nextjs-vite',
 	'react-webpack5': '@storybook/react-webpack5',
 }
 
 /**
  * The package a scaffolded `.tsx` story imports its Storybook types from. Solid
  * and Preact each have their own. React's depends on how the project builds: a
- * Next.js project's Storybook types live in `@storybook/nextjs` and a React
- * project on webpack's in `@storybook/react-webpack5`, not in the Vite package,
- * so importing the Vite one there produces a story that doesn't type-check.
+ * Next.js project's Storybook types live in `@storybook/nextjs` or
+ * `@storybook/nextjs-vite`, whichever it uses, and a React project on webpack's
+ * in `@storybook/react-webpack5`, not in the React Vite package, so importing
+ * that one there produces a story that doesn't type-check.
  */
 function getTsxStoryTypesPackage(flavor: TsxFramework): StorybookFramework {
 	if (flavor === 'solid') return 'storybook-solidjs-vite'
@@ -2025,14 +2029,15 @@ function getProjectFrameworkFamily(): StoryFramework | null {
  * Map a detected project `Framework` to the scaffold "family" it belongs to
  * (`StoryFramework`), or `null` when the framework is unknown/unsupported (no
  * family). This is the single place that knows, e.g., that both `sveltekit` and
- * `svelte-vite` scaffold Svelte, or that `nextjs-webpack` and `react-webpack5`
- * scaffold React.
+ * `svelte-vite` scaffold Svelte, or that `nextjs-webpack`, `nextjs-vite` and
+ * `react-webpack5` scaffold React.
  */
 function getFrameworkFamily(framework: Framework): StoryFramework | null {
 	switch (framework) {
 		case 'react-vite':
 		case 'react-webpack5':
 		case 'nextjs-webpack':
+		case 'nextjs-vite':
 		// Solid and Preact components are `.tsx` too, so both resolve and build
 		// component paths exactly like React — they ride the `react` family. Only
 		// the emitted template text differs, chosen by `TSX_FRAMEWORK`.

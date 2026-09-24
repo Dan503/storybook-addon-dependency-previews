@@ -15,6 +15,7 @@ export type Framework =
 	| 'solid-vite'
 	| 'angular-webpack'
 	| 'nextjs-webpack'
+	| 'nextjs-vite'
 	| 'unsupported'
 	| 'unknown'
 
@@ -162,6 +163,7 @@ const FRAMEWORK_BY_STORYBOOK_PACKAGE = {
 	// ships — current Angular goes in as `'angular-webpack'`.
 	'@storybook/angular': 'angular-webpack',
 	'@storybook/nextjs': 'nextjs-webpack',
+	'@storybook/nextjs-vite': 'nextjs-vite',
 } as const satisfies Record<string, Framework>
 
 /**
@@ -201,7 +203,8 @@ export type StorybookFramework = keyof typeof FRAMEWORK_BY_STORYBOOK_PACKAGE
  *
  * **Alternative Storybook packages** (`alternatives`): one core package can be
  * served by more than one Storybook framework package (`react` by
- * `@storybook/react-vite` or `@storybook/react-webpack5`). The core package
+ * `@storybook/react-vite` or `@storybook/react-webpack5`, `next` by
+ * `@storybook/nextjs` or `@storybook/nextjs-vite`). The core package
  * alone cannot tell them apart, so a detector lists the alternatives and the
  * one the project declares — in `package.json`, or failing that in
  * `.storybook/main.*` — wins. See `pickDeclaredFrameworkPackage`.
@@ -233,7 +236,12 @@ const CORE_FRAMEWORK_DETECTORS: ReadonlyArray<{
 	alternatives?: ReadonlyArray<StorybookFramework>
 }> = [
 	{ corePackage: '@angular/core', framework: '@storybook/angular' },
-	{ corePackage: 'next', framework: '@storybook/nextjs', subsumes: 'react' },
+	{
+		corePackage: 'next',
+		framework: '@storybook/nextjs',
+		subsumes: 'react',
+		alternatives: ['@storybook/nextjs-vite'],
+	},
 	{
 		corePackage: '@sveltejs/kit',
 		framework: '@storybook/sveltekit',
@@ -423,6 +431,7 @@ function bundlerFromFramework(framework: Framework): Detection['bundler'] {
 		case 'svelte-vite':
 		case 'vue3-vite':
 		case 'solid-vite':
+		case 'nextjs-vite':
 			return 'vite'
 		case 'angular-webpack':
 		case 'nextjs-webpack':
@@ -482,6 +491,7 @@ export const SUPPORTED_FRAMEWORKS = [
 	'sveltekit',
 	'svelte-vite',
 	'solid-vite',
+	'nextjs-vite',
 ] as const satisfies ReadonlyArray<Framework>
 
 /**
@@ -499,6 +509,17 @@ export function isFrameworkSupported(
 	// question being asked rather than something the caller can promise.
 	const supportedFrameworks: ReadonlyArray<Framework> = SUPPORTED_FRAMEWORKS
 	return supportedFrameworks.includes(framework)
+}
+
+/**
+ * Whether the framework is Next.js on either bundler. The Next.js-only
+ * behaviour — the `'use client'` line on scaffolded components and the `app/`
+ * vs `pages/` source-folder prompt — follows Next.js itself rather than the
+ * bundler it builds with, so it asks this rather than naming one of the two
+ * values.
+ */
+export function isNextjsFramework(framework: Framework): boolean {
+	return framework === 'nextjs-webpack' || framework === 'nextjs-vite'
 }
 
 /**

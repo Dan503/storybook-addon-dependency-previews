@@ -146,9 +146,13 @@ export interface SbDepsConfig {
 	 * `app.v2`, `''` are fine; anything with path separators, glob
 	 * metacharacters (`*`, `?`, `[`, `]`, `{`, `}`), or shell metacharacters
 	 * (`%`, `^`, `&`, `|`, `<`, `>`, `(`, `)`, `!`) is rejected at load time
-	 * with a warning + fallback to `'src'`. With a non-empty value, every key
-	 * in `dependency-previews.json` starts with `<srcDir>/`. With `''`, keys
-	 * are still project-relative paths (e.g. `components/Foo.tsx`,
+	 * with a warning + fallback to `'src'`. So are `'.'` and `'..'`, which the
+	 * allow-list would otherwise let through: they are path-traversal segments
+	 * rather than folder names, and would build a broken include-only pattern.
+	 * Whitespace-only values are rejected too — say project-root mode with
+	 * `''`. With a non-empty value, every key in `dependency-previews.json`
+	 * starts with `<srcDir>/`. With `''`, keys are still project-relative
+	 * paths (e.g. `components/Foo.tsx`,
 	 * `packages/foo/Bar.tsx`) — there's just no fixed `srcDir` prefix
 	 * constraining which top-level folders appear.
 	 *
@@ -182,8 +186,11 @@ export interface SbDepsConfig {
 	 *
 	 * Leave it out and detection decides: a project `sb-deps` reads as Solid or
 	 * Preact gets that framework's templates anyway, and anything else gets
-	 * React ones. So the key is worth setting when your project's framework
-	 * isn't obvious from its files.
+	 * React ones. So the key is worth setting where that reading lands on the
+	 * wrong one — a project declaring both `react` and `solid-js`, say, or one
+	 * reaching Preact through a `react` alias. It does not rescue a project
+	 * `sb-deps` cannot place at all: there no `.tsx` file is scaffolded, with or
+	 * without the key.
 	 *
 	 * @example 'react'
 	 * @example 'solid'
