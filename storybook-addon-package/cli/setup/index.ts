@@ -53,6 +53,14 @@ const FRAMEWORK_PICKER_LABELS: Record<SupportedFramework, string> = {
 		'Lit / web components (@storybook/web-components-vite)',
 }
 
+/**
+ * What the wizard suggests as a Lit project's component marker — shown on the
+ * opening screen, offered as the answer's default, and named by the watcher's
+ * extra-dot lines as the value to set — from this one value so none of them
+ * can disagree.
+ */
+export const DEFAULT_LIT_COMPONENT_MARKER = 'lit'
+
 // The story-file extension the scaffolder generates for each framework — used
 // only to render a concrete example next to the story-extension preference.
 // The arms below carry the reasoning for each group; restating them here would
@@ -193,6 +201,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		? ` (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`
 		: ''
 	log(`Storybook Extension : stories${storyFileExample}`)
+	// Lit is the one framework whose component files need telling apart from
+	// every other `.ts` file, so the naming it expects belongs on this screen
+	// with the rest of what the tool will assume. The question that lets the
+	// user change it comes straight after this block is confirmed.
+	if (framework === 'web-components-vite')
+		log(
+			`Lit component marker: ${DEFAULT_LIT_COMPONENT_MARKER} (eg. ComponentName.${DEFAULT_LIT_COMPONENT_MARKER}.ts)`,
+		)
 
 	// Show file paths relative to cwd so the detection block stays compact —
 	// absolute Windows paths in particular are noisy and push the actually-
@@ -668,9 +684,6 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	}
 }
 
-/** What the wizard suggests as a Lit project's component marker. */
-const DEFAULT_LIT_COMPONENT_MARKER = 'lit'
-
 /**
  * The word the user types to ask for no marker at all, since an empty answer
  * already means "keep the suggestion". The source-folder question above pays
@@ -702,7 +715,7 @@ async function askLitComponentMarker(): Promise<string> {
 	log(
 		marker
 			? `  ✓ Files named *.${marker}.ts under your source folder will be treated as Lit components.`
-			: '  ✓ Any plain .ts file you create empty under your source folder will be treated as a Lit component.',
+			: '  ✓ Any plain *.ts file you create empty under your source folder will be treated as a Lit component.',
 	)
 	return marker
 }
@@ -745,10 +758,18 @@ function logLitFrameworkNotDetectedNote() {
 async function readLitComponentMarkerAnswer(): Promise<string> {
 	log('\nWhat marks a file as a Lit component?')
 	log(
-		`  A marker of "${DEFAULT_LIT_COMPONENT_MARKER}" means only Button.${DEFAULT_LIT_COMPONENT_MARKER}.ts under your source folder is a component.`,
+		`  A marker of "${DEFAULT_LIT_COMPONENT_MARKER}" means only ComponentName.${DEFAULT_LIT_COMPONENT_MARKER}.ts under your source folder is a component.`,
+	)
+	// The consequence spelled out, not just the rule, because "any plain *.ts
+	// file" reads as a detail until it is a utils.ts that got a component
+	// template and a story written for it. Written `*.ts` rather than `.ts`
+	// because a terminal sets nothing apart as code, and "plain .ts" reads as
+	// a file called plain.ts.
+	log(
+		`  Answer "${NO_LIT_COMPONENT_MARKER_ANSWER}" and any empty plain *.ts file that you create under your source folder will be treated as a Lit component.`,
 	)
 	log(
-		`  Answer "${NO_LIT_COMPONENT_MARKER_ANSWER}" and any plain .ts file you create empty under your source folder is one.`,
+		'  So a utils.ts file would be scaffolded as a component and a sibling storybook file will be created for it.',
 	)
 	while (true) {
 		const answer = (
@@ -798,7 +819,7 @@ function logLitComponentSuffixNote(litComponentSuffix: string) {
 		`    Ensure your sb-deps.config sets \`litComponentSuffix: '${litComponentSuffix}'\` — without`,
 	)
 	log(
-		`    that key any plain .ts file you create empty under your source folder is`,
+		`    that key any plain *.ts file you create empty under your source folder is`,
 	)
 	log(
 		`    treated as a component, rather than only the ones there named *.${litComponentSuffix}.ts.`,

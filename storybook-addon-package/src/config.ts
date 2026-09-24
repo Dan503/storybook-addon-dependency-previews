@@ -209,10 +209,13 @@ export interface SbDepsConfig {
 	 * something already in it. With no marker, an empty `Button.test.ts` also
 	 * gets a line saying the extra dot is why, because the dot is all that
 	 * stopped it — which is what someone who meant `Button.primary.ts` as a
-	 * component needs to know. A `.d.ts` file does not, since it is never a
+	 * component needs to know. For them a marker alone is not enough: with one
+	 * set, only a marked name is a component, so the file has to become
+	 * `Button.primary.lit.ts` as well, and `sb-deps` has to be restarted to read
+	 * the new setting. A `.d.ts` file gets no line, since it is never a
 	 * component.
 	 *
-	 * That last condition is only there where there is no marker, and it is
+	 * The created-empty condition is only there where there is no marker, and it is
 	 * what tells a component from an ordinary source file when the name says
 	 * nothing: a file created empty is this tool's own signal for "fill this
 	 * in", while one that arrives with content made no such request. Set a

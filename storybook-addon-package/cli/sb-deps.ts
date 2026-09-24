@@ -28,7 +28,7 @@ import {
 	type Framework,
 	type TsxFramework,
 } from './setup/detect.js'
-import { runSetup } from './setup/index.js'
+import { DEFAULT_LIT_COMPONENT_MARKER, runSetup } from './setup/index.js'
 import { escapeForRegex, findInstalledPackage } from './setup/util.js'
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -176,13 +176,13 @@ function getChoicesPhrase(choices: ReadonlyArray<string>): string {
  * folder counts as a component. That is the wider of the two behaviours for
  * what a user asked to be scaffolded, so nothing they expected quietly stops
  * being — and the emptiness condition is what stops it also claiming files
- * they never asked about (see `isComponentsLitTs`).
+ * they never asked about (see `getLitTsFileKind`).
  */
 function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	if (configuredSuffix === undefined) return null
 	if (typeof configuredSuffix !== 'string') {
 		error(
-			`litComponentSuffix must be a string — no component marker is set, so in a Lit project a plain .ts file created empty under the source folder counts as a component.`,
+			`litComponentSuffix must be a string — no component marker is set, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
 		)
 		return null
 	}
@@ -190,7 +190,7 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	const markerError = getComponentMarkerError(configuredSuffix)
 	if (!markerError) return configuredSuffix
 	error(
-		`litComponentSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project a plain .ts file created empty under the source folder counts as a component.`,
+		`litComponentSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
 	)
 	return null
 }
@@ -723,10 +723,27 @@ function isComponentsAngularHtml(relPath: string) {
 	return srcSubpathRegex('\\.component\\.html$').test(relPath)
 }
 
+/** What `getLitTsFileKind` makes of a created `.ts` file — see there. */
+type LitTsFileKind = 'component' | 'skipped-for-extra-dot' | 'not-a-component'
+
 /**
- * Is this a just-created Lit component file — `<srcDir>/**​/Thing.lit.ts` where
- * the project set `lit` as its marker, or an empty plain `<srcDir>/**​/Thing.ts`
- * where it set none?
+ * What the Lit component check makes of a created `.ts` file:
+ *
+ * - `'component'` — scaffold it. That is `<srcDir>/**​/Thing.lit.ts` where the
+ *   project set `lit` as its marker, or an empty plain `<srcDir>/**​/Thing.ts`
+ *   where it set none.
+ * - `'skipped-for-extra-dot'` — no marker is set, and this is an empty `.ts`
+ *   file under the source folder that would have counted but for a dot in its
+ *   name (`helper.test.ts`, `Button.primary.ts`). Never the answer with a
+ *   marker set, because then the name decides and there is no near miss.
+ * - `'not-a-component'` — anything else. That includes a type declaration file
+ *   (`shapes.d.ts`), which is never a component, so its extra dot is not worth
+ *   explaining.
+ *
+ * The watcher asks this once per created file and uses the one answer twice:
+ * to decide whether the Lit branch claims the file, and to decide whether it
+ * gets the extra-dot line. So the line cannot disagree with the decision it
+ * explains, and the file is read at most once.
  *
  * **The emptiness half applies only where there is no marker**, and it is what
  * separates a component from an ordinary source file there. Every other family
@@ -747,28 +764,6 @@ function isComponentsAngularHtml(relPath: string) {
  * @param relPath - the project-relative path, for the name checks
  * @param absPath - the same file, for the one check that has to read it
  */
-function isComponentsLitTs(relPath: string, absPath: string) {
-	return getLitTsFileKind(relPath, absPath) === 'component'
-}
-
-/**
- * What the Lit component check makes of a created `.ts` file:
- *
- * - `'component'` — scaffold it.
- * - `'skipped-for-extra-dot'` — no marker is set, and this is an empty `.ts`
- *   file under the source folder that would have counted but for a dot in its
- *   name (`helper.test.ts`, `Button.primary.ts`). Never the answer with a
- *   marker set, because then the name decides and there is no near miss.
- * - `'not-a-component'` — anything else. That includes a type declaration file
- *   (`shapes.d.ts`), which is never a component, so its extra dot is not worth
- *   explaining.
- *
- * Kept apart from `isComponentsLitTs` so that the watcher can explain the one
- * near miss worth mentioning, using the same checks that decided it. If the
- * message worked the rule out a second time, the two could drift apart.
- */
-type LitTsFileKind = 'component' | 'skipped-for-extra-dot' | 'not-a-component'
-
 function getLitTsFileKind(relPath: string, absPath: string): LitTsFileKind {
 	// Only asked in a Lit project, the same rule `.component` follows in
 	// scripts/fileNames.ts and for the same reason: a `.ts` file names no
@@ -795,12 +790,17 @@ function getLitTsFileKind(relPath: string, absPath: string): LitTsFileKind {
 	// No marker: an empty `.ts` file whose name carries no other dotted part, so
 	// a `Button.test.ts` or a `Button.d.ts` is left alone either way, and so is
 	// anything that turned up with content in it.
-	const isEmptyTsUnderSrc =
-		srcSubpathRegex('\\.ts$').test(relPath) && isEmptyOrWhitespace(absPath)
-	if (!isEmptyTsUnderSrc) return 'not-a-component'
-	if (!checkHasDottedNamePart(relPath)) return 'component'
+	//
+	// The name tests come first because they cost nothing, and the one test
+	// that reads the file comes last. A `.d.ts` file is settled without
+	// reading at all. A dotted name still has to be read, because the answer
+	// for an empty one (worth a line) differs from the answer for one that
+	// arrived with content (not worth one).
+	if (!srcSubpathRegex('\\.ts$').test(relPath)) return 'not-a-component'
 	const isTypeDeclarationFile = relPath.endsWith('.d.ts')
-	return isTypeDeclarationFile ? 'not-a-component' : 'skipped-for-extra-dot'
+	if (isTypeDeclarationFile) return 'not-a-component'
+	if (!isEmptyOrWhitespace(absPath)) return 'not-a-component'
+	return checkHasDottedNamePart(relPath) ? 'skipped-for-extra-dot' : 'component'
 }
 
 /**
@@ -817,28 +817,38 @@ function checkHasDottedNamePart(relPath: string): boolean {
 }
 
 /**
- * How both extra-dot lines end: what the rule is, and how to stop it
- * deciding. One string, so the component version and the story version
- * cannot describe the rule differently.
+ * The two things both extra-dot lines say in the same words: why the file was
+ * passed over, and the setting that changes it. What each line then tells the
+ * user to DO differs, because the two routes need different steps — see
+ * `getExtraDotNote` and `resolveTsStoryComponent`.
+ *
+ * The restart is part of the step because the config is read once, when
+ * `sb-deps` starts; a marker set while it is running changes nothing until
+ * then.
  */
-const EXTRA_DOT_NOTE_ENDING =
-	"isn't scaffolded as a Lit component while no component marker is set. Set litComponentSuffix (for example to 'lit') in your sb-deps config to choose components by name instead."
+const EXTRA_DOT_RULE =
+	"with no component marker set, a name with an extra dot isn't scaffolded as a Lit component"
+const SET_LIT_MARKER_STEP = `set litComponentSuffix to '${DEFAULT_LIT_COMPONENT_MARKER}' in your sb-deps config and restart sb-deps`
 
 /**
- * The line to print when a created file was left alone only because of an
- * extra dot in its name, or `null` when that is not why.
+ * The line printed when a created file was left alone only because of an extra
+ * dot in its name — for the watcher to print where `getLitTsFileKind` answered
+ * `'skipped-for-extra-dot'`.
  *
  * With no marker set, that dot is all that stops an empty `helper.test.ts`
  * from being scaffolded as a component. That is right for a test file, but
  * someone who meant `Button.primary.ts` as a component would otherwise get
- * nothing and no reason. The story version of this line is printed by
- * `resolveTsStoryComponent`.
+ * nothing and no reason. Setting the marker is not enough on its own for them:
+ * with one set, only a marked name is a component, so the line also names the
+ * file to rename to — after the restart, so the renamed file is seen by a
+ * watcher that knows the marker.
  */
-function getExtraDotNote(relPath: string, absPath: string): string | null {
-	const isSkippedForExtraDot =
-		getLitTsFileKind(relPath, absPath) === 'skipped-for-extra-dot'
-	if (!isSkippedForExtraDot) return null
-	return `left "${rel(absPath)}" alone — the extra dot in its name means it ${EXTRA_DOT_NOTE_ENDING}`
+function getExtraDotNote(absPath: string): string {
+	const markedFileName = basename(absPath).replace(
+		/\.ts$/,
+		`.${DEFAULT_LIT_COMPONENT_MARKER}.ts`,
+	)
+	return `left "${rel(absPath)}" alone — ${EXTRA_DOT_RULE}. If you meant it as one, ${SET_LIT_MARKER_STEP}, then rename it to "${markedFileName}".`
 }
 
 /**
@@ -2936,10 +2946,17 @@ function resolveTsStoryComponent(
 		// a marker the marked name is always returned. The user asked for this
 		// story by creating it, so say why nothing came of it — the component
 		// version of this line is `getExtraDotNote`.
+		//
+		// The remedy differs from the component version's. Here setting the
+		// marker IS enough, because a story finds the marked name by appending
+		// the marker to its own base — but only for a story created afterwards,
+		// since the watcher acts on a file when it appears and this one already
+		// has. Hence "delete it and create it again".
 		if (projectFamily === 'lit') {
 			const namedComponentPath = `${storyBase}.ts`
+			const markedComponentPath = `${storyBase}.${DEFAULT_LIT_COMPONENT_MARKER}.ts`
 			warn(
-				`left "${rel(absStoryPath)}" empty — the component it names, "${rel(namedComponentPath)}", has an extra dot in its name, so it ${EXTRA_DOT_NOTE_ENDING}`,
+				`left "${rel(absStoryPath)}" empty — it names "${rel(namedComponentPath)}", and ${EXTRA_DOT_RULE}. To get one, ${SET_LIT_MARKER_STEP}, then delete this story file and create it again: that will write "${rel(markedComponentPath)}" for it.`,
 			)
 		}
 		return null
@@ -3027,13 +3044,13 @@ function getSiblingProbeOrder(): Array<StoryFramework> {
  *
  * A family with no ending at all — Lit where the project set no marker — is
  * the one case that can answer `null` for a reason other than the family: it
- * calls a plain `.ts` file a component, and `isComponentsLitTs` reads "plain"
+ * calls a plain `.ts` file a component, and `getLitTsFileKind` reads "plain"
  * as carrying no other dotted part, so this has to read it the same way. Left
  * to differ, an empty `Button.utils.stories.ts` would have a component written
  * into `Button.utils.ts` that creating that same file by hand would not
  * produce.
  *
- * Only that half of the rule is shared. `isComponentsLitTs` additionally wants
+ * Only that half of the rule is shared. `getLitTsFileKind` additionally wants
  * the file to have been created empty, and this deliberately does not: the
  * question there is whether a file nobody asked about is a component, while
  * the question here is which component a story the user *did* ask for belongs
@@ -3052,7 +3069,7 @@ function getComponentPathForFamily(
 	if (!componentEnding) {
 		const plainComponentPath = `${storyBase}.ts`
 		// Asked of the path this would name, through the same helper
-		// `isComponentsLitTs` asks it of a created file, so the two cannot
+		// `getLitTsFileKind` asks it of a created file, so the two cannot
 		// disagree about what "plain" means.
 		return checkHasDottedNamePart(plainComponentPath)
 			? null
@@ -3176,11 +3193,13 @@ function startWatcher() {
 	 * extra template-migration logic, so it stays inline below.
 	 */
 	const COMPONENT_CREATE_BRANCHES: Array<{
-		// Takes the absolute path as well because one check needs to read the
-		// file, not just its name: with no marker set, an ordinary `.ts` file is
-		// only a Lit component if it was created empty. Every other check
-		// answers from the name alone and ignores the second argument.
-		checkIsMatch: (relPath: string, absPath: string) => boolean
+		// Takes the watcher's Lit answer as well, because the Lit check is the
+		// one that reads the file rather than just its name — with no marker set,
+		// an ordinary `.ts` file is only a component if it was created empty.
+		// The watcher works that answer out once per event and hands it in, so
+		// the file is not read a second time for the extra-dot line. Every other
+		// check answers from the name alone and ignores it.
+		checkIsMatch: (relPath: string, litTsFileKind: LitTsFileKind) => boolean
 		family: StoryFramework
 		handle: (absPath: string, relPath: string) => Promise<void>
 	}> = [
@@ -3224,7 +3243,7 @@ function startWatcher() {
 		// an Angular `Foo.component.ts` carries a second dotted part, which this
 		// check excludes either way.
 		{
-			checkIsMatch: (relPath, absPath) => isComponentsLitTs(relPath, absPath),
+			checkIsMatch: (_relPath, litTsFileKind) => litTsFileKind === 'component',
 			family: 'lit',
 			handle: (absPath, relPath) =>
 				handleSingleFileComponentCreation(
@@ -3290,17 +3309,21 @@ function startWatcher() {
 						}
 
 						// Everything between here and the rebuild at the bottom only runs
-						// on creation, and all of it is scaffolding. The three questions
-						// it asks of the path are asked once each, here, because the name
-						// check below needs all three to know whether this file is one
-						// the scaffolder would have touched at all — and asking again
-						// further down would mean the same regex work twice per event.
+						// on creation, and all of it is scaffolding. The questions it
+						// asks of the path are asked once each, here, because the name
+						// check below needs their answers to know whether this file is
+						// one the scaffolder would have touched at all — and asking
+						// again further down would mean the same work twice per event,
+						// which for the Lit question means reading the file twice.
 						// `isCreate` guards each one, so the update events that dominate
 						// while editing still skip the path work entirely.
 						const isCreate = ev.type === 'create'
+						const litTsFileKind: LitTsFileKind = isCreate
+							? getLitTsFileKind(relPath, abs)
+							: 'not-a-component'
 						const componentBranch = isCreate
 							? COMPONENT_CREATE_BRANCHES.find((branch) =>
-									branch.checkIsMatch(relPath, abs),
+									branch.checkIsMatch(relPath, litTsFileKind),
 								)
 							: undefined
 						const isStoryCreate = isCreate && isStoryFileUnderSrc(relPath)
@@ -3364,15 +3387,13 @@ function startWatcher() {
 						// stops an empty `.ts` file being scaffolded as a Lit component.
 						// Said as information rather than a warning, because for the
 						// commonest case — a new test file — being left alone is right.
-						// Only asked when no branch claimed the file: an Angular
+						// Only printed when no branch claimed the file: an Angular
 						// `Foo.component.ts` in a Lit project has a dot too, and already
 						// gets its own line from the framework-mismatch check below. The
 						// rebuild at the bottom still runs.
-						const extraDotNote =
-							isCreate && !componentBranch
-								? getExtraDotNote(relPath, abs)
-								: null
-						if (extraDotNote) info(extraDotNote)
+						const isSkippedForExtraDot =
+							!componentBranch && litTsFileKind === 'skipped-for-extra-dot'
+						if (isSkippedForExtraDot) info(getExtraDotNote(abs))
 
 						// STORY CREATE — fill the story (and its component if missing).
 						// Limited to SRC_DIR like the component-create branches below, so a story
