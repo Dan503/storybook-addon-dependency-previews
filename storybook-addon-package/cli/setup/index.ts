@@ -614,17 +614,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	})
 	logSbDepsConfigOutcome(sbDepsConfigResult, { separateWithRule: true })
 	// A cleared Lit marker is the one answer the write cannot record, because it
-	// is recorded by the key being absent. That holds wherever there is no config
-	// file; where one is there, it may set the key, and this never reads it. A
-	// file being there means the write was `skipped` or `blocked`, never
-	// `created` or `failed`, and only `blocked` has drawn a divider already.
+	// is recorded by the key being absent. That holds wherever the wizard's own
+	// file is the config; where one was there before, it may set the key, and
+	// this never reads it. Of the results that can mean that, only `blocked` has
+	// drawn a divider already.
 	const isLitMarkerCleared = litComponentSuffix === ''
-	const existingConfigFileName = isLitMarkerCleared
-		? findExistingConfigFileName(cwd)
+	const preExistingConfigFileName = isLitMarkerCleared
+		? findPreExistingConfigFileName(sbDepsConfigResult, cwd)
 		: null
-	if (existingConfigFileName) {
+	if (preExistingConfigFileName) {
 		if (sbDepsConfigResult.kind === 'skipped') rule()
-		logClearedLitMarkerNote(existingConfigFileName)
+		logClearedLitMarkerNote(preExistingConfigFileName)
 	}
 
 	rule()
@@ -739,6 +739,31 @@ async function readLitComponentMarkerAnswer(): Promise<string> {
 		if (!markerError) return answer
 		log(`  "${answer}" can't be used — ${markerError}.`)
 	}
+}
+
+/**
+ * The config file that was in the project root before the wizard's write, or
+ * `null` when there was none.
+ *
+ * Read from the write's result wherever it answers, not from the disk, because
+ * the write may have created a file itself — so a file there now is no evidence
+ * one was there before. `blocked` names the file that stopped it. `created` and
+ * `failed` both mean there was none, since the writer checks for one before it
+ * writes anything. Only `skipped` leaves it open: the writer returns it both
+ * when nothing needed writing, before any check, and when a file was there but
+ * nothing lost was worth naming. Either way a skipped write created nothing, so
+ * for that one the disk does answer.
+ *
+ * @param result - what `writeSbDepsConfigIfNeeded` returned
+ * @param cwd - the project root
+ */
+function findPreExistingConfigFileName(
+	result: SbDepsConfigPatchResult,
+	cwd: string,
+): string | null {
+	if (result.kind === 'blocked') return result.existingFileName
+	if (result.kind === 'skipped') return findExistingConfigFileName(cwd)
+	return null
 }
 
 /**
