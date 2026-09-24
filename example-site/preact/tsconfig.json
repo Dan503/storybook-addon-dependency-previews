@@ -9,7 +9,7 @@
 	// checks `preview.tsx`, and the click guard in it is the one piece of
 	// hand-written logic on this site with no check over it at all — there is
 	// no ESLint here, and Storybook strips its types rather than checking them.
-	// Four of the five sibling sites make the same choice; Svelte instead lists
+	// Every sibling site but Svelte makes the same choice; Svelte instead lists
 	// its Storybook folder and lives with the fresh-clone failure, so the other
 	// side of this trade does have a taker.
 	"include": ["**/*.ts", "**/*.tsx", "prettier.config.js", "sb-deps.config.js"],
