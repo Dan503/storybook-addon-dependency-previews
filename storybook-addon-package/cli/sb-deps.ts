@@ -878,9 +878,9 @@ function getExtraDotNote(absPath: string): string {
  * Worked out by the capitals check's own rule, `getNameWithLowerCasedEndings`,
  * given the context the project will be in once the marker is set — not by a
  * copy of that rule — so the advice and the check cannot disagree. That check
- * is the one place a name ending is read regardless of capitals, and it does so
- * in order to refuse a wrong spelling; every reading that acts on an ending,
- * `getMarkedTsComponentPath` included, is exact on purpose.
+ * reads a name ending regardless of capitals in order to refuse a wrong
+ * spelling; every reading that acts on an ending, `getMarkedTsComponentPath`
+ * included, is exact on purpose.
  *
  * It says nothing about whether the rest of the name can become a component —
  * a name the generated code cannot carry is refused by
