@@ -743,7 +743,8 @@ type LitTsFileKind = 'component' | 'skipped-for-extra-dot' | 'not-a-component'
  * The watcher asks this once per created file and uses the one answer twice:
  * to decide whether the Lit branch claims the file, and to decide whether it
  * gets the extra-dot line. So the line cannot disagree with the decision it
- * explains, and the file is read at most once.
+ * explains, and working out the answer reads the file at most once. (Scaffolding
+ * a component reads it once more, to see whether it is still empty.)
  *
  * **The emptiness half applies only where there is no marker**, and it is what
  * separates a component from an ordinary source file there. Every other family
@@ -842,13 +843,25 @@ const SET_LIT_MARKER_STEP = `set litComponentSuffix to '${DEFAULT_LIT_COMPONENT_
  * with one set, only a marked name is a component, so the line also names the
  * file to rename to — after the restart, so the renamed file is seen by a
  * watcher that knows the marker.
+ *
+ * A name that already carries the marker (`Button.lit.ts`, from someone using
+ * the marked naming before setting the key) needs no rename — only to be
+ * created again once the watcher knows the marker, since it acts on a file
+ * when it appears. The marked name comes from `getMarkedTsComponentPath`, the
+ * same rule the scaffolder uses, so this can never advise a `Button.lit.lit.ts`.
  */
 function getExtraDotNote(absPath: string): string {
-	const markedFileName = basename(absPath).replace(
-		/\.ts$/,
-		`.${DEFAULT_LIT_COMPONENT_MARKER}.ts`,
+	const fileName = basename(absPath)
+	const nameWithoutExtension = fileName.replace(/\.ts$/, '')
+	const markedFileName = getMarkedTsComponentPath(
+		nameWithoutExtension,
+		`.${DEFAULT_LIT_COMPONENT_MARKER}`,
 	)
-	return `left "${rel(absPath)}" alone — ${EXTRA_DOT_RULE}. If you meant it as one, ${SET_LIT_MARKER_STEP}, then rename it to "${markedFileName}".`
+	const isAlreadyMarked = markedFileName === fileName
+	const lastStep = isAlreadyMarked
+		? `then delete it and create it again, since its name already carries the '${DEFAULT_LIT_COMPONENT_MARKER}' marker`
+		: `then rename it to "${markedFileName}"`
+	return `left "${rel(absPath)}" alone — ${EXTRA_DOT_RULE}. If you meant it as one, ${SET_LIT_MARKER_STEP}, ${lastStep}.`
 }
 
 /**
@@ -2954,7 +2967,13 @@ function resolveTsStoryComponent(
 		// has. Hence "delete it and create it again".
 		if (projectFamily === 'lit') {
 			const namedComponentPath = `${storyBase}.ts`
-			const markedComponentPath = `${storyBase}.${DEFAULT_LIT_COMPONENT_MARKER}.ts`
+			// Through the helper `getComponentPathForFamily` will use once the
+			// marker is set, so a `Button.lit.stories.ts` is promised
+			// `Button.lit.ts`, which is what will actually be written.
+			const markedComponentPath = getMarkedTsComponentPath(
+				storyBase,
+				`.${DEFAULT_LIT_COMPONENT_MARKER}`,
+			)
 			warn(
 				`left "${rel(absStoryPath)}" empty — it names "${rel(namedComponentPath)}", and ${EXTRA_DOT_RULE}. To get one, ${SET_LIT_MARKER_STEP}, then delete this story file and create it again: that will write "${rel(markedComponentPath)}" for it.`,
 			)
@@ -3075,10 +3094,24 @@ function getComponentPathForFamily(
 			? null
 			: plainComponentPath
 	}
-	const doesStoryBaseCarryEnding = storyBase.endsWith(componentEnding)
-	return doesStoryBaseCarryEnding
-		? `${storyBase}.ts`
-		: `${storyBase}${componentEnding}.ts`
+	return getMarkedTsComponentPath(storyBase, componentEnding)
+}
+
+/**
+ * The `.ts` component path for `base` carrying `componentEnding`, adding the
+ * ending only when the base does not already end in it — so `Foo` and
+ * `Foo.component` both give `Foo.component.ts`, never `Foo.component.component.ts`.
+ *
+ * The one owner of that rule. `getComponentPathForFamily` names a story's
+ * component with it, and the extra-dot lines name the file they advise with
+ * it, so what a line promises is what the scaffolder will write.
+ */
+function getMarkedTsComponentPath(
+	base: string,
+	componentEnding: string,
+): string {
+	const doesBaseCarryEnding = base.endsWith(componentEnding)
+	return doesBaseCarryEnding ? `${base}.ts` : `${base}${componentEnding}.ts`
 }
 
 /**
