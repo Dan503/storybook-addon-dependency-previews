@@ -1,0 +1,51 @@
+/* The values the components share: the site's colours, taken from Tailwind's
+   own theme file so they match the sibling sites exactly, and the drawing
+   depths. A stylesheet loaded for the page does not reach inside a component,
+   but a custom property does, so these are declared once here; everything else
+   is written out in the component that uses it. */
+html {
+	--globalColor_teal100: oklch(95.3% 0.051 180.801);
+	--globalColor_teal200: oklch(91% 0.096 180.426);
+	--globalColor_teal700: oklch(51.1% 0.096 186.391);
+	--globalColor_teal900: oklch(38.6% 0.063 188.416);
+	--globalColor_gray200: oklch(92.8% 0.006 264.531);
+	--globalColor_gray500: oklch(55.1% 0.027 264.364);
+	--globalColor_gray900: oklch(21% 0.034 264.665);
+	--globalColor_red500: oklch(63.7% 0.237 25.331);
+
+	/* How far in front each layer is drawn, highest first. Everything not
+	   listed is at the browser's default depth, below all of these. */
+	--globalZIndex_bgImageContent: 10; /* above the picture and its wash in BgImageContainerAtom */
+
+	/* Tailwind sets this on the page, and the components inherit it. */
+	line-height: 1.5;
+}
+
+html,
+body,
+/* The node the site mounts into, and the ones Storybook mounts a story into —
+   its web-components renderer puts `#root-inner` inside `#storybook-root`,
+   which the other frameworks' renderers do not. A template asking for full
+   height has nothing to measure against without them. */
+#app,
+#storybook-root,
+#root-inner {
+	display: grid;
+	min-height: 100%;
+}
+
+/* The font and its smoothing are inherited, so setting them here reaches
+   inside every component without any of them repeating it. */
+body {
+	margin: 0;
+	font-family:
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+		'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+code {
+	font-family:
+		source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}

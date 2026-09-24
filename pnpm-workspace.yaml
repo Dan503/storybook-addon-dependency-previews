@@ -7,6 +7,7 @@ packages:
   - 'example-site/vue' # ← Vue demo app (currently throwaway plain Vue + Vite; will become Nuxt-powered in a follow-up PR)
   - 'example-site/solid' # ← Solid demo app (SolidStart + storybook-solidjs-vite)
   - 'example-site/preact' # ← Preact demo app (Preact + Vite + @storybook/preact-vite)
+  - 'example-site/lit' # ← Lit demo app (Lit + Vite + @storybook/web-components-vite)
 onlyBuiltDependencies:
   - esbuild
 patchedDependencies:

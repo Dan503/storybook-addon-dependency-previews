@@ -1,0 +1,4 @@
+pnpm-lock.yaml
+custom-elements.json
+.storybook/dependency-previews.json
+.storybook/dependency-previews.raw.json
