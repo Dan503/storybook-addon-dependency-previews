@@ -2384,7 +2384,11 @@ function scaffoldLitComponent(absCompPath: string) {
 	const base = componentBaseFromLitComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const tagName = getLitTagName(base)
-	warnIfLitTagIsUnusable(tagName, absCompPath)
+	warnIfLitTagIsUnusable({
+		tagName,
+		absCompPath,
+		absWrittenPath: absCompPath,
+	})
 
 	const tpl =
 		SCAFFOLD_CONFIG?.lit?.component?.({ componentName, tagName, base }) ??
@@ -2438,10 +2442,23 @@ declare global {
  */
 const litComponentsWarnedAboutTheirTag = new Set<string>()
 
+interface WarnIfLitTagIsUnusableParams {
+	/** the finished tag, prefix included */
+	tagName: string
+	/** the component the tag was worked out for, which is what one warning per component is counted by */
+	absCompPath: string
+	/** the file just written with the tag in it, which is the one the warning names */
+	absWrittenPath: string
+}
+
 /**
  * Say so when the tag worked out for a component is one a browser will not
  * register, and name which of the rules it breaks. Says it once per component,
  * however many files carrying that tag get written.
+ *
+ * Names the file just written rather than the component, because on the story
+ * route the component may be one the user wrote, which this never reads — so
+ * the only file known to carry this tag is the one written here.
  *
  * The file is still written: the tag is built from the component's own name
  * and the user's own `litTagPrefix`, and quietly overriding either would leave
@@ -2468,13 +2485,17 @@ const litComponentsWarnedAboutTheirTag = new Set<string>()
  * holding an apostrophe writes a story that will not parse. That is shared
  * with every family here and untouched by this change.
  */
-function warnIfLitTagIsUnusable(tagName: string, absCompPath: string) {
+function warnIfLitTagIsUnusable({
+	tagName,
+	absCompPath,
+	absWrittenPath,
+}: WarnIfLitTagIsUnusableParams) {
 	const tagError = getLitTagError(tagName, LIT_TAG_PREFIX)
 	if (!tagError) return
 	if (litComponentsWarnedAboutTheirTag.has(absCompPath)) return
 	litComponentsWarnedAboutTheirTag.add(absCompPath)
 	warn(
-		`"${rel(absCompPath)}" registers the tag "${tagName}", which a browser will ` +
+		`"${rel(absWrittenPath)}" uses the tag "${tagName}", which a browser will ` +
 			`refuse — ${tagError}.`,
 	)
 }
@@ -2530,7 +2551,7 @@ const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
  *
  * The other two name both halves, because for them both genuinely work. A
  * missing hyphen is supplied by either one. A reserved name is reserved as a
- * whole, so renaming the file fixes it and so does changing the prefix in
+ * whole, so renaming the component fixes it and so does changing the prefix in
  * front of it. Naming one half for either would be picking arbitrarily
  * between two real answers.
  *
@@ -2555,7 +2576,7 @@ function getLitTagError(tagName: string, tagPrefix: string): string | null {
 		return `a tag cannot contain "${unusableCharacter}", which came from ${getLitTagPartDescription(didCharacterComeFromPrefix)}`
 	}
 	if (RESERVED_TAG_NAMES.includes(tagName))
-		return 'a tag cannot be one of the names the specification keeps for itself, and this is one of them — renaming the file fixes it, as does changing litTagPrefix'
+		return 'a tag cannot be one of the names the specification keeps for itself, and this is one of them — renaming the component fixes it, as does changing litTagPrefix'
 	return null
 }
 
@@ -2568,7 +2589,7 @@ function getLitTagError(tagName: string, tagPrefix: string): string | null {
 function getLitTagPartDescription(isFromPrefix: boolean): string {
 	return isFromPrefix
 		? 'litTagPrefix, which is what to change'
-		: "the component's name, so renaming the file is what fixes it"
+		: "the component's name, so renaming the component is what fixes it"
 }
 
 /** Is this one character one a tag may not hold? See `getLitTagError` for what is and isn't judged. */
@@ -2588,7 +2609,11 @@ function scaffoldStoryForLitComponent(
 	// The story hardcodes the tag as well, and reaches here on paths that never
 	// write the component — one created with content already in it, or a story
 	// created beside a component that is already there.
-	warnIfLitTagIsUnusable(tagName, absCompPath)
+	warnIfLitTagIsUnusable({
+		tagName,
+		absCompPath,
+		absWrittenPath: targetStoryPath,
+	})
 	const componentImportPath = litComponentImportName(absCompPath)
 	const title = makeTitleFromComponent(absCompPath, base)
 	const atomic = detectAtomicTag(absCompPath)

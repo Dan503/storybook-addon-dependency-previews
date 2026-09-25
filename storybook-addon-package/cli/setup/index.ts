@@ -771,7 +771,8 @@ function findPreExistingConfigFileName(
  * file may undo that answer.
  *
  * A marker the user asked for is covered by the config write's own messages,
- * which name every value it could not record. No marker is the one answer those
+ * which name the values it could not record that a user can add by hand — the
+ * marker among them. No marker is the one answer those
  * messages cannot cover, because it is recorded by the key being absent rather
  * than by anything written — so nothing is ever reported unrecorded, even where
  * the existing file sets the key. The file is never read, so the note asks the
