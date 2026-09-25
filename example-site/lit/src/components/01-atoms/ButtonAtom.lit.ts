@@ -1,22 +1,20 @@
 import { LitElement, css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import { ifDefined } from 'lit/directives/if-defined.js'
 import { baseStyles } from '../../lib/baseStyles'
 
 /**
  * The site's button.
  *
- * It takes no click handler: listen for `click` on the tag itself. A click on
- * the button inside travels out of the component and is reported as coming
- * from the tag, and the button is all there is inside it, so the two mean the
- * same thing.
+ * Always a plain `type="button"`: the button sits inside the component's
+ * shadow root, where it cannot submit or reset a form outside it, so offering
+ * those types would promise something it cannot do.
  *
  * @slot - the button's label
  */
 @customElement('app-button-atom')
 export class ButtonAtom extends LitElement {
-	/** What the button does in a form. Left out, the browser's own default applies. */
-	@property() type?: 'button' | 'submit' | 'reset'
+	/** Runs when the button is clicked. */
+	@property({ attribute: false }) onClick?: (event: MouseEvent) => void
 
 	static override styles = [
 		baseStyles,
@@ -41,7 +39,7 @@ export class ButtonAtom extends LitElement {
 	]
 
 	override render() {
-		return html`<button type=${ifDefined(this.type)} class="ButtonAtom">
+		return html`<button type="button" class="ButtonAtom" @click=${this.onClick}>
 			<slot></slot>
 		</button>`
 	}

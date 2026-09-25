@@ -88,7 +88,7 @@ export class DetailPageTemplate extends LitElement {
 		if (this.isLoading) return html`<p>Loading...</p>`
 		if (!this.meal) {
 			return html`<p class="notFound">Meal not found.</p>
-				<app-button-atom @click=${() => history.back()}
+				<app-button-atom .onClick=${() => history.back()}
 					>Go back</app-button-atom
 				>`
 		}
