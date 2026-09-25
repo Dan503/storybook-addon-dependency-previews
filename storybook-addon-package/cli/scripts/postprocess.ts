@@ -7,21 +7,36 @@ import {
 	stripComponentEnding,
 } from './fileNames.js'
 
-const [, , inPathArg, outPathArg, srcDirArg, projectFamilyArg] = process.argv
-// Only `.component` needs this, and only to tell an Angular component file from
-// an ordinary dotted `.ts` name. `sb-deps.ts` passes the family it detected, or
-// an empty string when it could not detect one; a direct manual invocation
-// passes nothing at all.
+const [
+	,
+	,
+	inPathArg,
+	outPathArg,
+	srcDirArg,
+	projectFamilyArg,
+	litComponentSuffixArg,
+] = process.argv
+// Only the endings that mark a component file need this, and only to tell such
+// a file from an ordinary dotted `.ts` name: `.component` in an Angular
+// project, and whatever `litComponentSuffix` is set to in a Lit project.
+// `sb-deps.ts` passes the family it detected, or an empty string when it could
+// not detect one, and the Lit marker without its dot, empty when there is none;
+// a direct manual invocation passes neither.
 //
-// Anything but `angular` reads as not-Angular, including both unknowns. An
-// extra candidate story name is not free: it is matched against the folder like
-// any other, so it can hit a real file. In a project this tool does not
-// recognise, an `auth.stories.ts` belonging to `auth.ts` would be taken as the
-// story for an `auth.component.ts` sitting beside it — the graph would then
-// show one component's story on another. A missing pairing is a gap; a wrong
-// one is wrong data, so the guess falls that way.
+// Anything but `angular` reads as not-Angular, and anything but `lit` as
+// not-Lit, including both unknowns. An extra candidate story name is not free:
+// it is matched against the folder like any other, so it can hit a real file.
+// In a project this tool does not recognise, an `auth.stories.ts` belonging to
+// `auth.ts` would be taken as the story for an `auth.component.ts` sitting
+// beside it — the graph would then show one component's story on another. A
+// missing pairing is a gap; a wrong one is wrong data, so the guess falls that
+// way.
 const nameEndingContext = {
 	isAngularProject: projectFamilyArg === 'angular',
+	litComponentEnding:
+		projectFamilyArg === 'lit' && litComponentSuffixArg
+			? `.${litComponentSuffixArg}`
+			: null,
 }
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
 const outPath = resolve(outPathArg || '.storybook/dependency-previews.json')
@@ -267,15 +282,21 @@ function getRawStoryFileData(componentPath: string) {
 	const base = componentPath.replace(/\.\w+$/, '')
 	const componentExt = extname(componentPath)
 
-	// Angular: strip the `.component` suffix so e.g. `Button.component.ts`
-	// looks for `Button.stories.ts` rather than `Button.component.stories.ts`.
+	// Strip the ending that marks a component file, so that e.g. Angular's
+	// `Button.component.ts` and Lit's `Button.lit.ts` look for
+	// `Button.stories.ts` rather than `Button.component.stories.ts` or
+	// `Button.lit.stories.ts`.
 	//
-	// Through the shared rule rather than an inline pattern, so both conditions
-	// on that ending travel with it — an Angular project, and a `.ts` or
-	// `.html` file. Spelling it here is what let the project half arrive
-	// without the extension half.
-	const angularBase = stripComponentEnding(base, componentExt, nameEndingContext)
-	const isAngular = angularBase !== base
+	// Through the shared rule rather than an inline pattern, so every condition
+	// on that ending travels with it — the project's framework, and the
+	// extensions the ending is read on. Spelling it here is what let the project
+	// half arrive without the extension half.
+	const baseWithoutComponentEnding = stripComponentEnding(
+		base,
+		componentExt,
+		nameEndingContext,
+	)
+	const hasComponentEnding = baseWithoutComponentEnding !== base
 
 	// Search the component's own extension first so matching pairs win when
 	// both ambiguous siblings exist.
@@ -288,17 +309,17 @@ function getRawStoryFileData(componentPath: string) {
 	for (const ext of orderedExts) {
 		candidates.push(`${base}.stories${ext}`)
 		candidates.push(`${base}.story${ext}`)
-		if (isAngular) {
-			candidates.push(`${angularBase}.stories${ext}`)
-			candidates.push(`${angularBase}.story${ext}`)
+		if (hasComponentEnding) {
+			candidates.push(`${baseWithoutComponentEnding}.stories${ext}`)
+			candidates.push(`${baseWithoutComponentEnding}.story${ext}`)
 		}
 	}
 
 	// Read once, not once per candidate: every candidate is built from
 	// `componentPath` with only its ending changed, so they all sit in the
 	// component's own folder. There are a dozen or more of them — twice that for
-	// an Angular component, which has a second base to try — and this runs for
-	// every module and every edge on every rebuild.
+	// a component whose name carries a marking ending, which has a second base to
+	// try — and this runs for every module and every edge on every rebuild.
 	const folderEntries = readFolderEntriesOrNull(dirname(componentPath))
 	if (!folderEntries) return { storyFileData: null, storyFilePath: null }
 

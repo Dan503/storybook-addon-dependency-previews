@@ -100,15 +100,23 @@ export interface WriteSbDepsConfigOptions {
 	 * @default 'stories'
 	 */
 	storybookFileExtension?: NonNullable<SbDepsConfig['storybookFileExtension']>
+	/**
+	 * What marks a Lit component file, without its dot. Anything non-empty gets
+	 * the config written even for the default `srcDir`, because the code's own
+	 * default is no marker: without the key any plain `.ts` file created empty
+	 * under the source folder is treated as a component, which is the opposite
+	 * of what setting one asks for. Left out for a project that isn't Lit.
+	 */
+	litComponentSuffix?: string
 }
 
 /**
  * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`,
- * the `tsxFramework` scaffolder signal, and/or a non-default
- * `storybookFileExtension`. Reports `skipped` when there's nothing worth
- * persisting — i.e. `srcDir === 'src'` (bundled default) AND `tsxFramework` is
- * the default `'react'` AND `storybookFileExtension` is the default
- * `'stories'`.
+ * the `tsxFramework` scaffolder signal, a non-default `storybookFileExtension`,
+ * and/or a Lit project's component marker. Reports `skipped` when there's
+ * nothing worth persisting — i.e. `srcDir === 'src'` (bundled default) AND
+ * `tsxFramework` is the default `'react'` AND `storybookFileExtension` is the
+ * default `'stories'` AND no Lit marker was asked for.
  *
  * Reports `blocked` when one of the candidate config filenames already exists
  * (the loader at `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never
@@ -127,13 +135,19 @@ export function writeSbDepsConfigIfNeeded(
 		isEsm,
 		tsxFramework = 'react',
 		storybookFileExtension = 'stories',
+		litComponentSuffix,
 	} = opts
 
 	const needsSrcDir = srcDir !== 'src'
 	const needsTsxFramework = tsxFramework !== 'react'
 	const needsStorybookFileExtension = storybookFileExtension === 'story'
+	// Any marker at all is worth writing, because the code's own default is none.
+	const needsLitComponentSuffix = !!litComponentSuffix
 	const hasNothingWorthWriting =
-		!needsSrcDir && !needsTsxFramework && !needsStorybookFileExtension
+		!needsSrcDir &&
+		!needsTsxFramework &&
+		!needsStorybookFileExtension &&
+		!needsLitComponentSuffix
 	if (hasNothingWorthWriting) return { kind: 'skipped' }
 
 	// Collect each non-default field once as both its file line and a
@@ -141,16 +155,20 @@ export function writeSbDepsConfigIfNeeded(
 	// single source of truth for "which fields differ from the defaults":
 	// `srcDir` when it's non-default, `tsxFramework` for a Solid or Preact
 	// project (so the scaffolder picks that framework's templates for `.tsx`
-	// files), and `storybookFileExtension: 'story'` for a non-default story
-	// extension. Adding a field later updates both outputs from this one list.
-	// Built before the existing-file check below so a blocked write can say
-	// which values went unrecorded, not merely that one was blocked.
+	// files), `storybookFileExtension: 'story'` for a non-default story
+	// extension, and a Lit project's component marker. Adding a field later
+	// updates both outputs from this one list. Built before the existing-file
+	// check below so a blocked write can say which values went unrecorded, not
+	// merely that one was blocked.
 	//
 	// `canUserAddByHand` says whether telling the user to put the field in an
 	// existing config by hand would change anything. It would for `srcDir`
 	// (nothing else records it, so the dependency scan stays pointed at the
-	// wrong folder) and for `storybookFileExtension` (read only from the config,
-	// with no detection fallback). It would not for `tsxFramework`: where the
+	// wrong folder), for `storybookFileExtension` (read only from the config,
+	// with no detection fallback) and for `litComponentSuffix` (also read only
+	// from the config, and its absence means the opposite of what the user just
+	// chose: every plain `*.ts` file created empty becomes a component). It
+	// would not for `tsxFramework`: where the
 	// scaffolder recognises the project it already falls back to the same value
 	// the wizard computed, and where it does not, no `.tsx` file is scaffolded at
 	// all — so asking for the key would send the user after something that cannot
@@ -162,7 +180,7 @@ export function writeSbDepsConfigIfNeeded(
 		canUserAddByHand: boolean
 	}> = []
 	if (needsSrcDir) {
-		const srcDirLiteral = `'${srcDir.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+		const srcDirLiteral = toSingleQuotedLiteral(srcDir)
 		fields.push({
 			line: `\tsrcDir: ${srcDirLiteral},`,
 			summary: `srcDir: ${srcDirLiteral}`,
@@ -183,20 +201,27 @@ export function writeSbDepsConfigIfNeeded(
 			canUserAddByHand: true,
 		})
 	}
+	if (needsLitComponentSuffix) {
+		const litComponentSuffixLiteral = toSingleQuotedLiteral(litComponentSuffix)
+		fields.push({
+			line: `\tlitComponentSuffix: ${litComponentSuffixLiteral},`,
+			summary: `litComponentSuffix: ${litComponentSuffixLiteral}`,
+			canUserAddByHand: true,
+		})
+	}
 	const fieldsToNameInTheMessage = fields
 		.filter((f) => f.canUserAddByHand)
 		.map((f) => f.summary)
 
-	for (const name of CONFIG_FILE_CANDIDATES) {
-		if (existsSync(resolve(cwd, name))) {
-			// Nothing the user can act on, so nothing to say — same answer as a
-			// write that was never needed.
-			if (fieldsToNameInTheMessage.length === 0) return { kind: 'skipped' }
-			return {
-				kind: 'blocked',
-				existingFileName: name,
-				fields: fieldsToNameInTheMessage,
-			}
+	const existingFileName = findExistingConfigFileName(cwd)
+	if (existingFileName) {
+		// Nothing the user can act on, so nothing to say — same answer as a
+		// write that was never needed.
+		if (fieldsToNameInTheMessage.length === 0) return { kind: 'skipped' }
+		return {
+			kind: 'blocked',
+			existingFileName,
+			fields: fieldsToNameInTheMessage,
 		}
 	}
 
@@ -228,4 +253,28 @@ ${configBody}
 		}
 	}
 	return { kind: 'created', path, fields: fields.map((f) => f.summary) }
+}
+
+/**
+ * A value as a single-quoted string the generated config file can hold, with
+ * backslashes and single quotes escaped — a Windows `srcDir` carries the first
+ * and a folder name can carry the second.
+ */
+function toSingleQuotedLiteral(value: string): string {
+	return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+}
+
+/**
+ * The config file already in the project root, or `null` when there is none.
+ * Exported for the one answer a write cannot record: a Lit project asking for no
+ * component marker, which is recorded by the key being absent, so it is only
+ * safe where no existing file might set it.
+ *
+ * @param cwd - the project root
+ */
+export function findExistingConfigFileName(cwd: string): ConfigFileName | null {
+	return (
+		CONFIG_FILE_CANDIDATES.find((name) => existsSync(resolve(cwd, name))) ??
+		null
+	)
 }

@@ -90,6 +90,34 @@ export interface SvelteDecoratorScaffoldContext {
 	componentImportPath: string
 }
 
+export interface LitComponentScaffoldContext {
+	/** PascalCase component name, e.g. `"ButtonAtom"` */
+	componentName: string
+	/** Browser element tag the component registers itself as, e.g. `"app-button-atom"` */
+	tagName: string
+	/**
+	 * Base file name without its extension or its component marker, e.g.
+	 * `"ButtonAtom"` for both `ButtonAtom.ts` and `ButtonAtom.lit.ts`.
+	 */
+	base: string
+}
+
+export interface LitStoryScaffoldContext extends LitComponentScaffoldContext {
+	/** Storybook story title, e.g. `"Atoms / Button Atom"` */
+	title: string
+	/** Story tags, e.g. `["autodocs", "atom"]` */
+	tags: string[]
+	/**
+	 * What to import the component from, relative to the story file, without a
+	 * leading `./` and without the `.ts` extension — e.g. `"ButtonAtom.lit"`.
+	 *
+	 * Use this rather than building the path out of `base`, which drops the
+	 * component marker: with `litComponentSuffix` set to `'lit'` the file is
+	 * `ButtonAtom.lit.ts` while the base is `ButtonAtom`.
+	 */
+	componentImportPath: string
+}
+
 export interface AngularBaseScaffoldContext {
 	/** PascalCase component name, e.g. `"ButtonAtom"` */
 	componentName: string
@@ -171,6 +199,95 @@ export interface SbDepsConfig {
 	 * @example ''      →  selector: 'button-atom'
 	 */
 	angularSelectorPrefix?: string
+
+	/**
+	 * What marks a file as a Lit component, written without its dot. Every
+	 * answer is about files under the source folder; nothing outside it is a
+	 * component whatever it is called.
+	 *
+	 * With `'lit'`, only `Button.lit.ts` there is treated as a component. Leave
+	 * it out, or set it to the empty string, and a plain `.ts` file counts
+	 * instead — meaning one that is not a story, carries no other dotted part
+	 * in its name, and is created empty. So `Button.test.ts` and `Button.d.ts`
+	 * are left alone either way, and so is a `helpers.ts` that arrives with
+	 * something already in it. With no marker, an empty `Button.test.ts` also
+	 * gets a line saying the extra dot is why, because the dot is all that
+	 * stopped it — which is what someone who meant `Button.primary.ts` as a
+	 * component needs to know. For them a marker alone is not enough: with one
+	 * set, only a marked name is a component, so the file has to become
+	 * `Button.primary.lit.ts` as well, and `sb-deps` has to be restarted to read
+	 * the new setting. A `.d.ts` file gets no line, since it is never a
+	 * component.
+	 *
+	 * The created-empty condition is only there where there is no marker, and it is
+	 * what tells a component from an ordinary source file when the name says
+	 * nothing: a file created empty is this tool's own signal for "fill this
+	 * in", while one that arrives with content made no such request. Set a
+	 * marker and the name carries the claim, so a non-empty `Button.lit.ts`
+	 * still gets its story.
+	 *
+	 * **Creating the empty story file yourself asks for a story**, and what it
+	 * finds depends on the marker, which is worth knowing before you reach for
+	 * it:
+	 *
+	 * - **With no marker**, `helpers.stories.ts` finds `helpers.ts` whatever is
+	 *   in it. That is how you get a story for a file this tool would otherwise
+	 *   leave alone. A dotted name is the exception: `Button.test.stories.ts`
+	 *   writes nothing, because `Button.test.ts` is not a component here, and
+	 *   the watcher prints a line saying so.
+	 * - **With a marker**, it looks for the marked name and writes one if it is
+	 *   not there. `helpers.stories.ts` gives you a new `helpers.lit.ts` stub
+	 *   and a story for that, and your own `helpers.ts` is neither found nor
+	 *   mentioned — a plain `.ts` file is not a component in that project, so
+	 *   there is no spelling by which it could be found. Rename it to
+	 *   `helpers.lit.ts` if you want it storied.
+	 *
+	 * Only read in a Lit project, so it changes nothing for any other
+	 * framework.
+	 *
+	 * The `sb-deps setup` wizard asks for this in a Lit project and writes
+	 * `'lit'` unless you ask it for something else, so `Button.lit.ts` is the
+	 * shape a project set up by the wizard ends up with. Must contain only
+	 * lower-case letters, digits, `_` and `-`, and may not be `stories`,
+	 * `story`, `component` or `decorator` — those already mean something to
+	 * this tool; anything else is rejected at load time with a warning and no
+	 * marker. Capitals are refused rather than quietly lowered, because a name
+	 * ending is read in lower case everywhere in this tool and a marker spelled
+	 * `Lit` would be honoured in some places and missed in others.
+	 *
+	 * @example 'lit'  →  `Button.lit.ts` is a component, `Button.ts` is not
+	 * @example ''     →  a plain `.ts` file created empty is a component
+	 */
+	litComponentSuffix?: string
+
+	/**
+	 * Prefix put in front of the tag a Lit component registers itself as.
+	 * Defaults to `'app-'`. Set to `''` for no prefix.
+	 *
+	 * The tag is the component's file name in hyphenated form with this prefix
+	 * in front of it — unless the name already starts with the prefix, in which
+	 * case it is used as it stands, so `app-button-atom.ts` gives
+	 * `app-button-atom` rather than `app-app-button-atom`.
+	 *
+	 * A browser accepts a tag only when it contains a hyphen, starts with a
+	 * lower-case letter, holds nothing outside the characters a tag name
+	 * allows, and is not one of the handful of names the specification keeps
+	 * for itself (`font-face` and its relatives). The default prefix supplies
+	 * the hyphen and the leading letter for even a one-word name like
+	 * `Button.ts`, and puts every reserved name out of reach. Clear it and all
+	 * four become yours to get right; the scaffolder warns, naming whichever
+	 * one the tag it worked out breaks, and writes the file anyway.
+	 *
+	 * The one thing it will not take from you is a prefix holding a character
+	 * no tag may contain. That is refused outright, with a message, and this
+	 * falls back to `'app-'` — because the prefix is written into the generated
+	 * source, so honouring it would leave you a file that does not compile.
+	 *
+	 * @example 'app-'  →  tag: 'app-button-atom'
+	 * @example 'my-'   →  tag: 'my-button-atom'
+	 * @example ''      →  tag: 'button-atom'
+	 */
+	litTagPrefix?: string
 
 	/**
 	 * Which flavor to scaffold for `.tsx` component and story files.
@@ -285,6 +402,12 @@ export interface SbDepsConfig {
 			component?: (ctx: PreactComponentScaffoldContext) => string
 			/** Template for the `.stories.tsx` story file (Preact projects) */
 			story?: (ctx: PreactStoryScaffoldContext) => string
+		}
+		lit?: {
+			/** Template for the component `.ts` file (Lit projects) */
+			component?: (ctx: LitComponentScaffoldContext) => string
+			/** Template for the `.stories.ts` story file (Lit projects) */
+			story?: (ctx: LitStoryScaffoldContext) => string
 		}
 		angular?: {
 			/** Template for the `.component.ts` file */
