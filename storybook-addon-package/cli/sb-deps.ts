@@ -2457,8 +2457,7 @@ interface WarnIfLitTagIsUnusableParams {
  * however many files carrying that tag get written.
  *
  * Names the file just written rather than the component, because on the story
- * route the component may be one the user wrote, which this never reads — so
- * the only file known to carry this tag is the one written here.
+ * route the component may be one the user wrote, which this never reads.
  *
  * The file is still written: the tag is built from the component's own name
  * and the user's own `litTagPrefix`, and quietly overriding either would leave
@@ -2582,7 +2581,7 @@ function getLitTagError(tagName: string, tagPrefix: string): string | null {
 
 /**
  * Which half of the tag to point the user at — the setting they change, or the
- * file they rename.
+ * component they rename.
  *
  * @param isFromPrefix - whether the offending part came from `litTagPrefix`
  */
