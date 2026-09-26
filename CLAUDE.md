@@ -37,11 +37,12 @@ pnpm typecheck    # Type-check both browser and CLI tsconfigs
 ```sh
 pnpm dev          # Vite dev server — every site but angular, which uses `start` (ng serve)
 pnpm test         # react (Vitest) and angular (ng test) only — the rest have no test script
-pnpm lint         # ESLint — react and svelte only; never run by `check`
+pnpm lint         # ESLint on react and svelte, never run by their `check`; lit-analyzer on
+                  # lit, which checks the markup inside its templates
 pnpm format       # Prettier, writing changes — every site but angular
 pnpm typecheck    # Type-check the site — every site (tsc, svelte-check + tsc, or nuxt typecheck)
-pnpm check        # Report only — every site. Currently just runs typecheck; it is the
-                  # stable entry point, and gains a formatting half once the sites are
+pnpm check        # Report only — every site. Runs typecheck, and on lit lint as well; it is
+                  # the stable entry point, and gains a formatting half once the sites are
                   # formatted, so callers do not have to change then.
 pnpm sb           # Run Storybook with dependency watching (sb-deps --watch --run-storybook)
 pnpm sb:build     # Generate deps then build static Storybook

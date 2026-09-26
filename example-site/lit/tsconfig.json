@@ -1,0 +1,48 @@
+{
+	// A wildcard segment will not enter a folder whose name begins with a dot,
+	// so the Storybook setup is deliberately outside this list. `preview.ts`
+	// imports two generated files that git ignores — the dependency graph, which
+	// `sb-deps` writes, and `custom-elements.json`, which `sb:docs` writes — so
+	// listing the folder would make this check fail on a fresh clone, and this is
+	// the command a newcomer runs first.
+	//
+	// What that costs: nothing checks `preview.ts`, since Storybook strips its
+	// types rather than checking them. The Preact site makes the same choice for
+	// the same reason; Svelte instead lists its Storybook folder and lives with
+	// the fresh-clone failure.
+	"include": ["**/*.ts", "prettier.config.js", "sb-deps.config.js"],
+
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["vite/client"],
+		"noEmit": true,
+		"allowJs": true,
+		"skipLibCheck": true,
+
+		/* Lit Config, as Lit's own starter project sets it */
+		// Lit's `@customElement` and `@property` are written in the older form
+		// of decorator, which this turns on.
+		"experimentalDecorators": true,
+		// Needed alongside it: a class field set the newer way would sit on top
+		// of the one Lit's `@property` sets up, and the element would stop
+		// redrawing when it changed. The starter can leave this out because it
+		// targets ES2021, where this is already off; ES2022, above, turns it on.
+		"useDefineForClassFields": false,
+		// Makes an overridden member say so, which is why components write
+		// `static override styles` and `override render()`.
+		"noImplicitOverride": true,
+		// Checks the markup inside `html` templates in an editor. Editors only:
+		// `pnpm lint` runs the same strict checks from the command line, and
+		// its `--strict` has to stay in step with the setting here.
+		"plugins": [{ "name": "ts-lit-plugin", "strict": true }],
+
+		/* Linting */
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true
+	}
+}
