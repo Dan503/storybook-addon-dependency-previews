@@ -768,8 +768,9 @@ type LitTsFileKind = 'component' | 'skipped-for-extra-dot' | 'not-a-component'
  * - `'skipped-for-extra-dot'` — no marker is set, and this is an empty `.ts`
  *   file under the source folder that would have counted but for a dot in its
  *   name (`helper.test.ts`, `Button.primary.ts`). Never the answer with a
- *   marker set, because then the name decides; an empty unmarked file gets
- *   the forgotten-marker line instead (see `getMissingMarkerNote`).
+ *   marker set, because then the name decides: a dotted name is passed over
+ *   without a line; the forgotten-marker line (see `getMissingMarkerNote`) is
+ *   for an undotted one created empty without the marker.
  * - `'not-a-component'` — anything else. That includes a type declaration file
  *   (`shapes.d.ts`), which is never a component, so its extra dot is not worth
  *   explaining.
@@ -1113,8 +1114,7 @@ function getProjectComponentEnding(): ComponentEnding | null {
 function getUnusableNameWarning(absPath: string): string | null {
 	const nameWithoutExtension = basename(absPath, extname(absPath))
 	const projectFamily = getProjectFrameworkFamily()
-	const hasReactMarker =
-		projectFamily === 'react' && !!getComponentEndingForFamily('react')
+	const hasReactMarker = !!getComponentEndingForFamily('react')
 	const namesTheScaffoldersWouldUse =
 		projectFamily === 'lit' || hasReactMarker
 			? [nameWithoutExtension, ...getMarkedClassNameSources(absPath)]
