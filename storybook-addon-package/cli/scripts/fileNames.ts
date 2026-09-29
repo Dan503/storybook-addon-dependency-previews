@@ -32,8 +32,9 @@ type NameEnding = {
  * creation and named in every build afterwards for an Angular convention it
  * has nothing to do with. That one needs the project itself to be Angular, and
  * the component marker is read only in a Lit project (on `.ts`) or a React,
- * Solid or Preact project (on `.tsx`, and on a `.ts` story's base name) for the
- * same reason.
+ * Solid or Preact project (on `.tsx`) for the same reason — and on a story's
+ * name in such a project whatever the story's extension (see
+ * `getMarkerExtensions`).
  *
  * Order does not matter: no entry is the ending of another, and they are
  * matched with `endsWith`, so `.story` can never claim part of a `.stories`
@@ -100,9 +101,9 @@ export type NameEndingContext = {
 	/**
 	 * The project's component marker, when it has one: the ending with its dot
 	 * (`'.lit'`, `'.ui'`) and the extension of the component files it marks —
-	 * `.ts` in a Lit project, `.tsx` in a React, Solid or Preact project (whose
-	 * stories may also carry it on `.ts`; see `getMarkerExtensions`). `null`
-	 * otherwise, including in a project that asked for no marker, where no
+	 * `.ts` in a Lit project, `.tsx` in a React, Solid or Preact project (a
+	 * story's name may carry it on any extension; see `getMarkerExtensions`).
+	 * `null` otherwise, including in a project that asked for no marker, where no
 	 * ending distinguishes a component file.
 	 */
 	componentEnding: ComponentEnding | null
@@ -306,12 +307,13 @@ function getNameEnding({
 }
 
 /**
- * The extensions the project's component marker is read on. A component name
- * carries it only on the component's own extension, but a story's base name
- * carries it on any extension that story can have: a React, Solid or Preact
- * story may be `.ts` as well as `.tsx`, since one with no JSX in it is valid
- * either way. Reading only `.tsx` there would let a `Button.UI.stories.ts`
- * through the capitals check.
+ * The extensions the project's component marker is read on, or `null` for any
+ * extension. A component name carries it only on the component's own
+ * extension, but a story's base name can carry it whatever the story is
+ * written in: a `Button.ui.tsx` story may be `.ts`, `.tsx`, `.js` or `.jsx`,
+ * and the graph filter pairs any of them. Reading only the component's
+ * extension there would let a `Button.UI.stories.ts` through the capitals
+ * check, to be written as a second component or never paired.
  *
  * @param componentEnding - the project's component marker and its extension
  * @param isStoryBase - whether the name being read is a story's base name
@@ -319,8 +321,7 @@ function getNameEnding({
 function getMarkerExtensions(
 	componentEnding: ComponentEnding,
 	isStoryBase: boolean,
-): ReadonlyArray<string> {
-	const isTsxMarker = componentEnding.extension === '.tsx'
-	if (isStoryBase && isTsxMarker) return ['.tsx', '.ts']
+): ReadonlyArray<string> | null {
+	if (isStoryBase) return null
 	return [componentEnding.extension]
 }

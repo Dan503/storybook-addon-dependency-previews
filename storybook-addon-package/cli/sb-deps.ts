@@ -1007,9 +1007,9 @@ function checkIsScaffoldIgnored(absPath: string): boolean {
  * — or `null` when the name is fine. `.stories` and `.story` count on any
  * extension; `.decorator` only on `.svelte`; `.component` only on `.ts` and
  * `.html`, and only in an Angular project; the project's own component marker
- * only on the extension it marks (`.ts` in Lit, `.tsx` in React, Solid and
- * Preact), and only in such a project — which is why what the project is gets
- * passed in.
+ * on a component only on the extension it marks (`.ts` in Lit, `.tsx` in
+ * React, Solid and Preact) and on a story's name on any extension, and only in
+ * such a project — which is why what the project is gets passed in.
  *
  * The patterns in this file each spell one name and mean one file, which is
  * safe because this check refuses an odd spelling and nothing is scaffolded
