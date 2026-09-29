@@ -180,11 +180,11 @@ function getChoicesPhrase(choices: ReadonlyArray<string>): string {
  * being — and the emptiness condition is what stops it also claiming files
  * they never asked about (see `getLitTsFileKind`).
  */
-function readLitComponentSuffix(configuredSuffix: unknown): string | null {
+function readComponentFileSuffix(configuredSuffix: unknown): string | null {
 	if (configuredSuffix === undefined) return null
 	if (typeof configuredSuffix !== 'string') {
 		error(
-			`litComponentSuffix must be a string — no component marker is set, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
+			`componentFileSuffix must be a string — no component marker is set, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
 		)
 		return null
 	}
@@ -192,7 +192,7 @@ function readLitComponentSuffix(configuredSuffix: unknown): string | null {
 	const markerError = getComponentMarkerError(configuredSuffix)
 	if (!markerError) return configuredSuffix
 	error(
-		`litComponentSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
+		`componentFileSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
 	)
 	return null
 }
@@ -238,7 +238,7 @@ let ANGULAR_SELECTOR_PREFIX = 'app-'
 // `Button.lit.ts`), or `null` when this project asked for no marker and any
 // plain `.ts` file created empty under the source folder counts. Only ever
 // read in a Lit project.
-let LIT_COMPONENT_SUFFIX: string | null = null
+let COMPONENT_FILE_SUFFIX: string | null = null
 let LIT_TAG_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
@@ -387,7 +387,7 @@ function postprocessOnce() {
 			cookedPath,
 			SRC_DIR,
 			projectFamily,
-			LIT_COMPONENT_SUFFIX ?? '',
+			COMPONENT_FILE_SUFFIX ?? '',
 		],
 		{
 			cwd: projectRoot,
@@ -780,12 +780,12 @@ function getLitTsFileKind(relPath: string, absPath: string): LitTsFileKind {
 	// source folder would be one.
 	if (getProjectFrameworkFamily() !== 'lit') return 'not-a-component'
 	if (STORY_FILE_REGEX.test(relPath)) return 'not-a-component'
-	if (LIT_COMPONENT_SUFFIX) {
+	if (COMPONENT_FILE_SUFFIX) {
 		// Not escaped for the pattern: the marker has already been bounded to
 		// lower-case letters, digits, `_` and `-` — by the wizard when it asked, and by
-		// `readLitComponentSuffix` when it read the config — and none of those
+		// `readComponentFileSuffix` when it read the config — and none of those
 		// mean anything to a pattern.
-		const isMarked = srcSubpathRegex(`\\.${LIT_COMPONENT_SUFFIX}\\.ts$`).test(
+		const isMarked = srcSubpathRegex(`\\.${COMPONENT_FILE_SUFFIX}\\.ts$`).test(
 			relPath,
 		)
 		return isMarked ? 'component' : 'not-a-component'
@@ -831,7 +831,7 @@ function checkHasDottedNamePart(relPath: string): boolean {
  */
 const EXTRA_DOT_RULE =
 	"with no component marker set, a name with an extra dot isn't scaffolded as a Lit component"
-const SET_LIT_MARKER_STEP = `set litComponentSuffix to '${DEFAULT_LIT_COMPONENT_MARKER}' in your sb-deps config and restart sb-deps`
+const SET_LIT_MARKER_STEP = `set componentFileSuffix to '${DEFAULT_LIT_COMPONENT_MARKER}' in your sb-deps config and restart sb-deps`
 
 /**
  * The line printed when a created file was left alone only because of an extra
@@ -977,8 +977,8 @@ function getNameEndingContext(): NameEndingContext {
 	return {
 		isAngularProject: projectFamily === 'angular',
 		litComponentEnding:
-			projectFamily === 'lit' && LIT_COMPONENT_SUFFIX
-				? `.${LIT_COMPONENT_SUFFIX}`
+			projectFamily === 'lit' && COMPONENT_FILE_SUFFIX
+				? `.${COMPONENT_FILE_SUFFIX}`
 				: null,
 	}
 }
@@ -1687,7 +1687,7 @@ function getComponentSuffixedStoryNaming(
 function getComponentEndingForFamily(family: StoryFramework): string | null {
 	if (family === 'angular') return '.component'
 	if (family === 'lit')
-		return LIT_COMPONENT_SUFFIX ? `.${LIT_COMPONENT_SUFFIX}` : null
+		return COMPONENT_FILE_SUFFIX ? `.${COMPONENT_FILE_SUFFIX}` : null
 	return null
 }
 
@@ -3776,7 +3776,7 @@ async function startStorybook() {
 	const cfg = await loadSbDepsConfig()
 	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
 	LIT_TAG_PREFIX = readLitTagPrefix(cfg.litTagPrefix)
-	LIT_COMPONENT_SUFFIX = readLitComponentSuffix(cfg.litComponentSuffix)
+	COMPONENT_FILE_SUFFIX = readComponentFileSuffix(cfg.componentFileSuffix)
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
 	// `cfg.srcDir` can take three meaningfully-different shapes:
 	//

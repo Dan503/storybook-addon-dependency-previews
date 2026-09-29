@@ -112,7 +112,7 @@ export interface LitStoryScaffoldContext extends LitComponentScaffoldContext {
 	 * leading `./` and without the `.ts` extension — e.g. `"ButtonAtom.lit"`.
 	 *
 	 * Use this rather than building the path out of `base`, which drops the
-	 * component marker: with `litComponentSuffix` set to `'lit'` the file is
+	 * component marker: with `componentFileSuffix` set to `'lit'` the file is
 	 * `ButtonAtom.lit.ts` while the base is `ButtonAtom`.
 	 */
 	componentImportPath: string
@@ -258,7 +258,7 @@ export interface SbDepsConfig {
 	 * @example 'lit'  →  `Button.lit.ts` is a component, `Button.ts` is not
 	 * @example ''     →  a plain `.ts` file created empty is a component
 	 */
-	litComponentSuffix?: string
+	componentFileSuffix?: string
 
 	/**
 	 * Prefix put in front of the tag a Lit component registers itself as.

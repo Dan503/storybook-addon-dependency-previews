@@ -107,7 +107,7 @@ export interface WriteSbDepsConfigOptions {
 	 * under the source folder is treated as a component, which is the opposite
 	 * of what setting one asks for. Left out for a project that isn't Lit.
 	 */
-	litComponentSuffix?: string
+	componentFileSuffix?: string
 }
 
 /**
@@ -135,19 +135,19 @@ export function writeSbDepsConfigIfNeeded(
 		isEsm,
 		tsxFramework = 'react',
 		storybookFileExtension = 'stories',
-		litComponentSuffix,
+		componentFileSuffix,
 	} = opts
 
 	const needsSrcDir = srcDir !== 'src'
 	const needsTsxFramework = tsxFramework !== 'react'
 	const needsStorybookFileExtension = storybookFileExtension === 'story'
 	// Any marker at all is worth writing, because the code's own default is none.
-	const needsLitComponentSuffix = !!litComponentSuffix
+	const needsComponentFileSuffix = !!componentFileSuffix
 	const hasNothingWorthWriting =
 		!needsSrcDir &&
 		!needsTsxFramework &&
 		!needsStorybookFileExtension &&
-		!needsLitComponentSuffix
+		!needsComponentFileSuffix
 	if (hasNothingWorthWriting) return { kind: 'skipped' }
 
 	// Collect each non-default field once as both its file line and a
@@ -165,7 +165,7 @@ export function writeSbDepsConfigIfNeeded(
 	// existing config by hand would change anything. It would for `srcDir`
 	// (nothing else records it, so the dependency scan stays pointed at the
 	// wrong folder), for `storybookFileExtension` (read only from the config,
-	// with no detection fallback) and for `litComponentSuffix` (also read only
+	// with no detection fallback) and for `componentFileSuffix` (also read only
 	// from the config, and its absence means the opposite of what the user just
 	// chose: every plain `*.ts` file created empty becomes a component). It
 	// would not for `tsxFramework`: where the
@@ -201,11 +201,11 @@ export function writeSbDepsConfigIfNeeded(
 			canUserAddByHand: true,
 		})
 	}
-	if (needsLitComponentSuffix) {
-		const litComponentSuffixLiteral = toSingleQuotedLiteral(litComponentSuffix)
+	if (needsComponentFileSuffix) {
+		const componentFileSuffixLiteral = toSingleQuotedLiteral(componentFileSuffix)
 		fields.push({
-			line: `\tlitComponentSuffix: ${litComponentSuffixLiteral},`,
-			summary: `litComponentSuffix: ${litComponentSuffixLiteral}`,
+			line: `\tcomponentFileSuffix: ${componentFileSuffixLiteral},`,
+			summary: `componentFileSuffix: ${componentFileSuffixLiteral}`,
 			canUserAddByHand: true,
 		})
 	}

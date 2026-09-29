@@ -435,7 +435,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// Asked after the confirmation above rather than among the detected values,
 	// because it is a new decision rather than something detected — and asking it
 	// here means a cancelled setup never asks it at all.
-	const litComponentSuffix =
+	const componentFileSuffix =
 		framework === 'web-components-vite'
 			? await askLitComponentMarker()
 			: undefined
@@ -610,7 +610,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		isEsm: detection.isEsm,
 		tsxFramework,
 		storybookFileExtension: effectiveStorybookFileExtension,
-		litComponentSuffix,
+		componentFileSuffix,
 	})
 	logSbDepsConfigOutcome(sbDepsConfigResult, { separateWithRule: true })
 	// A cleared Lit marker is the one answer the write cannot record, because it
@@ -618,7 +618,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// file is the config; where one was there before, it may set the key, and
 	// this never reads it. Of the results that can mean that, only `blocked` has
 	// drawn a divider already.
-	const isLitMarkerCleared = litComponentSuffix === ''
+	const isLitMarkerCleared = componentFileSuffix === ''
 	const preExistingConfigFileName = isLitMarkerCleared
 		? findPreExistingConfigFileName(sbDepsConfigResult, cwd)
 		: null
@@ -782,7 +782,7 @@ function findPreExistingConfigFileName(
  */
 function logClearedLitMarkerNote(existingFileName: string) {
 	log(
-		`  ⚠ Check that ${existingFileName} does NOT set \`litComponentSuffix\` — you asked`,
+		`  ⚠ Check that ${existingFileName} does NOT set \`componentFileSuffix\` — you asked`,
 	)
 	log(
 		`    for no marker, and that is what an absent key means. With one set, only`,

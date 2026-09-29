@@ -14,11 +14,11 @@ const [
 	outPathArg,
 	srcDirArg,
 	projectFamilyArg,
-	litComponentSuffixArg,
+	componentFileSuffixArg,
 ] = process.argv
 // Only the endings that mark a component file need this, and only to tell such
 // a file from an ordinary dotted `.ts` name: `.component` in an Angular
-// project, and whatever `litComponentSuffix` is set to in a Lit project.
+// project, and whatever `componentFileSuffix` is set to in a Lit project.
 // `sb-deps.ts` passes the family it detected, or an empty string when it could
 // not detect one, and the Lit marker without its dot, empty when there is none;
 // a direct manual invocation passes neither.
@@ -34,8 +34,8 @@ const [
 const nameEndingContext = {
 	isAngularProject: projectFamilyArg === 'angular',
 	litComponentEnding:
-		projectFamilyArg === 'lit' && litComponentSuffixArg
-			? `.${litComponentSuffixArg}`
+		projectFamilyArg === 'lit' && componentFileSuffixArg
+			? `.${componentFileSuffixArg}`
 			: null,
 }
 const inPath = resolve(inPathArg || '.storybook/dependency-previews.raw.json')
