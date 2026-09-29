@@ -101,11 +101,13 @@ export interface WriteSbDepsConfigOptions {
 	 */
 	storybookFileExtension?: NonNullable<SbDepsConfig['storybookFileExtension']>
 	/**
-	 * What marks a Lit component file, without its dot. Anything non-empty gets
-	 * the config written even for the default `srcDir`, because the code's own
-	 * default is no marker: without the key any plain `.ts` file created empty
-	 * under the source folder is treated as a component, which is the opposite
-	 * of what setting one asks for. Left out for a project that isn't Lit.
+	 * What marks a component file, without its dot — a Lit project's `.ts`
+	 * files, or a React, Solid or Preact project's `.tsx` files. Anything
+	 * non-empty gets the config written even for the default `srcDir`, because
+	 * the code's own default is no marker: without the key any plain `.ts` file
+	 * created empty (Lit), or any `.tsx` file (React, Solid, Preact), under the
+	 * source folder is treated as a component, which is the opposite of what
+	 * setting one asks for. Left out where the question was not asked.
 	 */
 	componentFileSuffix?: string
 }
@@ -113,10 +115,10 @@ export interface WriteSbDepsConfigOptions {
 /**
  * Write a project-root `sb-deps.config.{js,cjs}` carrying the resolved `srcDir`,
  * the `tsxFramework` scaffolder signal, a non-default `storybookFileExtension`,
- * and/or a Lit project's component marker. Reports `skipped` when there's
- * nothing worth persisting — i.e. `srcDir === 'src'` (bundled default) AND
- * `tsxFramework` is the default `'react'` AND `storybookFileExtension` is the
- * default `'stories'` AND no Lit marker was asked for.
+ * and/or a component marker. Reports `skipped` when there's nothing worth
+ * persisting — i.e. `srcDir === 'src'` (bundled default) AND `tsxFramework` is
+ * the default `'react'` AND `storybookFileExtension` is the default `'stories'`
+ * AND no component marker was asked for.
  *
  * Reports `blocked` when one of the candidate config filenames already exists
  * (the loader at `sb-deps.ts` accepts `.js`, `.mjs`, and `.cjs`; we never
@@ -156,7 +158,7 @@ export function writeSbDepsConfigIfNeeded(
 	// `srcDir` when it's non-default, `tsxFramework` for a Solid or Preact
 	// project (so the scaffolder picks that framework's templates for `.tsx`
 	// files), `storybookFileExtension: 'story'` for a non-default story
-	// extension, and a Lit project's component marker. Adding a field later
+	// extension, and a component marker. Adding a field later
 	// updates both outputs from this one list. Built before the existing-file
 	// check below so a blocked write can say which values went unrecorded, not
 	// merely that one was blocked.
@@ -167,7 +169,8 @@ export function writeSbDepsConfigIfNeeded(
 	// wrong folder), for `storybookFileExtension` (read only from the config,
 	// with no detection fallback) and for `componentFileSuffix` (also read only
 	// from the config, and its absence means the opposite of what the user just
-	// chose: every plain `*.ts` file created empty becomes a component). It
+	// chose: every plain `*.ts` file created empty, or every `*.tsx` file,
+	// becomes a component). It
 	// would not for `tsxFramework`: where the
 	// scaffolder recognises the project it already falls back to the same value
 	// the wizard computed, and where it does not, no `.tsx` file is scaffolded at
@@ -202,7 +205,8 @@ export function writeSbDepsConfigIfNeeded(
 		})
 	}
 	if (needsComponentFileSuffix) {
-		const componentFileSuffixLiteral = toSingleQuotedLiteral(componentFileSuffix)
+		const componentFileSuffixLiteral =
+			toSingleQuotedLiteral(componentFileSuffix)
 		fields.push({
 			line: `\tcomponentFileSuffix: ${componentFileSuffixLiteral},`,
 			summary: `componentFileSuffix: ${componentFileSuffixLiteral}`,
@@ -266,7 +270,7 @@ function toSingleQuotedLiteral(value: string): string {
 
 /**
  * The config file already in the project root, or `null` when there is none.
- * Exported for the one answer a write cannot record: a Lit project asking for no
+ * Exported for the one answer a write cannot record: a project asking for no
  * component marker, which is recorded by the key being absent, so it is only
  * safe where no existing file might set it.
  *

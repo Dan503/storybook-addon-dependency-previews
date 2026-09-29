@@ -17,9 +17,11 @@ import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { SbDepsConfig } from '../src/config.js'
 import {
+	getComponentMarkerEnding,
 	getComponentMarkerError,
 	getNameWithLowerCasedEndings,
 	readFolderEntriesOrNull,
+	type ComponentEnding,
 	type NameEndingContext,
 } from './scripts/fileNames.js'
 import {
@@ -168,23 +170,29 @@ function getChoicesPhrase(choices: ReadonlyArray<string>): string {
 	return `${earlierChoices} or ${lastChoice}`
 }
 
+/** What having no component marker means, for both refusals in `readComponentFileSuffix`. */
+const NO_MARKER_FALLBACK =
+	'in a Lit project a plain *.ts file created empty under the source folder counts as a component, and in a React, Solid or Preact project any *.tsx file does'
+
 /**
- * What the config asked to mark Lit component files with, once checked — or
+ * What the config asked to mark component files with — Lit's `.ts` files, or
+ * the `.tsx` files of a React, Solid or Preact project — once checked, or
  * `null` for no marker, which is what an absent key, an empty string and an
  * unusable value all mean.
  *
  * An unusable value is refused rather than repaired, and it falls back the same
- * way an absent key does: a plain `.ts` file created empty under the source
- * folder counts as a component. That is the wider of the two behaviours for
- * what a user asked to be scaffolded, so nothing they expected quietly stops
- * being — and the emptiness condition is what stops it also claiming files
- * they never asked about (see `getLitTsFileKind`).
+ * way an absent key does: in a Lit project a plain `.ts` file created empty
+ * under the source folder counts as a component, and in a React, Solid or
+ * Preact project any `.tsx` file does. That is the wider of the two behaviours
+ * for what a user asked to be scaffolded, so nothing they expected quietly
+ * stops being — and in Lit the emptiness condition is what stops it also
+ * claiming files they never asked about (see `getLitTsFileKind`).
  */
 function readComponentFileSuffix(configuredSuffix: unknown): string | null {
 	if (configuredSuffix === undefined) return null
 	if (typeof configuredSuffix !== 'string') {
 		error(
-			`componentFileSuffix must be a string — no component marker is set, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
+			`componentFileSuffix must be a string — no component marker is set, so ${NO_MARKER_FALLBACK}.`,
 		)
 		return null
 	}
@@ -192,7 +200,7 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
 	const markerError = getComponentMarkerError(configuredSuffix)
 	if (!markerError) return configuredSuffix
 	error(
-		`componentFileSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so in a Lit project a plain *.ts file created empty under the source folder counts as a component.`,
+		`componentFileSuffix "${configuredSuffix}" is invalid — ${markerError}. No component marker is set instead, so ${NO_MARKER_FALLBACK}.`,
 	)
 	return null
 }
@@ -234,10 +242,10 @@ function readLitTagPrefix(configuredPrefix: unknown): string {
 }
 
 let ANGULAR_SELECTOR_PREFIX = 'app-'
-// What marks a Lit component file, without its dot (`'lit'` for
-// `Button.lit.ts`), or `null` when this project asked for no marker and any
-// plain `.ts` file created empty under the source folder counts. Only ever
-// read in a Lit project.
+// What marks a component file, without its dot (`'lit'` for `Button.lit.ts`,
+// `'ui'` for `Button.ui.tsx`), or `null` when this project asked for no marker.
+// Only ever read in a Lit project (on `.ts`) or a React, Solid or Preact project
+// (on `.tsx`) — see `getComponentEndingForFamily`.
 let COMPONENT_FILE_SUFFIX: string | null = null
 let LIT_TAG_PREFIX = 'app-'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
@@ -375,9 +383,10 @@ function postprocessOnce() {
 	// The framework goes with it because `.component` only means anything in an
 	// Angular project — every framework here writes `.ts` files, so the
 	// extension alone can't tell an Angular component from an ordinary dotted
-	// name. Lit's marker goes with it for the same reason, and because the
-	// project chooses what it is spelled as. The graph filter runs as its own
-	// process and has no other way to know either.
+	// name. The component marker goes with it for the same reason, and because
+	// the project chooses what it is spelled as; the graph filter decides from
+	// the family whether it applies. The graph filter runs as its own process
+	// and has no other way to know either.
 	const projectFamily = getProjectFrameworkFamily() ?? ''
 	execFileSync(
 		'node',
@@ -640,7 +649,7 @@ function buildSrcSubpathRegex(suffixPattern: string): RegExp {
 
 /**
  * The either/or pattern matching `story` or `stories`, shared by
- * `STORY_FILE_REGEX` and `COMPONENT_STORY_TS_REGEX` so the two can't drift
+ * `STORY_FILE_REGEX` and `COMPONENT_STORY_REGEX` so the two can't drift
  * apart. (Other spots — `getAlternateStoryNaming` and the watcher globs — still
  * spell the two words out themselves.)
  */
@@ -661,8 +670,10 @@ const STORY_WORD_PATTERN = 'stor(?:y|ies)'
  */
 const STORY_FILE_REGEX = new RegExp(`\\.${STORY_WORD_PATTERN}\\.\\w+$`)
 
-/** Splits a `.ts` story path into its base and story suffix, for building the spelling that carries a family's component ending. */
-const COMPONENT_STORY_TS_REGEX = new RegExp(`^(.*)(\\.${STORY_WORD_PATTERN}\\.ts)$`)
+/** Splits a `.ts` or `.tsx` story path into its base and story suffix, for building the spelling that carries a family's component ending. */
+const COMPONENT_STORY_REGEX = new RegExp(
+	`^(.*)(\\.${STORY_WORD_PATTERN}\\.tsx?)$`,
+)
 
 /**
  * A name the generated code can use, matching what JavaScript itself accepts:
@@ -693,9 +704,29 @@ function isStoryFileUnderSrc(relPath: string) {
 	return srcSubpathRegex(STORY_FILE_REGEX.source).test(relPath)
 }
 
-/** Is this `<srcDir>/**​/Thing.tsx` (and not a story file)? */
+/**
+ * Is this `<srcDir>/**​/Thing.tsx` (and not a story file)? Where a React,
+ * Solid or Preact project set a component marker, only `Thing.<marker>.tsx`
+ * counts, so a `utils.tsx` holding some JSX is left alone.
+ */
 function isComponentsTsx(relPath: string) {
-	return srcSubpathRegex('\\.tsx$').test(relPath) && !STORY_FILE_REGEX.test(relPath)
+	if (STORY_FILE_REGEX.test(relPath)) return false
+	const componentEnding = getComponentEndingForFamily('react')
+	const fileEnding = componentEnding ? `${componentEnding}.tsx` : '.tsx'
+	return srcSubpathRegex(getFileEndingPattern(fileEnding)).test(relPath)
+}
+
+/**
+ * A file ending such as `.lit.ts` as a pattern matching the end of a path.
+ *
+ * Only the dots are escaped, which is enough: the rest of an ending here is an
+ * extension or a component marker, and a marker has already been bounded to
+ * lower-case letters, digits, `_` and `-` — by the wizard when it asked, and
+ * by `readComponentFileSuffix` when it read the config — none of which mean
+ * anything to a pattern.
+ */
+function getFileEndingPattern(fileEnding: string): string {
+	return `${fileEnding.replaceAll('.', '\\.')}$`
 }
 
 /** Is this `<srcDir>/**​/Thing.svelte` (and not a story file)? */
@@ -737,7 +768,8 @@ type LitTsFileKind = 'component' | 'skipped-for-extra-dot' | 'not-a-component'
  * - `'skipped-for-extra-dot'` — no marker is set, and this is an empty `.ts`
  *   file under the source folder that would have counted but for a dot in its
  *   name (`helper.test.ts`, `Button.primary.ts`). Never the answer with a
- *   marker set, because then the name decides and there is no near miss.
+ *   marker set, because then the name decides; an empty unmarked file gets
+ *   the forgotten-marker line instead (see `getMissingMarkerNote`).
  * - `'not-a-component'` — anything else. That includes a type declaration file
  *   (`shapes.d.ts`), which is never a component, so its extra dot is not worth
  *   explaining.
@@ -780,14 +812,10 @@ function getLitTsFileKind(relPath: string, absPath: string): LitTsFileKind {
 	// source folder would be one.
 	if (getProjectFrameworkFamily() !== 'lit') return 'not-a-component'
 	if (STORY_FILE_REGEX.test(relPath)) return 'not-a-component'
-	if (COMPONENT_FILE_SUFFIX) {
-		// Not escaped for the pattern: the marker has already been bounded to
-		// lower-case letters, digits, `_` and `-` — by the wizard when it asked, and by
-		// `readComponentFileSuffix` when it read the config — and none of those
-		// mean anything to a pattern.
-		const isMarked = srcSubpathRegex(`\\.${COMPONENT_FILE_SUFFIX}\\.ts$`).test(
-			relPath,
-		)
+	const componentEnding = getComponentEndingForFamily('lit')
+	if (componentEnding) {
+		const markedFilePattern = getFileEndingPattern(`${componentEnding}.ts`)
+		const isMarked = srcSubpathRegex(markedFilePattern).test(relPath)
 		return isMarked ? 'component' : 'not-a-component'
 	}
 	// No marker: an empty `.ts` file whose name carries no other dotted part, so
@@ -856,9 +884,10 @@ const SET_LIT_MARKER_STEP = `set componentFileSuffix to '${DEFAULT_LIT_COMPONENT
 function getExtraDotNote(absPath: string): string {
 	const fileName = basename(absPath)
 	const acceptedFileName = getNameAcceptedOnceMarked(fileName)
-	const markedFileName = getMarkedTsComponentPath(
+	const markedFileName = getMarkedComponentPath(
 		acceptedFileName.replace(/\.ts$/, ''),
 		`.${DEFAULT_LIT_COMPONENT_MARKER}`,
+		'.ts',
 	)
 	const isAlreadyMarked = markedFileName === fileName
 	const lastStep = isAlreadyMarked
@@ -879,7 +908,7 @@ function getExtraDotNote(absPath: string): string {
  * given the context the project will be in once the marker is set — not by a
  * copy of that rule — so the advice and the check cannot disagree. That check
  * reads a name ending regardless of capitals in order to refuse a wrong
- * spelling; every reading that acts on an ending, `getMarkedTsComponentPath`
+ * spelling; every reading that acts on an ending, `getMarkedComponentPath`
  * included, is exact on purpose.
  *
  * It says nothing about whether the rest of the name can become a component —
@@ -890,9 +919,47 @@ function getExtraDotNote(absPath: string): string {
 function getNameAcceptedOnceMarked(fileName: string): string {
 	const contextOnceMarked: NameEndingContext = {
 		...getNameEndingContext(),
-		litComponentEnding: `.${DEFAULT_LIT_COMPONENT_MARKER}`,
+		componentEnding: {
+			ending: `.${DEFAULT_LIT_COMPONENT_MARKER}`,
+			extension: '.ts',
+		},
 	}
 	return getNameWithLowerCasedEndings(fileName, contextOnceMarked)
+}
+
+/**
+ * The line printed when a created file was left alone only because it lacks
+ * the project's component marker — or `null` when that is not why.
+ *
+ * With a marker set only a marked name is a component, so an empty `Button.tsx`
+ * where the marker is `ui` (or an empty `Button.ts` in a Lit project whose
+ * marker is `lit`) is left alone. Being created empty is this tool's own signal
+ * for "fill this in", so it was probably meant as a component and named without
+ * the marker; the line names the file to rename it to. A file that arrived with
+ * content made no such request, and gets nothing.
+ *
+ * A name with another dotted part is passed over without a line, so a new
+ * `Button.test.tsx` stays quiet. That also covers a type declaration file
+ * (`shapes.d.ts`), which is never a component, a story file, and a name that
+ * already carries the marker. The name checks come first and the one read of
+ * the file last, as in `getLitTsFileKind`.
+ *
+ * The watcher asks this only of a file no component branch claimed.
+ *
+ * @param relPath - the project-relative path, for the name checks
+ * @param absPath - the same file, for the one check that has to read it
+ */
+function getMissingMarkerNote(relPath: string, absPath: string): string | null {
+	const componentEnding = getProjectComponentEnding()
+	if (!componentEnding) return null
+	const { ending, extension } = componentEnding
+	const extensionPattern = getFileEndingPattern(extension)
+	if (!srcSubpathRegex(extensionPattern).test(relPath)) return null
+	if (checkHasDottedNamePart(relPath)) return null
+	if (!isEmptyOrWhitespace(absPath)) return null
+	const base = stripExtension(absPath, extension)
+	const markedFileName = getMarkedComponentPath(base, ending, extension)
+	return `left "${rel(absPath)}" alone — only files named *${ending}${extension} are components here. If you meant it as one, rename it to "${markedFileName}".`
 }
 
 /**
@@ -933,9 +1000,10 @@ function checkIsScaffoldIgnored(absPath: string): boolean {
  * the endings in `scripts/fileNames.ts` that mean something here, with capitals
  * — or `null` when the name is fine. `.stories` and `.story` count on any
  * extension; `.decorator` only on `.svelte`; `.component` only on `.ts` and
- * `.html`, and only in an Angular project; a Lit project's own component marker
- * only on `.ts`, and only in that project — which is why what the project is
- * gets passed in.
+ * `.html`, and only in an Angular project; the project's own component marker
+ * only on the extension it marks (`.ts` in Lit, `.tsx` in React, Solid and
+ * Preact), and only in such a project — which is why what the project is gets
+ * passed in.
  *
  * The patterns in this file each spell one name and mean one file, which is
  * safe because this check refuses an odd spelling and nothing is scaffolded
@@ -973,14 +1041,22 @@ function getWrongCasedNameError(absPath: string): string | null {
  * file.
  */
 function getNameEndingContext(): NameEndingContext {
-	const projectFamily = getProjectFrameworkFamily()
 	return {
-		isAngularProject: projectFamily === 'angular',
-		litComponentEnding:
-			projectFamily === 'lit' && COMPONENT_FILE_SUFFIX
-				? `.${COMPONENT_FILE_SUFFIX}`
-				: null,
+		isAngularProject: getProjectFrameworkFamily() === 'angular',
+		componentEnding: getProjectComponentEnding(),
 	}
+}
+
+/**
+ * This project's component marker with the extension it marks — `.ts` in a Lit
+ * project, `.tsx` in a React, Solid or Preact one — or `null` when it set none
+ * or is a project the marker does not apply to.
+ */
+function getProjectComponentEnding(): ComponentEnding | null {
+	return getComponentMarkerEnding(
+		getProjectFrameworkFamily(),
+		COMPONENT_FILE_SUFFIX,
+	)
 }
 
 /**
@@ -1002,25 +1078,28 @@ function getNameEndingContext(): NameEndingContext {
  * scaffolder would only have used `Button`. That is the safe direction to be
  * wrong in — nothing is written, and the line below says why.
  *
- * Being wrong the *other* way is not safe, and one family can be: an ending is
- * made of plain letters, so it contributes a word of its own to the PascalCase
- * name, and it can carry a base that contributes none. Lit's scaffolders build
- * their class name from the base with the marker taken off, so `_.lit.ts`
- * would pass here as `Lit` and then be written as `export class ` with nothing
- * after it. So in a Lit project the stripped base is asked as well — and on
- * both routes into those scaffolders, since a created story is not the file
- * whose name they use (see `getLitClassNameSources`).
+ * Being wrong the *other* way is not safe, and a family with a component
+ * marker can be: an ending is made of plain letters, so it contributes a word
+ * of its own to the PascalCase name, and it can carry a base that contributes
+ * none. Those scaffolders build their names from the base with the marker
+ * taken off, so `_.lit.ts` would pass here as `Lit` and then be written as
+ * `export class ` with nothing after it, and `_.ui.tsx` as `export function `.
+ * So in a Lit project, and in a React, Solid or Preact project with a marker
+ * set, the stripped base is asked as well — and on both routes into those
+ * scaffolders, since a created story is not the file whose name they use (see
+ * `getMarkedClassNameSources`).
  *
- * Only Lit is asked the extra question, and that is a scope decision rather
+ * Only those are asked the extra question, and that is a scope decision rather
  * than a claim that the others cannot reach the same shape. On the **component**
- * route they cannot: React, Vue and Svelte scaffold from the whole name, so
- * this check is already asking their question, and Angular strips `.component`
- * but appends `Component`, so its class name cannot come out empty. On the
- * **story** route every family strips the story part, so an `_.stories.tsx`
- * clears this check as `Stories` and then backfills an `_.tsx` whose own name
- * is empty — the same hole, in code this branch does not touch. It is
- * pre-existing and left alone deliberately, along with the Svelte decorator
- * path, which strips to the segment before the first dot for the same reason.
+ * route they cannot: React without a marker, Vue and Svelte scaffold from the
+ * whole name, so this check is already asking their question, and Angular
+ * strips `.component` but appends `Component`, so its class name cannot come
+ * out empty. On the **story** route every family strips the story part, so
+ * with no marker an `_.stories.tsx` clears this check as `Stories` and then
+ * backfills an `_.tsx` whose own name is empty — the same hole, in code this
+ * branch does not touch. It is pre-existing and left alone deliberately, along
+ * with the Svelte decorator path, which strips to the segment before the first
+ * dot for the same reason.
  *
  * It warns where the capitals check errors, because a bracketed page name is a
  * framework's own convention rather than a mistake — there is nothing to
@@ -1028,9 +1107,12 @@ function getNameEndingContext(): NameEndingContext {
  */
 function getUnusableNameWarning(absPath: string): string | null {
 	const nameWithoutExtension = basename(absPath, extname(absPath))
+	const projectFamily = getProjectFrameworkFamily()
+	const hasReactMarker =
+		projectFamily === 'react' && !!getComponentEndingForFamily('react')
 	const namesTheScaffoldersWouldUse =
-		getProjectFrameworkFamily() === 'lit'
-			? [nameWithoutExtension, ...getLitClassNameSources(absPath)]
+		projectFamily === 'lit' || hasReactMarker
+			? [nameWithoutExtension, ...getMarkedClassNameSources(absPath)]
 			: [nameWithoutExtension]
 	// The one that failed is found rather than counted, because it is what the
 	// message quotes. Quoting the file's own name instead would be wrong for
@@ -1047,8 +1129,10 @@ function getUnusableNameWarning(absPath: string): string | null {
 }
 
 /**
- * The names a Lit scaffolder would build a class name from, for a created file
- * that might reach one — none when nothing would be written.
+ * The names a Lit scaffolder, or a React, Solid or Preact one in a project with
+ * a component marker, would build the component's name from, for a created
+ * file that might reach one — none when nothing would be written. Only asked
+ * in those projects, so the project's family says which scaffolder it is.
  *
  * There are two routes in and the created file is a different thing on each.
  * Create a component and it is the component, so its own base is the answer.
@@ -1061,12 +1145,16 @@ function getUnusableNameWarning(absPath: string): string | null {
  * project means a dotted base with no marker set — there is no class name to
  * judge, because there is no file to write.
  */
-function getLitClassNameSources(absPath: string): Array<string> {
-	if (!STORY_FILE_REGEX.test(absPath))
-		return [componentBaseFromLitComponent(absPath)]
+function getMarkedClassNameSources(absPath: string): Array<string> {
+	const isLitProject = getProjectFrameworkFamily() === 'lit'
+	const family: StoryFramework = isLitProject ? 'lit' : 'react'
+	const getComponentBase = isLitProject
+		? componentBaseFromLitComponent
+		: componentBaseFromComponent
+	if (!STORY_FILE_REGEX.test(absPath)) return [getComponentBase(absPath)]
 	const storyBase = absPath.replace(STORY_FILE_REGEX, '')
-	const compPath = getComponentPathForFamily(storyBase, 'lit')
-	return compPath ? [componentBaseFromLitComponent(compPath)] : []
+	const compPath = getComponentPathForFamily(storyBase, family)
+	return compPath ? [getComponentBase(compPath)] : []
 }
 
 /**
@@ -1176,8 +1264,14 @@ function stripExtension(absPath: string, extension: string) {
 		: fileName
 }
 
+/**
+ * `Button.tsx` → `Button`, and `Button.ui.tsx` → `Button` where the project set
+ * `ui` as its component marker. The name the component, its story file and the
+ * story title are built from.
+ */
 function componentBaseFromComponent(absCompPath: string) {
-	return stripExtension(absCompPath, '.tsx')
+	const nameWithoutExtension = stripExtension(absCompPath, '.tsx')
+	return stripComponentMarker(nameWithoutExtension, 'react')
 }
 
 function componentBaseFromSvelteComponent(absCompPath: string) {
@@ -1204,7 +1298,19 @@ function angularComponentTsPath(absPath: string) {
  */
 function componentBaseFromLitComponent(absCompPath: string) {
 	const nameWithoutExtension = stripExtension(absCompPath, '.ts')
-	const componentEnding = getComponentEndingForFamily('lit')
+	return stripComponentMarker(nameWithoutExtension, 'lit')
+}
+
+/**
+ * `Button.lit` → `Button`: the name with the family's component marker taken
+ * off its end, or unchanged where the project set no marker or the name does
+ * not carry it.
+ */
+function stripComponentMarker(
+	nameWithoutExtension: string,
+	family: StoryFramework,
+): string {
+	const componentEnding = getComponentEndingForFamily(family)
 	if (!componentEnding) return nameWithoutExtension
 	return nameWithoutExtension.endsWith(componentEnding)
 		? nameWithoutExtension.slice(0, -componentEnding.length)
@@ -1436,10 +1542,11 @@ export function ${componentName}({
  * identical apart from which package the Storybook types come from (see
  * `getTsxStoryTypesPackage`).
  *
- * The component is imported from `./${base}` (the actual filename), not
- * `./${componentName}` — the two differ for a non-PascalCase filename (e.g.
- * `button-atom.tsx` exports `ButtonAtom`), so keying the module path off the
- * symbol name would generate a broken import.
+ * The component is imported from `./${base}` (the actual filename, component
+ * marker included, e.g. `Button.ui`), not `./${componentName}` — the two
+ * differ for a non-PascalCase filename (e.g. `button-atom.tsx` exports
+ * `ButtonAtom`), so keying the module path off the symbol name would generate
+ * a broken import.
  */
 function tsxStoryTemplate(
 	flavor: TsxFramework,
@@ -1520,6 +1627,12 @@ function scaffoldComponent(absCompPath: string) {
 
 function scaffoldStoryForComponent(absCompPath: string, targetStoryPath: string) {
 	const base = componentBaseFromComponent(absCompPath)
+	// What the story imports from: the file name without `.tsx`, marker
+	// included (`Button.ui`), since `base` drops the marker and an import built
+	// from it would name a file that isn't there. It is what the templates are
+	// given as `base`, so a project's own story template keeps importing the
+	// real file once it sets a marker.
+	const importBase = stripExtension(absCompPath, '.tsx')
 	const componentName = toPascalCase(base)
 	const propsName = `PropsFor${componentName}`
 	const title = makeTitleFromComponent(absCompPath, base)
@@ -1532,11 +1645,18 @@ function scaffoldStoryForComponent(absCompPath: string, targetStoryPath: string)
 		propsName,
 		title,
 		tags,
-		base,
+		base: importBase,
 	})
 	const storyTpl =
 		override ??
-		tsxStoryTemplate(TSX_FRAMEWORK, componentName, propsName, base, title, tags)
+		tsxStoryTemplate(
+			TSX_FRAMEWORK,
+			componentName,
+			propsName,
+			importBase,
+			title,
+			tags,
+		)
 	writeFileSync(targetStoryPath, storyTpl, 'utf8')
 	info(`scaffolded ${TSX_FRAMEWORK} story → ${rel(targetStoryPath)}`)
 	return targetStoryPath
@@ -1571,8 +1691,9 @@ function findExistingStory(
 	if (alternateStoryPath) namingVariants.push(alternateStoryPath)
 
 	// Only for a family whose component files carry a marking ending — Angular's
-	// `Foo.component.ts`, or Lit's `Foo.lit.ts` where the project set that
-	// marker. Both `Foo.stories.ts` and `Foo.component.stories.ts` read as that
+	// `Foo.component.ts`, or Lit's `Foo.lit.ts` and React's `Foo.ui.tsx` where
+	// the project set that marker. Both `Foo.stories.ts` and
+	// `Foo.component.stories.ts` read as that
 	// component's story, while the canonical path only ever spells the first (the
 	// base strips the ending). Every other framework must NOT expand this way —
 	// there a `Foo.component.vue` is simply a different component, so matching its
@@ -1659,9 +1780,11 @@ function getAlternateStoryNaming(storyPath: string): string | null {
 /**
  * `Foo.stories.ts` → `Foo.component.stories.ts`, the other story naming a
  * family whose component files carry a marking ending accepts (its component
- * file is `Foo.component.ts`, so either base reads naturally). Returns `null`
- * for a path that already carries the ending, and for anything that isn't a
- * `.ts` story — only these families use this shape.
+ * file is `Foo.component.ts`, so either base reads naturally) — and likewise
+ * `Foo.stories.tsx` → `Foo.ui.stories.tsx` for a React, Solid or Preact
+ * project with the marker `ui`. Returns `null` for a path that already carries
+ * the ending, and for anything that isn't a `.ts` or `.tsx` story — only these
+ * families use this shape.
  *
  * @param storyPath - the canonical story path, e.g. `.../Foo.stories.ts`
  * @param componentEnding - the family's component ending with its dot, e.g. `'.component'`
@@ -1670,7 +1793,7 @@ function getComponentSuffixedStoryNaming(
 	storyPath: string,
 	componentEnding: string,
 ): string | null {
-	const match = storyPath.match(COMPONENT_STORY_TS_REGEX)
+	const match = storyPath.match(COMPONENT_STORY_REGEX)
 	if (!match) return null
 	const [, base, storySuffix] = match
 	if (base.endsWith(componentEnding)) return null
@@ -1686,9 +1809,12 @@ function getComponentSuffixedStoryNaming(
  */
 function getComponentEndingForFamily(family: StoryFramework): string | null {
 	if (family === 'angular') return '.component'
-	if (family === 'lit')
-		return COMPONENT_FILE_SUFFIX ? `.${COMPONENT_FILE_SUFFIX}` : null
-	return null
+	// The project's own marker, and only for the project's own family: a `.tsx`
+	// sibling looked up from a Vue project, or a Lit name worked out anywhere
+	// but a Lit project, has no marker. Vue and Svelte have none in any project,
+	// since their extension already says "component".
+	if (family !== getProjectFrameworkFamily()) return null
+	return getProjectComponentEnding()?.ending ?? null
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -2985,7 +3111,8 @@ function getComponentForStoryByExtension(
  * of them use `.ts` story files (the React, Solid and Preact scaffolded templates
  * are JSX-free, so they're valid as `.ts` even though all three write stories as
  * `.tsx` by convention). Prefer an existing sibling component to decide
- * (`<base>.tsx` → React, Solid or Preact, told apart by `tsxFramework`;
+ * (`<base>.tsx`, or `<base>.<marker>.tsx` where the project set a component
+ * marker → React, Solid or Preact, told apart by `tsxFramework`;
  * `<base>.vue` → Vue; `<base>.component.ts` → Angular; `<base>.lit.ts`, or a
  * plain `<base>.ts` where the project set no marker → Lit); with none present,
  * fall back to the project's detected framework. Svelte is intentionally excluded: its story
@@ -3057,9 +3184,10 @@ function resolveTsStoryComponent(
 			// will actually be written.
 			const acceptedStoryPath = `${absStoryPath.slice(0, -storyFileName.length)}${acceptedStoryFileName}`
 			const acceptedStoryBase = acceptedStoryPath.replace(STORY_FILE_REGEX, '')
-			const markedComponentPath = getMarkedTsComponentPath(
+			const markedComponentPath = getMarkedComponentPath(
 				acceptedStoryBase,
 				`.${DEFAULT_LIT_COMPONENT_MARKER}`,
+				'.ts',
 			)
 			warn(
 				`left "${rel(absStoryPath)}" empty — it names "${rel(namedComponentPath)}", and ${EXTRA_DOT_RULE}. To get one, ${SET_LIT_MARKER_STEP}, ${recreateStep}: that will write "${rel(markedComponentPath)}" for it.`,
@@ -3138,15 +3266,17 @@ function getSiblingProbeOrder(): Array<StoryFramework> {
 }
 
 /**
- * The component file a `.ts` story base would belong to for `family`, or `null`
- * for a family a `.ts` story can't scaffold (Svelte's template is
- * `.svelte`-specific). Single source for the spelling, so the sibling scan and
- * the project-framework fallback can't drift apart.
+ * The component file a story base would belong to for `family`, or `null` for a
+ * family a `.ts` story can't scaffold (Svelte's template is `.svelte`-specific).
+ * Single source for the spelling, so the sibling scan, the project-framework
+ * fallback and the `.tsx` story route can't drift apart.
  *
  * The families whose component files carry a marking ending are the special
  * ones: a `Foo.component.stories.ts` story leaves the base as `Foo.component`,
  * so the ending is only appended when it isn't already there — otherwise this
- * builds a junk `Foo.component.component.ts`.
+ * builds a junk `Foo.component.component.ts`. React, Solid and Preact are among
+ * them only where the project set a marker: then `Foo.stories.tsx` belongs to
+ * `Foo.ui.tsx`.
  *
  * A family with no ending at all — Lit where the project set no marker — is
  * the one case that can answer `null` for a reason other than the family: it
@@ -3168,10 +3298,14 @@ function getComponentPathForFamily(
 	storyBase: string,
 	family: StoryFramework,
 ): string | null {
-	if (family === 'react') return `${storyBase}.tsx`
+	const componentEnding = getComponentEndingForFamily(family)
+	if (family === 'react') {
+		return componentEnding
+			? getMarkedComponentPath(storyBase, componentEnding, '.tsx')
+			: `${storyBase}.tsx`
+	}
 	if (family === 'vue') return `${storyBase}.vue`
 	if (family !== 'angular' && family !== 'lit') return null
-	const componentEnding = getComponentEndingForFamily(family)
 	if (!componentEnding) {
 		const plainComponentPath = `${storyBase}.ts`
 		// Asked of the path this would name, through the same helper
@@ -3181,24 +3315,32 @@ function getComponentPathForFamily(
 			? null
 			: plainComponentPath
 	}
-	return getMarkedTsComponentPath(storyBase, componentEnding)
+	return getMarkedComponentPath(storyBase, componentEnding, '.ts')
 }
 
 /**
- * The `.ts` component path for `base` carrying `componentEnding`, adding the
- * ending only when the base does not already end in it — so `Foo` and
- * `Foo.component` both give `Foo.component.ts`, never `Foo.component.component.ts`.
+ * The component path for `base` carrying `componentEnding`, adding the ending
+ * only when the base does not already end in it — so `Foo` and `Foo.component`
+ * both give `Foo.component.ts`, never `Foo.component.component.ts`.
  *
  * The one owner of that rule. `getComponentPathForFamily` names a story's
- * component with it, and the extra-dot lines name the file they advise with
- * it, so what a line promises is what the scaffolder will write.
+ * component with it, and the extra-dot and forgotten-marker lines name the file
+ * they advise with it, so what a line promises is what the scaffolder will
+ * write.
+ *
+ * @param base - the path or file name without its extension, e.g. `"Foo"`
+ * @param componentEnding - the ending with its dot, e.g. `".component"`
+ * @param extension - the component file's extension, `".ts"` or `".tsx"`
  */
-function getMarkedTsComponentPath(
+function getMarkedComponentPath(
 	base: string,
 	componentEnding: string,
+	extension: ComponentEnding['extension'],
 ): string {
 	const doesBaseCarryEnding = base.endsWith(componentEnding)
-	return doesBaseCarryEnding ? `${base}.ts` : `${base}${componentEnding}.ts`
+	return doesBaseCarryEnding
+		? `${base}${extension}`
+		: `${base}${componentEnding}${extension}`
 }
 
 /**
@@ -3514,6 +3656,18 @@ function startWatcher() {
 						const isSkippedForExtraDot =
 							!componentBranch && litTsFileKind === 'skipped-for-extra-dot'
 						if (isSkippedForExtraDot) info(getExtraDotNote(abs))
+
+						// With a component marker set, the matching line for an empty file
+						// created without it — most likely a component named without the
+						// marker. Information for the same reason as the line above, and
+						// only for a file no branch claimed, since a marked name is
+						// claimed. Never printed alongside the extra-dot line: that one
+						// needs no marker, this one needs one.
+						const missingMarkerNote =
+							isCreate && !componentBranch
+								? getMissingMarkerNote(relPath, abs)
+								: null
+						if (missingMarkerNote) info(missingMarkerNote)
 
 						// STORY CREATE — fill the story (and its component if missing).
 						// Limited to SRC_DIR like the component-create branches below, so a story
