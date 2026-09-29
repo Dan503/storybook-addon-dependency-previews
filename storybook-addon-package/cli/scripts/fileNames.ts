@@ -13,6 +13,8 @@ type NameEnding = {
 	/** Extensions the ending is read on, or `null` for any extension. */
 	extensions: ReadonlyArray<string> | null
 	needsAngularProject?: boolean
+	/** Whether the ending makes the file a story, like `.stories`. */
+	isStoryEnding?: boolean
 }
 
 /**
@@ -30,15 +32,16 @@ type NameEnding = {
  * creation and named in every build afterwards for an Angular convention it
  * has nothing to do with. That one needs the project itself to be Angular, and
  * the component marker is read only in a Lit project (on `.ts`) or a React,
- * Solid or Preact project (on `.tsx`) for the same reason.
+ * Solid or Preact project (on `.tsx`, and on a `.ts` story's base name) for the
+ * same reason.
  *
  * Order does not matter: no entry is the ending of another, and they are
  * matched with `endsWith`, so `.story` can never claim part of a `.stories`
  * name.
  */
 const NAME_ENDINGS: ReadonlyArray<NameEnding> = [
-	{ ending: '.stories', extensions: null },
-	{ ending: '.story', extensions: null },
+	{ ending: '.stories', extensions: null, isStoryEnding: true },
+	{ ending: '.story', extensions: null, isStoryEnding: true },
 	{
 		ending: '.component',
 		extensions: ['.ts', '.html'],
@@ -109,6 +112,7 @@ export type NameEndingContext = {
 export type ComponentEnding = {
 	/** The marker with its dot, e.g. `'.lit'`. */
 	ending: string
+	/** The extension of the component files it marks. */
 	extension: '.ts' | '.tsx'
 }
 
@@ -196,8 +200,14 @@ export function readFolderEntriesOrNull(
 	}
 }
 
-/** The endings that make a file a story, so that what is left is the story's base name. */
-const STORY_ENDINGS: ReadonlyArray<string> = ['.stories', '.story']
+/**
+ * The endings that make a file a story, so that what is left is the story's
+ * base name. Derived from `NAME_ENDINGS` rather than listed again, so the two
+ * cannot drift apart.
+ */
+const STORY_ENDINGS: ReadonlyArray<string> = NAME_ENDINGS.filter(
+	(entry) => entry.isStoryEnding,
+).map((entry) => entry.ending)
 
 /**
  * The file name with its extension and any known endings lower-cased, and the
@@ -255,6 +265,7 @@ interface GetNameEndingParams {
 	name: string
 	/** the file's extension, lower-cased, e.g. `'.ts'` */
 	comparableExtension: string
+	/** what the caller knows about the project, for the endings that need it */
 	context: NameEndingContext
 	/**
 	 * Whether `name` is what is left of a story file's name once its story
