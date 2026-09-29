@@ -96,10 +96,11 @@ export type NameEndingContext = {
 	isAngularProject: boolean
 	/**
 	 * The project's component marker, when it has one: the ending with its dot
-	 * (`'.lit'`, `'.ui'`) and the one extension it is read on — `.ts` in a Lit
-	 * project, `.tsx` in a React, Solid or Preact project. `null` otherwise,
-	 * including in a project that asked for no marker, where no ending
-	 * distinguishes a component file.
+	 * (`'.lit'`, `'.ui'`) and the extension of the component files it marks —
+	 * `.ts` in a Lit project, `.tsx` in a React, Solid or Preact project (whose
+	 * stories may also carry it on `.ts`; see `getMarkerExtensions`). `null`
+	 * otherwise, including in a project that asked for no marker, where no
+	 * ending distinguishes a component file.
 	 */
 	componentEnding: ComponentEnding | null
 }
@@ -162,7 +163,12 @@ export function stripComponentEnding(
 	// have the graph pair a file the rest of the tool does not recognise, which
 	// is the disagreement this whole change exists to remove.
 	if (extension !== extension.toLowerCase()) return baseName
-	const ending = getNameEnding(baseName, extension.toLowerCase(), context)
+	const ending = getNameEnding({
+		name: baseName,
+		comparableExtension: extension.toLowerCase(),
+		context,
+		isStoryBase: false,
+	})
 	if (!ending) return baseName
 	const isComponentMarkingEnding =
 		ending === '.component' || ending === context.componentEnding?.ending
@@ -189,6 +195,9 @@ export function readFolderEntriesOrNull(
 		return null
 	}
 }
+
+/** The endings that make a file a story, so that what is left is the story's base name. */
+const STORY_ENDINGS: ReadonlyArray<string> = ['.stories', '.story']
 
 /**
  * The file name with its extension and any known endings lower-cased, and the
@@ -220,21 +229,47 @@ export function getNameWithLowerCasedEndings(
 	const comparableExtension = extension.toLowerCase()
 	let remainingName = hasExtension ? fileName.slice(0, lastDotIndex) : fileName
 	let endings = ''
-	let ending = getNameEnding(remainingName, comparableExtension, context)
+	let isStoryBase = false
+	let ending = getNameEnding({
+		name: remainingName,
+		comparableExtension,
+		context,
+		isStoryBase,
+	})
 	while (ending) {
 		endings = ending + endings
 		remainingName = remainingName.slice(0, -ending.length)
-		ending = getNameEnding(remainingName, comparableExtension, context)
+		isStoryBase ||= STORY_ENDINGS.includes(ending)
+		ending = getNameEnding({
+			name: remainingName,
+			comparableExtension,
+			context,
+			isStoryBase,
+		})
 	}
 	return remainingName + endings + comparableExtension
 }
 
+interface GetNameEndingParams {
+	/** the name to read, without its extension or any ending already peeled off */
+	name: string
+	/** the file's extension, lower-cased, e.g. `'.ts'` */
+	comparableExtension: string
+	context: NameEndingContext
+	/**
+	 * Whether `name` is what is left of a story file's name once its story
+	 * ending came off, e.g. `Button.UI` from `Button.UI.stories.ts`.
+	 */
+	isStoryBase: boolean
+}
+
 /** Which ending this name carries that means something here, however it is capitalised, or `null` for none. */
-function getNameEnding(
-	name: string,
-	comparableExtension: string,
-	context: NameEndingContext,
-): string | null {
+function getNameEnding({
+	name,
+	comparableExtension,
+	context,
+	isStoryBase,
+}: GetNameEndingParams): string | null {
 	const comparableName = name.toLowerCase()
 	// The project's own component marker is added at the end rather than the
 	// start, so that a name matching both it and a fixed ending is read as the
@@ -247,7 +282,7 @@ function getNameEnding(
 				...NAME_ENDINGS,
 				{
 					ending: componentEnding.ending,
-					extensions: [componentEnding.extension],
+					extensions: getMarkerExtensions(componentEnding, isStoryBase),
 				},
 			]
 		: NAME_ENDINGS
@@ -257,4 +292,24 @@ function getNameEnding(
 		return candidate.extensions?.includes(comparableExtension) ?? true
 	})
 	return match?.ending ?? null
+}
+
+/**
+ * The extensions the project's component marker is read on. A component name
+ * carries it only on the component's own extension, but a story's base name
+ * carries it on any extension that story can have: a React, Solid or Preact
+ * story may be `.ts` as well as `.tsx`, since one with no JSX in it is valid
+ * either way. Reading only `.tsx` there would let a `Button.UI.stories.ts`
+ * through the capitals check.
+ *
+ * @param componentEnding - the project's component marker and its extension
+ * @param isStoryBase - whether the name being read is a story's base name
+ */
+function getMarkerExtensions(
+	componentEnding: ComponentEnding,
+	isStoryBase: boolean,
+): ReadonlyArray<string> {
+	const isTsxMarker = componentEnding.extension === '.tsx'
+	if (isStoryBase && isTsxMarker) return ['.tsx', '.ts']
+	return [componentEnding.extension]
 }

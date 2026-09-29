@@ -860,6 +860,11 @@ function checkHasDottedNamePart(relPath: string): boolean {
 const EXTRA_DOT_RULE =
 	"with no component marker set, a name with an extra dot isn't scaffolded as a Lit component"
 const SET_LIT_MARKER_STEP = `set componentFileSuffix to '${DEFAULT_LIT_COMPONENT_MARKER}' in your sb-deps config and restart sb-deps`
+/** The marker those lines suggest, as the ending a Lit component file would then carry. */
+const SUGGESTED_LIT_COMPONENT_ENDING: ComponentEnding = {
+	ending: `.${DEFAULT_LIT_COMPONENT_MARKER}`,
+	extension: '.ts',
+}
 
 /**
  * The line printed when a created file was left alone only because of an extra
@@ -886,8 +891,7 @@ function getExtraDotNote(absPath: string): string {
 	const acceptedFileName = getNameAcceptedOnceMarked(fileName)
 	const markedFileName = getMarkedComponentPath(
 		acceptedFileName.replace(/\.ts$/, ''),
-		`.${DEFAULT_LIT_COMPONENT_MARKER}`,
-		'.ts',
+		SUGGESTED_LIT_COMPONENT_ENDING,
 	)
 	const isAlreadyMarked = markedFileName === fileName
 	const lastStep = isAlreadyMarked
@@ -919,10 +923,7 @@ function getExtraDotNote(absPath: string): string {
 function getNameAcceptedOnceMarked(fileName: string): string {
 	const contextOnceMarked: NameEndingContext = {
 		...getNameEndingContext(),
-		componentEnding: {
-			ending: `.${DEFAULT_LIT_COMPONENT_MARKER}`,
-			extension: '.ts',
-		},
+		componentEnding: SUGGESTED_LIT_COMPONENT_ENDING,
 	}
 	return getNameWithLowerCasedEndings(fileName, contextOnceMarked)
 }
@@ -941,7 +942,9 @@ function getNameAcceptedOnceMarked(fileName: string): string {
  * A name with another dotted part is passed over without a line, so a new
  * `Button.test.tsx` stays quiet. That also covers a type declaration file
  * (`shapes.d.ts`), which is never a component, a story file, and a name that
- * already carries the marker. The name checks come first and the one read of
+ * already carries the marker. So is a name the generated code could not use
+ * (a router page like `[slug].tsx`), since `getUnusableNameWarning` would
+ * refuse the marked name too. The name checks come first and the one read of
  * the file last, as in `getLitTsFileKind`.
  *
  * The watcher asks this only of a file no component branch claimed.
@@ -956,9 +959,11 @@ function getMissingMarkerNote(relPath: string, absPath: string): string | null {
 	const extensionPattern = getFileEndingPattern(extension)
 	if (!srcSubpathRegex(extensionPattern).test(relPath)) return null
 	if (checkHasDottedNamePart(relPath)) return null
-	if (!isEmptyOrWhitespace(absPath)) return null
 	const base = stripExtension(absPath, extension)
-	const markedFileName = getMarkedComponentPath(base, ending, extension)
+	const isUsableName = CODE_NAME_REGEX.test(toPascalCase(base))
+	if (!isUsableName) return null
+	if (!isEmptyOrWhitespace(absPath)) return null
+	const markedFileName = getMarkedComponentPath(base, componentEnding)
 	return `left "${rel(absPath)}" alone — only files named *${ending}${extension} are components here. If you meant it as one, rename it to "${markedFileName}".`
 }
 
@@ -3185,8 +3190,7 @@ function resolveTsStoryComponent(
 			const acceptedStoryBase = acceptedStoryPath.replace(STORY_FILE_REGEX, '')
 			const markedComponentPath = getMarkedComponentPath(
 				acceptedStoryBase,
-				`.${DEFAULT_LIT_COMPONENT_MARKER}`,
-				'.ts',
+				SUGGESTED_LIT_COMPONENT_ENDING,
 			)
 			warn(
 				`left "${rel(absStoryPath)}" empty — it names "${rel(namedComponentPath)}", and ${EXTRA_DOT_RULE}. To get one, ${SET_LIT_MARKER_STEP}, ${recreateStep}: that will write "${rel(markedComponentPath)}" for it.`,
@@ -3300,7 +3304,10 @@ function getComponentPathForFamily(
 	const componentEnding = getComponentEndingForFamily(family)
 	if (family === 'react') {
 		return componentEnding
-			? getMarkedComponentPath(storyBase, componentEnding, '.tsx')
+			? getMarkedComponentPath(storyBase, {
+					ending: componentEnding,
+					extension: '.tsx',
+				})
 			: `${storyBase}.tsx`
 	}
 	if (family === 'vue') return `${storyBase}.vue`
@@ -3314,7 +3321,10 @@ function getComponentPathForFamily(
 			? null
 			: plainComponentPath
 	}
-	return getMarkedComponentPath(storyBase, componentEnding, '.ts')
+	return getMarkedComponentPath(storyBase, {
+		ending: componentEnding,
+		extension: '.ts',
+	})
 }
 
 /**
@@ -3328,18 +3338,18 @@ function getComponentPathForFamily(
  * write.
  *
  * @param base - the path or file name without its extension, e.g. `"Foo"`
- * @param componentEnding - the ending with its dot, e.g. `".component"`
- * @param extension - the component file's extension, `".ts"` or `".tsx"`
+ * @param componentEnding - the ending with its dot, e.g. `".component"`, and
+ * the component file's extension
  */
 function getMarkedComponentPath(
 	base: string,
-	componentEnding: string,
-	extension: ComponentEnding['extension'],
+	componentEnding: ComponentEnding,
 ): string {
-	const doesBaseCarryEnding = base.endsWith(componentEnding)
+	const { ending, extension } = componentEnding
+	const doesBaseCarryEnding = base.endsWith(ending)
 	return doesBaseCarryEnding
 		? `${base}${extension}`
-		: `${base}${componentEnding}${extension}`
+		: `${base}${ending}${extension}`
 }
 
 /**

@@ -102,7 +102,11 @@ type ComponentMarkerQuestion = {
 	defaultMarker: string
 	/** A marker to show in the question's example, e.g. `'lit'`. */
 	exampleMarker: string
-	/** Which files are components with no marker, e.g. `'*.tsx file'`. */
+	/**
+	 * Which files are components with no marker, e.g. `'*.tsx file'`. Written
+	 * `*.ts` rather than `.ts` because a terminal sets nothing apart as code,
+	 * and "plain .ts" reads as a file called plain.ts.
+	 */
 	noMarkerFiles: string
 	/** What that means for a utils file, said after `noMarkerFiles`. */
 	noMarkerUtilsLine: string
@@ -834,8 +838,7 @@ async function readComponentMarkerAnswer(
 	)
 	// The consequence spelled out, not just the rule, because "any *.tsx file"
 	// reads as a detail until it is a utils file that got a story written for
-	// it. Written `*.ts` rather than `.ts` because a terminal sets nothing apart
-	// as code, and "plain .ts" reads as a file called plain.ts.
+	// it.
 	log(
 		`  Answer "${NO_COMPONENT_MARKER_ANSWER}" and any ${noMarkerFiles} that you create under your source folder will be treated as a ${frameworkName} component.`,
 	)

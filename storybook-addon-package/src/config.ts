@@ -28,7 +28,11 @@ export interface TsxStoryScaffoldContext extends TsxComponentScaffoldContext {
 	 * marker (`componentFileSuffix`) the marker stays in it, e.g.
 	 * `"ButtonAtom.ui"` for `ButtonAtom.ui.tsx`, so an import built from it
 	 * names the real file; `componentName` and `title` have the marker taken
-	 * off.
+	 * off. That is the opposite of the Lit and Angular contexts, whose `base`
+	 * drops the marker (Lit gives the import separately, as
+	 * `componentImportPath`). It keeps the marker here so that a `.tsx` story
+	 * template written before the marker existed, importing from `./${base}`,
+	 * still names the real file once a project sets one.
 	 */
 	base: string
 }
