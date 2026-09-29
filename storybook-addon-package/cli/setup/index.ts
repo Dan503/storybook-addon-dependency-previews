@@ -126,9 +126,9 @@ const LIT_COMPONENT_MARKER_QUESTION: ComponentMarkerQuestion = {
 
 /**
  * The wizard-supported frameworks whose components are `.tsx` files, and so can
- * be given a component marker. The same set `tsxFrameworkFromFramework` tells
- * apart; React on webpack and Next.js on webpack are left out because the
- * wizard sends them to the manual setup guide before asking anything.
+ * be given a component marker. React on webpack and Next.js on webpack are left
+ * out because the wizard sends them to the manual setup guide before asking
+ * anything.
  */
 const TSX_MARKER_FRAMEWORKS: ReadonlyArray<Framework> = [
 	'react-vite',

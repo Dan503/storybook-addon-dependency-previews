@@ -1693,9 +1693,8 @@ function findExistingStory(
 	// Only for a family whose component files carry a marking ending — Angular's
 	// `Foo.component.ts`, or Lit's `Foo.lit.ts` and React's `Foo.ui.tsx` where
 	// the project set that marker. Both `Foo.stories.ts` and
-	// `Foo.component.stories.ts` read as that
-	// component's story, while the canonical path only ever spells the first (the
-	// base strips the ending). Every other framework must NOT expand this way —
+	// `Foo.component.stories.ts` read as that component's story, while the
+	// canonical path only ever spells the first (the base strips the ending). Every other framework must NOT expand this way —
 	// there a `Foo.component.vue` is simply a different component, so matching its
 	// story would wrongly suppress scaffolding for `Foo.vue`.
 	const componentEnding = getComponentEndingForFamily(framework)
