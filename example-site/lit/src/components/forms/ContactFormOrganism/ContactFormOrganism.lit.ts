@@ -1,4 +1,4 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, css, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import * as v from 'valibot'
 import {
@@ -59,8 +59,10 @@ export class ContactFormOrganism extends LitElement {
 	 * Checks the values, and hands them to `onSubmit` when they pass.
 	 *
 	 * Written as an arrow function so it still knows which form it belongs to
-	 * when the button or a field calls it. It is called for the form's own
-	 * submit, a click on Send, and Enter in a one-line field.
+	 * when the button or a field calls it. It runs on a click on Send and on
+	 * Enter in a one-line field. It is also the form's own submit handler, but
+	 * nothing in the form can submit it today: the button and the boxes sit
+	 * inside other components, where they cannot reach it.
 	 */
 	private _send = (event: Event) => {
 		event.preventDefault()
@@ -97,8 +99,15 @@ export class ContactFormOrganism extends LitElement {
 			? getFieldErrors(contactFormSchema, this.values)
 			: {}
 		const allErrors = Object.values(fieldErrors).flat()
+		// Left out entirely when there are no errors: an empty block would still
+		// take a place in the grid, and the gap above the fields with it.
+		const errorBlock = allErrors.length
+			? html`<app-error-block-organism
+					.errors=${allErrors}
+				></app-error-block-organism>`
+			: nothing
 		return html`<div class="ContactFormOrganism">
-			<app-error-block-organism .errors=${allErrors}></app-error-block-organism>
+			${errorBlock}
 			<form @submit=${this._send} @input=${this._onFieldInput}>
 				<app-text-field-molecule
 					name="name"

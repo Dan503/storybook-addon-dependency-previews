@@ -58,7 +58,8 @@ function renderFieldStory(
 		const errors = getErrors()
 		fieldRef.value!.errors = errors
 		if (!errors) {
-			alert(JSON.stringify(values, null, 2))
+			const indentSpaces = 2
+			alert(JSON.stringify(values, null, indentSpaces))
 		}
 	}
 
