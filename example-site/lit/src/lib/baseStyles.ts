@@ -11,7 +11,7 @@ import { css } from 'lit'
  * other sites do not have.
  *
  * So a component that draws headings, paragraphs, lists, links, pictures,
- * buttons, form fields or code lists this first in its `static styles`, and its
+ * buttons, form fields or code starts its `static styles` with this, and its
  * own rules follow.
  * The rules are Tailwind's own, copied from its `preflight.css`, and only the
  * ones that touch an element these components draw — a rule for an element
