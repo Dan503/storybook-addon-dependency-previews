@@ -16,6 +16,8 @@ import { css } from 'lit'
  * The rules are Tailwind's own, copied from its `preflight.css`, and only the
  * ones that touch an element these components draw — a rule for an element
  * nobody here uses would be one more thing to keep in step for nothing.
+ * The one exception is the code font, which is the site's own from `app.css`
+ * rather than Tailwind's.
  * Lit shares one copy of it between every component that lists it.
  *
  * The first rule names the plain elements it clears rather than using `*` as
