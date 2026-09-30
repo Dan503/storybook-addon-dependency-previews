@@ -67,6 +67,9 @@
 	"files": [
 		"dist/**"
 	],
+	"engines": {
+		"node": ">=22"
+	},
 	"scripts": {
 		"copy-css": "cpx \"src/**/*.module.css\" dist",
 		"build": "rm -rf dist && tsdown && npm run copy-css && npm run typecheck",

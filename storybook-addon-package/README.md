@@ -62,6 +62,8 @@ Vue version built for Vue 3.
 
 ## Installation guide
 
+The addon needs Node.js 22 or newer, because the dependency-cruiser version it installs (18), which it uses to read your components' imports, does not run on older versions.
+
 ### Quick start (React, Preact, Svelte, Vue 3, Solid, and Next.js on Vite)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
