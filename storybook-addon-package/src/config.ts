@@ -22,7 +22,18 @@ export interface TsxStoryScaffoldContext extends TsxComponentScaffoldContext {
 	title: string
 	/** Story tags, e.g. `["autodocs", "atom"]` */
 	tags: string[]
-	/** Base file name without extension, e.g. `"ButtonAtom"` */
+	/**
+	 * Base file name without extension, e.g. `"ButtonAtom"` — the name the
+	 * story imports the component from. Where the project set a component
+	 * marker (`componentFileSuffix`) the marker stays in it, e.g.
+	 * `"ButtonAtom.ui"` for `ButtonAtom.ui.tsx`, so an import built from it
+	 * names the real file; `componentName` and `title` have the marker taken
+	 * off. That is the opposite of the Lit and Angular contexts, whose `base`
+	 * drops the marker (Lit gives the import separately, as
+	 * `componentImportPath`). It keeps the marker here so that a `.tsx` story
+	 * template written before the marker existed, importing from `./${base}`,
+	 * still names the real file once a project sets one.
+	 */
 	base: string
 }
 
@@ -112,7 +123,7 @@ export interface LitStoryScaffoldContext extends LitComponentScaffoldContext {
 	 * leading `./` and without the `.ts` extension — e.g. `"ButtonAtom.lit"`.
 	 *
 	 * Use this rather than building the path out of `base`, which drops the
-	 * component marker: with `litComponentSuffix` set to `'lit'` the file is
+	 * component marker: with `componentFileSuffix` set to `'lit'` the file is
 	 * `ButtonAtom.lit.ts` while the base is `ButtonAtom`.
 	 */
 	componentImportPath: string
@@ -201,13 +212,33 @@ export interface SbDepsConfig {
 	angularSelectorPrefix?: string
 
 	/**
-	 * What marks a file as a Lit component, written without its dot. Every
-	 * answer is about files under the source folder; nothing outside it is a
-	 * component whatever it is called.
+	 * What marks a file as a component, written without its dot. Read in two
+	 * kinds of project: Lit, where it marks `.ts` files, and React, Solid and
+	 * Preact (Next.js included), where it marks `.tsx` files. Vue and Svelte
+	 * ignore it, since their extension already says "component", and so does
+	 * Angular, which has its own `.component`. Every answer is about files under
+	 * the source folder; nothing outside it is a component whatever it is
+	 * called.
 	 *
-	 * With `'lit'`, only `Button.lit.ts` there is treated as a component. Leave
-	 * it out, or set it to the empty string, and a plain `.ts` file counts
-	 * instead — meaning one that is not a story, carries no other dotted part
+	 * With a marker set, only a file named for it is a component —
+	 * `Button.lit.ts` with `'lit'`, `Button.ui.tsx` with `'ui'` — and the marker
+	 * comes off the name wherever a name is built from it, so `Button.ui.tsx` is
+	 * called `Button` and gets `Button.stories.tsx`. A file created empty with
+	 * the right extension but without the marker (an empty `Button.tsx`, or
+	 * `Button.ts` in Lit) is still left alone, but gets a line naming the file to
+	 * rename it to; one with another dot in its name, like a new
+	 * `Button.test.tsx`, is left alone without one.
+	 *
+	 * **In a React, Solid or Preact project**, leave it out and every `.tsx` file
+	 * under the source folder that is not a story is a component, as it always
+	 * has been — so a `utils.tsx` holding some JSX gets a story written beside
+	 * it. Set a marker and that file is left alone. The `sb-deps setup` wizard
+	 * shows this as `none` for these frameworks, and asks about it only when you
+	 * choose to edit the values it detected.
+	 *
+	 * **In a Lit project**, with `'lit'`, only `Button.lit.ts` is treated as a
+	 * component. Leave it out, or set it to the empty string, and a plain `.ts`
+	 * file counts instead — meaning one that is not a story, carries no other dotted part
 	 * in its name, and is created empty. So `Button.test.ts` and `Button.d.ts`
 	 * are left alone either way, and so is a `helpers.ts` that arrives with
 	 * something already in it. With no marker, an empty `Button.test.ts` also
@@ -240,10 +271,9 @@ export interface SbDepsConfig {
 	 *   and a story for that, and your own `helpers.ts` is neither found nor
 	 *   mentioned — a plain `.ts` file is not a component in that project, so
 	 *   there is no spelling by which it could be found. Rename it to
-	 *   `helpers.lit.ts` if you want it storied.
-	 *
-	 * Only read in a Lit project, so it changes nothing for any other
-	 * framework.
+	 *   `helpers.lit.ts` if you want it storied. A React, Solid or Preact
+	 *   project with a marker works the same way: `helpers.stories.tsx` looks
+	 *   for `helpers.ui.tsx`.
 	 *
 	 * The `sb-deps setup` wizard asks for this in a Lit project and writes
 	 * `'lit'` unless you ask it for something else, so `Button.lit.ts` is the
@@ -255,10 +285,12 @@ export interface SbDepsConfig {
 	 * ending is read in lower case everywhere in this tool and a marker spelled
 	 * `Lit` would be honoured in some places and missed in others.
 	 *
-	 * @example 'lit'  →  `Button.lit.ts` is a component, `Button.ts` is not
-	 * @example ''     →  a plain `.ts` file created empty is a component
+	 * @example 'lit'  →  in Lit, `Button.lit.ts` is a component, `Button.ts` is not
+	 * @example ''     →  in Lit, a plain `.ts` file created empty is a component
+	 * @example 'ui'   →  in React, `Button.ui.tsx` is a component, `utils.tsx` is not
+	 * @example ''     →  in React, every `.tsx` file that is not a story is a component
 	 */
-	litComponentSuffix?: string
+	componentFileSuffix?: string
 
 	/**
 	 * Prefix put in front of the tag a Lit component registers itself as.

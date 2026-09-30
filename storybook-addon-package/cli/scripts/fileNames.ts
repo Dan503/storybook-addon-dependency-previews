@@ -13,13 +13,16 @@ type NameEnding = {
 	/** Extensions the ending is read on, or `null` for any extension. */
 	extensions: ReadonlyArray<string> | null
 	needsAngularProject?: boolean
+	/** Whether the ending makes the file a story, like `.stories`. */
+	isStoryEnding?: boolean
 }
 
 /**
  * The name endings this tool reads meaning into that are the same in every
- * project. `extensions: null` means any extension. Lit's component marker is
- * the one ending not listed here, because the project chooses what it is
- * spelled as — `getNameEnding` adds it from the context.
+ * project. `extensions: null` means any extension. The project's component
+ * marker (`componentFileSuffix`) is the one ending not listed here, because the
+ * project chooses what it is spelled as — `getNameEnding` adds it from the
+ * context.
  *
  * An ending only earns attention where this tool would act on it, and what
  * establishes that differs by ending. `.decorator` is settled by the extension
@@ -28,15 +31,18 @@ type NameEnding = {
  * `.ts`, so an `Auth.Component.ts` in a React project would be refused on
  * creation and named in every build afterwards for an Angular convention it
  * has nothing to do with. That one needs the project itself to be Angular, and
- * Lit's marker is read only in a Lit project for the same reason.
+ * the component marker is read only in a Lit project (on `.ts`) or a React,
+ * Solid or Preact project (on `.tsx`) for the same reason — and on a story's
+ * name in such a project whatever the story's extension (see
+ * `getMarkerExtensions`).
  *
  * Order does not matter: no entry is the ending of another, and they are
  * matched with `endsWith`, so `.story` can never claim part of a `.stories`
  * name.
  */
 const NAME_ENDINGS: ReadonlyArray<NameEnding> = [
-	{ ending: '.stories', extensions: null },
-	{ ending: '.story', extensions: null },
+	{ ending: '.stories', extensions: null, isStoryEnding: true },
+	{ ending: '.story', extensions: null, isStoryEnding: true },
 	{
 		ending: '.component',
 		extensions: ['.ts', '.html'],
@@ -46,7 +52,7 @@ const NAME_ENDINGS: ReadonlyArray<NameEnding> = [
 ]
 
 /**
- * The words a project may not pick as its Lit component marker, because each
+ * The words a project may not pick as its component marker, because each
  * already means something here — a marker spelled `stories` would have
  * `Button.stories.ts` read as both a component and its own story.
  *
@@ -58,7 +64,7 @@ const RESERVED_NAME_ENDINGS: ReadonlyArray<string> = NAME_ENDINGS.map((entry) =>
 )
 
 /**
- * Why this Lit component marker can't be used, or `null` when it can be.
+ * Why this component marker can't be used, or `null` when it can be.
  *
  * Phrased to follow the caller's own naming of the marker — `it can only
  * contain…`, not `"foo" can only contain…` — so that a caller which has
@@ -77,7 +83,7 @@ const RESERVED_NAME_ENDINGS: ReadonlyArray<string> = NAME_ENDINGS.map((entry) =>
  * while the graph filter failed to pair it with its story, which is the precise
  * disagreement between the two processes this module exists to prevent.
  *
- * @param marker - the marker without its dot, e.g. `"lit"`
+ * @param marker - the marker without its dot, e.g. `"lit"` or `"ui"`
  */
 export function getComponentMarkerError(marker: string): string | null {
 	if (!/^[a-z0-9_-]+$/.test(marker))
@@ -93,18 +99,53 @@ export function getComponentMarkerError(marker: string): string | null {
 export type NameEndingContext = {
 	isAngularProject: boolean
 	/**
-	 * What marks a Lit component file, with its dot (`'.lit'`), when the
-	 * project is Lit and has a marker set. `null` otherwise — including in a
-	 * Lit project that asked for no marker, where a plain `.ts` file is a
-	 * component and so no ending distinguishes one.
+	 * The project's component marker, when it has one: the ending with its dot
+	 * (`'.lit'`, `'.ui'`) and the extension of the component files it marks —
+	 * `.ts` in a Lit project, `.tsx` in a React, Solid or Preact project (a
+	 * story's name may carry it on any extension; see `getMarkerExtensions`).
+	 * `null` otherwise, including in a project that asked for no marker, where no
+	 * ending distinguishes a component file.
 	 */
-	litComponentEnding: string | null
+	componentEnding: ComponentEnding | null
+}
+
+/** A project's component marker and the extension it marks. */
+export type ComponentEnding = {
+	/** The marker with its dot, e.g. `'.lit'`. */
+	ending: string
+	/** The extension of the component files it marks. */
+	extension: '.ts' | '.tsx'
+}
+
+/**
+ * The project's component marker as a name ending, with the extension it marks
+ * — or `null` when no marker is set, or the project is not one the marker
+ * applies to. A Lit project marks `.ts` files; a React, Solid or Preact project
+ * (the `react` family) marks `.tsx` files. Vue and Svelte need no marker, since
+ * their extension already says "component", and Angular has its own
+ * `.component`.
+ *
+ * Shared so the watcher and the graph filter agree on which projects read the
+ * marker and on which extension.
+ *
+ * @param projectFamily - the project's framework family, e.g. `'lit'`, or `null`/`''` when unknown
+ * @param marker - the marker without its dot, e.g. `'lit'`, or `null`/`''` for none
+ */
+export function getComponentMarkerEnding(
+	projectFamily: string | null,
+	marker: string | null,
+): ComponentEnding | null {
+	if (!marker) return null
+	const ending = `.${marker}`
+	if (projectFamily === 'lit') return { ending, extension: '.ts' }
+	if (projectFamily === 'react') return { ending, extension: '.tsx' }
+	return null
 }
 
 /**
  * `Button.component` → `Button`, for a name that carries an ending marking it
- * as a component file here — Angular's `.component`, or the Lit marker this
- * project set. Returned unchanged otherwise.
+ * as a component file here — Angular's `.component`, or the component marker
+ * this project set. Returned unchanged otherwise.
  *
  * Exported so the graph filter asks the same question the watcher does. It used
  * to strip with an inline `/\.component$/`, which carried neither of the two
@@ -127,10 +168,15 @@ export function stripComponentEnding(
 	// have the graph pair a file the rest of the tool does not recognise, which
 	// is the disagreement this whole change exists to remove.
 	if (extension !== extension.toLowerCase()) return baseName
-	const ending = getNameEnding(baseName, extension.toLowerCase(), context)
+	const ending = getNameEnding({
+		name: baseName,
+		comparableExtension: extension.toLowerCase(),
+		context,
+		isStoryBase: false,
+	})
 	if (!ending) return baseName
 	const isComponentMarkingEnding =
-		ending === '.component' || ending === context.litComponentEnding
+		ending === '.component' || ending === context.componentEnding?.ending
 	if (!isComponentMarkingEnding) return baseName
 	if (!baseName.endsWith(ending)) return baseName
 	return baseName.slice(0, -ending.length)
@@ -156,6 +202,15 @@ export function readFolderEntriesOrNull(
 }
 
 /**
+ * The endings that make a file a story, so that what is left is the story's
+ * base name. Derived from `NAME_ENDINGS` rather than listed again, so the two
+ * cannot drift apart.
+ */
+const STORY_ENDINGS: ReadonlyArray<string> = NAME_ENDINGS.filter(
+	(entry) => entry.isStoryEnding,
+).map((entry) => entry.ending)
+
+/**
  * The file name with its extension and any known endings lower-cased, and the
  * rest of the name left exactly as it was.
  *
@@ -165,7 +220,8 @@ export function readFolderEntriesOrNull(
  * `My.story.tsx`, a NestJS `Roles.Decorator.ts` is untouched because
  * `.decorator` is only read on `.svelte`, an `Auth.Component.ts` is untouched
  * outside an Angular project, and a `Button.Lit.ts` is untouched outside a Lit
- * project that set `lit` as its component marker.
+ * project that set `lit` as its component marker (as is a `Button.UI.tsx`
+ * outside a React, Solid or Preact project that set `ui`).
  *
  * Endings are peeled off one at a time because they stack: Angular's
  * `Button.Component.Stories.ts` has two, and fixing only the last one would
@@ -184,31 +240,62 @@ export function getNameWithLowerCasedEndings(
 	const comparableExtension = extension.toLowerCase()
 	let remainingName = hasExtension ? fileName.slice(0, lastDotIndex) : fileName
 	let endings = ''
-	let ending = getNameEnding(remainingName, comparableExtension, context)
+	let isStoryBase = false
+	let ending = getNameEnding({
+		name: remainingName,
+		comparableExtension,
+		context,
+		isStoryBase,
+	})
 	while (ending) {
 		endings = ending + endings
 		remainingName = remainingName.slice(0, -ending.length)
-		ending = getNameEnding(remainingName, comparableExtension, context)
+		isStoryBase ||= STORY_ENDINGS.includes(ending)
+		ending = getNameEnding({
+			name: remainingName,
+			comparableExtension,
+			context,
+			isStoryBase,
+		})
 	}
 	return remainingName + endings + comparableExtension
 }
 
+interface GetNameEndingParams {
+	/** the name to read, without its extension or any ending already peeled off */
+	name: string
+	/** the file's extension, lower-cased, e.g. `'.ts'` */
+	comparableExtension: string
+	/** what the caller knows about the project, for the endings that need it */
+	context: NameEndingContext
+	/**
+	 * Whether `name` is what is left of a story file's name once its story
+	 * ending came off, e.g. `Button.UI` from `Button.UI.stories.ts`.
+	 */
+	isStoryBase: boolean
+}
+
 /** Which ending this name carries that means something here, however it is capitalised, or `null` for none. */
-function getNameEnding(
-	name: string,
-	comparableExtension: string,
-	context: NameEndingContext,
-): string | null {
+function getNameEnding({
+	name,
+	comparableExtension,
+	context,
+	isStoryBase,
+}: GetNameEndingParams): string | null {
 	const comparableName = name.toLowerCase()
-	// The project's own Lit marker is added at the end rather than the start, so
-	// that a name matching both it and a fixed ending is read as the fixed one.
-	// The wizard and the config loader both refuse a marker spelled like one of
-	// those, so that tie should be unreachable; ordering it this way means it
-	// fails the safe way if it ever is not.
-	const candidates: ReadonlyArray<NameEnding> = context.litComponentEnding
+	// The project's own component marker is added at the end rather than the
+	// start, so that a name matching both it and a fixed ending is read as the
+	// fixed one. The wizard and the config loader both refuse a marker spelled
+	// like one of those, so that tie should be unreachable; ordering it this way
+	// means it fails the safe way if it ever is not.
+	const { componentEnding } = context
+	const candidates: ReadonlyArray<NameEnding> = componentEnding
 		? [
 				...NAME_ENDINGS,
-				{ ending: context.litComponentEnding, extensions: ['.ts'] },
+				{
+					ending: componentEnding.ending,
+					extensions: getMarkerExtensions(componentEnding, isStoryBase),
+				},
 			]
 		: NAME_ENDINGS
 	const match = candidates.find((candidate) => {
@@ -217,4 +304,24 @@ function getNameEnding(
 		return candidate.extensions?.includes(comparableExtension) ?? true
 	})
 	return match?.ending ?? null
+}
+
+/**
+ * The extensions the project's component marker is read on, or `null` for any
+ * extension. A component name carries it only on the component's own
+ * extension, but a story's base name can carry it whatever the story is
+ * written in: a `Button.ui.tsx` story may be `.ts`, `.tsx`, `.js` or `.jsx`,
+ * and the graph filter pairs any of them. Reading only the component's
+ * extension there would let a `Button.UI.stories.ts` through the capitals
+ * check, to be written as a second component or never paired.
+ *
+ * @param componentEnding - the project's component marker and its extension
+ * @param isStoryBase - whether the name being read is a story's base name
+ */
+function getMarkerExtensions(
+	componentEnding: ComponentEnding,
+	isStoryBase: boolean,
+): ReadonlyArray<string> | null {
+	if (isStoryBase) return null
+	return [componentEnding.extension]
 }

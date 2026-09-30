@@ -11,6 +11,7 @@ import {
 	tsxFrameworkFromFramework,
 	type Framework,
 	type SupportedFramework,
+	type TsxFramework,
 } from './detect.js'
 import { detectProjectRepoUrl } from './gitOrigin.js'
 import { installMissingPackages } from './install.js'
@@ -48,7 +49,7 @@ function rule() {
  * what stops the two drifting apart.
  */
 function logSrcDir(srcDir: string) {
-	log(`Source folder       : ${srcDir === '' ? '(project root)' : srcDir}`)
+	log(`Source folder        : ${srcDir === '' ? '(project root)' : srcDir}`)
 }
 
 /**
@@ -77,6 +78,75 @@ const FRAMEWORK_PICKER_LABELS: Record<SupportedFramework, string> = {
  * can disagree.
  */
 export const DEFAULT_LIT_COMPONENT_MARKER = 'lit'
+
+/**
+ * The word the user types to ask for no marker at all, since an empty answer
+ * already means "keep the suggestion" — and the word the opening screen shows
+ * where no marker is suggested. The wizard's source-folder question pays the
+ * same small cost for its own `.`: a project that genuinely wanted to mark its
+ * components with the word `none` cannot have it, which is why the prompt says
+ * so rather than leaving it to be discovered.
+ */
+const NO_COMPONENT_MARKER_ANSWER = 'none'
+
+/**
+ * What the wizard shows and asks about one framework's component marker
+ * (`componentFileSuffix`) — see `getComponentMarkerQuestion`.
+ */
+type ComponentMarkerQuestion = {
+	/** The framework as the wizard names it, e.g. `'Lit'`. */
+	frameworkName: string
+	/** The extension the marker goes in front of. */
+	extension: '.ts' | '.tsx'
+	/** The suggested marker without its dot, or `''` for none. */
+	defaultMarker: string
+	/** A marker to show in the question's example, e.g. `'lit'`. */
+	exampleMarker: string
+	/**
+	 * Which files are components with no marker, e.g. `'*.tsx file'`. Written
+	 * `*.ts` rather than `.ts` because a terminal sets nothing apart as code,
+	 * and "plain .ts" reads as a file called plain.ts.
+	 */
+	noMarkerFiles: string
+	/** What that means for a utils file, said after `noMarkerFiles`. */
+	noMarkerUtilsLine: string
+	/** Asked on the fast route too, rather than only when the user chose to edit. */
+	isAskedOnEveryRoute: boolean
+}
+
+const LIT_COMPONENT_MARKER_QUESTION: ComponentMarkerQuestion = {
+	frameworkName: 'Lit',
+	extension: '.ts',
+	defaultMarker: DEFAULT_LIT_COMPONENT_MARKER,
+	exampleMarker: DEFAULT_LIT_COMPONENT_MARKER,
+	noMarkerFiles: 'empty plain *.ts file',
+	noMarkerUtilsLine:
+		'So a utils.ts file would be scaffolded as a component and a sibling storybook file will be created for it.',
+	// Asked every time rather than only where it would change something, so
+	// `.lit.ts` is the shape a set-up project ends up with, while anyone who
+	// would rather a plain `.ts` file there were a component can say so.
+	isAskedOnEveryRoute: true,
+}
+
+/**
+ * The wizard-supported frameworks whose components are `.tsx` files, and so can
+ * be given a component marker. React on webpack and Next.js on webpack are left
+ * out because the wizard sends them to the manual setup guide before asking
+ * anything.
+ */
+const TSX_MARKER_FRAMEWORKS: ReadonlyArray<Framework> = [
+	'react-vite',
+	'preact-vite',
+	'solid-vite',
+	'nextjs-vite',
+]
+
+/** How the wizard names each `.tsx` framework in the component-marker question. */
+const TSX_FRAMEWORK_NAMES: Record<TsxFramework, string> = {
+	react: 'React',
+	solid: 'Solid',
+	preact: 'Preact',
+}
 
 // The story-file extension the scaffolder generates for each framework — used
 // only to render a concrete example next to the story-extension preference.
@@ -174,9 +244,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			? ''
 			: ` (from ${detection.frameworkDetectionSource})`
 	log(
-		`Detected framework  : ${detection.frameworkRaw ?? '(unknown)'}${detectionSourceLabel}`,
+		`Detected framework   : ${detection.frameworkRaw ?? '(unknown)'}${detectionSourceLabel}`,
 	)
-	log(`Detected pkg manager: ${detection.packageManager}`)
+	log(`Detected pkg manager : ${detection.packageManager}`)
 
 	let framework: Framework = detection.framework
 
@@ -191,17 +261,17 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// here was reached without knowing that.
 	const detectedRepoUrl = detectProjectRepoUrl(cwd)
 	if (detectedRepoUrl?.url) {
-		log(`Git project root URL: ${detectedRepoUrl.url}`)
+		log(`Git project root URL : ${detectedRepoUrl.url}`)
 		if (detectedRepoUrl.branchSource === 'fallback-main') {
 			log(
-				`                      (couldn't read default branch from remote — used 'main')`,
+				`                       (couldn't read default branch from remote — used 'main')`,
 			)
 		}
 	} else if (detectedRepoUrl?.warning) {
-		log(`Git project root URL: (auto-detect skipped — see step 3)`)
+		log(`Git project root URL : (auto-detect skipped — see step 3)`)
 	} else {
 		log(
-			`Git project root URL: (no git origin detected — will prompt in step 3)`,
+			`Git project root URL : (no git origin detected — will prompt in step 3)`,
 		)
 	}
 
@@ -219,15 +289,15 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	const storyFileExample = isStoryExtensionKnown
 		? ` (eg. ComponentName.stories.${exampleStoryFileExtension(framework)})`
 		: ''
-	log(`Storybook Extension : stories${storyFileExample}`)
-	// Lit is the one framework whose component files need telling apart from
-	// every other `.ts` file, so the naming it expects belongs on this screen
-	// with the rest of what the tool will assume. The question that lets the
-	// user change it comes straight after this block is confirmed.
-	if (framework === 'web-components-vite')
-		log(
-			`Lit component marker: ${DEFAULT_LIT_COMPONENT_MARKER} (eg. ComponentName.${DEFAULT_LIT_COMPONENT_MARKER}.ts)`,
-		)
+	log(`Storybook Extension  : stories${storyFileExample}`)
+	// The frameworks whose component files can be told apart from other
+	// TypeScript files by a marker in their name: Lit, whose `.ts` files need
+	// one and get `lit` suggested, and React, Solid and Preact, whose `.tsx`
+	// files have none unless asked. The naming each expects belongs on this
+	// screen with the rest of what the tool will assume. Lit is asked about it
+	// straight after this block is confirmed; the others only on the edit route.
+	const componentMarkerQuestion = getComponentMarkerQuestion(framework)
+	if (componentMarkerQuestion) logComponentMarkerLine(componentMarkerQuestion)
 
 	// Show file paths relative to cwd so the detection block stays compact —
 	// absolute Windows paths in particular are noisy and push the actually-
@@ -236,9 +306,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// elsewhere in the block.
 	const displayRelPath = (absPath: string) =>
 		pathRelative(cwd, absPath).replace(/\\/g, '/')
-	log(`Storybook main file : ${displayRelPath(detection.mainFile.path)}`)
+	log(`Storybook main file  : ${displayRelPath(detection.mainFile.path)}`)
 	log(
-		`Preview file        : ${
+		`Preview file         : ${
 			detection.previewFile
 				? displayRelPath(detection.previewFile.path)
 				: '(does not exist — will be created)'
@@ -434,10 +504,21 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	// Asked after the confirmation above rather than among the detected values,
 	// because it is a new decision rather than something detected — and asking it
-	// here means a cancelled setup never asks it at all.
-	const litComponentSuffix =
-		framework === 'web-components-vite'
-			? await askLitComponentMarker()
+	// here means a cancelled setup never asks it at all. A Lit project is asked
+	// on either route, since a marker is suggested for it. A React, Solid or
+	// Preact project is asked only when the user chose to edit: with no marker
+	// its `.tsx` files work as they always have, so the fast route keeps that and
+	// writes nothing.
+	//
+	// Looked up again rather than reusing the opening screen's answer, because
+	// the framework picker above may have given an unknown project its
+	// framework since then.
+	const componentMarkerQuestionAfterPick = getComponentMarkerQuestion(framework)
+	const isComponentMarkerAsked =
+		componentMarkerQuestionAfterPick?.isAskedOnEveryRoute || choice === 'edit'
+	const componentFileSuffix =
+		componentMarkerQuestionAfterPick && isComponentMarkerAsked
+			? await askComponentMarker(componentMarkerQuestionAfterPick)
 			: undefined
 
 	rule()
@@ -597,7 +678,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	// default `'src'`, when the project's `.tsx` files aren't React's (the config
 	// records `tsxFramework` outright, so the scaffolder emits Solid or Preact —
 	// not React — templates for `.tsx` files), when the user chose a
-	// non-default story-file extension, or when a Lit project was given a
+	// non-default story-file extension, or when the project was given a
 	// component marker. Must happen before Step 5 so the sb-deps
 	// build below picks up the configured values on its first run. Silent no-op
 	// when everything is default so setups without overrides don't see an extra
@@ -610,21 +691,23 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		isEsm: detection.isEsm,
 		tsxFramework,
 		storybookFileExtension: effectiveStorybookFileExtension,
-		litComponentSuffix,
+		componentFileSuffix,
 	})
 	logSbDepsConfigOutcome(sbDepsConfigResult, { separateWithRule: true })
-	// A cleared Lit marker is the one answer the write cannot record, because it
-	// is recorded by the key being absent. That holds wherever the wizard's own
-	// file is the config; where one was there before, it may set the key, and
-	// this never reads it. Of the results that can mean that, only `blocked` has
-	// drawn a divider already.
-	const isLitMarkerCleared = litComponentSuffix === ''
-	const preExistingConfigFileName = isLitMarkerCleared
+	// A cleared component marker is the one answer the write cannot record,
+	// because it is recorded by the key being absent — whether it was a Lit user
+	// declining the suggested one, or a React, Solid or Preact user answering
+	// "none" on the edit route. That holds wherever the wizard's own file is the
+	// config; where one was there before, it may set the key, and this never
+	// reads it. Of the results that can mean that, only `blocked` has drawn a
+	// divider already.
+	const isComponentMarkerCleared = componentFileSuffix === ''
+	const preExistingConfigFileName = isComponentMarkerCleared
 		? findPreExistingConfigFileName(sbDepsConfigResult, cwd)
 		: null
 	if (preExistingConfigFileName) {
 		if (sbDepsConfigResult.kind === 'skipped') rule()
-		logClearedLitMarkerNote(preExistingConfigFileName)
+		logClearedComponentMarkerNote(preExistingConfigFileName)
 	}
 
 	rule()
@@ -675,66 +758,99 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 }
 
 /**
- * The word the user types to ask for no marker at all, since an empty answer
- * already means "keep the suggestion". The source-folder question above pays
- * the same small cost for its own `.`: a project that genuinely wanted to mark
- * its components with the word `none` cannot have it, which is why the prompt
- * says so rather than leaving it to be discovered.
+ * What the wizard shows and asks about this framework's component marker, or
+ * `null` for a framework that has none: Vue and Svelte, whose extension already
+ * says "component", Angular, which has its own `.component`, and any framework
+ * the wizard does not set up.
  */
-const NO_LIT_COMPONENT_MARKER_ANSWER = 'none'
+function getComponentMarkerQuestion(
+	framework: Framework,
+): ComponentMarkerQuestion | null {
+	if (framework === 'web-components-vite') return LIT_COMPONENT_MARKER_QUESTION
+	if (!TSX_MARKER_FRAMEWORKS.includes(framework)) return null
+	const tsxFramework = tsxFrameworkFromFramework(framework)
+	return {
+		frameworkName: TSX_FRAMEWORK_NAMES[tsxFramework],
+		extension: '.tsx',
+		defaultMarker: '',
+		exampleMarker: tsxFramework,
+		noMarkerFiles: '*.tsx file',
+		noMarkerUtilsLine:
+			'So a utils.tsx file would get a sibling storybook file created for it.',
+		isAskedOnEveryRoute: false,
+	}
+}
 
 /**
- * Ask a Lit project what marks a component file, and return the answer without
- * its dot — `'lit'` for `Button.lit.ts`, or the empty string for no marker at
- * all, where any plain `.ts` file created empty counts instead. Either answer
- * is about files under the source folder; nothing outside it is a component
- * whichever is given.
- *
- * Asked every time rather than only where it would change something, so
- * `.lit.ts` is the shape a set-up project ends up with, while anyone who would
- * rather a plain `.ts` file there were a component can say so.
+ * Print the opening screen's `Component file suffix` line — the suggested
+ * marker and a file name carrying it, or `none` and a plain file name.
+ */
+function logComponentMarkerLine(question: ComponentMarkerQuestion) {
+	const { defaultMarker, extension } = question
+	const shownMarker = defaultMarker || NO_COMPONENT_MARKER_ANSWER
+	const exampleEnding = defaultMarker ? `.${defaultMarker}` : ''
+	log(
+		`Component file suffix: ${shownMarker} (eg. ComponentName${exampleEnding}${extension})`,
+	)
+}
+
+/**
+ * Ask what marks a component file, and return the answer without its dot —
+ * `'lit'` for `Button.lit.ts`, `'ui'` for `Button.ui.tsx`, or the empty string
+ * for no marker at all, where the framework's usual rule applies instead (see
+ * `ComponentMarkerQuestion.noMarkerFiles`). Either answer is about files under
+ * the source folder; nothing outside it is a component whichever is given.
  *
  * Built on `ask` rather than `input` because `input` returns its default for a
  * blank answer, so it has no way to tell "keep the suggestion" from "I want
  * nothing".
  */
-async function askLitComponentMarker(): Promise<string> {
-	const marker = await readLitComponentMarkerAnswer()
+async function askComponentMarker(
+	question: ComponentMarkerQuestion,
+): Promise<string> {
+	const marker = await readComponentMarkerAnswer(question)
+	const { frameworkName, extension, noMarkerFiles } = question
 	// Said back either way, because the answer decides which files get
 	// scaffolded and nothing else in the wizard's output would show it.
 	log(
 		marker
-			? `  ✓ Files named *.${marker}.ts under your source folder will be treated as Lit components.`
-			: '  ✓ Any plain *.ts file you create empty under your source folder will be treated as a Lit component.',
+			? `  ✓ Files named *.${marker}${extension} under your source folder will be treated as ${frameworkName} components.`
+			: `  ✓ Any ${noMarkerFiles} you create under your source folder will be treated as a ${frameworkName} component.`,
 	)
 	return marker
 }
 
 /** The component-marker question itself, re-asked until the answer can be used. */
-async function readLitComponentMarkerAnswer(): Promise<string> {
-	log('\nWhat marks a file as a Lit component?')
+async function readComponentMarkerAnswer(
+	question: ComponentMarkerQuestion,
+): Promise<string> {
+	const {
+		frameworkName,
+		extension,
+		defaultMarker,
+		exampleMarker,
+		noMarkerFiles,
+		noMarkerUtilsLine,
+	} = question
+	log(`\nWhat marks a file as a ${frameworkName} component?`)
 	log(
-		`  A marker of "${DEFAULT_LIT_COMPONENT_MARKER}" means only ComponentName.${DEFAULT_LIT_COMPONENT_MARKER}.ts under your source folder is a component.`,
+		`  A marker of "${exampleMarker}" means only ComponentName.${exampleMarker}${extension} under your source folder is a component.`,
 	)
-	// The consequence spelled out, not just the rule, because "any plain *.ts
-	// file" reads as a detail until it is a utils.ts that got a component
-	// template and a story written for it. Written `*.ts` rather than `.ts`
-	// because a terminal sets nothing apart as code, and "plain .ts" reads as
-	// a file called plain.ts.
+	// The consequence spelled out, not just the rule, because "any *.tsx file"
+	// reads as a detail until it is a utils file that got a story written for
+	// it.
 	log(
-		`  Answer "${NO_LIT_COMPONENT_MARKER_ANSWER}" and any empty plain *.ts file that you create under your source folder will be treated as a Lit component.`,
+		`  Answer "${NO_COMPONENT_MARKER_ANSWER}" and any ${noMarkerFiles} that you create under your source folder will be treated as a ${frameworkName} component.`,
 	)
-	log(
-		'  So a utils.ts file would be scaffolded as a component and a sibling storybook file will be created for it.',
-	)
+	log(`  ${noMarkerUtilsLine}`)
+	// "none" is offered by name only where it is not already what Enter keeps.
+	const prompt = defaultMarker
+		? `  Enter a marker, "${NO_COMPONENT_MARKER_ANSWER}", or press Enter to keep "${defaultMarker}": `
+		: `  Enter a marker, or press Enter to keep "${NO_COMPONENT_MARKER_ANSWER}": `
 	while (true) {
-		const answer = (
-			await ask(
-				`  Enter a marker, "${NO_LIT_COMPONENT_MARKER_ANSWER}", or press Enter to keep "${DEFAULT_LIT_COMPONENT_MARKER}": `,
-			)
-		).trim()
-		if (answer === '') return DEFAULT_LIT_COMPONENT_MARKER
-		if (answer.toLowerCase() === NO_LIT_COMPONENT_MARKER_ANSWER) return ''
+		const answer = (await ask(prompt)).trim()
+		if (answer === '') return defaultMarker
+		if (answer.toLowerCase() === NO_COMPONENT_MARKER_ANSWER) return ''
 		const markerError = getComponentMarkerError(answer)
 		if (!markerError) return answer
 		log(`  "${answer}" can't be used — ${markerError}.`)
@@ -767,8 +883,8 @@ function findPreExistingConfigFileName(
 }
 
 /**
- * Tell a Lit user who asked for no component marker that an existing config
- * file may undo that answer.
+ * Tell a user who asked for no component marker that an existing config file
+ * may undo that answer.
  *
  * A marker the user asked for is covered by the config write's own messages,
  * which name the values it could not record that a user can add by hand — the
@@ -780,9 +896,9 @@ function findPreExistingConfigFileName(
  *
  * @param existingFileName - the config file already in the project root
  */
-function logClearedLitMarkerNote(existingFileName: string) {
+function logClearedComponentMarkerNote(existingFileName: string) {
 	log(
-		`  ⚠ Check that ${existingFileName} does NOT set \`litComponentSuffix\` — you asked`,
+		`  ⚠ Check that ${existingFileName} does NOT set \`componentFileSuffix\` — you asked`,
 	)
 	log(
 		`    for no marker, and that is what an absent key means. With one set, only`,
@@ -932,7 +1048,7 @@ function logBlockedConfigNote(
  * the framework out from the project's own files. The scaffolder repeats that
  * same detection on every run and has nothing but the project to go on — the
  * config file it may write carries a source folder, a `.tsx` flavour, a
- * story-file extension and a Lit component marker, none of which name the
+ * story-file extension and a component marker, none of which name the
  * framework — so it comes up
  * `unknown` too, and `checkDoesFileFrameworkMatchProject` in `sb-deps.ts` turns
  * every new component and story file away rather than scaffolding it as the
