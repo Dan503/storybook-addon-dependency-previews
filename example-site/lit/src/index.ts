@@ -1,4 +1,4 @@
-import { LitElement, css, html, render, type TemplateResult } from 'lit'
+import { LitElement, html, render, type TemplateResult } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { Router } from '@lit-labs/router'
 import {
@@ -7,6 +7,7 @@ import {
 	type HrefParams,
 } from 'example-site-shared/utils'
 import { announceAddressChange } from './lib/addressChange'
+import { gridHostStyles } from './lib/gridHostStyles'
 import './pages/HomePage.lit'
 import './pages/CategoriesPage.lit'
 import './pages/CategoryMealsPage.lit'
@@ -74,11 +75,7 @@ export class Site extends LitElement {
 		},
 	)
 
-	static override styles = css`
-		:host {
-			display: grid;
-		}
-	`
+	static override styles = gridHostStyles
 
 	override render() {
 		return this._router.outlet()

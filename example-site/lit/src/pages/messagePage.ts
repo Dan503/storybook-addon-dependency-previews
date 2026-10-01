@@ -1,5 +1,6 @@
 import { css, html, type TemplateResult } from 'lit'
 import { baseStyles } from '../lib/baseStyles'
+import { gridHostStyles } from '../lib/gridHostStyles'
 import '../components/03-organisms/SiteFrameOrganism.lit'
 import '../components/01-atoms/ContentRestraintAtom.lit'
 
@@ -12,11 +13,8 @@ import '../components/01-atoms/ContentRestraintAtom.lit'
 /** The styles `renderMessagePage` needs, for the page drawing it to include. */
 export const messagePageStyles = [
 	baseStyles,
+	gridHostStyles,
 	css`
-		:host {
-			display: grid;
-		}
-
 		.centred {
 			display: grid;
 			place-items: center;

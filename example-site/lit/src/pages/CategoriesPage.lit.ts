@@ -1,7 +1,8 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { fetchCategories, type Category } from 'example-site-shared/utils'
 import { getFetchedData } from '../lib/fetchedData'
+import { gridHostStyles } from '../lib/gridHostStyles'
 import { setPageTitle } from '../lib/pageTitle'
 import type { PropsForCardMolecule } from '../components/listings/card/CardMolecule.lit'
 import '../components/04-templates/CardListTemplate.lit'
@@ -10,11 +11,7 @@ import './LoadFailurePage.lit'
 /** Every food category, each card leading to the meals in it. */
 @customElement('app-categories-page')
 export class CategoriesPage extends LitElement {
-	static override styles = css`
-		:host {
-			display: grid;
-		}
-	`
+	static override styles = gridHostStyles
 
 	override render() {
 		setPageTitle('Meal Categories | The Meal Place')

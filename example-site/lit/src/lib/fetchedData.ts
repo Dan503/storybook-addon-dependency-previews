@@ -9,7 +9,8 @@ import type { ReactiveControllerHost } from 'lit'
  */
 
 const answers = new Map<string, unknown>()
-const failures = new Map<string, unknown>()
+/** The keys whose request failed. The cause is written to the console instead. */
+const failedKeys = new Set<string>()
 /** A page element, which the store can ask to redraw. */
 type Page = ReactiveControllerHost & Element
 
@@ -60,9 +61,9 @@ export function getFetchedData<TData>({
 	if (answers.has(key)) {
 		return { status: 'ready', data: answers.get(key) as TData }
 	}
-	if (failures.has(key)) {
+	if (failedKeys.has(key)) {
 		const tryAgain = () => {
-			failures.delete(key)
+			failedKeys.delete(key)
 			page.requestUpdate()
 		}
 		return { status: 'failed', tryAgain }
@@ -73,8 +74,9 @@ export function getFetchedData<TData>({
 }
 
 /**
- * Asks for one thing, stores the answer or the failure under its key, and
- * redraws every page that was waiting for it and is still on screen.
+ * Asks for one thing, stores the answer under its key or notes that the key
+ * failed, and redraws every page that was waiting for it and is still on
+ * screen.
  *
  * A page the reader has already left is skipped, because drawing it would
  * still name the browser tab after it, over the page now showing. It draws
@@ -89,7 +91,7 @@ function startRequest(key: string, load: () => Promise<unknown>) {
 		.then(
 			(answer) => answers.set(key, answer),
 			(failure: unknown) => {
-				failures.set(key, failure)
+				failedKeys.add(key)
 				// The failure page names no cause, so this is where to find it.
 				console.error(`Asking the meal database for "${key}" failed:`, failure)
 			},

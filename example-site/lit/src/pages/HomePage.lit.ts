@@ -1,7 +1,8 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { fetchRandomMealList } from 'example-site-shared/utils'
 import { getFetchedData } from '../lib/fetchedData'
+import { gridHostStyles } from '../lib/gridHostStyles'
 import { setPageTitle } from '../lib/pageTitle'
 import '../components/04-templates/HomeTemplate.lit'
 import './LoadFailurePage.lit'
@@ -18,11 +19,7 @@ const featuredMealCount = 7
  */
 @customElement('app-home-page')
 export class HomePage extends LitElement {
-	static override styles = css`
-		:host {
-			display: grid;
-		}
-	`
+	static override styles = gridHostStyles
 
 	override render() {
 		setPageTitle(

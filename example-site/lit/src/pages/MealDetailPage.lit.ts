@@ -1,7 +1,8 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { fetchMealById } from 'example-site-shared/utils'
 import { getFetchedData } from '../lib/fetchedData'
+import { gridHostStyles } from '../lib/gridHostStyles'
 import { getTextFromAddressPiece } from '../lib/addressPiece'
 import { setPageTitle } from '../lib/pageTitle'
 import '../components/04-templates/DetailPageTemplate.lit'
@@ -14,11 +15,7 @@ export class MealDetailPage extends LitElement {
 	/** The meal's id as it appears in the address, still escaped. */
 	@property() mealIdInAddress?: string
 
-	static override styles = css`
-		:host {
-			display: grid;
-		}
-	`
+	static override styles = gridHostStyles
 
 	override render() {
 		const mealId = getTextFromAddressPiece(this.mealIdInAddress)

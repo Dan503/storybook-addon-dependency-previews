@@ -1,7 +1,8 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { fetchMealsByCategory } from 'example-site-shared/utils'
 import { getFetchedData } from '../lib/fetchedData'
+import { gridHostStyles } from '../lib/gridHostStyles'
 import { getTextFromAddressPiece } from '../lib/addressPiece'
 import { setPageTitle } from '../lib/pageTitle'
 import { getMealCard } from '../components/listings/card/CardMolecule.lit'
@@ -21,11 +22,7 @@ export class CategoryMealsPage extends LitElement {
 	/** The category's name as it appears in the address, still escaped. */
 	@property() categoryInAddress?: string
 
-	static override styles = css`
-		:host {
-			display: grid;
-		}
-	`
+	static override styles = gridHostStyles
 
 	override render() {
 		const categoryName = getTextFromAddressPiece(this.categoryInAddress)
