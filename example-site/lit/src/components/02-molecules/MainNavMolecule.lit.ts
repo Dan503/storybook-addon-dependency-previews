@@ -1,6 +1,5 @@
 import { LitElement, css, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
-import { classMap } from 'lit/directives/class-map.js'
 import {
 	getFullAddressViaColons,
 	type ColonRouteTemplate,
@@ -9,7 +8,8 @@ import { baseStyles } from '../../lib/baseStyles'
 import { listenForAddressChange } from '../../lib/addressChange'
 
 /**
- * The links to the site's main sections, with the one being read underlined.
+ * The links to the site's main sections, with the one being read underlined
+ * and marked as current for screen readers.
  *
  * A page underneath a section counts as that section, so a single category's
  * page underlines "Food categories". A meal page underlines nothing, since no
@@ -45,7 +45,7 @@ export class MainNavMolecule extends LitElement {
 				font-weight: 700;
 			}
 
-			.isCurrent {
+			a[aria-current='true'] {
 				text-decoration-line: underline;
 			}
 		`,
@@ -60,7 +60,7 @@ export class MainNavMolecule extends LitElement {
 	}
 
 	/**
-	 * Draws one link, underlined when it leads to the section being read.
+	 * Draws one link, marked current when it leads to the section being read.
 	 *
 	 * @param href - the section's address
 	 * @param label - the link's text
@@ -68,9 +68,10 @@ export class MainNavMolecule extends LitElement {
 	private _renderLink(href: ColonRouteTemplate, label: string) {
 		const fullAddress = getFullAddressViaColons({ href })
 		const isCurrent = checkIsCurrentPage(location.pathname, fullAddress)
-		return html`<a href=${fullAddress} class=${classMap({ isCurrent })}
-			>${label}</a
-		>`
+		// `true` rather than `page`, since the link can stand for a section the
+		// page sits underneath rather than for the page itself.
+		const ariaCurrent = isCurrent ? 'true' : 'false'
+		return html`<a href=${fullAddress} aria-current=${ariaCurrent}>${label}</a>`
 	}
 }
 
