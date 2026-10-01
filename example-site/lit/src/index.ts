@@ -54,15 +54,15 @@ const pageForAddress: Record<
  * another without reloading when a link inside the site is clicked or the
  * browser's back and forward buttons are used.
  *
- * It draws only the page. Every page draws the site frame, the header and
- * footer, itself, through its template.
+ * It draws only the page. Each page draws the site frame, the header and
+ * footer, itself.
  */
 @customElement('app-site')
 export class Site extends LitElement {
 	/**
-	 * One route per shared address, read off the shared list itself so the
-	 * addresses the site answers and the links it draws cannot drift apart. An
-	 * address none of them matches draws the not-found page.
+	 * One route per shared address, read off the shared list itself — the same
+	 * list the nav and the cards check their links against. An address none of
+	 * them matches draws the not-found page.
 	 */
 	private _router = new Router(
 		this,
@@ -84,7 +84,7 @@ export class Site extends LitElement {
 		return this._router.outlet()
 	}
 
-	/** The router asks for a redraw on every move, so this runs once per move. */
+	/** The router asks for a redraw on every move, so this runs after each one. */
 	override updated() {
 		announceAddressChange()
 	}

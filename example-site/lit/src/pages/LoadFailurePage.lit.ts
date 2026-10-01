@@ -9,8 +9,8 @@ import '../components/01-atoms/ButtonAtom.lit'
  * database did not answer.
  *
  * Every page that asks the meal database can end up here, the home page
- * included. The failure is remembered for the rest of the visit, so going away
- * and coming back shows this again, with the same button to try again.
+ * included. The failure is remembered until "Try again" is pressed, so going
+ * away and coming back shows this again, with the same button.
  */
 @customElement('app-load-failure-page')
 export class LoadFailurePage extends LitElement {

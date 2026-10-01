@@ -11,7 +11,7 @@
 
 const listeners = new Set<() => void>()
 
-/** Tells everything listening that the address has changed. Called once per move by the site element. */
+/** Tells everything listening that the address has changed. Called by the site element after each move. */
 export function announceAddressChange() {
 	listeners.forEach((onChange) => onChange())
 }
