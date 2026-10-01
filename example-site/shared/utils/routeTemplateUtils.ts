@@ -309,9 +309,10 @@ function createAddressFiller<Before extends string, After extends string>(
 	 * hand the page the original text already — so those category pages read
 	 * their piece straight, and unescaping it a second time would throw on a
 	 * name carrying a percent sign. SolidStart and Lit's router pass the piece
-	 * through still escaped, so the Solid and Lit category pages are the ones
-	 * that unescape. Escaping leaves digits alone either way, which is why a
-	 * piece that is always a number reads back the same everywhere.
+	 * through still escaped, so the Solid category page unescapes it, and so do
+	 * both of the Lit pages that take a piece. Escaping leaves digits alone
+	 * either way, which is why a piece that is always a number reads back the
+	 * same everywhere.
 	 *
 	 * A template with a changing piece that was given no matching value throws,
 	 * and so does one given an empty value, since both build a link that quietly

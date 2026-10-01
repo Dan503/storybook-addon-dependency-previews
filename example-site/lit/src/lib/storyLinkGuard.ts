@@ -53,14 +53,14 @@ function stopLinksLeavingTheStory(event: MouseEvent) {
 		)
 	if (!clickedLink) return
 
-	const opensElsewhere =
+	const doesOpenElsewhere =
 		clickedLink.target !== '' ||
 		clickedLink.hasAttribute('download') ||
 		clickedLink.getAttribute('rel') === 'external'
 	const isEmailOrEmpty =
 		clickedLink.href === '' || clickedLink.href.startsWith('mailto:')
 	const isInsideThisSite = clickedLink.origin === location.origin
-	if (opensElsewhere || isEmailOrEmpty || !isInsideThisSite) return
+	if (doesOpenElsewhere || isEmailOrEmpty || !isInsideThisSite) return
 
 	event.preventDefault()
 }

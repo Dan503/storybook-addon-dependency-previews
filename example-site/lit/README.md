@@ -2,7 +2,7 @@
 
 The Lit demo site for `storybook-addon-dependency-previews`, built with [Lit](https://lit.dev) and [Vite](https://vitejs.dev).
 
-It shows the same meal-browsing site as the other demos, drawing on the same shared data and utilities, so the addon can be seen working in a realistic project. The components themselves are this site's own, under `src/components`, and that tree is what the addon graphs. The pages are under `src/pages`, and get no stories of their own: each one draws a template, and the templates have stories.
+It shows the same meal-browsing site as the other demos, drawing on the same shared data and utilities, so the addon can be seen working in a realistic project. The components themselves are this site's own, under `src/components`, and that tree is what the addon graphs. The pages are under `src/pages`, and get no stories of their own. Most of them draw a template, which has stories; the not-found and load-failure pages draw their own short message instead, so those two are not in Storybook at all.
 
 ## How it differs from the other demos
 
@@ -19,7 +19,7 @@ It shows the same meal-browsing site as the other demos, drawing on the same sha
 
 **Each page that shows meals fetches them** from the meal database while it draws, and remembers them for the rest of the visit. Until they arrive, the category and meal pages say they are loading, and the home page draws its welcome with no meals under it. An address the site does not have, or a meal the database does not know, gets a not-found page; a request that fails gets a page offering to try again.
 
-**In Storybook a clicked link stays put.** A story has no router, so the browser would follow the link itself and load the site's address in the story's place. `.storybook/preview.ts` stops those clicks.
+**In Storybook a clicked link stays put.** A story has no router, so the browser would follow the link itself and load the site's address in the story's place. `.storybook/preview.ts` wraps every story in the guard from `src/lib/storyLinkGuard.ts`, which stops those clicks.
 
 **Its conventions come from Lit's own starter project**: the `override` keyword on `styles` and `render`, a tag-name declaration under each component, and doc comments on each class that name its slots.
 
