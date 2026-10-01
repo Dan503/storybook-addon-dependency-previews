@@ -8,10 +8,16 @@ html {
 	--globalColor_teal200: oklch(91% 0.096 180.426);
 	--globalColor_teal700: oklch(51.1% 0.096 186.391);
 	--globalColor_teal900: oklch(38.6% 0.063 188.416);
+	--globalColor_indigo500: oklch(58.5% 0.233 277.117);
 	--globalColor_gray200: oklch(92.8% 0.006 264.531);
+	--globalColor_gray300: oklch(87.2% 0.01 258.338);
 	--globalColor_gray500: oklch(55.1% 0.027 264.364);
 	--globalColor_gray900: oklch(21% 0.034 264.665);
+	--globalColor_red100: oklch(93.6% 0.032 17.717);
 	--globalColor_red500: oklch(63.7% 0.237 25.331);
+	--globalColor_red600: oklch(57.7% 0.245 27.325);
+	--globalColor_red800: oklch(44.4% 0.177 26.899);
+	--globalColor_red900: oklch(39.6% 0.141 25.723);
 
 	/* How far in front each layer is drawn, highest first. Everything not
 	   listed is at the browser's default depth, below all of these. */

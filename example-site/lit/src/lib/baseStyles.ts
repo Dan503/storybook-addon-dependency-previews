@@ -10,11 +10,14 @@ import { css } from 'lit'
  * instead, and the same markup would come out with gaps and underlines the
  * other sites do not have.
  *
- * So a component that draws headings, paragraphs, lists, links, pictures or
- * buttons lists this first in its `static styles`, and its own rules follow.
+ * So a component that draws headings, paragraphs, lists, links, pictures,
+ * buttons, form fields or code starts its `static styles` with this, and its
+ * own rules follow.
  * The rules are Tailwind's own, copied from its `preflight.css`, and only the
  * ones that touch an element these components draw — a rule for an element
  * nobody here uses would be one more thing to keep in step for nothing.
+ * The one exception is the code font, which is the site's own from `app.css`
+ * rather than Tailwind's.
  * Lit shares one copy of it between every component that lists it.
  *
  * The first rule names the plain elements it clears rather than using `*` as
@@ -38,7 +41,13 @@ export const baseStyles = css`
 	a,
 	img,
 	svg,
-	button {
+	button,
+	form,
+	label,
+	input,
+	textarea,
+	pre,
+	code {
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
@@ -74,10 +83,39 @@ export const baseStyles = css`
 		height: auto;
 	}
 
-	button {
+	button,
+	input,
+	textarea {
 		font: inherit;
+		letter-spacing: inherit;
 		color: inherit;
 		border-radius: 0;
 		background-color: transparent;
+		opacity: 1;
+	}
+
+	::placeholder {
+		opacity: 1;
+	}
+
+	/* Tailwind leaves this out for older Safari, which crashes on it. */
+	@supports (not (-webkit-appearance: -apple-pay-button)) or
+		(contain-intrinsic-size: 1px) {
+		::placeholder {
+			color: color-mix(in oklab, currentcolor 50%, transparent);
+		}
+	}
+
+	textarea {
+		resize: vertical;
+	}
+
+	/* The page's own code rule in app.css does not reach in here, so the same
+	   monospace fonts are named again. */
+	pre,
+	code {
+		font-family:
+			source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+		font-size: 1em;
 	}
 `
