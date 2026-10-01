@@ -2,9 +2,7 @@
 
 The Lit demo site for `storybook-addon-dependency-previews`, built with [Lit](https://lit.dev) and [Vite](https://vitejs.dev).
 
-It shows the same meal-browsing site as the other demos, drawing on the same shared data and utilities, so the addon can be seen working in a realistic project. The components themselves are this site's own, under `src/components`, and that tree is what the addon graphs.
-
-**The pages are still to come.** For now the site draws its header and footer with a note in the middle, and the components are in Storybook. The pages arrive in a later pull request.
+It shows the same meal-browsing site as the other demos, drawing on the same shared data and utilities, so the addon can be seen working in a realistic project. The components themselves are this site's own, under `src/components`, and that tree is what the addon graphs. The pages are under `src/pages`, and get no stories of their own: each one draws a template, and the templates have stories.
 
 ## How it differs from the other demos
 
@@ -16,6 +14,12 @@ It shows the same meal-browsing site as the other demos, drawing on the same sha
 
 - `src/app.css` declares the colours as CSS custom properties, because those do reach inside.
 - `src/lib/baseStyles.ts` holds the handful of Tailwind's base rules the components rely on, such as removing the browser's default margins. A component that draws headings, paragraphs, lists, links, pictures, buttons, form fields or code starts its styles with it.
+
+**Moving between pages is done by [`@lit-labs/router`](https://www.npmjs.com/package/@lit-labs/router)**, held by the site element in `src/index.ts`. It catches a click on any link inside the site, including one inside a component's shadow root, and draws the matching page without reloading. Its routes are built from the shared list of addresses, so the addresses the site answers and the links its components draw cannot drift apart. It matches addresses with the browser's `URLPattern`, which older Safari lacks, so the site first downloads `urlpattern-polyfill` in a browser without it.
+
+**Each page that shows meals fetches them** from the meal database while it draws, showing a loading state until they arrive and remembering them for the rest of the visit. An address the site does not have, or a meal the database does not know, gets a not-found page; a request that fails gets a page offering to try again.
+
+**In Storybook a clicked link stays put.** A story has no router, so the browser would follow the link itself and load the site's address in the story's place. `.storybook/preview.ts` stops those clicks.
 
 **Its conventions come from Lit's own starter project**: the `override` keyword on `styles` and `render`, a tag-name declaration under each component, and doc comments on each class that name its slots.
 
