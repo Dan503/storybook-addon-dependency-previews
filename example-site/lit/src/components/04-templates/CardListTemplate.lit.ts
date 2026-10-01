@@ -18,6 +18,8 @@ export class CardListTemplate extends LitElement {
 	@property() introText?: string
 	/** The cards to list. */
 	@property({ attribute: false }) cardList: Array<PropsForCardMolecule> = []
+	/** Show that the cards are still on their way, rather than the cards. */
+	@property({ type: Boolean }) isLoading = false
 
 	static override styles = [
 		baseStyles,
@@ -49,12 +51,18 @@ export class CardListTemplate extends LitElement {
 				<div class="CardListTemplate">
 					<h1>${this.pageTitle}</h1>
 					<p>${this.introText}</p>
-					<app-card-listing-organism
-						.cards=${this.cardList}
-					></app-card-listing-organism>
+					${this._renderCards()}
 				</div>
 			</app-screen-padding-atom>
 		</app-site-frame-organism>`
+	}
+
+	/** Draws the cards, or a note that they are still loading. */
+	private _renderCards() {
+		if (this.isLoading) return html`<p>Loading...</p>`
+		return html`<app-card-listing-organism
+			.cards=${this.cardList}
+		></app-card-listing-organism>`
 	}
 }
 
