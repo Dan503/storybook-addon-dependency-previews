@@ -58,5 +58,5 @@ export const MealList: Story = {
 }
 
 export const Loading: Story = {
-	args: { isLoading: true },
+	args: { cardList: 'categories' as any, isLoading: true },
 }

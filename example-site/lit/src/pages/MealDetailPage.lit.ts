@@ -35,6 +35,9 @@ export class MealDetailPage extends LitElement {
 			></app-load-failure-page>`
 		}
 		if (meal.status === 'waiting') {
+			// The meal's name is not known yet, so the tab gets a stand-in rather
+			// than keeping the title of whatever page came before.
+			setPageTitle('Meal | The Meal Place')
 			return html`<app-detail-page-template
 				isLoading
 			></app-detail-page-template>`

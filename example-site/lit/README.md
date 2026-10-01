@@ -17,7 +17,7 @@ It shows the same meal-browsing site as the other demos, drawing on the same sha
 
 **Moving between pages is done by [`@lit-labs/router`](https://www.npmjs.com/package/@lit-labs/router)**, held by the site element in `src/index.ts`. It catches a click on a link inside the site, including one inside a component's shadow root, and draws the matching page without reloading. Its routes are built from the shared list of addresses, the same list the nav and the cards check their links against. It matches addresses with the browser's `URLPattern`, which older Safari lacks, so the site first downloads `urlpattern-polyfill` in a browser without it.
 
-**Each page that shows meals fetches them** from the meal database while it draws, showing a loading state until they arrive and remembering them for the rest of the visit. An address the site does not have, or a meal the database does not know, gets a not-found page; a request that fails gets a page offering to try again.
+**Each page that shows meals fetches them** from the meal database while it draws, and remembers them for the rest of the visit. Until they arrive, the category and meal pages say they are loading, and the home page draws its welcome with no meals under it. An address the site does not have, or a meal the database does not know, gets a not-found page; a request that fails gets a page offering to try again.
 
 **In Storybook a clicked link stays put.** A story has no router, so the browser would follow the link itself and load the site's address in the story's place. `.storybook/preview.ts` stops those clicks.
 
