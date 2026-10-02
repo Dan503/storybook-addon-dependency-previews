@@ -80,8 +80,8 @@ export type RouteTemplateArray<
  * One route the example sites link to, as a template.
  *
  * One member of the list `generateRouteTemplates` returns, which is where the
- * routes themselves are written down. Solid, Vue, Angular and Preact are the
- * sites that read these, though none names this type: each takes one of the
+ * routes themselves are written down. Solid, Vue, Angular, Preact and Lit are
+ * the sites that read these, though none names this type: each takes one of the
  * named spellings below, or the link props built from it. React and Svelte sit
  * on the same routes but each reads them from the list its own router
  * generates, so neither needs anything from here.
@@ -94,8 +94,10 @@ export type RouteTemplateArray<
  * there the check comes from the value, not from the markup: a `routerLink`
  * bound to a value typed against this list is checked, while one written as
  * plain text, or bound to a plain string, is not, since the router's own input
- * accepts any string. React and Svelte read their own generated lists, so their
- * pages are not this list's concern.
+ * accepts any string. Lit builds its routes from the list and puts its nav, its
+ * cards and its not-found page's link through it, but the header's link home is
+ * written as plain text, so that one is not checked. React and Svelte read
+ * their own generated lists, so their pages are not this list's concern.
  *
  * Each template is spelled out in full rather than written as a fixed start plus
  * free text, because one that is only partly written out is never offered as an
@@ -303,13 +305,14 @@ function createAddressFiller<Before extends string, After extends string>(
 	 * Fills a template's changing pieces in and hands back the address to link to.
 	 *
 	 * Each piece is escaped on the way in. Whether a page has to unescape it on
-	 * the way out is its framework's business, and here every router but
-	 * SolidStart's hands the page the original text already — so those category
-	 * pages read their piece straight, and unescaping it a second time would
-	 * throw on a name carrying a percent sign. The Solid category page is the
-	 * one that unescapes, because SolidStart passes the address through
-	 * untouched. Escaping leaves digits alone either way, which is why a piece
-	 * that is always a number reads back the same everywhere.
+	 * the way out is its framework's business, and here the routers differ. Most
+	 * hand the page the original text already — so those category pages read
+	 * their piece straight, and unescaping it a second time would throw on a
+	 * name carrying a percent sign. SolidStart and Lit's router pass the piece
+	 * through still escaped, so the Solid category page unescapes it, and so do
+	 * both of the Lit pages that take a piece. Escaping leaves digits alone
+	 * either way, which is why a piece that is always a number reads back the
+	 * same everywhere.
 	 *
 	 * A template with a changing piece that was given no matching value throws,
 	 * and so does one given an empty value, since both build a link that quietly

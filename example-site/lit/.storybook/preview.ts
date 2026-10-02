@@ -14,11 +14,17 @@ import dependenciesJson from './dependency-previews.json'
 import customElements from '../custom-elements.json'
 
 import '../src/app.css'
+import { renderStoryWithLinksStopped } from '../src/lib/storyLinkGuard'
 
 setCustomElementsManifest(customElements)
 
 const previewConfig: StorybookPreviewConfig = {
-	decorators: [...dependencyPreviewDecorators],
+	decorators: [
+		...dependencyPreviewDecorators,
+		// A story has no router, so a clicked link would otherwise load the
+		// site's address in the story's place.
+		(story) => renderStoryWithLinksStopped(story()),
+	],
 	parameters: {
 		...defaultPreviewParameters,
 		dependencyPreviews: {
