@@ -40,6 +40,18 @@ body,
 	min-height: 100%;
 }
 
+/* Storybook hides the story area on a docs page with the `hidden` attribute,
+   and the `display: grid` above would otherwise win over it, leaving an empty
+   full-height area that pushes the docs a whole screen down. The sibling
+   sites get this same rule from Tailwind's base styles; this site does not
+   use Tailwind.
+   `hidden="until-found"` is left alone: it hides content only until the
+   browser's "Find in page" text search finds a match inside it, and this rule
+   would stop that search from ever revealing it. */
+[hidden]:where(:not([hidden='until-found'])) {
+	display: none !important;
+}
+
 /* The font and its smoothing are inherited, so setting them here reaches
    inside every component without any of them repeating it. */
 body {
