@@ -2,8 +2,9 @@ import { LitElement, css, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { baseStyles } from '../../lib/baseStyles'
 import '../01-atoms/ScreenPaddingAtom.lit'
+import '../02-molecules/MainNavMolecule.lit'
 
-/** The strip along the top of every page: the site's name, linking home. */
+/** The strip along the top of every page: the site's name, linking home, and the main links. */
 @customElement('app-header-organism')
 export class HeaderOrganism extends LitElement {
 	static override styles = [
@@ -57,9 +58,7 @@ export class HeaderOrganism extends LitElement {
 						<img src="/simplified-logo.png" alt="Logo" height="50" width="50" />
 						<p class="siteName">The Meal Place</p>
 					</a>
-					<!-- TODO: MainNavMolecule goes here, with the links to the home,
-					categories and contact pages. It needs the router to mark the
-					current page, so it arrives with the pages in PR 4 of the Lit line. -->
+					<app-main-nav-molecule></app-main-nav-molecule>
 				</div>
 			</app-screen-padding-atom>
 		</header>`

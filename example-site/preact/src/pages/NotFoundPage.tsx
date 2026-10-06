@@ -24,12 +24,14 @@ export function NotFoundPage() {
 							may have been mistyped, or the meal it pointed at may no longer be
 							in the meal database.
 						</p>
-						<InternalLinkAtom
-							href="/categories"
-							class="text-teal-700 underline hover:text-teal-900"
-						>
-							Browse the food categories instead
-						</InternalLinkAtom>
+						<p>
+							<InternalLinkAtom
+								href="/categories"
+								class="text-teal-700 underline hover:text-teal-900"
+							>
+								Browse the food categories instead
+							</InternalLinkAtom>
+						</p>
 					</div>
 				</ContentRestraintAtom>
 			</div>

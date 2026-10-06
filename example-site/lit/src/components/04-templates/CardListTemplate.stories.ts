@@ -39,6 +39,7 @@ const meta: Meta<CardListTemplate> = {
 			.pageTitle=${args.pageTitle}
 			.introText=${args.introText}
 			.cardList=${args.cardList}
+			.isLoading=${args.isLoading}
 		></app-card-list-template>`,
 }
 
@@ -54,4 +55,8 @@ export const CategoryList: Story = {
 export const MealList: Story = {
 	name: 'Meal list',
 	args: { cardList: 'meals' as any },
+}
+
+export const Loading: Story = {
+	args: { cardList: 'categories' as any, isLoading: true },
 }
