@@ -26,7 +26,9 @@ export class NotFoundPage extends LitElement {
 					have been mistyped, or the meal it pointed at may no longer be in the
 					meal database.
 				</p>
-				<a href=${categoriesAddress}>Browse the food categories instead</a>`,
+				<p>
+					<a href=${categoriesAddress}>Browse the food categories instead</a>
+				</p>`,
 		)
 	}
 }
