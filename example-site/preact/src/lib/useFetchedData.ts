@@ -146,6 +146,15 @@ function checkShouldHoldScreenWhileWaiting(): boolean {
 }
 
 /**
+ * Whether the page the site opened on has been replaced — by the reader moving
+ * on, or by Try again. Until then, nothing has taken focus away from where the
+ * reader put it.
+ */
+export function checkHasLeftOpeningPage(): boolean {
+	return !isStillOnOpeningPage
+}
+
+/**
  * Stops pages keeping what is on screen while they wait, as if the reader had
  * left the page the site opened on.
  *

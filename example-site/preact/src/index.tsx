@@ -18,7 +18,11 @@ import { CategoryMealsPage } from './pages/CategoryMealsPage'
 import { MealDetailPage } from './pages/MealDetailPage'
 import { ContactPage } from './pages/ContactPage'
 import { NotFoundPage } from './pages/NotFoundPage'
-import { getTitleForPageBeingBuilt } from './lib/pageTitle'
+import {
+	addPageTitleAnnouncer,
+	getTitleForPageBeingBuilt,
+} from './lib/pageTitle'
+import { handlePageReplaced } from './lib/pageChange'
 import { PageFailureCatcher } from './lib/PageFailureBoundary'
 import './app.css'
 
@@ -86,6 +90,10 @@ const pageForAddress: Record<ColonRouteTemplate, AnyComponent> = {
  * on screen until it settles. The other half is the page asking for its own
  * redraw, which `useFetchedData` does.
  *
+ * `onRouteChange` is the router's report that a different page is on screen.
+ * It comes once the new page has drawn, and never on the first load, which is
+ * when `handlePageReplaced` should move focus and read out the title.
+ *
  * `ErrorBoundary` earns its place through the import rather than through
  * anything it draws, and it must not be removed. Preact hands *every* throw to
  * one hook, and that hook only knows how to look for an error boundary —
@@ -113,7 +121,7 @@ const pageForAddress: Record<ColonRouteTemplate, AnyComponent> = {
 function SiteRoutes() {
 	return (
 		<ErrorBoundary>
-			<Router>
+			<Router onRouteChange={handlePageReplaced}>
 				{colonRouteTemplates.map((address) => (
 					<Route
 						key={address}
@@ -130,6 +138,7 @@ function SiteRoutes() {
 const appRoot =
 	typeof window === 'undefined' ? null : document.getElementById('app')
 if (appRoot) {
+	addPageTitleAnnouncer()
 	hydrate(<AppInBrowser />, appRoot)
 }
 
