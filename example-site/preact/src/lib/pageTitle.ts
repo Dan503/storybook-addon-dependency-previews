@@ -13,11 +13,27 @@ let titleForPageBeingBuilt = ''
  * @param title - what the tab should read
  */
 export function setPageTitle(title: string) {
+	applyPageTitle(title)
+}
+
+/** Writes the title to the browser tab, and keeps it for the build. */
+function applyPageTitle(title: string) {
 	titleForPageBeingBuilt = title
 	// There is no browser tab to name while the pages are being built.
 	if (typeof document !== 'undefined') {
 		document.title = title
 	}
+}
+
+/**
+ * Names the page with a placeholder until its real title is known — the meal
+ * page uses it while its meal is on its way, since the title is the meal's
+ * name.
+ *
+ * @param title - what the tab should read in the meantime
+ */
+export function setStandInPageTitle(title: string) {
+	applyPageTitle(title)
 }
 
 /**

@@ -80,10 +80,11 @@ const pageForAddress: Record<ColonRouteTemplate, AnyComponent> = {
  * One route per shared address, read off the shared list itself so the routes
  * a site answers and the links it draws cannot drift apart.
  *
- * The `Router` is what lets a page pause while it waits for its meals: a
- * waiting page throws its unfinished request, the router catches it and holds
- * the previous page on screen until it settles. The other half is the page
- * asking for its own redraw, which `useDataOrWait` does.
+ * A page waiting for its meals usually draws its loading view, but on the page
+ * the site opened on, and while the pages are being built, it throws its
+ * unfinished request instead. The `Router` catches it there and keeps what is
+ * on screen until it settles. The other half is the page asking for its own
+ * redraw, which `useFetchedData` does.
  *
  * `ErrorBoundary` earns its place through the import rather than through
  * anything it draws, and it must not be removed. Preact hands *every* throw to
@@ -93,9 +94,9 @@ const pageForAddress: Record<ColonRouteTemplate, AnyComponent> = {
  * the same file `ErrorBoundary` comes from. `preact-iso` is published as having
  * no side effects, so once nothing imports that file the build is free to drop
  * it, and it does. Then a waiting page's request reaches `PageFailureBoundary`
- * instead, and every page that pauses for its meals draws the failure page on a
+ * instead, and every page that throws its request draws the failure page on a
  * perfectly good connection. The home page asks for meals too, but through an
- * effect rather than by pausing, so it is untouched either way.
+ * effect rather than through `useFetchedData`, so it is untouched either way.
  *
  * It only shows in a built site, because the dev server does not drop unused
  * modules — so `pnpm dev` looks right either way. This was removed once, on
