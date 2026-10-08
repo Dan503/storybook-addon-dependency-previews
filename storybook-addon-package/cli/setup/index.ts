@@ -25,7 +25,7 @@ import {
 } from './patchers/sbDepsConfig.js'
 import { ask, choose, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
-import { getCommandEndDescription, PACKAGE_RUNNERS } from './util.js'
+import { getCommandEndDescription, getPackageRunner } from './util.js'
 
 import type { SbDepsConfig } from '../../src/config.js'
 
@@ -121,7 +121,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	let detection = detectProject(cwd)
 
 	if (!detection.hasStorybookConfig) {
-		const packageRunner = PACKAGE_RUNNERS[detection.packageManager]
+		const packageRunner = getPackageRunner(detection.packageManager, cwd)
 		const initArgs = [...packageRunner.args, ...STORYBOOK_INIT_ARGS]
 		// As the user would type it, for the messages below.
 		const initCommand = [packageRunner.program, ...initArgs].join(' ')

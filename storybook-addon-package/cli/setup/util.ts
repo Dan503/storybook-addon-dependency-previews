@@ -1,4 +1,4 @@
-import type { SpawnSyncReturns } from 'node:child_process'
+import { spawnSync, type SpawnSyncReturns } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
@@ -807,15 +807,50 @@ export interface PackageRunner {
 
 /**
  * Each package manager's runner, as its own docs give it: `npx` for npm,
- * `pnpm dlx`, `yarn dlx` (Yarn 2 and later; Yarn 1 has no `dlx`) and `bunx`.
+ * `pnpm dlx`, `yarn dlx` (Yarn 2 and later — see `getPackageRunner` for
+ * Yarn 1) and `bunx`.
  */
-export const PACKAGE_RUNNERS: Readonly<Record<PackageManager, PackageRunner>> =
-	{
-		npm: { program: 'npx', args: [] },
-		pnpm: { program: 'pnpm', args: ['dlx'] },
-		yarn: { program: 'yarn', args: ['dlx'] },
-		bun: { program: 'bunx', args: [] },
-	}
+const PACKAGE_RUNNERS: Readonly<Record<PackageManager, PackageRunner>> = {
+	npm: { program: 'npx', args: [] },
+	pnpm: { program: 'pnpm', args: ['dlx'] },
+	yarn: { program: 'yarn', args: ['dlx'] },
+	bun: { program: 'bunx', args: [] },
+}
+
+/**
+ * The runner for the project's package manager. A `yarn.lock` doesn't say
+ * which Yarn wrote it, and Yarn 1 has no `dlx`, so for Yarn this asks the
+ * `yarn` the project would run which version it is, and uses `npx` on Yarn 1.
+ *
+ * @param packageManager - the package manager detected for the project
+ * @param cwd - the project folder, where Yarn reads any version pinned for it
+ */
+export function getPackageRunner(
+	packageManager: PackageManager,
+	cwd: string,
+): PackageRunner {
+	const isYarnClassic = packageManager === 'yarn' && checkIsYarnClassic(cwd)
+	if (isYarnClassic) return PACKAGE_RUNNERS.npm
+	return PACKAGE_RUNNERS[packageManager]
+}
+
+/**
+ * Whether `yarn --version`, run in `cwd`, reports Yarn 1. False when it can't
+ * be run or prints something else, which leaves the `yarn dlx` default.
+ *
+ * @param cwd - the project folder
+ */
+function checkIsYarnClassic(cwd: string): boolean {
+	const result = spawnSync('yarn', ['--version'], {
+		cwd,
+		encoding: 'utf8',
+		shell: process.platform === 'win32',
+	})
+	if (result.error || result.status !== 0) return false
+	const classicYarnMajorVersion = 1
+	const yarnMajorVersion = Number.parseInt(result.stdout.trim(), 10)
+	return yarnMajorVersion === classicYarnMajorVersion
+}
 
 /**
  * How a command run with `spawnSync` ended, worded to follow the command's
