@@ -1,3 +1,4 @@
+import type { SpawnSyncReturns } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
@@ -792,6 +793,19 @@ export function escapeForCmdExe(arg: string): string {
 	const hasCmdExeSpecialCharacter = /[\s^&|<>()!%]/.test(arg)
 	if (!hasCmdExeSpecialCharacter) return arg
 	return `"${arg}"`
+}
+
+/**
+ * How a command run with `spawnSync` ended, worded to follow the command's
+ * name in a message: "exited with code 1", or "was stopped before it finished"
+ * when something outside it stopped it (Ctrl+C, for one) — in which case
+ * Node gives no exit code, and the status would print as "null".
+ */
+export function getCommandEndDescription(
+	result: Pick<SpawnSyncReturns<unknown>, 'signal' | 'status'>,
+): string {
+	if (result.signal) return 'was stopped before it finished'
+	return `exited with code ${result.status}`
 }
 
 /** A package found by `findInstalledPackage`: where it lives and its parsed `package.json`. */

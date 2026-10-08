@@ -25,6 +25,7 @@ import {
 } from './patchers/sbDepsConfig.js'
 import { ask, choose, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
+import { getCommandEndDescription } from './util.js'
 
 import type { SbDepsConfig } from '../../src/config.js'
 
@@ -121,7 +122,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	let detection = detectProject(cwd)
 
-	if (!detection.mainFile) {
+	if (!detection.hasStorybookConfig) {
 		log(
 			`No Storybook config (\`.storybook/main.*\`) found — setting up Storybook first with \`${STORYBOOK_INIT_COMMAND}\`…`,
 		)
@@ -136,17 +137,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			)
 			process.exit(1)
 		}
-		// Stopped from outside (Ctrl+C, for one) rather than exiting on its own,
-		// in which case there is no exit code to report.
-		if (initResult.signal) {
-			log(
-				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` was stopped before it finished, so Storybook is not set up.`,
-			)
-			process.exit(1)
-		}
 		if (initResult.status !== 0) {
 			log(
-				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` exited with code ${initResult.status}.`,
+				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` ${getCommandEndDescription(initResult)}, so Storybook is not set up.`,
 			)
 			process.exit(1)
 		}
@@ -154,13 +147,20 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		// Re-detect — storybook init created `.storybook/`, modified `package.json`,
 		// and (depending on user choice) installed framework-specific deps.
 		detection = detectProject(cwd)
-		if (!detection.mainFile) {
+		if (!detection.hasStorybookConfig) {
 			log(
-				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` finished but there is still no main.{ts,js,mjs,cjs} inside ${detection.storybookDir} — aborting.`,
+				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` finished but there is still no Storybook config (\`.storybook/main.*\`) — aborting.`,
 			)
 			process.exit(1)
 		}
 		rule()
+	}
+
+	if (!detection.mainFile) {
+		log(
+			`The Storybook config in ${detection.storybookDir} is not a main.{ts,js,mjs,cjs}, the only kinds the wizard can update. Cannot continue.`,
+		)
+		process.exit(1)
 	}
 
 	const detectionSourceLabel =
@@ -605,7 +605,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			`  You can run the dependency build manually with: ${detection.packageManager} run sb:deps`,
 		)
 	} else if (buildResult.status !== 0) {
-		log(`  ✗ initial dependency build failed (exit ${buildResult.status}).`)
+		log(
+			`  ✗ initial dependency build failed: it ${getCommandEndDescription(buildResult)}.`,
+		)
 		log(
 			`  You can run it manually with: ${detection.packageManager} run sb:deps`,
 		)
