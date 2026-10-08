@@ -24,7 +24,7 @@ import {
 	writeSbDepsConfigIfNeeded,
 	type SbDepsConfigPatchResult,
 } from './patchers/sbDepsConfig.js'
-import { ask, choose, confirm, confirmOrEdit, input } from './prompt.js'
+import { ask, choose, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
 
 import type { SbDepsConfig } from '../../src/config.js'
@@ -96,6 +96,22 @@ function exampleStoryFileExtension(framework: Framework): string {
 	}
 }
 
+/**
+ * The command the wizard runs, without asking, when the project has no
+ * `.storybook/` folder. `--no-dev` stops Storybook's setup starting the
+ * Storybook server once it finishes. Without it, the setup never exits:
+ * the wizard would wait behind a running server, and the Ctrl+C that stops
+ * the server would stop the wizard as well.
+ */
+const STORYBOOK_INIT_ARGS: ReadonlyArray<string> = [
+	'storybook@latest',
+	'init',
+	'--no-dev',
+]
+
+/** `STORYBOOK_INIT_ARGS` as the user would type it, for the wizard's messages. */
+const STORYBOOK_INIT_COMMAND = `npx ${STORYBOOK_INIT_ARGS.join(' ')}`
+
 export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	void argv
 	const cwd = process.cwd()
@@ -107,21 +123,10 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	let detection = detectProject(cwd)
 
 	if (!existsSync(detection.storybookDir)) {
-		log('No `.storybook/` directory found in the current working directory.')
-		const runInit = await confirm(
-			'Run `npx storybook@latest init` now to scaffold Storybook?',
-			true,
+		log(
+			`No \`.storybook/\` folder found — setting up Storybook first with \`${STORYBOOK_INIT_COMMAND}\`…`,
 		)
-		if (!runInit) {
-			log(
-				'Cancelled. Run `npx storybook@latest init` yourself, then re-run `npx sb-deps setup`.',
-			)
-			process.exit(1)
-		}
-
-		rule()
-		log('Running `npx storybook@latest init`…')
-		const initResult = spawnSync('npx', ['storybook@latest', 'init'], {
+		const initResult = spawnSync('npx', [...STORYBOOK_INIT_ARGS], {
 			cwd,
 			stdio: 'inherit',
 			shell: process.platform === 'win32',
@@ -132,7 +137,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 		if (initResult.status !== 0) {
 			log(
-				`  ✗ \`npx storybook@latest init\` exited with code ${initResult.status}.`,
+				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` exited with code ${initResult.status}.`,
 			)
 			process.exit(1)
 		}
@@ -142,7 +147,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		detection = detectProject(cwd)
 		if (!existsSync(detection.storybookDir)) {
 			log(
-				'  ✗ `npx storybook@latest init` finished but `.storybook/` is still missing — aborting.',
+				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` finished but \`.storybook/\` is still missing — aborting.`,
 			)
 			process.exit(1)
 		}

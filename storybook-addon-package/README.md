@@ -66,7 +66,7 @@ The addon needs Node.js 22 or newer. It uses dependency-cruiser to read your com
 
 ### Quick start (React, Preact, Svelte, Vue 3, Solid, and Next.js on Vite)
 
-After running `npx storybook@latest init` in your project, run the setup wizard:
+Run the setup wizard in your project. If it doesn't have Storybook yet, the wizard sets it up first:
 
 ```sh
 npx --package storybook-addon-dependency-previews sb-deps setup
