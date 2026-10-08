@@ -43,9 +43,13 @@ export type FetchedData<TData> =
  *   because the page is finished by the time it could fire.
  * - On the page the site opened on, until the reader leaves it or presses Try
  *   again. preact-iso's `Router` catches the thrown request and keeps what is
- *   on screen — the page the build wrote out, meals and all — until it
- *   settles. Answering "waiting" there would swap meals already on screen for
- *   "Loading..." while the browser fetched the same meals again.
+ *   on screen until it settles. For every page the build writes out, that is
+ *   the written-out page, meals and all, and answering "waiting" would swap
+ *   meals already on screen for "Loading..." while the browser fetched the
+ *   same meals again. A meal page is not written out, so the host serves the
+ *   home page's file in its place, and opening a meal's address keeps the home
+ *   page on screen until the meal arrives, as it did before this helper
+ *   answered "waiting" at all.
  *
  * A request that fails is remembered as a failure and thrown again on the next
  * ask, rather than being retried, so nothing keeps asking a meal database that
@@ -146,9 +150,9 @@ function checkShouldHoldScreenWhileWaiting(): boolean {
 }
 
 /**
- * Whether the page the site opened on has been replaced — by the reader moving
- * on, or by Try again. Until then, nothing has taken focus away from where the
- * reader put it.
+ * Whether the reader has moved on from the page the site opened on, or pressed
+ * Try again. The failure page drawn on the first load does not count, even
+ * though it replaces what was on screen.
  */
 export function checkHasLeftOpeningPage(): boolean {
 	return !isStillOnOpeningPage

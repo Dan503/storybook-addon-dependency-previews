@@ -59,8 +59,10 @@ class PageFailureBoundary extends Component<
 		// something went wrong — whoever is debugging needs the actual error.
 		console.error('A page could not get its meals:', failure)
 		this.setState({ hasFailed: true }, () => {
-			// A failure on the first load replaces nothing the reader has
-			// reached yet, so focus is left where it is, as on any first load.
+			// On the first load focus is left where it is, as on any first load.
+			// That is a known limit: when the page the build wrote out was
+			// already on screen, the failure page replaces it, and focus the
+			// reader had put inside it is lost.
 			if (checkHasLeftOpeningPage()) handlePageReplaced()
 		})
 	}
