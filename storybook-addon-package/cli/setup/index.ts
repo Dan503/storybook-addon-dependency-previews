@@ -101,7 +101,7 @@ function exampleStoryFileExtension(framework: Framework): string {
  * Storybook config (`.storybook/main.*`). `--no-dev` stops Storybook's setup
  * starting the Storybook server once it finishes. Without it, the setup
  * doesn't exit on its own: the wizard would wait behind a running server, and
- * the Ctrl+C that stops the server would stop the wizard as well.
+ * the Ctrl+C that stops the server would most likely stop the wizard as well.
  */
 const STORYBOOK_INIT_ARGS: ReadonlyArray<string> = [
 	'storybook@latest',
