@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
 import { relative as pathRelative } from 'node:path'
 
 import {
@@ -98,10 +97,10 @@ function exampleStoryFileExtension(framework: Framework): string {
 
 /**
  * The command the wizard runs, without asking, when the project has no
- * `.storybook/` folder. `--no-dev` stops Storybook's setup starting the
- * Storybook server once it finishes. Without it, the setup doesn't exit on
- * its own: the wizard would wait behind a running server, and the Ctrl+C that stops
- * the server would stop the wizard as well.
+ * Storybook config (`.storybook/main.*`). `--no-dev` stops Storybook's setup
+ * starting the Storybook server once it finishes. Without it, the setup
+ * doesn't exit on its own: the wizard would wait behind a running server, and
+ * the Ctrl+C that stops the server would stop the wizard as well.
  */
 const STORYBOOK_INIT_ARGS: ReadonlyArray<string> = [
 	'storybook@latest',
@@ -122,9 +121,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	let detection = detectProject(cwd)
 
-	if (!existsSync(detection.storybookDir)) {
+	if (!detection.mainFile) {
 		log(
-			`No \`.storybook/\` folder found — setting up Storybook first with \`${STORYBOOK_INIT_COMMAND}\`…`,
+			`No Storybook config (\`.storybook/main.*\`) found — setting up Storybook first with \`${STORYBOOK_INIT_COMMAND}\`…`,
 		)
 		const initResult = spawnSync('npx', [...STORYBOOK_INIT_ARGS], {
 			cwd,
@@ -134,6 +133,14 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		if (initResult.error) {
 			log(
 				`  ✗ Could not run \`${STORYBOOK_INIT_COMMAND}\`: ${initResult.error.message}`,
+			)
+			process.exit(1)
+		}
+		// Stopped from outside (Ctrl+C, for one) rather than exiting on its own,
+		// in which case there is no exit code to report.
+		if (initResult.signal) {
+			log(
+				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` was stopped before it finished, so Storybook is not set up.`,
 			)
 			process.exit(1)
 		}
@@ -147,20 +154,13 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		// Re-detect — storybook init created `.storybook/`, modified `package.json`,
 		// and (depending on user choice) installed framework-specific deps.
 		detection = detectProject(cwd)
-		if (!existsSync(detection.storybookDir)) {
+		if (!detection.mainFile) {
 			log(
-				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` finished but \`.storybook/\` is still missing — aborting.`,
+				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` finished but there is still no main.{ts,js,mjs,cjs} inside ${detection.storybookDir} — aborting.`,
 			)
 			process.exit(1)
 		}
 		rule()
-	}
-
-	if (!detection.mainFile) {
-		log(
-			`No main.{ts,js,mjs,cjs} found inside ${detection.storybookDir}. Cannot continue.`,
-		)
-		process.exit(1)
 	}
 
 	const detectionSourceLabel =
