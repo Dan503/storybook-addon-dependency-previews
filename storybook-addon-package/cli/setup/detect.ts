@@ -38,7 +38,8 @@ export type Detection = {
 	/**
 	 * Whether `.storybook/` holds a `main.*` with any extension Storybook itself
 	 * accepts — which is how the wizard tells whether the project has Storybook.
-	 * Wider than `mainFile`, which only finds the extensions the wizard can edit.
+	 * Always true when `mainFile` is found, since `mainFile` only looks for the
+	 * extensions the wizard can edit.
 	 */
 	hasStorybookConfig: boolean
 	mainFile: MainFile | null
@@ -612,7 +613,7 @@ function getStorybookAddonVersionSpec(
 export function detectProject(cwd: string): Detection {
 	const storybookDir = resolve(cwd, '.storybook')
 	const mainFile = findMainFile(storybookDir)
-	const hasStorybookConfig = checkHasStorybookConfig(storybookDir)
+	const hasStorybookConfig = !!mainFile || checkHasStorybookConfig(storybookDir)
 	const previewFile = findPreviewFile(storybookDir)
 
 	let isEsm = false

@@ -93,6 +93,7 @@ bunx --package storybook-addon-dependency-previews sb-deps setup
 
 The wizard:
 
+- sets Storybook up with `npx storybook@latest init --no-dev` when the project has no Storybook config yet,
 - detects your framework, package manager, and existing Storybook config,
 - installs `storybook-addon-dependency-previews` and `dependency-cruiser`,
 - registers the addon in `.storybook/main.ts`,

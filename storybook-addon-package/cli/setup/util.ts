@@ -798,8 +798,10 @@ export function escapeForCmdExe(arg: string): string {
 /**
  * How a command run with `spawnSync` ended, worded to follow the command's
  * name in a message: "exited with code 1", or "was stopped before it finished"
- * when something outside it stopped it (Ctrl+C, for one) — in which case
- * Node gives no exit code, and the status would print as "null".
+ * when Node reports a signal (the operating system telling it to stop) rather
+ * than an exit code, so the code would print as "null". On Linux and macOS,
+ * Ctrl+C is one such signal. On Windows a command stopped with Ctrl+C can come
+ * back with an exit code instead, and then reads as "exited with code …".
  */
 export function getCommandEndDescription(
 	result: Pick<SpawnSyncReturns<unknown>, 'signal' | 'status'>,
