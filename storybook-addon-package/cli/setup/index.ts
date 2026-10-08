@@ -139,7 +139,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		}
 		if (initResult.status !== 0) {
 			log(
-				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` ${getCommandEndDescription(initResult)}, so Storybook is not set up.`,
+				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` ${getCommandEndDescription(initResult)}.`,
 			)
 			process.exit(1)
 		}

@@ -38,8 +38,8 @@ export type Detection = {
 	/**
 	 * Whether `.storybook/` holds a `main.*` with any extension Storybook itself
 	 * accepts — which is how the wizard tells whether the project has Storybook.
-	 * Always true when `mainFile` is found, since `mainFile` only looks for the
-	 * extensions the wizard can edit.
+	 * True whenever `mainFile` is found, and also for the extensions the wizard
+	 * can't edit, which `mainFile` doesn't look for.
 	 */
 	hasStorybookConfig: boolean
 	mainFile: MainFile | null
