@@ -99,8 +99,8 @@ function exampleStoryFileExtension(framework: Framework): string {
 /**
  * The command the wizard runs, without asking, when the project has no
  * `.storybook/` folder. `--no-dev` stops Storybook's setup starting the
- * Storybook server once it finishes. Without it, the setup never exits:
- * the wizard would wait behind a running server, and the Ctrl+C that stops
+ * Storybook server once it finishes. Without it, the setup doesn't exit on
+ * its own: the wizard would wait behind a running server, and the Ctrl+C that stops
  * the server would stop the wizard as well.
  */
 const STORYBOOK_INIT_ARGS: ReadonlyArray<string> = [
@@ -132,7 +132,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			shell: process.platform === 'win32',
 		})
 		if (initResult.error) {
-			log(`  ✗ Could not spawn storybook init: ${initResult.error.message}`)
+			log(
+				`  ✗ Could not run \`${STORYBOOK_INIT_COMMAND}\`: ${initResult.error.message}`,
+			)
 			process.exit(1)
 		}
 		if (initResult.status !== 0) {

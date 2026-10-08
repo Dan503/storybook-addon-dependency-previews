@@ -70,7 +70,7 @@ const rawPath = join(outDir, 'dependency-previews.raw.json')
 const cookedPath = join(outDir, 'dependency-previews.json')
 
 // Don't auto-create `.storybook/` for the setup subcommand — the wizard needs to
-// detect whether Storybook has been initialised so it can guide the user. The
+// detect whether Storybook has been set up, so it can set it up first if not. The
 // regular build/watch path still needs the directory to exist for its JSON output.
 if (SUBCOMMAND !== 'setup' && !existsSync(outDir))
 	mkdirSync(outDir, { recursive: true })
