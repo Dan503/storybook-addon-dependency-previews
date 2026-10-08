@@ -2,6 +2,8 @@ import type { SpawnSyncReturns } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
+import type { PackageManager } from './detect.js'
+
 /** The three characters that can open a string or template literal. */
 const QUOTE_CHARS: ReadonlyArray<string> = ["'", '"', '`']
 
@@ -794,6 +796,26 @@ export function escapeForCmdExe(arg: string): string {
 	if (!hasCmdExeSpecialCharacter) return arg
 	return `"${arg}"`
 }
+
+/** A package manager's command for running a package without adding it to the project. */
+export interface PackageRunner {
+	/** The program to start, e.g. `pnpm`. */
+	program: string
+	/** Arguments that come before the package name, e.g. `['dlx']`. */
+	args: ReadonlyArray<string>
+}
+
+/**
+ * Each package manager's runner, as its own docs give it: `npx` for npm,
+ * `pnpm dlx`, `yarn dlx` (Yarn 2 and later; Yarn 1 has no `dlx`) and `bunx`.
+ */
+export const PACKAGE_RUNNERS: Readonly<Record<PackageManager, PackageRunner>> =
+	{
+		npm: { program: 'npx', args: [] },
+		pnpm: { program: 'pnpm', args: ['dlx'] },
+		yarn: { program: 'yarn', args: ['dlx'] },
+		bun: { program: 'bunx', args: [] },
+	}
 
 /**
  * How a command run with `spawnSync` ended, worded to follow the command's

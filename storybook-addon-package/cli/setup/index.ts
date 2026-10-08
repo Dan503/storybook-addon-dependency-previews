@@ -25,7 +25,7 @@ import {
 } from './patchers/sbDepsConfig.js'
 import { ask, choose, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
-import { getCommandEndDescription } from './util.js'
+import { getCommandEndDescription, PACKAGE_RUNNERS } from './util.js'
 
 import type { SbDepsConfig } from '../../src/config.js'
 
@@ -97,20 +97,18 @@ function exampleStoryFileExtension(framework: Framework): string {
 }
 
 /**
- * The command the wizard runs, without asking, when the project has no
- * Storybook config (`.storybook/main.*`). `--no-dev` stops Storybook's setup
- * starting the Storybook server once it finishes. Without it, the setup
- * doesn't exit on its own: the wizard would wait behind a running server, and
- * the Ctrl+C that stops the server would most likely stop the wizard as well.
+ * What the wizard runs through the project's package runner (`npx`,
+ * `pnpm dlx`, …), without asking, when the project has no Storybook config
+ * (`.storybook/main.*`). `--no-dev` stops Storybook's setup starting the
+ * Storybook server once it finishes. Without it, the setup doesn't exit on its
+ * own: the wizard would wait behind a running server, and the Ctrl+C that
+ * stops the server would most likely stop the wizard as well.
  */
 const STORYBOOK_INIT_ARGS: ReadonlyArray<string> = [
 	'storybook@latest',
 	'init',
 	'--no-dev',
 ]
-
-/** `STORYBOOK_INIT_ARGS` as the user would type it, for the wizard's messages. */
-const STORYBOOK_INIT_COMMAND = `npx ${STORYBOOK_INIT_ARGS.join(' ')}`
 
 export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	void argv
@@ -123,24 +121,24 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	let detection = detectProject(cwd)
 
 	if (!detection.hasStorybookConfig) {
+		const packageRunner = PACKAGE_RUNNERS[detection.packageManager]
+		const initArgs = [...packageRunner.args, ...STORYBOOK_INIT_ARGS]
+		// As the user would type it, for the messages below.
+		const initCommand = [packageRunner.program, ...initArgs].join(' ')
 		log(
-			`No Storybook config (\`.storybook/main.*\`) found — setting up Storybook first with \`${STORYBOOK_INIT_COMMAND}\`…`,
+			`No Storybook config (\`.storybook/main.*\`) found — setting up Storybook first with \`${initCommand}\`…`,
 		)
-		const initResult = spawnSync('npx', [...STORYBOOK_INIT_ARGS], {
+		const initResult = spawnSync(packageRunner.program, initArgs, {
 			cwd,
 			stdio: 'inherit',
 			shell: process.platform === 'win32',
 		})
 		if (initResult.error) {
-			log(
-				`  ✗ Could not run \`${STORYBOOK_INIT_COMMAND}\`: ${initResult.error.message}`,
-			)
+			log(`  ✗ Could not run \`${initCommand}\`: ${initResult.error.message}`)
 			process.exit(1)
 		}
 		if (initResult.status !== 0) {
-			log(
-				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` ${getCommandEndDescription(initResult)}.`,
-			)
+			log(`  ✗ \`${initCommand}\` ${getCommandEndDescription(initResult)}.`)
 			process.exit(1)
 		}
 
@@ -150,7 +148,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 		detection = detectProject(cwd)
 		if (!detection.hasStorybookConfig) {
 			log(
-				`  ✗ \`${STORYBOOK_INIT_COMMAND}\` finished but there is still no Storybook config (\`.storybook/main.*\`) — aborting.`,
+				`  ✗ \`${initCommand}\` finished but there is still no Storybook config (\`.storybook/main.*\`) — aborting.`,
 			)
 			process.exit(1)
 		}
