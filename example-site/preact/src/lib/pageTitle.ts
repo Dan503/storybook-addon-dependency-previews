@@ -15,10 +15,11 @@ let isTitleReadOutOwed = false
  *
  * Called while the page draws rather than from an effect, for two reasons.
  * Effects do not run while the pages are being built, and the title has to be
- * known by then; and a page here can pause part-way through drawing to wait for
- * its meals, which would make the number of effects differ between the paused
- * draw and the finished one. Setting a title twice does nothing, so a page
- * drawing more than once costs nothing.
+ * known by then; and on the page the site opened on, and during the build, a
+ * page stops part-way through drawing until its meals arrive, which would make
+ * the number of effects differ between the unfinished draw and the finished
+ * one. Setting the same title again changes nothing, and a read-out put off
+ * until now happens only once, so a page drawing more than once costs nothing.
  *
  * If the page on screen was replaced while it still had a stand-in title, the
  * read-out was put off until now — see `readOutPageTitleOnceFinal`.
@@ -59,13 +60,21 @@ export function readOutPageTitleOnceFinal() {
 
 /**
  * Writes the title into the hidden area `addPageTitleAnnouncer` adds, which
- * screen readers read out as soon as its text changes. Text the same as what
- * is already there is not read again.
+ * screen readers read out as soon as its text changes.
+ *
+ * Left alone when it already holds that title. Writing the text replaces it
+ * even when it is identical, which a screen reader may read out again — and
+ * one move can arrive here twice, once from `setPageTitle` and again from the
+ * router's page-changed report.
  */
 function readOutPageTitle() {
 	if (typeof document === 'undefined') return
 	const announcer = document.getElementById(pageTitleAnnouncerId)
-	if (announcer) announcer.textContent = document.title || 'untitled page'
+	const titleToReadOut = document.title || 'untitled page'
+	const doesAnnouncerHoldTitle = announcer?.textContent === titleToReadOut
+	if (announcer && !doesAnnouncerHoldTitle) {
+		announcer.textContent = titleToReadOut
+	}
 }
 
 /**
