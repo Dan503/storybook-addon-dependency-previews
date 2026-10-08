@@ -5,7 +5,7 @@ import { LoadFailurePage } from '../pages/LoadFailurePage'
 import {
 	checkHasLeftOpeningPage,
 	forgetFailedRequests,
-	stopHoldingScreenWhileWaiting,
+	recordOpeningPageReplaced,
 } from './useFetchedData'
 import { handlePageReplaced } from './pageChange'
 
@@ -89,7 +89,7 @@ class PageFailureBoundary extends Component<
 	}
 
 	tryAgain = () => {
-		stopHoldingScreenWhileWaiting()
+		recordOpeningPageReplaced()
 		forgetFailedRequests()
 		this.setState({ hasFailed: false }, handlePageReplaced)
 	}

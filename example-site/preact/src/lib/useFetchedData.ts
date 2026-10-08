@@ -124,12 +124,12 @@ export function useFetchedData<TData>(
 
 /**
  * Notes that the reader has left the page the site opened on, once the address
- * differs from the one it opened at. It stays noted: coming back to that
+ * differs from the one it opened at. It stays noted, so coming back to that
  * address later is an ordinary move like any other.
  *
- * Read from the address rather than from the router's own "page changed"
- * report, because that report comes after the new page has drawn, and the new
- * page needs the answer while it draws.
+ * Read from the address here because the new page needs the answer while it
+ * draws. The router's own "page changed" report notes it too, through
+ * `recordOpeningPageReplaced`, but only once the new page has drawn.
  */
 function recordWhetherOpeningPageIsLeft() {
 	const hasAddressChanged =
@@ -155,15 +155,21 @@ export function checkHasLeftOpeningPage(): boolean {
 }
 
 /**
- * Stops pages keeping what is on screen while they wait, as if the reader had
- * left the page the site opened on.
+ * Notes that the page the site opened on has been replaced, so from now on a
+ * page still waiting draws its loading view rather than keeping what is on
+ * screen.
  *
- * Called by the failure page's try-again button. The failure page has already
- * replaced the opening page's content, so there is nothing left worth keeping,
- * and holding would leave the site blank for as long as the request takes
- * rather than showing the page's loading view.
+ * Called by `handlePageReplaced` after every replacement. That covers a move
+ * through a page that never asks through `useFetchedData`, such as the home
+ * page, which `recordWhetherOpeningPageIsLeft` never sees — without it, coming
+ * back to the opening address would still be treated as the first load.
+ *
+ * The failure page's try-again button also calls it, before the failure page
+ * goes, because `handlePageReplaced` runs only after the new page has drawn.
+ * Holding at that point would leave the site blank for as long as the request
+ * takes rather than showing the page's loading view.
  */
-export function stopHoldingScreenWhileWaiting() {
+export function recordOpeningPageReplaced() {
 	isStillOnOpeningPage = false
 }
 
