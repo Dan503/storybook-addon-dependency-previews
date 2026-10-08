@@ -2,7 +2,12 @@ import { Component } from 'preact'
 import type { ComponentChildren } from 'preact'
 import { useLocation } from 'preact-iso'
 import { LoadFailurePage } from '../pages/LoadFailurePage'
-import { forgetFailedRequests } from './useDataOrWait'
+import {
+	checkHasLeftOpeningPage,
+	forgetFailedRequests,
+	recordOpeningPageReplaced,
+} from './useFetchedData'
+import { handlePageReplaced } from './pageChange'
 
 interface PropsForPageFailureCatcher {
 	children?: ComponentChildren
@@ -29,12 +34,19 @@ interface StateForPageFailureBoundary {
  * on its constructor, and a class is the plain way to carry one. This one uses
  * `componentDidCatch`; either would do. preact-iso's own `ErrorBoundary` builds
  * `componentDidCatch` from an `onError` prop, so without one it catches a
- * *paused* page and nothing else, which is why it cannot do this job.
+ * thrown request and nothing else, which is why it cannot do this job.
  *
  * It is deliberately absent while the pages are being built: `App` is what the
  * build draws, and this only wraps the browser's copy, so a failing request
  * there stops the build rather than writing out a page saying the meals could
  * not be loaded.
+ *
+ * Showing the failure page, leaving it and trying again each replace the page
+ * on screen, the same as a move between pages, so each hands over to
+ * `handlePageReplaced` to move focus and read out the title. The router cannot
+ * report these itself: the failure page is drawn where the router was, and the
+ * router drawn after it is a new one, which starts out on the address already
+ * on screen and so has no change to report.
  */
 class PageFailureBoundary extends Component<
 	PropsForPageFailureBoundary,
@@ -46,7 +58,13 @@ class PageFailureBoundary extends Component<
 		// Written out as well as drawn, because the failure page says only that
 		// something went wrong — whoever is debugging needs the actual error.
 		console.error('A page could not get its meals:', failure)
-		this.setState({ hasFailed: true })
+		this.setState({ hasFailed: true }, () => {
+			// On the first load focus is left where it is, as on any first load.
+			// That is a known limit: when the page the build wrote out was
+			// already on screen, the failure page replaces it, and focus the
+			// reader had put inside it is lost.
+			if (checkHasLeftOpeningPage()) handlePageReplaced()
+		})
 	}
 
 	componentDidUpdate(previousProps: PropsForPageFailureBoundary) {
@@ -54,38 +72,28 @@ class PageFailureBoundary extends Component<
 		// one page's failure does not follow them around the site.
 		//
 		// Done by clearing the state rather than by giving this component a
-		// `key` that changes with the address. That is about ordinary
-		// navigation: a changing key rebuilds this component on *every* move,
-		// and rebuilding takes the router below it with it — and the router is
-		// what holds the previous page on screen while the next one waits, so
-		// a fresh one has nothing to hold and every move blanks the site.
+		// `key` that changes with the address, because a changing key rebuilds
+		// this component, and the router below it, on every move rather than
+		// only after a failure — and a new router has no page change to report,
+		// so focus and the title read-out would stop following moves.
 		//
-		// It does not save the router from being rebuilt when the failure state
-		// itself changes: this boundary sits above the router, so showing the
-		// failure page draws something else where the router was. Both ways out
-		// of a failure — trying again, and leaving for a page whose meals are
-		// not already known — therefore blank the site for as long as the
-		// request takes, measured at over half a second on a slow one.
-		//
-		// That is a consequence of where this sits, not something unavoidable.
-		// A boundary below the router, around each route's own page, would
-		// replace only the page and leave the router alone — a pause would step
-		// over an ordinary class on its way up and still reach the router,
-		// while a failure would stop at the nearer boundary. It is left as it
-		// is because the blank puts itself right, it costs a rebuild only after
-		// a failure rather than on every move, and the per-route shape brings
-		// back the same-page-different-piece case that has already been the
-		// source of two defects here. Worth revisiting if the blank ever
-		// matters; nobody has run that shape.
+		// The router is still rebuilt when the failure state itself changes:
+		// this boundary sits above the router, so showing the failure page
+		// draws something else where the router was, and leaving it draws a
+		// new router. Nothing shows for it. By then the reader has either left
+		// the page the site opened on or pressed Try again, so the new router's
+		// page draws its loading view at once rather than leaving the site
+		// blank while its meals are fetched.
 		const hasMovedOn = previousProps.path !== this.props.path
 		if (hasMovedOn && this.state.hasFailed) {
-			this.setState({ hasFailed: false })
+			this.setState({ hasFailed: false }, handlePageReplaced)
 		}
 	}
 
 	tryAgain = () => {
+		recordOpeningPageReplaced()
 		forgetFailedRequests()
-		this.setState({ hasFailed: false })
+		this.setState({ hasFailed: false }, handlePageReplaced)
 	}
 
 	render() {

@@ -3,7 +3,7 @@ import { fetchMealsByCategory } from 'example-site-shared/utils'
 import { CardListTemplate } from '../components/04-templates/CardListTemplate'
 import { getMealCard } from '../components/listings/card/CardMolecule'
 import { setPageTitle } from '../lib/pageTitle'
-import { useDataOrWait } from '../lib/useDataOrWait'
+import { useFetchedData } from '../lib/useFetchedData'
 
 export function CategoryMealsPage() {
 	// Read back plainly: the link that built the address escaped the name going
@@ -14,15 +14,17 @@ export function CategoryMealsPage() {
 	const categoryName = params.category ?? ''
 
 	setPageTitle(`${categoryName} Meals | The Meal Place`)
-	const meals = useDataOrWait(`meals-in-category:${categoryName}`, () =>
+	const meals = useFetchedData(`meals-in-category:${categoryName}`, () =>
 		fetchMealsByCategory(categoryName),
 	)
+	const mealList = meals.status === 'ready' ? meals.data : []
 
 	return (
 		<CardListTemplate
 			title={`${categoryName} meals`}
 			introText={`Explore the delicious ${categoryName} meals!`}
-			cardList={meals.map(getMealCard)}
+			isLoading={meals.status === 'waiting'}
+			cardList={mealList.map(getMealCard)}
 		/>
 	)
 }
