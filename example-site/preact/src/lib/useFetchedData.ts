@@ -48,8 +48,7 @@ export type FetchedData<TData> =
  *   meals already on screen for "Loading..." while the browser fetched the
  *   same meals again. A meal page is not written out, so the host serves the
  *   home page's file in its place, and opening a meal's address keeps the home
- *   page on screen until the meal arrives, as it did before this helper
- *   answered "waiting" at all.
+ *   page on screen until the meal arrives.
  *
  * A request that fails is remembered as a failure and thrown again on the next
  * ask, rather than being retried, so nothing keeps asking a meal database that
