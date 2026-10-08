@@ -79,8 +79,10 @@ function readOutPageTitle() {
 
 /**
  * Names the page with a placeholder until its real title is known — the meal
- * page uses it while its meal is on its way, since the title is the meal's
- * name. A placeholder is never read out.
+ * page uses it while its meal is on its way after a move within the site,
+ * since the title is the meal's name. On the page the site opened on the meal
+ * page waits rather than drawing, so the tab keeps the title of the file the
+ * host served until the meal arrives. A placeholder is never read out.
  *
  * @param title - what the tab should read in the meantime
  */

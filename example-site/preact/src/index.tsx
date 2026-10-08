@@ -91,8 +91,8 @@ const pageForAddress: Record<ColonRouteTemplate, AnyComponent> = {
  * redraw, which `useFetchedData` does.
  *
  * `onRouteChange` is the router's report that a different page is on screen.
- * It comes once the new page has drawn, and never on the first load, which is
- * when `handlePageReplaced` should move focus and read out the title.
+ * It comes once the new page has drawn, and never on the first load. That is
+ * exactly when `handlePageReplaced` should move focus and read out the title.
  *
  * `ErrorBoundary` earns its place through the import rather than through
  * anything it draws, and it must not be removed. Preact hands *every* throw to
