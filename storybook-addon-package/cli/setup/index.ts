@@ -144,8 +144,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			process.exit(1)
 		}
 
-		// Re-detect — storybook init created `.storybook/`, modified `package.json`,
-		// and (depending on user choice) installed framework-specific deps.
+		// Re-detect — storybook init wrote its config into `.storybook/`, modified
+		// `package.json`, and (depending on user choice) installed
+		// framework-specific deps.
 		detection = detectProject(cwd)
 		if (!detection.hasStorybookConfig) {
 			log(
