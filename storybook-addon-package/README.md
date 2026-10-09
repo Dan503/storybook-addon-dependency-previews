@@ -83,6 +83,8 @@ pnpm dlx --package=storybook-addon-dependency-previews sb-deps setup
 yarn dlx --package storybook-addon-dependency-previews sb-deps setup
 ```
 
+(Yarn 1 has no `dlx` — use the `npx` command above.)
+
 ```sh
 bunx --package storybook-addon-dependency-previews sb-deps setup
 ```
