@@ -1,5 +1,8 @@
+import { spawnSync, type SpawnSyncReturns } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
+
+import type { PackageManager } from './detect.js'
 
 /** The three characters that can open a string or template literal. */
 const QUOTE_CHARS: ReadonlyArray<string> = ["'", '"', '`']
@@ -792,6 +795,76 @@ export function escapeForCmdExe(arg: string): string {
 	const hasCmdExeSpecialCharacter = /[\s^&|<>()!%]/.test(arg)
 	if (!hasCmdExeSpecialCharacter) return arg
 	return `"${arg}"`
+}
+
+/** A package manager's command for running a package without adding it to the project. */
+export interface PackageRunner {
+	/** The program to start, e.g. `pnpm`. */
+	program: string
+	/** Arguments that come before the package name, e.g. `['dlx']`. */
+	args: ReadonlyArray<string>
+}
+
+/**
+ * Each package manager's runner, as its own docs give it: `npx` for npm,
+ * `pnpm dlx`, `yarn dlx` (Yarn 2 and later — see `getPackageRunner` for
+ * Yarn 1) and `bunx`.
+ */
+const PACKAGE_RUNNERS: Readonly<Record<PackageManager, PackageRunner>> = {
+	npm: { program: 'npx', args: [] },
+	pnpm: { program: 'pnpm', args: ['dlx'] },
+	yarn: { program: 'yarn', args: ['dlx'] },
+	bun: { program: 'bunx', args: [] },
+}
+
+/**
+ * The runner for the project's package manager. A `yarn.lock` doesn't say
+ * which Yarn wrote it, and Yarn 1 has no `dlx`, so for Yarn this asks the
+ * `yarn` the project would run which version it is, and uses `npx` on Yarn 1.
+ *
+ * @param packageManager - the package manager detected for the project
+ * @param cwd - the project folder, where Yarn reads any version pinned for it
+ */
+export function getPackageRunner(
+	packageManager: PackageManager,
+	cwd: string,
+): PackageRunner {
+	const isYarnClassic = packageManager === 'yarn' && checkIsYarnClassic(cwd)
+	if (isYarnClassic) return PACKAGE_RUNNERS.npm
+	return PACKAGE_RUNNERS[packageManager]
+}
+
+/**
+ * Whether `yarn --version`, run in `cwd`, reports Yarn 1. False when it can't
+ * be run or prints something else, which leaves the `yarn dlx` default.
+ *
+ * @param cwd - the project folder
+ */
+function checkIsYarnClassic(cwd: string): boolean {
+	const result = spawnSync('yarn', ['--version'], {
+		cwd,
+		encoding: 'utf8',
+		shell: process.platform === 'win32',
+	})
+	if (result.error || result.status !== 0) return false
+	const classicYarnMajorVersion = 1
+	const yarnMajorVersion = Number.parseInt(result.stdout.trim(), 10)
+	return yarnMajorVersion === classicYarnMajorVersion
+}
+
+/**
+ * How a command run with `spawnSync` ended, worded to follow the command's
+ * name in a message: "exited with code 1", or "was stopped before it finished"
+ * when Node reports a signal (the operating system telling it to stop) rather
+ * than an exit code, so the code would print as "null". On Linux and macOS,
+ * Ctrl+C is one such signal. On Windows a command stopped with Ctrl+C can come
+ * back with an exit code instead, and then reads as "exited with code …".
+ */
+export function getCommandEndDescription(
+	result: Pick<SpawnSyncReturns<unknown>, 'signal' | 'status'>,
+): string {
+	if (result.signal) return 'was stopped before it finished'
+	return `exited with code ${result.status}`
 }
 
 /** A package found by `findInstalledPackage`: where it lives and its parsed `package.json`. */

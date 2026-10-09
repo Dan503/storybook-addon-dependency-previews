@@ -35,6 +35,13 @@ export type FrameworkDetectionSource = 'package.json' | '.storybook/main' | 'non
 
 export type Detection = {
 	storybookDir: string
+	/**
+	 * Whether `.storybook/` holds a `main.*` with any extension Storybook itself
+	 * accepts — which is how the wizard tells whether the project has Storybook.
+	 * True whenever `mainFile` is found, and also for the extensions the wizard
+	 * can't edit, which `mainFile` doesn't look for.
+	 */
+	hasStorybookConfig: boolean
 	mainFile: MainFile | null
 	previewFile: PreviewFile | null
 	framework: Framework
@@ -79,6 +86,22 @@ const MAIN_CANDIDATES: ReadonlyArray<MainFile['lang']> = [
 	'js',
 	'cjs',
 ]
+/**
+ * Every extension Storybook accepts for its config files, copied from
+ * Storybook's own `supportedExtensions` list (Storybook 10).
+ */
+const STORYBOOK_CONFIG_EXTENSIONS: ReadonlyArray<string> = [
+	'js',
+	'ts',
+	'jsx',
+	'tsx',
+	'mjs',
+	'mts',
+	'mtsx',
+	'cjs',
+	'cts',
+	'ctsx',
+]
 const PREVIEW_CANDIDATES: ReadonlyArray<PreviewFile['lang']> = [
 	'tsx',
 	'ts',
@@ -92,6 +115,12 @@ function findMainFile(storybookDir: string): MainFile | null {
 		if (existsSync(path)) return { path, lang }
 	}
 	return null
+}
+
+function checkHasStorybookConfig(storybookDir: string): boolean {
+	return STORYBOOK_CONFIG_EXTENSIONS.some((extension) =>
+		existsSync(resolve(storybookDir, `main.${extension}`)),
+	)
 }
 
 function findPreviewFile(storybookDir: string): PreviewFile | null {
@@ -584,6 +613,7 @@ function getStorybookAddonVersionSpec(
 export function detectProject(cwd: string): Detection {
 	const storybookDir = resolve(cwd, '.storybook')
 	const mainFile = findMainFile(storybookDir)
+	const hasStorybookConfig = !!mainFile || checkHasStorybookConfig(storybookDir)
 	const previewFile = findPreviewFile(storybookDir)
 
 	let isEsm = false
@@ -655,6 +685,7 @@ export function detectProject(cwd: string): Detection {
 
 	return {
 		storybookDir,
+		hasStorybookConfig,
 		mainFile,
 		previewFile,
 		framework,
