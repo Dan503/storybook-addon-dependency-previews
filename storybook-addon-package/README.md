@@ -8,7 +8,7 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, and **Next.js**. The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite) end-to-end. Webpack-based projects (Angular, Next.js on webpack, React on webpack) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
+Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, **Next.js**, and **Lit** (web components). The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, Lit) end-to-end. Webpack-based projects (Angular, Next.js on webpack, React on webpack) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -58,11 +58,17 @@ Vue version built for Vue 3.
 - [Angular rendered example website](https://dependency-previews-demo-site-angular.netlify.app/)
 - [Angular demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/angular)
 
+#### Lit demos
+
+- [Lit Storybook demo site](https://dependency-previews-storybook-lit.netlify.app/?path=/docs/04-templates-home-template--docs)
+- [Lit rendered example website](https://dependency-previews-demo-site-lit.netlify.app/)
+- [Lit demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/lit)
+
 <!-- TODO: Provide a video/gif of the addon in action -->
 
 ## Installation guide
 
-### Quick start (React, Preact, Svelte, Vue 3, Solid, and Next.js on Vite)
+### Quick start (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, and Lit)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
@@ -92,6 +98,7 @@ bunx --package storybook-addon-dependency-previews sb-deps setup
 The wizard:
 
 - detects your framework, package manager, and existing Storybook config,
+- in a Lit project, asks what marks a component file — pressing Enter gives `lit`, so `Button.lit.ts` is a component (see [`componentFileSuffix`](#componentfilesuffix)),
 - installs `storybook-addon-dependency-previews` and `dependency-cruiser`,
 - registers the addon in `.storybook/main.ts`,
 - patches (or creates) `.storybook/preview.ts` with the addon's parameters and decorators,
@@ -104,9 +111,9 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), Solid (`storybook-solidjs-vite`), and Next.js on Vite (`@storybook/nextjs-vite`) — all Vite-based. **Angular (`@storybook/angular`), Next.js on webpack (`@storybook/nextjs`) and React on webpack (`@storybook/react-webpack5`) projects are all webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), Solid (`storybook-solidjs-vite`), Next.js on Vite (`@storybook/nextjs-vite`), and Lit (`@storybook/web-components-vite`) — all Vite-based. **Angular (`@storybook/angular`), Next.js on webpack (`@storybook/nextjs`) and React on webpack (`@storybook/react-webpack5`) projects are all webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
 
-- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
+- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, Lit)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 - [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`, `@storybook/react-webpack5`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
 
 ### Storybook 11 / CSF Next preview configs
@@ -146,12 +153,14 @@ The setup wizard recognises both preview styles: an existing `definePreview({ ..
 
 While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fills it in from a template — and creates its matching sibling too. It works from either side:
 
-- **Create a component file** (`Button.tsx`, `Button.svelte`, `Button.vue`, `Button.component.ts`) → the component body is scaffolded **and** a matching story file is generated next to it.
+- **Create a component file** (`Button.tsx`, `Button.svelte`, `Button.vue`, `Button.component.ts`, `Button.lit.ts`) → the component body is scaffolded **and** a matching story file is generated next to it.
 - **Create a story file** (`Button.stories.tsx`, or the singular `Button.story.tsx`) → the story is scaffolded into that exact file, and if the sibling component doesn't exist yet it is created and scaffolded too.
 
-Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Preact, Solid, Vue, or Angular from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Preact, Solid, Vue, Angular, or Lit from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
 
 React, Preact and Solid all author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) and a Preact project gets Preact ones (`preact/hooks`, `@storybook/preact-vite`) without being told; anything it reads as neither gets React templates. Set `tsxFramework` in your `sb-deps` config to say so outright — worth doing where `sb-deps` reads your project as a framework whose `.tsx` templates are not the ones you want, such as a project declaring both `react` and `solid-js`, or one reaching Preact through a `react` alias. (It does not help a project `sb-deps` cannot place at all: there it scaffolds nothing, with or without the key.)
+
+A Lit component is a `.ts` file, like most of the project's other source files, so `sb-deps` needs telling which `.ts` files are components. That is what [`componentFileSuffix`](#componentfilesuffix) is for: the setup wizard suggests `lit`, so `Button.lit.ts` is a component and `utils.ts` is not. The scaffolded component is a `LitElement` class registered as a browser tag — `app-button` for `Button.lit.ts`, built by [`litTagPrefix`](#littagprefix) — with one text property, a counter and a slot. Its story names that tag rather than the class, draws it with Lit's `html`, and imports the component twice: once on its own, which runs the file and so registers the tag, and once for its type. An import used only for a type is dropped when the code is built, so with that one alone the tag would never be registered. The [Vite guide's Lit story section](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md#lit-storiests) shows the whole story file.
 
 ### What the scaffolded components assume
 
@@ -163,13 +172,15 @@ Each generated component is written the way its framework currently recommends, 
 
 React, Preact and Solid add no version floor beyond what the addon itself needs. In a **Next.js** project the React component is written with a `'use client'` line at the top, because it holds state and the App Router renders on the server; you will not see that line in any other React project.
 
+The **Lit** component assumes two TypeScript settings. It uses the shorthand `@customElement`, `@property` and `@state` annotations, which need `"experimentalDecorators": true` and `"useDefineForClassFields": false` in your `tsconfig.json`.
+
 None of this affects the dependency graph or anything else `sb-deps` does — it only describes the starter code it writes, so on an older version replace the generated body with whatever your project uses. Or replace the template outright via [`scaffold`](#scaffold), which is what that option is for.
 
 ### File names must end in lower case
 
 `sb-deps` matches file endings exactly, so an extension has to be spelled in lower case, and so do the `.stories` and `.story` parts. `Button.stories.tsx` works; `Button.Stories.tsx` and `Button.TSX` do not. Storybook matches its own `stories` setting exactly too, so a story file spelled with capitals would never show up there whatever this tool did with it.
 
-Two more endings are read, but only where they mean anything. `.decorator` is read on `.svelte` files, since only Svelte writes those. `.component` is read on `.ts` and `.html` files **in an Angular project only** — every framework writes `.ts`, so the extension alone can't tell an Angular component from an ordinary dotted name. Anywhere else the two mean nothing here: a NestJS `Roles.Decorator.ts`, or an `Auth.Component.ts` in a React project, is left alone.
+Three more endings are read, but only where they mean anything. `.decorator` is read on `.svelte` files, since only Svelte writes those. `.component` is read on `.ts` and `.html` files **in an Angular project only** — every framework writes `.ts`, so the extension alone can't tell an Angular component from an ordinary dotted name. The third is the marker you set with [`componentFileSuffix`](#componentfilesuffix), read only where it has been set: on `.ts` files in a Lit project, on `.tsx` files in a React, Solid or Preact project, and on a story's name in either. Anywhere else these mean nothing here: a NestJS `Roles.Decorator.ts`, or an `Auth.Component.ts` in a React project, is left alone. Once a Lit project's marker is `lit`, `Button.Lit.ts` is refused like any other wrongly capitalised ending.
 
 Create a file with a capitalised ending and `sb-deps` says so, names the spelling to rename it to, and writes nothing for it.
 
@@ -204,7 +215,7 @@ The name of a file is what the templates put in front of `export function`, in t
 
 Router page files are the usual reason. `[category].tsx` is how Solid Start, SvelteKit and Next.js App Router name a page with a changing part of its address, SvelteKit also writes `+page.svelte` and `+layout.svelte`, and a name that starts with a digit (`2-column.tsx`) can't be a function name either.
 
-Only files the scaffolder would otherwise have acted on are checked, so a plain `.ts` file such as SvelteKit's `+page.server.ts` is never mentioned — no component or story was ever going to come of it.
+Only files the scaffolder would otherwise have acted on are checked, so a plain `.ts` file such as SvelteKit's `+page.server.ts` never gets this message — no component or story was ever going to come of it. In a Lit project a `.ts` file can be a component, so one the scaffolder would act on is checked the same way.
 
 If a whole folder of these is expected — which it is, for any project with a router — [`scaffoldIgnore`](#scaffoldignore) turns the messages off along with the scaffolding.
 
@@ -269,6 +280,31 @@ export default defineSbDepsConfig({
 })
 ```
 
+### `litTagPrefix`
+
+_(Lit only)_ The prefix put in front of the browser tag a scaffolded Lit component registers itself as. The tag is the component's file name in hyphenated form, with this prefix in front of it unless the name already starts with it.
+
+**Default:** `'app-'`
+
+| Value              | Tag for `ButtonAtom.lit.ts` |
+| ------------------ | --------------------------- |
+| `'app-'` (default) | `app-button-atom`           |
+| `'my-'`            | `my-button-atom`            |
+| `''`               | `button-atom`               |
+
+The prefix is never doubled. With the default, `ButtonAtom.lit.ts`, `button-atom.lit.ts` and `app-button-atom.lit.ts` all register `app-button-atom`, never `app-app-button-atom`. The class is named from the whole file name without the marker, so those three give `ButtonAtom`, `ButtonAtom` and `AppButtonAtom`.
+
+A browser only accepts a tag that contains a hyphen, starts with a lower-case letter, holds only the characters a tag name allows, and is not one of the few names the specification keeps for itself (`font-face` and its relatives). The default prefix supplies the hyphen and the leading letter for even a one-word name like `Button.lit.ts`, and puts the reserved names out of reach. `sb-deps` warns when a tag it works out breaks any of the four, naming which, and writes the files anyway — the story will not render until the tag is fixed. A prefix holding a character no tag may contain is the exception: it is refused when `sb-deps` starts and `'app-'` is used instead, because the prefix is written into the generated code and would leave a file that does not compile.
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	litTagPrefix: 'my-',
+})
+```
+
 ### `storybookFileExtension`
 
 The extension `sb-deps` uses when it auto-scaffolds a story file for a new component — `'stories'` (Storybook's convention) or `'story'`. The setup wizard asks for this preference.
@@ -303,6 +339,48 @@ export default defineSbDepsConfig({
 	tsxFramework: 'solid',
 })
 ```
+
+### `componentFileSuffix`
+
+_(Lit, React, Solid and Preact, Next.js included)_ What marks a file as a component, written without its dot. With it set, only files named for it are components — `Button.lit.ts` with `'lit'`, `Button.ui.tsx` with `'ui'` — and the marker comes off the name everywhere a name is built from it: `Button.ui.tsx` is the component `Button`, and its story is `Button.stories.tsx`.
+
+**Default:** no marker. The setup wizard writes `'lit'` in a Lit project unless you answer `none`.
+
+The reason to set one is that these frameworks' component files share their extension with ordinary source files:
+
+| Project                | Marker  | A component                          | Not a component                                                   |
+| ---------------------- | ------- | ------------------------------------ | ----------------------------------------------------------------- |
+| Lit                    | `'lit'` | `Button.lit.ts`                      | `Button.ts`, `utils.ts`                                           |
+| Lit                    | none    | `Button.ts`, if created empty        | `Button.test.ts`, `Button.d.ts`, a `utils.ts` that arrives filled |
+| React, Solid or Preact | `'ui'`  | `Button.ui.tsx`                      | `Button.tsx`, `utils.tsx`                                         |
+| React, Solid or Preact | none    | every `.tsx` file that isn't a story | —                                                                 |
+
+So with no marker, a new empty `utils.ts` in a Lit project gets a component written into it and a story beside it, and in a React project a new `utils.tsx` holding some JSX gets a story. Only files under your source folder ([`srcDir`](#srcdir)) are ever components, marker or not.
+
+**A file created without the marker.** With a marker set, an empty file with the right extension but no marker — `Button.ts` when the marker is `lit` — is left alone, with a line naming the file to rename it to (`Button.lit.ts`). One with another dot in its name, like a new `Button.test.ts`, is left alone without a line.
+
+**A dotted name with no marker.** In a Lit project with no marker, a file with another dot in its name is never a component, so an empty `Button.primary.ts` is left alone, with a line saying the extra dot is why. For a component named like that, set the marker and call it `Button.primary.lit.ts`.
+
+**Creating the story first.** An empty story file you create asks for a story. With a marker set, `helpers.stories.ts` looks for `helpers.lit.ts` (and `helpers.stories.tsx` for `helpers.ui.tsx`), and writes it if it is not there. With no marker in a Lit project, it finds `helpers.ts` whatever is in it, which is how you get a story for a file that would otherwise be left alone. The [Vite guide's Lit story section](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md#lit-storiests) goes through these cases in more detail.
+
+**The setup wizard** always asks for this in a Lit project, suggesting `lit`. In a React, Solid, Preact or Next.js on Vite project it shows `none` and only asks when you choose to edit the values it detected. Where a `sb-deps` config file already exists, the wizard leaves it alone and tells you what to check it sets — or, if you answered `none`, to check it does not set one.
+
+**Restart after changing it.** `sb-deps` reads the setting when it starts.
+
+**Constraints.** Lower-case letters, digits, `_` and `-` only, and not `stories`, `story`, `component` or `decorator`, which already mean something here. Anything else is refused when `sb-deps` starts, with a message, and no marker is used. Capitals are refused rather than lowered, because every name ending is read in lower case.
+
+Vue, Svelte and Angular ignore it: their extension, or Angular's own `.component`, already says what a component is.
+
+```js
+// sb-deps.config.mjs
+import { defineSbDepsConfig } from 'storybook-addon-dependency-previews/config'
+
+export default defineSbDepsConfig({
+	componentFileSuffix: 'lit',
+})
+```
+
+A custom `.tsx` story template (see [`scaffold`](#scaffold)) receives `base` with the marker still in it — `Button.ui` — so an import built from `./${base}` names the real file. A custom Lit story template gets `componentImportPath` for that instead, since its `base` has the marker taken off.
 
 ### `scaffoldIgnore`
 
@@ -344,7 +422,7 @@ An entry that isn't a non-empty string makes the whole option invalid — the CL
 
 Override the templates used when `sb-deps` auto-scaffolds new component and story files. Each template function receives a context object with relevant variables and must return the full file content as a string.
 
-For `.tsx` files the override key follows [`tsxFramework`](#tsxframework): a React project reads `scaffold.react`, a Solid project reads `scaffold.solid`, a Preact project reads `scaffold.preact` — overrides placed under the wrong key are silently ignored.
+For `.tsx` files the override key follows [`tsxFramework`](#tsxframework): a React project reads `scaffold.react`, a Solid project reads `scaffold.solid`, a Preact project reads `scaffold.preact` — overrides placed under the wrong key are silently ignored. A Lit project's `.ts` component and story files read `scaffold.lit`.
 
 ```js
 // sb-deps.config.mjs
@@ -409,6 +487,24 @@ export function ${componentName}({}: ${propsName}) {
 			componentHtml: ({ componentName }) => '...',
 			/** Customize the generated .stories.ts file */
 			story: ({ componentName, className, base, title, tags }) => '...',
+		},
+		lit: {
+			/** Customize the generated .ts component file */
+			component: ({ componentName, tagName, base }) => '...',
+			/**
+			 * Customize the generated .stories.ts file.
+			 * Import the component from `componentImportPath` rather than
+			 * building the path out of `base` — `base` has the component
+			 * marker taken off (`ButtonAtom` for `ButtonAtom.lit.ts`).
+			 */
+			story: ({
+				componentName,
+				tagName,
+				base,
+				title,
+				tags,
+				componentImportPath,
+			}) => '...',
 		},
 	},
 })
