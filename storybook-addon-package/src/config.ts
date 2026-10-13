@@ -313,9 +313,11 @@ export interface SbDepsConfig {
 	 * no element name may contain. That is refused outright, with a message,
 	 * and this falls back to `'app'` — because the prefix is written into the
 	 * generated source, so honouring it would leave you a file that does not
-	 * compile. An Angular project is also refused a `.` in the prefix: Angular
-	 * reads `app.foo-button` as an `app` element with the class `foo-button`,
-	 * so the component would never match the name you use for it.
+	 * compile. In an Angular project the prefix is held to lower-case letters,
+	 * digits, `_` and `-`: Angular reads `app.foo-button` as an `app` element
+	 * with the class `foo-button`, and skips a letter such as `é`, so
+	 * `appé-button` comes out as an element named `-button`. Either way the
+	 * component would never match the name you use for it.
 	 *
 	 * @example 'app'  →  'app-button-atom'
 	 * @example 'my'   →  'my-button-atom'

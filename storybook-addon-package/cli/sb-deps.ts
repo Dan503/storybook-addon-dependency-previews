@@ -231,12 +231,14 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
  * line break is written into `@customElement('…')` or `selector: '…'` and
  * would leave a file that does not compile.
  *
- * An Angular project is refused one more character, `.`, which a tag may hold
- * but an Angular selector may not. Angular reads a selector the way a
- * stylesheet does, so `app.foo-button` would mean an `app` element carrying
- * the class `foo-button`, and the component would never match the
- * `<app.foo-button>` the user writes. Only the prefix can bring a `.` in:
- * `toWords` turns the dots in a component's name into hyphens.
+ * An Angular project is held to a narrower set: lower-case letters, digits,
+ * `_` and `-`, the characters that both a tag and Angular's own selector
+ * reader (`CssSelector.parse` in `@angular/compiler`) accept as part of an
+ * element's name. A tag may also hold `.` and letters such as `é`, but Angular reads a
+ * selector the way a stylesheet does, so `app.foo-button` would mean an `app`
+ * element carrying the class `foo-button`; and it skips a letter such as `é`,
+ * so `appé-button` would come out as an element named `-button`. Either way
+ * the component would never match the tag the user writes.
  */
 function readComponentTagPrefix(configuredPrefix: unknown): string {
 	const defaultPrefix = 'app'
@@ -255,11 +257,12 @@ function readComponentTagPrefix(configuredPrefix: unknown): string {
 		return defaultPrefix
 	}
 	const isAngularProject = getProjectFrameworkFamily() === 'angular'
-	const isDottedAngularPrefix =
-		isAngularProject && configuredPrefix.includes('.')
-	if (isDottedAngularPrefix) {
+	const characterAngularCannotRead = isAngularProject
+		? [...configuredPrefix].find((character) => !/[a-z0-9_-]/.test(character))
+		: undefined
+	if (characterAngularCannotRead) {
 		error(
-			`componentTagPrefix "${configuredPrefix}" is invalid — Angular reads "." in a selector as the start of a class name, so the component would not match its tag — falling back to '${defaultPrefix}'.`,
+			`componentTagPrefix "${configuredPrefix}" is invalid — an Angular selector cannot contain "${characterAngularCannotRead}", because Angular does not read it as part of the element's name, so the component would not match its tag — falling back to '${defaultPrefix}'.`,
 		)
 		return defaultPrefix
 	}
