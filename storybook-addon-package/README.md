@@ -342,7 +342,7 @@ export default defineSbDepsConfig({
 
 ### `componentFileSuffix`
 
-_(Lit, React, Solid and Preact, Next.js included)_ What marks a file as a component, written without its dot. With it set, only files named for it are components — `Button.lit.ts` with `'lit'`, `Button.ui.tsx` with `'ui'` — and the marker comes off the name everywhere a name is built from it: `Button.ui.tsx` is the component `Button`, and its story is `Button.stories.tsx`.
+_(Lit, React, Solid and Preact, Next.js included)_ What marks a file as a component, written without its dot. With it set, only files named for it are components — `Button.lit.ts` with `'lit'`, `Button.ui.tsx` with `'ui'` — and the marker comes off the component's name and its story's file name and title: `Button.ui.tsx` is the component `Button`, and its story is `Button.stories.tsx`.
 
 **Default:** no marker. The setup wizard writes `'lit'` in a Lit project unless you answer `none`.
 
@@ -388,7 +388,7 @@ Paths the scaffolder leaves alone. Each entry is a path pattern matched against 
 
 **Default:** `[]` (nothing is left alone)
 
-A file matching one of the patterns gets nothing written into it, gets no story beside it, and is never mentioned by the two naming checks above — those messages exist only to explain why nothing was scaffolded, so they have nothing to say about a file the tool was told to leave alone.
+A file matching one of the patterns gets nothing written into it, gets no story beside it, and is never mentioned by the naming checks above — those messages exist only to explain why nothing was scaffolded, so they have nothing to say about a file the tool was told to leave alone.
 
 Matching files **still appear in the dependency graph**, so a page still shows what it is built with. This option is about scaffolding, not about hiding files.
 
