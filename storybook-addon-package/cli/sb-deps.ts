@@ -264,6 +264,8 @@ function readComponentTagPrefix(configuredPrefix: unknown): string {
 /**
  * Why this prefix can't be put in front of a tag, or `null` when it can. See
  * `readComponentTagPrefix` for which characters are refused and why.
+ *
+ * @param configuredPrefix - the prefix as the config wrote it, e.g. `"app"` or `"my_app-"`
  */
 function getComponentTagPrefixError(configuredPrefix: string): string | null {
 	const unusableCharacter = [...configuredPrefix].find(checkIsUnusableInTag)
@@ -1377,7 +1379,8 @@ function litComponentImportName(absCompPath: string) {
  * form — with the prefix not added a second time when the name already starts
  * with it and a hyphen. That is what stops an `app-button-atom.ts` from asking
  * for `app-app-button-atom`, while an `Apple.ts`, which only starts with the
- * prefix's letters, still gets `app-apple`.
+ * prefix's letters, still gets `app-apple`. With an empty prefix the element
+ * name is the component's hyphenated name alone.
  *
  * The test for "already starts with it" hyphenates the prefix the same way
  * the name is hyphenated, since hyphenating turns `_` and `.` into `-`: with
@@ -2635,7 +2638,7 @@ declare global {
 const componentsWarnedAboutTheirTag = new Set<string>()
 
 interface WarnIfComponentTagIsUnusableParams {
-	/** which scaffolder wrote the tag, which decides what the warning says goes wrong */
+	/** which framework the tag was worked out for, which decides what the warning says goes wrong */
 	family: Extract<StoryFramework, 'lit' | 'angular'>
 	/** the finished tag, prefix included — a Lit tag or an Angular selector */
 	tagName: string
@@ -2657,12 +2660,11 @@ interface WarnIfComponentTagIsUnusableParams {
  * the rules is one of two things: the name of a built-in element, such as
  * `button` from `Button.component.ts` with no prefix, which Angular would then
  * match against that built-in element in templates using the component; or a
- * name no element may have, which
- * leaves the page's HTML invalid. The warning names both, since which one it
- * is depends on the name. An Angular selector can also be a valid element name
- * that Angular itself does not read as one — `café-card` is read as `-card` —
- * and then the component will not match its tag, which the warning says
- * instead.
+ * name no element may have, which leaves the page's HTML invalid. The warning
+ * names both, since which one it is depends on the name. An Angular selector
+ * can also be a valid element name that Angular itself does not read as one —
+ * `café-card` is read as `-card` — and then the component will not match its
+ * tag, which the warning says instead.
  *
  * Names the file just written rather than the component, because on the story
  * route the component may be one the user wrote, which this never reads.
@@ -2713,7 +2715,7 @@ function warnIfComponentTagIsUnusable({
  * element-name rules is asked one more question, whether Angular can read it as
  * the element's name; a Lit tag is not, since a browser has no such limit.
  *
- * @param family - which scaffolder wrote the tag, which decides what goes wrong
+ * @param family - which framework the tag was worked out for, which decides what goes wrong
  * @param tagName - the finished tag, prefix included
  */
 function getUnusableTagDescription(
@@ -2873,7 +2875,7 @@ function checkCanAngularReadInElementName(character: string): boolean {
 /**
  * What goes wrong because of the tag, worded to follow "which".
  *
- * @param family - which scaffolder wrote the tag
+ * @param family - which framework the tag was worked out for
  * @param isUnreadableByAngular - whether the tag passes the element-name rules
  *   and fails only because Angular cannot read it
  */

@@ -305,11 +305,11 @@ export interface SbDepsConfig {
 	 * of those. Angular writes its selector into the page as an element, so a
 	 * selector that breaks one either takes the name of a built-in element
 	 * (`button`, from `Button.component.ts` with no prefix) or leaves the
-	 * page's HTML invalid. The default prefix supplies the hyphen and the leading letter
-	 * for even a one-word name like `Button.ts`, and puts every reserved name
-	 * out of reach. Clear it and all four become yours to get right; the
-	 * scaffolder warns, naming whichever one the name it worked out breaks,
-	 * and writes the file anyway.
+	 * page's HTML invalid. The default prefix supplies the hyphen and the
+	 * leading letter for even a one-word name like `Button.ts`, and puts every
+	 * reserved name out of reach. Clear it and all four become yours to get
+	 * right; the scaffolder warns, naming whichever one the name it worked out
+	 * breaks, and writes the file anyway.
 	 *
 	 * What it will not take from you is a prefix holding a character
 	 * no element name may contain. That is refused outright, with a message,
