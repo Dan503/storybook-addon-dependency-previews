@@ -319,7 +319,11 @@ export interface SbDepsConfig {
 	 * digits, `_` and `-`: Angular reads `app.foo-button` as an `app` element
 	 * with the class `foo-button`, and skips a letter such as `é`, so
 	 * `appé-button` comes out as an element named `-button`. Either way the
-	 * component would never match the name you use for it.
+	 * component would never match the name you use for it. A component's own
+	 * name can bring in a letter such as `é` too — `Café.component.ts` gives
+	 * `app-café`, which Angular reads as `app-caf` — and for that the scaffolder
+	 * warns that the component will not match its tag, and writes the file
+	 * anyway.
 	 *
 	 * @example 'app'  →  'app-button-atom'
 	 * @example 'my'   →  'my-button-atom'

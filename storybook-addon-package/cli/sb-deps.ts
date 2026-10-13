@@ -239,7 +239,8 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
  * would mean an `app` element carrying the class `foo-button`; and it skips a
  * letter such as `é`, so `appé-button` would come out as an element named
  * `-button`. Either way the component would never match the tag the user
- * writes.
+ * writes. `findCharacterAngularCannotRead` holds that test, and the warning
+ * for a component's name asks it too.
  */
 function readComponentTagPrefix(configuredPrefix: unknown): string {
 	const defaultPrefix = 'app'
@@ -271,9 +272,8 @@ function getComponentTagPrefixError(configuredPrefix: string): string | null {
 	if (unusableCharacter) return `a tag cannot contain "${unusableCharacter}"`
 	const isAngularProject = getProjectFrameworkFamily() === 'angular'
 	if (!isAngularProject) return null
-	const characterAngularCannotRead = [...configuredPrefix].find(
-		(character) => !/[a-z0-9_-]/.test(character),
-	)
+	const characterAngularCannotRead =
+		findCharacterAngularCannotRead(configuredPrefix)
 	if (!characterAngularCannotRead) return null
 	return `an Angular selector cannot contain "${characterAngularCannotRead}", because Angular does not read it as part of the element's name, so the component would not match its tag`
 }
@@ -2649,8 +2649,8 @@ interface WarnIfComponentTagIsUnusableParams {
 
 /**
  * Say so when the tag worked out for a component is not a usable element name,
- * and name which of the rules it breaks. Says it once per component, however
- * many files carrying that tag get written.
+ * or is an Angular selector Angular cannot read as one, and say why. Says it
+ * once per component, however many files carrying that tag get written.
  *
  * What goes wrong depends on the framework, so the warning says which. A
  * browser refuses to register a Lit tag that breaks the rules —
@@ -2660,7 +2660,10 @@ interface WarnIfComponentTagIsUnusableParams {
  * `button` from `Button.component.ts` with no prefix, which Angular would then
  * match against that built-in element in templates using the component; or a
  * name no element may have, which leaves the page's HTML invalid. The warning
- * names both, since which one it is depends on the name.
+ * names both, since which one it is depends on the name. An Angular selector
+ * can also be a valid element name that Angular itself does not read as one —
+ * `café-card` is read as `-card` — and then the component will not match its
+ * tag, which the warning says instead.
  *
  * Names the file just written rather than the component, because on the story
  * route the component may be one the user wrote, which this never reads.
@@ -2670,19 +2673,22 @@ interface WarnIfComponentTagIsUnusableParams {
  * leave them with a tag they never asked for and no idea where it came from.
  * Saying what is wrong is more use than guessing what they meant.
  *
- * Every tag reaching here is one that is unusable as an element name, rather
- * than one that breaks the file it is written into — both halves that could
- * break it are closed before this runs. `readComponentTagPrefix` refuses a
- * prefix holding a character no tag may contain, and `getUnusableNameWarning`
- * refuses the file outright, ahead of every scaffolder, when the component's
- * name is not one the generated code can carry. So a name with an apostrophe
- * or a backtick is never written at all, rather than written into a
- * `@customElement('…')` or `selector: '…'` it would break.
+ * Every tag warned about here is one that cannot work as the component's
+ * element name, rather than one that breaks the file it is written into —
+ * both halves that could break it are closed before this runs.
+ * `readComponentTagPrefix` refuses a prefix holding a character no tag may
+ * contain, and `getUnusableNameWarning` refuses the file outright, ahead of
+ * every scaffolder, when the component's name is not one the generated code
+ * can carry. So a name with an apostrophe or a backtick is never written at
+ * all, rather than written into a `@customElement('…')` or `selector: '…'` it
+ * would break.
  *
  * `$` is the one character that is legal in a name and illegal in a tag, so it
- * is the only way to reach this function through the name — and it closes no
- * string and is never followed by `{` in any template that carries a tag, so
- * that file still compiles.
+ * is the only character from the name that the tag rules catch — and it closes
+ * no string and is never followed by `{` in any template that carries a tag,
+ * so that file still compiles. The characters outside ASCII that Angular
+ * cannot read are ones a name may hold, which never include a quote or a
+ * backtick, so they break no file either.
  *
  * None of that covers a **folder** name: `makeTitleFromComponent` title-cases
  * the folders into the story's `title` with nothing checking them, so one
@@ -2695,15 +2701,37 @@ function warnIfComponentTagIsUnusable({
 	absCompPath,
 	absWrittenPath,
 }: WarnIfComponentTagIsUnusableParams) {
-	const tagError = getComponentTagError(tagName, COMPONENT_TAG_PREFIX)
-	if (!tagError) return
+	const tagProblem = getUnusableTagDescription(family, tagName)
+	if (!tagProblem) return
 	if (componentsWarnedAboutTheirTag.has(absCompPath)) return
 	componentsWarnedAboutTheirTag.add(absCompPath)
-	const tagAndConsequence =
-		family === 'lit'
-			? `the tag "${tagName}", which a browser will refuse, so the component will not render`
-			: `the selector "${tagName}", which either takes the name of a built-in element or leaves the page's HTML invalid`
-	warn(`"${rel(absWrittenPath)}" uses ${tagAndConsequence} — ${tagError}.`)
+	warn(`"${rel(absWrittenPath)}" uses ${tagProblem}.`)
+}
+
+/**
+ * The tag, what goes wrong because of it and why, ready to follow "uses" in the
+ * warning — or `null` when nothing does. An Angular selector that passes the
+ * element-name rules is asked one more question, whether Angular can read it as
+ * the element's name; a Lit tag is not, since a browser has no such limit.
+ *
+ * @param family - which framework the tag was worked out for, which decides what goes wrong
+ * @param tagName - the finished tag, prefix included
+ */
+function getUnusableTagDescription(
+	family: WarnIfComponentTagIsUnusableParams['family'],
+	tagName: string,
+): string | null {
+	const isLit = family === 'lit'
+	const tagError = getComponentTagError(tagName, COMPONENT_TAG_PREFIX)
+	const shouldAskAngular = !tagError && !isLit
+	const angularReadError = shouldAskAngular
+		? getAngularSelectorReadError(tagName)
+		: null
+	const tagProblemReason = tagError ?? angularReadError
+	if (!tagProblemReason) return null
+	const tagKind = isLit ? 'tag' : 'selector'
+	const consequence = getTagConsequence(family, !!angularReadError)
+	return `the ${tagKind} "${tagName}", which ${consequence} — ${tagProblemReason}`
 }
 
 /**
@@ -2745,7 +2773,8 @@ const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
  * the ASCII characters a tag may hold and lets anything outside ASCII through.
  * That is generous in the rare direction and exact in the common one: a
  * capital, a space and a `$` are all caught, and a component named in another
- * language is not refused on a guess.
+ * language is not refused on a guess. Angular is stricter than a browser about
+ * those letters, which `getAngularSelectorReadError` asks about separately.
  *
  * Two of the rules name which half of the tag is at fault rather than offering
  * both, and they are the first-character and character rules. For those only
@@ -2807,6 +2836,56 @@ function checkIsUnusableInTag(character: string): boolean {
 	const HIGHEST_ASCII_CODE = 127
 	const isAscii = character.charCodeAt(0) <= HIGHEST_ASCII_CODE
 	return isAscii && !/[a-z0-9._-]/.test(character)
+}
+
+/**
+ * Why Angular will not read this selector as the element name it spells, or
+ * `null` when it will. Only asked of a selector that already passes
+ * `getComponentTagError`, so what it finds is a character a tag may hold but
+ * Angular does not read, such as `é`.
+ *
+ * @param selector - the finished selector, prefix included
+ */
+function getAngularSelectorReadError(selector: string): string | null {
+	const characterAngularCannotRead = findCharacterAngularCannotRead(selector)
+	if (!characterAngularCannotRead) return null
+	// The component's name every time, never the prefix: in an Angular project
+	// `readComponentTagPrefix` refuses a prefix carrying anything
+	// `findCharacterAngularCannotRead` finds.
+	const didCharacterComeFromPrefix = false
+	return `Angular does not read "${characterAngularCannotRead}" as part of an element's name, and it came from ${getComponentTagPartDescription(didCharacterComeFromPrefix)}`
+}
+
+/**
+ * The first character Angular cannot read as part of an element's name in a
+ * selector, or `undefined` when it can read them all. Its selector reader,
+ * `CssSelector.parse` in `@angular/compiler`, takes an element's name as a run
+ * of a–z, digits, `_` and `-` (capitals too, which a tag never holds).
+ * Anything else ends the name: `.` starts a class, and a letter such as `é`
+ * is skipped, so `café-card` is read as `-card`.
+ *
+ * @param text - a selector, or the prefix that goes in front of one
+ */
+function findCharacterAngularCannotRead(text: string): string | undefined {
+	return [...text].find((character) => !/[a-z0-9_-]/.test(character))
+}
+
+/**
+ * What goes wrong because of the tag, worded to follow "which".
+ *
+ * @param family - which framework the tag was worked out for
+ * @param isUnreadableByAngular - whether the tag passes the element-name rules
+ *   and fails only because Angular cannot read it
+ */
+function getTagConsequence(
+	family: WarnIfComponentTagIsUnusableParams['family'],
+	isUnreadableByAngular: boolean,
+): string {
+	if (family === 'lit')
+		return 'a browser will refuse, so the component will not render'
+	if (isUnreadableByAngular)
+		return 'Angular reads as a different element name, so the component will not match its tag'
+	return "either takes the name of a built-in element or leaves the page's HTML invalid"
 }
 
 function scaffoldStoryForLitComponent(
