@@ -309,11 +309,13 @@ export interface SbDepsConfig {
 	 * scaffolder warns, naming whichever one the name it worked out breaks,
 	 * and writes the file anyway.
 	 *
-	 * The one thing it will not take from you is a prefix holding a character
+	 * What it will not take from you is a prefix holding a character
 	 * no element name may contain. That is refused outright, with a message,
 	 * and this falls back to `'app'` — because the prefix is written into the
 	 * generated source, so honouring it would leave you a file that does not
-	 * compile.
+	 * compile. An Angular project is also refused a `.` in the prefix: Angular
+	 * reads `app.foo-button` as an `app` element with the class `foo-button`,
+	 * so the component would never match the name you use for it.
 	 *
 	 * @example 'app'  →  'app-button-atom'
 	 * @example 'my'   →  'my-button-atom'

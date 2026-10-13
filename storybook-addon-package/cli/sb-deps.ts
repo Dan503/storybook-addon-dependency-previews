@@ -230,6 +230,13 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
  * unusable as an element name, but a prefix carrying a quote, a backtick or a
  * line break is written into `@customElement('…')` or `selector: '…'` and
  * would leave a file that does not compile.
+ *
+ * An Angular project is refused one more character, `.`, which a tag may hold
+ * but an Angular selector may not. Angular reads a selector the way a
+ * stylesheet does, so `app.foo-button` would mean an `app` element carrying
+ * the class `foo-button`, and the component would never match the
+ * `<app.foo-button>` the user writes. Only the prefix can bring a `.` in:
+ * `toWords` turns the dots in a component's name into hyphens.
  */
 function readComponentTagPrefix(configuredPrefix: unknown): string {
 	const defaultPrefix = 'app'
@@ -244,6 +251,15 @@ function readComponentTagPrefix(configuredPrefix: unknown): string {
 	if (unusableCharacter) {
 		error(
 			`componentTagPrefix "${configuredPrefix}" is invalid — a tag cannot contain "${unusableCharacter}" — falling back to '${defaultPrefix}'.`,
+		)
+		return defaultPrefix
+	}
+	const isAngularProject = getProjectFrameworkFamily() === 'angular'
+	const isDottedAngularPrefix =
+		isAngularProject && configuredPrefix.includes('.')
+	if (isDottedAngularPrefix) {
+		error(
+			`componentTagPrefix "${configuredPrefix}" is invalid — Angular reads "." in a selector as the start of a class name, so the component would not match its tag — falling back to '${defaultPrefix}'.`,
 		)
 		return defaultPrefix
 	}
