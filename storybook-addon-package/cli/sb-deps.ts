@@ -225,11 +225,11 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
  * The characters are the exception, and they are checked here for two reasons.
  * They can be settled from the prefix alone, since appending to a character a
  * tag may never hold can never make it acceptable. And they have to be settled
- * before anything is written: `getComponentTagError` warns and lets the file be
- * written anyway, which is the right answer for a tag that is merely unusable
- * as an element name, but a prefix carrying a quote, a backtick or a line
- * break is written into `@customElement('…')` or `selector: '…'` and would
- * leave a file that does not compile.
+ * before anything is written: `warnIfComponentTagIsUnusable` warns and lets the
+ * file be written anyway, which is the right answer for a tag that is merely
+ * unusable as an element name, but a prefix carrying a quote, a backtick or a
+ * line break is written into `@customElement('…')` or `selector: '…'` and
+ * would leave a file that does not compile.
  */
 function readComponentTagPrefix(configuredPrefix: unknown): string {
 	const defaultPrefix = 'app'
@@ -1352,10 +1352,13 @@ function litComponentImportName(absCompPath: string) {
  * an `Apple.ts`, which only starts with the prefix's letters, still gets
  * `app-apple`.
  *
- * @param name - the component's name, e.g. `"ButtonAtom"` or `"button-atom"`
+ * @param base - the component's file name without its extension or marker,
+ *   e.g. `"ButtonAtom"` or `"button-atom"`. The file name rather than the class
+ *   name built from it, because rebuilding the class name loses some of the
+ *   file name's hyphens — `card-2` would come back as `card2`.
  */
-function getComponentTagName(name: string) {
-	const hyphenatedName = toKebabCase(name)
+function getComponentTagName(base: string) {
+	const hyphenatedName = toKebabCase(base)
 	if (!COMPONENT_TAG_PREFIX) return hyphenatedName
 	const prefixWithHyphen = `${COMPONENT_TAG_PREFIX}-`
 	const isAlreadyPrefixed = hyphenatedName.startsWith(prefixWithHyphen)
@@ -2317,7 +2320,7 @@ function scaffoldAngularComponent(
 	const base = componentBaseFromAngularComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const className = `${componentName}Component`
-	const selector = getComponentTagName(componentName)
+	const selector = getComponentTagName(base)
 	const dir = dirname(absCompPath)
 	const tsPath = join(dir, `${base}.component.ts`)
 	let isDefaultClassWritten = false
@@ -2652,11 +2655,11 @@ function warnIfComponentTagIsUnusable({
 	if (!tagError) return
 	if (componentsWarnedAboutTheirTag.has(absCompPath)) return
 	componentsWarnedAboutTheirTag.add(absCompPath)
-	const consequence =
+	const tagAndConsequence =
 		family === 'lit'
 			? `the tag "${tagName}", which a browser will refuse, so the component will not render`
 			: `the selector "${tagName}", which is not a valid HTML element name, so the page's HTML will not be valid`
-	warn(`"${rel(absWrittenPath)}" uses ${consequence} — ${tagError}.`)
+	warn(`"${rel(absWrittenPath)}" uses ${tagAndConsequence} — ${tagError}.`)
 }
 
 /**
