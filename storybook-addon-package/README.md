@@ -172,7 +172,7 @@ Each generated component is written the way its framework currently recommends, 
 
 React, Preact and Solid add no version floor beyond what the addon itself needs. In a **Next.js** project the React component is written with a `'use client'` line at the top, because it holds state and the App Router renders on the server; you will not see that line in any other React project.
 
-The **Lit** component's assumptions are TypeScript settings. It uses the shorthand `@customElement`, `@property` and `@state` annotations, which need `"experimentalDecorators": true` and `"useDefineForClassFields": false` in your `tsconfig.json`. It also writes `static styles` and `render()` without the `override` keyword, so in a project with `"noImplicitOverride": true`, as the Lit example site has, add `override` to both.
+The **Lit** component's assumptions are TypeScript settings. It uses the shorthand `@customElement`, `@property` and `@state` annotations, which need `"experimentalDecorators": true` in your `tsconfig.json`, and `"useDefineForClassFields": false` too when your `target` is ES2022 or newer, since TypeScript turns that setting on there. It also writes `static styles` and `render()` without the `override` keyword, so in a project with `"noImplicitOverride": true`, as the Lit example site has, add `override` to both.
 
 None of this affects the dependency graph or anything else `sb-deps` does — it only describes the starter code it writes, so on an older version replace the generated body with whatever your project uses. Or replace the template outright via [`scaffold`](#scaffold), which is what that option is for.
 
@@ -367,7 +367,7 @@ So with no marker, a new empty `utils.ts` in a Lit project gets a component writ
 
 **Restart after changing it.** `sb-deps` reads the setting when it starts.
 
-**Constraints.** Lower-case letters, digits, `_` and `-` only, and not `stories`, `story`, `component` or `decorator`, which already mean something here. Anything else is refused when `sb-deps` starts, with a message, and no marker is used. Capitals are refused rather than lowered, because every name ending is read in lower case.
+**Constraints.** Either the empty string, which means no marker, or lower-case letters, digits, `_` and `-` only, and not `stories`, `story`, `component` or `decorator`, which already mean something here. Anything else is refused when `sb-deps` starts, with a message, and no marker is used. Capitals are refused rather than lowered, because every name ending is read in lower case.
 
 Vue, Svelte and Angular ignore it: their extension, or Angular's own `.component`, already says what a component is.
 
