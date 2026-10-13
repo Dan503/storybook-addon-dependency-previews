@@ -234,11 +234,12 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
  * An Angular project is held to a narrower set: lower-case letters, digits,
  * `_` and `-`, the characters that both a tag and Angular's own selector
  * reader (`CssSelector.parse` in `@angular/compiler`) accept as part of an
- * element's name. A tag may also hold `.` and letters such as `é`, but Angular reads a
- * selector the way a stylesheet does, so `app.foo-button` would mean an `app`
- * element carrying the class `foo-button`; and it skips a letter such as `é`,
- * so `appé-button` would come out as an element named `-button`. Either way
- * the component would never match the tag the user writes.
+ * element's name. A tag may also hold `.` and letters such as `é`, but
+ * Angular reads a selector the way a stylesheet does, so `app.foo-button`
+ * would mean an `app` element carrying the class `foo-button`; and it skips a
+ * letter such as `é`, so `appé-button` would come out as an element named
+ * `-button`. Either way the component would never match the tag the user
+ * writes.
  */
 function readComponentTagPrefix(configuredPrefix: unknown): string {
 	const defaultPrefix = 'app'
@@ -249,24 +250,30 @@ function readComponentTagPrefix(configuredPrefix: unknown): string {
 		)
 		return defaultPrefix
 	}
-	const unusableCharacter = [...configuredPrefix].find(checkIsUnusableInTag)
-	if (unusableCharacter) {
+	const prefixError = getComponentTagPrefixError(configuredPrefix)
+	if (prefixError) {
 		error(
-			`componentTagPrefix "${configuredPrefix}" is invalid — a tag cannot contain "${unusableCharacter}" — falling back to '${defaultPrefix}'.`,
-		)
-		return defaultPrefix
-	}
-	const isAngularProject = getProjectFrameworkFamily() === 'angular'
-	const characterAngularCannotRead = isAngularProject
-		? [...configuredPrefix].find((character) => !/[a-z0-9_-]/.test(character))
-		: undefined
-	if (characterAngularCannotRead) {
-		error(
-			`componentTagPrefix "${configuredPrefix}" is invalid — an Angular selector cannot contain "${characterAngularCannotRead}", because Angular does not read it as part of the element's name, so the component would not match its tag — falling back to '${defaultPrefix}'.`,
+			`componentTagPrefix "${configuredPrefix}" is invalid — ${prefixError} — falling back to '${defaultPrefix}'.`,
 		)
 		return defaultPrefix
 	}
 	return configuredPrefix.replace(/-+$/, '')
+}
+
+/**
+ * Why this prefix can't be put in front of a tag, or `null` when it can. See
+ * `readComponentTagPrefix` for which characters are refused and why.
+ */
+function getComponentTagPrefixError(configuredPrefix: string): string | null {
+	const unusableCharacter = [...configuredPrefix].find(checkIsUnusableInTag)
+	if (unusableCharacter) return `a tag cannot contain "${unusableCharacter}"`
+	const isAngularProject = getProjectFrameworkFamily() === 'angular'
+	if (!isAngularProject) return null
+	const characterAngularCannotRead = [...configuredPrefix].find(
+		(character) => !/[a-z0-9_-]/.test(character),
+	)
+	if (!characterAngularCannotRead) return null
+	return `an Angular selector cannot contain "${characterAngularCannotRead}", because Angular does not read it as part of the element's name, so the component would not match its tag`
 }
 
 // What marks a component file, without its dot (`'lit'` for `Button.lit.ts`,
@@ -2645,8 +2652,13 @@ interface WarnIfComponentTagIsUnusableParams {
  * What goes wrong depends on the framework, so the warning says which. A
  * browser refuses to register a Lit tag that breaks the rules —
  * `customElements.define` throws — so the component will not render. Angular
- * writes its selector into the page as an element, and the page's HTML is only
- * valid when that element's name follows the same rules.
+ * writes its selector into the page as an element, so a selector that breaks
+ * the rules is one of two things: the name of a built-in element, such as
+ * `button` from `Button.component.ts` with no prefix, which Angular would then
+ * match against that built-in element in templates using the component; or a
+ * name no element may have, which
+ * leaves the page's HTML invalid. The warning names both, since which one it
+ * is depends on the name.
  *
  * Names the file just written rather than the component, because on the story
  * route the component may be one the user wrote, which this never reads.
@@ -2688,7 +2700,7 @@ function warnIfComponentTagIsUnusable({
 	const tagAndConsequence =
 		family === 'lit'
 			? `the tag "${tagName}", which a browser will refuse, so the component will not render`
-			: `the selector "${tagName}", which is not a valid HTML element name, so the page's HTML will not be valid`
+			: `the selector "${tagName}", which either takes the name of a built-in element or leaves the page's HTML invalid`
 	warn(`"${rel(absWrittenPath)}" uses ${tagAndConsequence} — ${tagError}.`)
 }
 

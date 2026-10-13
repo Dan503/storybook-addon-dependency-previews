@@ -302,9 +302,10 @@ export interface SbDepsConfig {
 	 * nothing outside the characters an element name allows, and not be one of
 	 * the handful of names the specification keeps for itself (`font-face` and
 	 * its relatives). A browser refuses to register a Lit tag that breaks one
-	 * of those, and an Angular selector that breaks one leaves the page's HTML
-	 * invalid, because Angular writes the selector into the page as an
-	 * element. The default prefix supplies the hyphen and the leading letter
+	 * of those. Angular writes its selector into the page as an element, so a
+	 * selector that breaks one either takes the name of a built-in element
+	 * (`button`, from `Button.component.ts` with no prefix) or leaves the
+	 * page's HTML invalid. The default prefix supplies the hyphen and the leading letter
 	 * for even a one-word name like `Button.ts`, and puts every reserved name
 	 * out of reach. Clear it and all four become yours to get right; the
 	 * scaffolder warns, naming whichever one the name it worked out breaks,
