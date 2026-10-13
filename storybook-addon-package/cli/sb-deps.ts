@@ -2585,9 +2585,7 @@ declare global {
  * Components already warned about, so that one file being created cannot print
  * the same line twice. A Lit component and its story both hardcode the tag and
  * are written by separate functions that each work it out, so both have to ask
- * — and on the paths where both run, one of the two asks second. An Angular
- * story does not carry the selector, so an Angular component is only ever
- * asked about once and never needs this.
+ * — and on the paths where both run, one of the two asks second.
  *
  * Only ever grows by one entry per component whose tag is unusable, and the
  * prefix that usually causes it is read once at boot, so nothing that would
