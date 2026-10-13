@@ -344,7 +344,7 @@ export default defineSbDepsConfig({
 
 _(Lit, React, Solid and Preact, Next.js included)_ What marks a file as a component, written without its dot. With it set, only files named for it are components — `Button.lit.ts` with `'lit'`, `Button.ui.tsx` with `'ui'` — and the marker comes off the component's name and its story's file name and title: `Button.ui.tsx` is the component `Button`, and its story is `Button.stories.tsx`.
 
-**Default:** no marker. The setup wizard writes `'lit'` in a Lit project unless you answer `none`.
+**Default:** no marker. The setup wizard writes `'lit'` in a Lit project unless you ask for something else.
 
 The reason to set one is that these frameworks' component files share their extension with ordinary source files:
 
@@ -363,7 +363,7 @@ So with no marker, a new empty `utils.ts` in a Lit project gets a component writ
 
 **Creating the story first.** An empty story file you create asks for a story. With a marker set, `helpers.stories.ts` looks for `helpers.lit.ts` (and `helpers.stories.tsx` for `helpers.ui.tsx`), and writes it if it is not there. With no marker in a Lit project, it finds `helpers.ts` whatever is in it, which is how you get a story for a file that would otherwise be left alone. The [Vite guide's Lit story section](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md#lit-storiests) goes through these cases in more detail.
 
-**The setup wizard** always asks for this in a Lit project, suggesting `lit`. In a React, Solid, Preact or Next.js on Vite project it shows `none` and only asks when you choose to edit the values it detected. Where a `sb-deps` config file already exists, the wizard leaves it alone and tells you what to check it sets — or, if you answered `none`, to check it does not set one.
+**The setup wizard** always asks for this in a Lit project, suggesting `lit`. In a React, Solid, Preact or Next.js project on Vite it shows `none` and only asks when you choose to edit the values it detected. Where a `sb-deps` config file already exists, the wizard leaves it alone and tells you what to check it sets — or, if you answered `none`, to check it does not set one.
 
 **Restart after changing it.** `sb-deps` reads the setting when it starts.
 
