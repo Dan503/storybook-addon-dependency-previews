@@ -2674,20 +2674,20 @@ interface WarnIfComponentTagIsUnusableParams {
  *
  * Every tag warned about here is one that cannot work as the component's
  * element name, rather than one that breaks the file it is written into —
- * both halves that could break it are closed before this runs. `readComponentTagPrefix` refuses a
- * prefix holding a character no tag may contain, and `getUnusableNameWarning`
- * refuses the file outright, ahead of every scaffolder, when the component's
- * name is not one the generated code can carry. So a name with an apostrophe
- * or a backtick is never written at all, rather than written into a
- * `@customElement('…')` or `selector: '…'` it would break.
+ * both halves that could break it are closed before this runs.
+ * `readComponentTagPrefix` refuses a prefix holding a character no tag may
+ * contain, and `getUnusableNameWarning` refuses the file outright, ahead of
+ * every scaffolder, when the component's name is not one the generated code
+ * can carry. So a name with an apostrophe or a backtick is never written at
+ * all, rather than written into a `@customElement('…')` or `selector: '…'` it
+ * would break.
  *
  * `$` is the one character that is legal in a name and illegal in a tag, so it
- * is the only way through the name to a tag that breaks the element-name rules
- * — and it closes no string and is never followed by `{` in any template that
- * carries a tag, so that file still compiles. The letters outside a–z that
- * Angular cannot read get past `getUnusableNameWarning` only because they are
- * characters a name may hold, which never include a quote or a backtick, so
- * they break no file either.
+ * is the only character from the name that the tag rules catch — and it closes
+ * no string and is never followed by `{` in any template that carries a tag,
+ * so that file still compiles. The characters outside ASCII that Angular
+ * cannot read are ones a name may hold, which never include a quote or a
+ * backtick, so they break no file either.
  *
  * None of that covers a **folder** name: `makeTitleFromComponent` title-cases
  * the folders into the story's `title` with nothing checking them, so one
@@ -2836,7 +2836,7 @@ function checkIsUnusableInTag(character: string): boolean {
  * Why Angular will not read this selector as the element name it spells, or
  * `null` when it will. Only asked of a selector that already passes
  * `getComponentTagError`, so what it finds is a character a tag may hold but
- * Angular does not read — in practice a letter outside a–z, such as `é`.
+ * Angular does not read — a character from outside ASCII, such as `é`.
  */
 function getAngularSelectorReadError(selector: string): string | null {
 	const characterAngularCannotRead = [...selector].find(
