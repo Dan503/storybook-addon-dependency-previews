@@ -2712,20 +2712,25 @@ function warnIfComponentTagIsUnusable({
  * warning — or `null` when nothing does. An Angular selector that passes the
  * element-name rules is asked one more question, whether Angular can read it as
  * the element's name; a Lit tag is not, since a browser has no such limit.
+ *
+ * @param family - which scaffolder wrote the tag, which decides what goes wrong
+ * @param tagName - the finished tag, prefix included
  */
 function getUnusableTagDescription(
 	family: WarnIfComponentTagIsUnusableParams['family'],
 	tagName: string,
 ): string | null {
+	const isLit = family === 'lit'
 	const tagError = getComponentTagError(tagName, COMPONENT_TAG_PREFIX)
-	if (tagError && family === 'lit')
-		return `the tag "${tagName}", which a browser will refuse, so the component will not render — ${tagError}`
-	if (tagError)
-		return `the selector "${tagName}", which either takes the name of a built-in element or leaves the page's HTML invalid — ${tagError}`
-	if (family === 'lit') return null
-	const angularReadError = getAngularSelectorReadError(tagName)
-	if (!angularReadError) return null
-	return `the selector "${tagName}", which Angular reads as a different element name, so the component will not match its tag — ${angularReadError}`
+	const shouldAskAngular = !tagError && !isLit
+	const angularReadError = shouldAskAngular
+		? getAngularSelectorReadError(tagName)
+		: null
+	const tagProblemReason = tagError ?? angularReadError
+	if (!tagProblemReason) return null
+	const tagKind = isLit ? 'tag' : 'selector'
+	const consequence = getTagConsequence(family, !!angularReadError)
+	return `the ${tagKind} "${tagName}", which ${consequence} — ${tagProblemReason}`
 }
 
 /**
@@ -2837,6 +2842,8 @@ function checkIsUnusableInTag(character: string): boolean {
  * `null` when it will. Only asked of a selector that already passes
  * `getComponentTagError`, so what it finds is a character a tag may hold but
  * Angular does not read — a character from outside ASCII, such as `é`.
+ *
+ * @param selector - the finished selector, prefix included
  */
 function getAngularSelectorReadError(selector: string): string | null {
 	const characterAngularCannotRead = [...selector].find(
@@ -2856,9 +2863,29 @@ function getAngularSelectorReadError(selector: string): string | null {
  * takes an element's name as a run of a–z, digits, `_` and `-` (capitals too,
  * which a tag never holds). Anything else ends the name: `.` starts a class,
  * and a letter such as `é` is skipped, so `café-card` is read as `-card`.
+ *
+ * @param character - one character of the selector
  */
 function checkCanAngularReadInElementName(character: string): boolean {
 	return /[a-z0-9_-]/.test(character)
+}
+
+/**
+ * What goes wrong because of the tag, worded to follow "which".
+ *
+ * @param family - which scaffolder wrote the tag
+ * @param isUnreadableByAngular - whether the tag passes the element-name rules
+ *   and fails only because Angular cannot read it
+ */
+function getTagConsequence(
+	family: WarnIfComponentTagIsUnusableParams['family'],
+	isUnreadableByAngular: boolean,
+): string {
+	if (family === 'lit')
+		return 'a browser will refuse, so the component will not render'
+	if (isUnreadableByAngular)
+		return 'Angular reads as a different element name, so the component will not match its tag'
+	return "either takes the name of a built-in element or leaves the page's HTML invalid"
 }
 
 function scaffoldStoryForLitComponent(
