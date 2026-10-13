@@ -282,7 +282,7 @@ export default defineSbDepsConfig({
 
 ### `litTagPrefix`
 
-_(Lit only)_ The prefix put in front of the browser tag a scaffolded Lit component registers itself as. The tag is the component's file name in hyphenated form, with this prefix in front of it unless the name already starts with it.
+_(Lit only)_ The prefix put in front of the browser tag a scaffolded Lit component registers itself as. The tag is the component's file name with the marker and extension taken off, in hyphenated form, with this prefix in front of it unless the name already starts with it.
 
 **Default:** `'app-'`
 
@@ -292,7 +292,7 @@ _(Lit only)_ The prefix put in front of the browser tag a scaffolded Lit compone
 | `'my-'`            | `my-button-atom`            |
 | `''`               | `button-atom`               |
 
-The prefix is never doubled. With the default, `ButtonAtom.lit.ts`, `button-atom.lit.ts` and `app-button-atom.lit.ts` all register `app-button-atom`, never `app-app-button-atom`. The class is named from the whole file name without the marker, so those three give `ButtonAtom`, `ButtonAtom` and `AppButtonAtom`.
+The prefix is never doubled. With the default, `ButtonAtom.lit.ts`, `button-atom.lit.ts` and `app-button-atom.lit.ts` all register `app-button-atom`, never `app-app-button-atom`. The class is named from the file name with the marker and extension taken off, so those three give `ButtonAtom`, `ButtonAtom` and `AppButtonAtom`.
 
 A browser only accepts a tag that contains a hyphen, starts with a lower-case letter, holds only the characters a tag name allows, and is not one of the few names the specification keeps for itself (`font-face` and its relatives). The default prefix supplies the hyphen and the leading letter for even a one-word name like `Button.lit.ts`, and puts the reserved names out of reach. `sb-deps` warns when a tag it works out breaks any of the four, naming which, and writes the files anyway — the component will not render until the tag is fixed. A prefix holding a character no tag may contain is the exception: it is refused when `sb-deps` starts and `'app-'` is used instead, because the prefix is written into the generated code and would leave a file that does not compile.
 
