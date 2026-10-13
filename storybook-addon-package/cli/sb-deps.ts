@@ -1364,12 +1364,18 @@ function litComponentImportName(absCompPath: string) {
 
 /**
  * The element name a component is used by on the page — the tag a Lit
- * component registers itself as, or an Angular component's selector. It is the
- * component's name in hyphenated form, with `componentTagPrefix` and a hyphen
- * in front of it unless the name already starts with the two. That is what
- * stops an `app-button-atom.ts` from asking for `app-app-button-atom`, while
- * an `Apple.ts`, which only starts with the prefix's letters, still gets
- * `app-apple`.
+ * component registers itself as, or an Angular component's selector. It is
+ * `componentTagPrefix`, a hyphen, then the component's name in hyphenated
+ * form — with the prefix not added a second time when the name already starts
+ * with it and a hyphen. That is what stops an `app-button-atom.ts` from asking
+ * for `app-app-button-atom`, while an `Apple.ts`, which only starts with the
+ * prefix's letters, still gets `app-apple`.
+ *
+ * The test for "already starts with it" hyphenates the prefix the same way
+ * the name is hyphenated, since hyphenating turns `_` and `.` into `-`: with
+ * the prefix `my_app`, `my_app-button.ts` is hyphenated to `my-app-button`,
+ * which starts with `my-app-`. The prefix is then put back as it was written,
+ * so the tag is `my_app-button`, matching every other tag in that project.
  *
  * @param base - the component's file name without its extension or marker,
  *   e.g. `"ButtonAtom"` or `"button-atom"`. The file name rather than the class
@@ -1379,9 +1385,14 @@ function litComponentImportName(absCompPath: string) {
 function getComponentTagName(base: string) {
 	const hyphenatedName = toKebabCase(base)
 	if (!COMPONENT_TAG_PREFIX) return hyphenatedName
-	const prefixWithHyphen = `${COMPONENT_TAG_PREFIX}-`
-	const isAlreadyPrefixed = hyphenatedName.startsWith(prefixWithHyphen)
-	return isAlreadyPrefixed ? hyphenatedName : prefixWithHyphen + hyphenatedName
+	const hyphenatedPrefixWithHyphen = `${toKebabCase(COMPONENT_TAG_PREFIX)}-`
+	const isAlreadyPrefixed = hyphenatedName.startsWith(
+		hyphenatedPrefixWithHyphen,
+	)
+	const nameWithoutPrefix = isAlreadyPrefixed
+		? hyphenatedName.slice(hyphenatedPrefixWithHyphen.length)
+		: hyphenatedName
+	return `${COMPONENT_TAG_PREFIX}-${nameWithoutPrefix}`
 }
 
 function detectAtomicTag(absPath: string) {
@@ -2691,11 +2702,11 @@ function warnIfComponentTagIsUnusable({
  * Out of reach under the default `'app'`, which puts `app-` in front and
  * makes `app-font-face`. What reaches it is any `componentTagPrefix` that
  * leaves the finished tag spelling one of these exactly — which is not only
- * the prefix joined to the name, because `getComponentTagName` does not join
- * when the name already starts with the prefix and a hyphen. So `''` in front
- * of a `font-face.lit.ts` reaches it, `font` in front of a `Face.lit.ts`
- * reaches it, and so does `font` in front of `font-face.lit.ts`, where the
- * name is used as it stands.
+ * the prefix joined to a name that lacks it, because `getComponentTagName`
+ * does not add the prefix a second time when the name already starts with it
+ * and a hyphen. So `''` in front of a `font-face.lit.ts` reaches it, `font` in
+ * front of a `Face.lit.ts` reaches it, and so does `font` in front of
+ * `font-face.lit.ts`, which keeps its own `font-` rather than gaining another.
  */
 const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
 	'annotation-xml',
@@ -2709,8 +2720,8 @@ const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
 ]
 
 /**
- * Why this tag is not a usable element name, and what to do about it — phrased
- * to follow the caller's own naming of the tag — or `null` when it is.
+ * Why this tag is not a usable element name, and what to do about it, or
+ * `null` when it is.
  *
  * A component's tag has to contain a hyphen, start with a lower-case
  * letter, carry nothing a tag name may not hold, and not be one of the names

@@ -290,9 +290,10 @@ export interface SbDepsConfig {
 	 * no prefix.
 	 *
 	 * The name is the prefix, a hyphen, then the component's file name in
-	 * hyphenated form — unless the name already starts with the prefix and a
-	 * hyphen, in which case it is used as it stands, so `app-button-atom.ts`
-	 * gives `app-button-atom` rather than `app-app-button-atom`. A name that
+	 * hyphenated form — with the prefix not added a second time when the name
+	 * already starts with it and a hyphen, so `app-button-atom.ts` gives
+	 * `app-button-atom` rather than `app-app-button-atom`, and with the prefix
+	 * `my_app`, `my_app-button.ts` gives `my_app-button`. A name that
 	 * only starts with the prefix's letters is not one of those: `Apple.ts`
 	 * gives `app-apple`. Hyphens left on the end of this setting are dropped
 	 * first, so `'app-'` means the same as `'app'`.
