@@ -206,48 +206,58 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
 }
 
 /**
- * The prefix the config asked to put in front of a Lit component's tag, or the
- * default `'app-'` when it asked for nothing usable.
+ * The prefix the config asked to put in front of a component's tag — a Lit
+ * component's tag, an Angular component's selector — with any hyphens on its
+ * end dropped, or the default `'app'` when it asked for nothing usable.
+ *
+ * The hyphens come off here, once, so that `getComponentTagName` adds the one
+ * hyphen between prefix and name itself and never has to ask whether the
+ * setting already ended in one: `'app-'` and `'app'` give the same tag, and
+ * `'-'` comes back as `''`.
  *
  * The shape of the finished tag is not judged here, because it cannot be: a
- * prefix is a fragment, so whether there is a hyphen and what the tag starts
- * with depend on what follows — `app` is fine in front of `-shell` and useless
- * in front of `button`. Those are left to `getLitTagError`, asked about each
- * finished tag by every scaffolder that writes one into a file.
+ * prefix is a fragment, so whether the tag has a hyphen and what it starts
+ * with depend on what follows — an empty prefix is fine in front of
+ * `app-shell` and useless in front of `button`. Those are left to
+ * `getComponentTagError`, asked about each finished tag by every scaffolder
+ * that writes one into a file.
  *
  * The characters are the exception, and they are checked here for two reasons.
  * They can be settled from the prefix alone, since appending to a character a
  * tag may never hold can never make it acceptable. And they have to be settled
- * before anything is written: `getLitTagError` warns and lets the file be
- * written anyway, which is the right answer for a tag that is merely
- * unregisterable, but a prefix carrying a quote, a backtick or a line break is
- * written into `@customElement('…')` and would leave a file that does not
- * compile.
+ * before anything is written: `getComponentTagError` warns and lets the file be
+ * written anyway, which is the right answer for a tag that is merely unusable
+ * as an element name, but a prefix carrying a quote, a backtick or a line
+ * break is written into `@customElement('…')` or `selector: '…'` and would
+ * leave a file that does not compile.
  */
-function readLitTagPrefix(configuredPrefix: unknown): string {
-	const defaultPrefix = 'app-'
+function readComponentTagPrefix(configuredPrefix: unknown): string {
+	const defaultPrefix = 'app'
 	if (configuredPrefix === undefined) return defaultPrefix
 	if (typeof configuredPrefix !== 'string') {
-		error(`litTagPrefix must be a string — falling back to '${defaultPrefix}'.`)
+		error(
+			`componentTagPrefix must be a string — falling back to '${defaultPrefix}'.`,
+		)
 		return defaultPrefix
 	}
 	const unusableCharacter = [...configuredPrefix].find(checkIsUnusableInTag)
 	if (unusableCharacter) {
 		error(
-			`litTagPrefix "${configuredPrefix}" is invalid — a tag cannot contain "${unusableCharacter}" — falling back to '${defaultPrefix}'.`,
+			`componentTagPrefix "${configuredPrefix}" is invalid — a tag cannot contain "${unusableCharacter}" — falling back to '${defaultPrefix}'.`,
 		)
 		return defaultPrefix
 	}
-	return configuredPrefix
+	return configuredPrefix.replace(/-+$/, '')
 }
 
-let ANGULAR_SELECTOR_PREFIX = 'app-'
 // What marks a component file, without its dot (`'lit'` for `Button.lit.ts`,
 // `'ui'` for `Button.ui.tsx`), or `null` when this project asked for no marker.
 // Only ever read in a Lit project (on `.ts`) or a React, Solid or Preact project
 // (on `.tsx`) — see `getComponentEndingForFamily`.
 let COMPONENT_FILE_SUFFIX: string | null = null
-let LIT_TAG_PREFIX = 'app-'
+// The prefix in front of a Lit tag or an Angular selector, without its hyphen
+// (`'app'`), or `''` for none — see `readComponentTagPrefix`.
+let COMPONENT_TAG_PREFIX = 'app'
 let SCAFFOLD_CONFIG: SbDepsConfig['scaffold'] = {}
 let SRC_DIR = 'src'
 // Which extension the scaffolder emits for generated story files —
@@ -1334,18 +1344,22 @@ function litComponentImportName(absCompPath: string) {
 }
 
 /**
- * The browser tag a Lit component registers itself as — the component's name in
- * hyphenated form, with `litTagPrefix` in front of it unless the name already
- * starts with the prefix. That is what stops an `app-button-atom.ts` from
- * asking for `app-app-button-atom`.
+ * The element name a component is used by on the page — the tag a Lit
+ * component registers itself as, or an Angular component's selector. It is the
+ * component's name in hyphenated form, with `componentTagPrefix` and a hyphen
+ * in front of it unless the name already starts with the two. That is what
+ * stops an `app-button-atom.ts` from asking for `app-app-button-atom`, while
+ * an `Apple.ts`, which only starts with the prefix's letters, still gets
+ * `app-apple`.
  *
- * @param base - the component's name without its extension or marker, e.g. `"ButtonAtom"`
+ * @param name - the component's name, e.g. `"ButtonAtom"` or `"button-atom"`
  */
-function getLitTagName(base: string) {
-	const hyphenatedName = toKebabCase(base)
-	return hyphenatedName.startsWith(LIT_TAG_PREFIX)
-		? hyphenatedName
-		: LIT_TAG_PREFIX + hyphenatedName
+function getComponentTagName(name: string) {
+	const hyphenatedName = toKebabCase(name)
+	if (!COMPONENT_TAG_PREFIX) return hyphenatedName
+	const prefixWithHyphen = `${COMPONENT_TAG_PREFIX}-`
+	const isAlreadyPrefixed = hyphenatedName.startsWith(prefixWithHyphen)
+	return isAlreadyPrefixed ? hyphenatedName : prefixWithHyphen + hyphenatedName
 }
 
 function detectAtomicTag(absPath: string) {
@@ -2303,12 +2317,18 @@ function scaffoldAngularComponent(
 	const base = componentBaseFromAngularComponent(absCompPath)
 	const componentName = toPascalCase(base)
 	const className = `${componentName}Component`
-	const selector = ANGULAR_SELECTOR_PREFIX + toKebabCase(componentName)
+	const selector = getComponentTagName(componentName)
 	const dir = dirname(absCompPath)
 	const tsPath = join(dir, `${base}.component.ts`)
 	let isDefaultClassWritten = false
 
 	if (isEmptyOrWhitespace(tsPath)) {
+		warnIfComponentTagIsUnusable({
+			family: 'angular',
+			tagName: selector,
+			absCompPath: tsPath,
+			absWrittenPath: tsPath,
+		})
 		// The two template locations produce the same component apart from this
 		// one property, so the rest of the file is written once.
 		const templateProperty =
@@ -2513,8 +2533,9 @@ export const Primary: Story = {
 function scaffoldLitComponent(absCompPath: string) {
 	const base = componentBaseFromLitComponent(absCompPath)
 	const componentName = toPascalCase(base)
-	const tagName = getLitTagName(base)
-	warnIfLitTagIsUnusable({
+	const tagName = getComponentTagName(base)
+	warnIfComponentTagIsUnusable({
+		family: 'lit',
 		tagName,
 		absCompPath,
 		absWrittenPath: absCompPath,
@@ -2562,18 +2583,22 @@ declare global {
 
 /**
  * Components already warned about, so that one file being created cannot print
- * the same line twice. A component and its story both hardcode the tag and are
- * written by separate functions that each work it out, so both have to ask —
- * and on the paths where both run, one of the two asks second.
+ * the same line twice. A Lit component and its story both hardcode the tag and
+ * are written by separate functions that each work it out, so both have to ask
+ * — and on the paths where both run, one of the two asks second. An Angular
+ * story does not carry the selector, so an Angular component is only ever
+ * asked about once and never needs this.
  *
  * Only ever grows by one entry per component whose tag is unusable, and the
  * prefix that usually causes it is read once at boot, so nothing that would
  * make the answer change mid-run can happen without a restart.
  */
-const litComponentsWarnedAboutTheirTag = new Set<string>()
+const componentsWarnedAboutTheirTag = new Set<string>()
 
-interface WarnIfLitTagIsUnusableParams {
-	/** the finished tag, prefix included */
+interface WarnIfComponentTagIsUnusableParams {
+	/** which scaffolder wrote the tag, which decides what the warning says goes wrong */
+	family: Extract<StoryFramework, 'lit' | 'angular'>
+	/** the finished tag, prefix included — a Lit tag or an Angular selector */
 	tagName: string
 	/** the component the tag was worked out for, which is what one warning per component is counted by */
 	absCompPath: string
@@ -2582,68 +2607,75 @@ interface WarnIfLitTagIsUnusableParams {
 }
 
 /**
- * Say so when the tag worked out for a component is one a browser will not
- * register, and name which of the rules it breaks. Says it once per component,
- * however many files carrying that tag get written.
+ * Say so when the tag worked out for a component is not a usable element name,
+ * and name which of the rules it breaks. Says it once per component, however
+ * many files carrying that tag get written.
+ *
+ * What goes wrong depends on the framework, so the warning says which. A
+ * browser refuses to register a Lit tag that breaks the rules —
+ * `customElements.define` throws — so the component will not render. Angular
+ * writes its selector into the page as an element, and the page's HTML is only
+ * valid when that element's name follows the same rules.
  *
  * Names the file just written rather than the component, because on the story
  * route the component may be one the user wrote, which this never reads.
  *
  * The file is still written: the tag is built from the component's own name
- * and the user's own `litTagPrefix`, and quietly overriding either would leave
- * them with a tag they never asked for and no idea where it came from. Saying
- * what is wrong is more use than guessing what they meant, and the failure is
- * loud — `customElements.define` throws, so the story does not render at all.
+ * and the user's own `componentTagPrefix`, and quietly overriding either would
+ * leave them with a tag they never asked for and no idea where it came from.
+ * Saying what is wrong is more use than guessing what they meant.
  *
- * Every tag reaching here is one a browser will not register, rather than one
- * that breaks the file it is written into — both halves that could break it
- * are closed before this runs. `readLitTagPrefix` refuses a prefix holding a
- * character no tag may contain, and `getUnusableNameWarning` refuses the file
- * outright, ahead of every scaffolder, when the component's name is not one
- * the generated code can carry. So a name with an apostrophe or a backtick is
- * never written at all, rather than written into a `@customElement('…')` it
- * would break.
+ * Every tag reaching here is one that is unusable as an element name, rather
+ * than one that breaks the file it is written into — both halves that could
+ * break it are closed before this runs. `readComponentTagPrefix` refuses a
+ * prefix holding a character no tag may contain, and `getUnusableNameWarning`
+ * refuses the file outright, ahead of every scaffolder, when the component's
+ * name is not one the generated code can carry. So a name with an apostrophe
+ * or a backtick is never written at all, rather than written into a
+ * `@customElement('…')` or `selector: '…'` it would break.
  *
  * `$` is the one character that is legal in a name and illegal in a tag, so it
  * is the only way to reach this function through the name — and it closes no
- * string and is never followed by `{` in either template, so that file still
- * compiles.
+ * string and is never followed by `{` in any template that carries a tag, so
+ * that file still compiles.
  *
  * None of that covers a **folder** name: `makeTitleFromComponent` title-cases
  * the folders into the story's `title` with nothing checking them, so one
  * holding an apostrophe writes a story that will not parse. That is shared
  * with every family here and untouched by this change.
  */
-function warnIfLitTagIsUnusable({
+function warnIfComponentTagIsUnusable({
+	family,
 	tagName,
 	absCompPath,
 	absWrittenPath,
-}: WarnIfLitTagIsUnusableParams) {
-	const tagError = getLitTagError(tagName, LIT_TAG_PREFIX)
+}: WarnIfComponentTagIsUnusableParams) {
+	const tagError = getComponentTagError(tagName, COMPONENT_TAG_PREFIX)
 	if (!tagError) return
-	if (litComponentsWarnedAboutTheirTag.has(absCompPath)) return
-	litComponentsWarnedAboutTheirTag.add(absCompPath)
-	warn(
-		`"${rel(absWrittenPath)}" uses the tag "${tagName}", which a browser will ` +
-			`refuse — ${tagError}.`,
-	)
+	if (componentsWarnedAboutTheirTag.has(absCompPath)) return
+	componentsWarnedAboutTheirTag.add(absCompPath)
+	const consequence =
+		family === 'lit'
+			? `the tag "${tagName}", which a browser will refuse, so the component will not render`
+			: `the selector "${tagName}", which is not a valid HTML element name, so the page's HTML will not be valid`
+	warn(`"${rel(absWrittenPath)}" uses ${consequence} — ${tagError}.`)
 }
 
 /**
- * The handful of names the specification keeps for itself, which a browser
- * refuses to register however well-formed they look. All of them are older SVG
- * and MathML element names that happen to contain a hyphen, so every other
- * rule passes them and only `customElements.define` would object — at run
- * time, long after the file was written.
+ * The handful of names the specification keeps for itself, which can never be
+ * a component's element name however well-formed they look. All of them are
+ * older SVG and MathML element names that happen to contain a hyphen, so every
+ * other rule passes them — for Lit only `customElements.define` would object,
+ * at run time, long after the file was written.
  *
- * Out of reach under the default `'app-'`, which puts `app-` in front and
- * makes `app-font-face`. What reaches it is any `litTagPrefix` that leaves the
- * finished tag spelling one of these exactly — which is not only the prefix
- * joined to the name, because `getLitTagName` does not join when the name
- * already starts with the prefix. So `''` in front of a `font-face.lit.ts`
- * reaches it, `font-` in front of a `Face.lit.ts` reaches it, and so does any
- * prefix that `font-face.lit.ts` already starts with, such as `font-` or `f`,
- * where the name is used as it stands.
+ * Out of reach under the default `'app'`, which puts `app-` in front and
+ * makes `app-font-face`. What reaches it is any `componentTagPrefix` that
+ * leaves the finished tag spelling one of these exactly — which is not only
+ * the prefix joined to the name, because `getComponentTagName` does not join
+ * when the name already starts with the prefix and a hyphen. So `''` in front
+ * of a `font-face.lit.ts` reaches it, `font` in front of a `Face.lit.ts`
+ * reaches it, and so does `font` in front of `font-face.lit.ts`, where the
+ * name is used as it stands.
  */
 const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
 	'annotation-xml',
@@ -2657,10 +2689,10 @@ const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
 ]
 
 /**
- * Why a browser will not register this tag, and what to do about it — phrased
- * to follow the caller's own naming of the tag — or `null` when it will.
+ * Why this tag is not a usable element name, and what to do about it — phrased
+ * to follow the caller's own naming of the tag — or `null` when it is.
  *
- * A custom element tag has to contain a hyphen, start with a lower-case
+ * A component's tag has to contain a hyphen, start with a lower-case
  * letter, carry nothing a tag name may not hold, and not be one of the names
  * the specification keeps for itself. The third of those is a
  * long list in the specification and most of it is letters from outside ASCII,
@@ -2687,25 +2719,29 @@ const RESERVED_TAG_NAMES: ReadonlyArray<string> = [
  * @param tagName - the finished tag, prefix included
  * @param tagPrefix - the prefix that went in front of it, possibly empty
  */
-function getLitTagError(tagName: string, tagPrefix: string): string | null {
+function getComponentTagError(
+	tagName: string,
+	tagPrefix: string,
+): string | null {
 	if (!tagName.includes('-'))
 		return (
 			'a tag has to contain a hyphen, and neither the component name nor ' +
-			'litTagPrefix supplies one'
+			'componentTagPrefix supplies one'
 		)
 	if (!/^[a-z]/.test(tagName))
-		return `a tag has to start with a lower-case letter, and this one starts with the first character of ${getLitTagPartDescription(tagPrefix !== '')}`
+		return `a tag has to start with a lower-case letter, and this one starts with the first character of ${getComponentTagPartDescription(tagPrefix !== '')}`
 	const unusableCharacter = [...tagName].find(checkIsUnusableInTag)
 	if (unusableCharacter) {
-		// The component's name every time, never the prefix: `readLitTagPrefix`
-		// refuses a prefix carrying anything `checkIsUnusableInTag` rejects, so
-		// by the time a tag reaches here its prefix is built only from accepted
-		// characters and cannot be where this one came from.
+		// The component's name every time, never the prefix:
+		// `readComponentTagPrefix` refuses a prefix carrying anything
+		// `checkIsUnusableInTag` rejects, so by the time a tag reaches here its
+		// prefix is built only from accepted characters and cannot be where this
+		// one came from.
 		const didCharacterComeFromPrefix = false
-		return `a tag cannot contain "${unusableCharacter}", which came from ${getLitTagPartDescription(didCharacterComeFromPrefix)}`
+		return `a tag cannot contain "${unusableCharacter}", which came from ${getComponentTagPartDescription(didCharacterComeFromPrefix)}`
 	}
 	if (RESERVED_TAG_NAMES.includes(tagName))
-		return 'a tag cannot be one of the names the specification keeps for itself, and this is one of them — renaming the component fixes it, as does changing litTagPrefix'
+		return 'a tag cannot be one of the names the specification keeps for itself, and this is one of them — renaming the component fixes it, as does changing componentTagPrefix'
 	return null
 }
 
@@ -2713,15 +2749,15 @@ function getLitTagError(tagName: string, tagPrefix: string): string | null {
  * Which half of the tag to point the user at — the setting they change, or the
  * component they rename.
  *
- * @param isFromPrefix - whether the offending part came from `litTagPrefix`
+ * @param isFromPrefix - whether the offending part came from `componentTagPrefix`
  */
-function getLitTagPartDescription(isFromPrefix: boolean): string {
+function getComponentTagPartDescription(isFromPrefix: boolean): string {
 	return isFromPrefix
-		? 'litTagPrefix, which is what to change'
+		? 'componentTagPrefix, which is what to change'
 		: "the component's name, so renaming the component is what fixes it"
 }
 
-/** Is this one character one a tag may not hold? See `getLitTagError` for what is and isn't judged. */
+/** Is this one character one a tag may not hold? See `getComponentTagError` for what is and isn't judged. */
 function checkIsUnusableInTag(character: string): boolean {
 	const HIGHEST_ASCII_CODE = 127
 	const isAscii = character.charCodeAt(0) <= HIGHEST_ASCII_CODE
@@ -2734,11 +2770,12 @@ function scaffoldStoryForLitComponent(
 ) {
 	const base = componentBaseFromLitComponent(absCompPath)
 	const componentName = toPascalCase(base)
-	const tagName = getLitTagName(base)
+	const tagName = getComponentTagName(base)
 	// The story hardcodes the tag as well, and reaches here on paths that never
 	// write the component — one created with content already in it, or a story
 	// created beside a component that is already there.
-	warnIfLitTagIsUnusable({
+	warnIfComponentTagIsUnusable({
+		family: 'lit',
 		tagName,
 		absCompPath,
 		absWrittenPath: targetStoryPath,
@@ -3937,8 +3974,7 @@ async function startStorybook() {
 	}
 
 	const cfg = await loadSbDepsConfig()
-	ANGULAR_SELECTOR_PREFIX = cfg.angularSelectorPrefix ?? 'app-'
-	LIT_TAG_PREFIX = readLitTagPrefix(cfg.litTagPrefix)
+	COMPONENT_TAG_PREFIX = readComponentTagPrefix(cfg.componentTagPrefix)
 	COMPONENT_FILE_SUFFIX = readComponentFileSuffix(cfg.componentFileSuffix)
 	SCAFFOLD_CONFIG = cfg.scaffold ?? {}
 	// `cfg.srcDir` can take three meaningfully-different shapes:

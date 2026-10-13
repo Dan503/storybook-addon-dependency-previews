@@ -277,4 +277,4 @@ Unlike the hand-spread form, `definePreview` type-checks the `dependencyPreviews
 npm run sb
 ```
 
-See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file (including the `angularSelectorPrefix` option, relevant for Angular projects only).
+See the [main README](../README.md) for the optional `sb-deps.config.mjs` configuration file (including the `componentTagPrefix` option, which sets the prefix on Angular component selectors).

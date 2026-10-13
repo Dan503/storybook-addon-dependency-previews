@@ -203,15 +203,6 @@ export interface SbDepsConfig {
 	srcDir?: string
 
 	/**
-	 * Prefix prepended to Angular component selectors.
-	 * Defaults to `'app-'`. Set to `''` for no prefix.
-	 * @example 'app-'  →  selector: 'app-button-atom'
-	 * @example 'my-'   →  selector: 'my-button-atom'
-	 * @example ''      →  selector: 'button-atom'
-	 */
-	angularSelectorPrefix?: string
-
-	/**
 	 * What marks a file as a component, written without its dot. Read in two
 	 * kinds of project: Lit, where it marks `.ts` files, and React, Solid and
 	 * Preact (Next.js included), where it marks `.tsx` files. Vue and Svelte
@@ -293,33 +284,42 @@ export interface SbDepsConfig {
 	componentFileSuffix?: string
 
 	/**
-	 * Prefix put in front of the tag a Lit component registers itself as.
-	 * Defaults to `'app-'`. Set to `''` for no prefix.
+	 * Prefix put in front of a scaffolded component's element name — the
+	 * selector of an Angular component, the tag a Lit component registers
+	 * itself as. Written without a hyphen. Defaults to `'app'`. Set to `''` for
+	 * no prefix.
 	 *
-	 * The tag is the component's file name in hyphenated form with this prefix
-	 * in front of it — unless the name already starts with the prefix, in which
-	 * case it is used as it stands, so `app-button-atom.ts` gives
-	 * `app-button-atom` rather than `app-app-button-atom`.
+	 * The name is the prefix, a hyphen, then the component's file name in
+	 * hyphenated form — unless the name already starts with the prefix and a
+	 * hyphen, in which case it is used as it stands, so `app-button-atom.ts`
+	 * gives `app-button-atom` rather than `app-app-button-atom`. A name that
+	 * only starts with the prefix's letters is not one of those: `Apple.ts`
+	 * gives `app-apple`. Hyphens left on the end of this setting are dropped
+	 * first, so `'app-'` means the same as `'app'`.
 	 *
-	 * A browser accepts a tag only when it contains a hyphen, starts with a
-	 * lower-case letter, holds nothing outside the characters a tag name
-	 * allows, and is not one of the handful of names the specification keeps
-	 * for itself (`font-face` and its relatives). The default prefix supplies
-	 * the hyphen and the leading letter for even a one-word name like
-	 * `Button.ts`, and puts every reserved name out of reach. Clear it and all
-	 * four become yours to get right; the scaffolder warns, naming whichever
-	 * one the tag it worked out breaks, and writes the file anyway.
+	 * The name has to contain a hyphen, start with a lower-case letter, hold
+	 * nothing outside the characters an element name allows, and not be one of
+	 * the handful of names the specification keeps for itself (`font-face` and
+	 * its relatives). A browser refuses to register a Lit tag that breaks one
+	 * of those, and an Angular selector that breaks one leaves the page's HTML
+	 * invalid, because Angular writes the selector into the page as an
+	 * element. The default prefix supplies the hyphen and the leading letter
+	 * for even a one-word name like `Button.ts`, and puts every reserved name
+	 * out of reach. Clear it and all four become yours to get right; the
+	 * scaffolder warns, naming whichever one the name it worked out breaks,
+	 * and writes the file anyway.
 	 *
 	 * The one thing it will not take from you is a prefix holding a character
-	 * no tag may contain. That is refused outright, with a message, and this
-	 * falls back to `'app-'` — because the prefix is written into the generated
-	 * source, so honouring it would leave you a file that does not compile.
+	 * no element name may contain. That is refused outright, with a message,
+	 * and this falls back to `'app'` — because the prefix is written into the
+	 * generated source, so honouring it would leave you a file that does not
+	 * compile.
 	 *
-	 * @example 'app-'  →  tag: 'app-button-atom'
-	 * @example 'my-'   →  tag: 'my-button-atom'
-	 * @example ''      →  tag: 'button-atom'
+	 * @example 'app'  →  'app-button-atom'
+	 * @example 'my'   →  'my-button-atom'
+	 * @example ''     →  'button-atom'
 	 */
-	litTagPrefix?: string
+	componentTagPrefix?: string
 
 	/**
 	 * Which flavor to scaffold for `.tsx` component and story files.
