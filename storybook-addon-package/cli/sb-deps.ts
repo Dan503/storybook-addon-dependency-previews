@@ -239,7 +239,7 @@ function readComponentFileSuffix(configuredSuffix: unknown): string | null {
  * would mean an `app` element carrying the class `foo-button`; and it skips a
  * letter such as `é`, so `appé-button` would come out as an element named
  * `-button`. Either way the component would never match the tag the user
- * writes. `checkCanAngularReadInElementName` holds that test, and the warning
+ * writes. `findCharacterAngularCannotRead` holds that test, and the warning
  * for a component's name asks it too.
  */
 function readComponentTagPrefix(configuredPrefix: unknown): string {
@@ -272,9 +272,8 @@ function getComponentTagPrefixError(configuredPrefix: string): string | null {
 	if (unusableCharacter) return `a tag cannot contain "${unusableCharacter}"`
 	const isAngularProject = getProjectFrameworkFamily() === 'angular'
 	if (!isAngularProject) return null
-	const characterAngularCannotRead = [...configuredPrefix].find(
-		(character) => !checkCanAngularReadInElementName(character),
-	)
+	const characterAngularCannotRead =
+		findCharacterAngularCannotRead(configuredPrefix)
 	if (!characterAngularCannotRead) return null
 	return `an Angular selector cannot contain "${characterAngularCannotRead}", because Angular does not read it as part of the element's name, so the component would not match its tag`
 }
@@ -2843,33 +2842,32 @@ function checkIsUnusableInTag(character: string): boolean {
  * Why Angular will not read this selector as the element name it spells, or
  * `null` when it will. Only asked of a selector that already passes
  * `getComponentTagError`, so what it finds is a character a tag may hold but
- * Angular does not read — a character from outside ASCII, such as `é`.
+ * Angular does not read, such as `é`.
  *
  * @param selector - the finished selector, prefix included
  */
 function getAngularSelectorReadError(selector: string): string | null {
-	const characterAngularCannotRead = [...selector].find(
-		(character) => !checkCanAngularReadInElementName(character),
-	)
+	const characterAngularCannotRead = findCharacterAngularCannotRead(selector)
 	if (!characterAngularCannotRead) return null
 	// The component's name every time, never the prefix: in an Angular project
 	// `readComponentTagPrefix` refuses a prefix carrying anything
-	// `checkCanAngularReadInElementName` rejects.
+	// `findCharacterAngularCannotRead` finds.
 	const didCharacterComeFromPrefix = false
 	return `Angular does not read "${characterAngularCannotRead}" as part of an element's name, and it came from ${getComponentTagPartDescription(didCharacterComeFromPrefix)}`
 }
 
 /**
- * Can Angular read this one character as part of an element's name in a
- * selector? Its selector reader, `CssSelector.parse` in `@angular/compiler`,
- * takes an element's name as a run of a–z, digits, `_` and `-` (capitals too,
- * which a tag never holds). Anything else ends the name: `.` starts a class,
- * and a letter such as `é` is skipped, so `café-card` is read as `-card`.
+ * The first character Angular cannot read as part of an element's name in a
+ * selector, or `undefined` when it can read them all. Its selector reader,
+ * `CssSelector.parse` in `@angular/compiler`, takes an element's name as a run
+ * of a–z, digits, `_` and `-` (capitals too, which a tag never holds).
+ * Anything else ends the name: `.` starts a class, and a letter such as `é`
+ * is skipped, so `café-card` is read as `-card`.
  *
- * @param character - one character of the selector
+ * @param text - a selector, or the prefix that goes in front of one
  */
-function checkCanAngularReadInElementName(character: string): boolean {
-	return /[a-z0-9_-]/.test(character)
+function findCharacterAngularCannotRead(text: string): string | undefined {
+	return [...text].find((character) => !/[a-z0-9_-]/.test(character))
 }
 
 /**
