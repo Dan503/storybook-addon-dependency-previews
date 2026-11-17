@@ -1,0 +1,22 @@
+---
+import { fetchMealById, type Meal } from 'example-site-shared/utils'
+
+import Welcome from '../../6-shared/ui/Welcome/Welcome.astro';
+import BaseLayout from '../../1-app/BaseLayout.astro';
+
+export const prerender = false
+
+const { mealId } = Astro.params
+
+const meal:Meal | null = mealId ? await fetchMealById(mealId) : null;
+
+if (!meal) {
+	// navigate to the 404 page if no meal is found
+	return Astro.rewrite('/404')
+}
+
+---
+
+<BaseLayout title={meal.name}>
+	<Welcome />
+</BaseLayout>

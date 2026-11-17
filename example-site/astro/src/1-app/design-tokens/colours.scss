@@ -1,0 +1,13 @@
+@layer design-tokens {
+	html {
+		// teal
+		--teal-light: hsl(168, 86%, 89%);
+		--teal-vibrant: oklch(91% 0.096 180.426);
+		--teal-mid: hsl(176, 100%, 24%);
+		--teal-dark: hsl(176, 76%, 18%);
+
+		// background
+		--bg: var(--teal-light);
+		--bg-vibrant: var(--teal-vibrant);
+	}
+}
