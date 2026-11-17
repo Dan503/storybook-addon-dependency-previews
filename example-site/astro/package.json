@@ -11,14 +11,15 @@
 		"preview": "astro preview",
 		"astro": "astro",
 		"sb": "storybook dev",
-		"sb:build": "storybook build"
+		"sb:build": "storybook build",
+		"format": "prettier --write ."
 	},
 	"dependencies": {
 		"@astrojs/react": "^7.1.9",
 		"astro": "^7.4.12",
+		"example-site-shared": "workspace:*",
 		"react": "^19.1.1",
-		"react-dom": "^19.1.1",
-		"example-site-shared": "workspace:*"
+		"react-dom": "^19.1.1"
 	},
 	"devDependencies": {
 		"@storybook-astro/framework": "^1.16.0",
@@ -27,6 +28,8 @@
 		"@types/react": "^19.1.13",
 		"@types/react-dom": "^19.1.9",
 		"@vitejs/plugin-react": "^4.7.0",
+		"prettier": "^3.10.1",
+		"prettier-plugin-astro": "^1.1.2",
 		"sass": "^1.108.2",
 		"storybook": "^10.6.7"
 	}
