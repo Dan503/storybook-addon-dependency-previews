@@ -1,22 +1,31 @@
 {
-  "name": "astro",
-  "type": "module",
-  "version": "0.0.1",
-  "engines": {
-    "node": ">=22.23.4"
-  },
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "astro": "^7.4.12"
-  },
-  "devDependencies": {
-    "@storybook-astro/framework": "^1.16.0",
-    "@storybook/builder-vite": "^10.6.7",
-    "storybook": "^10.6.7"
-  }
+	"name": "astro",
+	"type": "module",
+	"version": "0.0.1",
+	"engines": {
+		"node": ">=22.23.4"
+	},
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"astro": "astro",
+		"sb": "storybook dev",
+		"sb:build": "storybook build"
+	},
+	"dependencies": {
+		"@astrojs/react": "^7.1.9",
+		"astro": "^7.4.12",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1"
+	},
+	"devDependencies": {
+		"@storybook-astro/framework": "^1.16.0",
+		"@storybook/builder-vite": "^10.6.7",
+		"@storybook/react": "^10.6.7",
+		"@types/react": "^19.1.13",
+		"@types/react-dom": "^19.1.9",
+		"@vitejs/plugin-react": "^4.7.0",
+		"storybook": "^10.6.7"
+	}
 }
