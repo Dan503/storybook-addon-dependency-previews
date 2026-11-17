@@ -1,3 +1,5 @@
+import '../src/1-app/styles-entry.scss'
+
 const preview = {
 	parameters: {
 		controls: {
