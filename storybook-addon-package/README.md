@@ -8,7 +8,18 @@
 
 A plugin for [Storybook](https://storybook.js.org/) that shows the full dependency tree in both directions (built with and used by) the components in your application.
 
-Currently works with **React**, **Preact**, **Svelte**, **Vue 3**, **Solid**, **Angular**, **Next.js**, and **Lit** (web components). The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, Lit) end-to-end. Webpack-based projects (Angular, Next.js on webpack, React on webpack) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md) below.
+Currently works with:
+
+- React
+- Preact
+- Svelte
+- Vue 3
+- Solid
+- Angular
+- Next.js
+- Lit (web components)
+
+The automated `sb-deps setup` wizard handles Vite-based projects (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, Lit) end-to-end. Webpack-based projects (Angular, Next.js on webpack, React on webpack) need a one-time manual setup — see the [manual-setup-webpack guide](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md).
 
 This is what you will see in Storybook after Dependency Previews have been installed and configured:
 
@@ -64,11 +75,19 @@ Vue version built for Vue 3.
 - [Lit rendered example website](https://dependency-previews-demo-site-lit.netlify.app/)
 - [Lit demo source code](https://github.com/Dan503/storybook-addon-dependency-previews/tree/main/example-site/lit)
 
-<!-- TODO: Provide a video/gif of the addon in action -->
-
 ## Installation guide
 
-### Quick start (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, and Lit)
+### Quick start
+
+This quick-start guide supports the following frameworks:
+
+- React (`@storybook/react-vite`)
+- Preact (`@storybook/preact-vite`)
+- Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`)
+- Vue 3 (`@storybook/vue3-vite`)
+- Solid (`storybook-solidjs-vite`)
+- Next.js on Vite (`@storybook/nextjs-vite`)
+- Lit native web components (`@storybook/web-components-vite`)
 
 After running `npx storybook@latest init` in your project, run the setup wizard:
 
@@ -111,10 +130,16 @@ When it finishes, run `npm run sb` (or your package manager's equivalent) to sta
 
 ### Manual setup
 
-The wizard supports React (`@storybook/react-vite`), Preact (`@storybook/preact-vite`), Svelte (`@storybook/sveltekit`, `@storybook/svelte-vite`), Vue 3 (`@storybook/vue3-vite`), Solid (`storybook-solidjs-vite`), Next.js on Vite (`@storybook/nextjs-vite`), and Lit (`@storybook/web-components-vite`) — all Vite-based. **Angular (`@storybook/angular`), Next.js on webpack (`@storybook/nextjs`) and React on webpack (`@storybook/react-webpack5`) projects are all webpack-based and require manual setup** — the wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+You will need to do manual set up for the following frameworks that are webpack based:
 
-- [Manual setup — Vite (React, Preact, Svelte, Vue 3, Solid, Next.js on Vite, Lit)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
-- [Manual setup — webpack (`@storybook/angular`, `@storybook/nextjs`, `@storybook/react-webpack5`)](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
+- Angular (`@storybook/angular`)
+- Next.js on webpack (`@storybook/nextjs`)
+- React on webpack (`@storybook/react-webpack5`)
+
+The wizard's preview-patcher relies on Vite's `import.meta.glob`, which webpack doesn't expose. Follow the matching guide below:
+
+- [Manual setup — webpack](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-webpack.md)
+- [Manual setup — Vite](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md)
 
 ### Storybook 11 / CSF Next preview configs
 
@@ -136,6 +161,7 @@ export default definePreview({
 		// guides explain each value.
 		dependencyPreviews: {
 			dependenciesJson,
+			// import.meta.glob is a Vite exclusive feature
 			storyModules: import.meta.glob(
 				'/src/**/*.{story,stories}.{tsx,ts,jsx,js,svelte}',
 				{ eager: false },
@@ -153,21 +179,19 @@ The setup wizard recognises both preview styles: an existing `definePreview({ ..
 
 While `sb-deps` is watching (`npm run sb`), creating an **empty** source file fills it in from a template — and creates its matching sibling too. It works from either side:
 
-- **Create a component file** (`Button.tsx`, `Button.svelte`, `Button.vue`, `Button.component.ts`, `Button.lit.ts`) → the component body is scaffolded **and** a matching story file is generated next to it.
-- **Create a story file** (`Button.stories.tsx`, or the singular `Button.story.tsx`) → the story is scaffolded into that exact file, and if the sibling component doesn't exist yet it is created and scaffolded too.
+- **Create a component file** → the component body is scaffolded **and** a matching story file is generated next to it if one does not already exist.
+- **Create a story file** → the story is scaffolded into that exact file, and if the sibling component doesn't exist yet it is created and scaffolded too.
 
-Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten. A `.stories.ts` with no component beside it is resolved to React, Preact, Solid, Vue, Angular, or Lit from your project's framework (Svelte stories use a `.svelte` file, so `.ts` isn't scaffolded for Svelte).
+Either way you end up with a working component + story pair. Only empty files are touched, so existing files are never overwritten.
 
-React, Preact and Solid all author components in `.tsx`, so the extension alone can't tell them apart. `sb-deps` works it out from your project, so a Solid project gets Solid templates (`solid-js`, `storybook-solidjs-vite`) and a Preact project gets Preact ones (`preact/hooks`, `@storybook/preact-vite`) without being told; anything it reads as neither gets React templates. Set `tsxFramework` in your `sb-deps` config to say so outright — worth doing where `sb-deps` reads your project as a framework whose `.tsx` templates are not the ones you want, such as a project declaring both `react` and `solid-js`, or one reaching Preact through a `react` alias. (It does not help a project `sb-deps` cannot place at all: there it scaffolds nothing, with or without the key.)
-
-A Lit component is a `.ts` file, like most of the project's other source files, so `sb-deps` needs telling which `.ts` files are components. That is what [`componentFileSuffix`](#componentfilesuffix) is for: the setup wizard suggests `lit`, so `Button.lit.ts` is a component and `utils.ts` is not. The scaffolded component is a `LitElement` class registered as a browser tag — `app-button` for `Button.lit.ts`, built by [`litTagPrefix`](#littagprefix) — with one text property, a counter and a slot. Its story names that tag rather than the class, draws it with Lit's `html`, and imports the component twice: once on its own, which runs the file and so registers the tag, and once for its type. An import used only for a type is dropped when the code is built, so with that one alone the tag would never be registered. The [Vite guide's Lit story section](https://github.com/Dan503/storybook-addon-dependency-previews/blob/main/storybook-addon-package/docs/manual-setup-vite.md#lit-storiests) shows the whole story file.
+A Lit component is a `.ts` file, like most of the project's other source files, so `sb-deps` needs telling which `.ts` files are components. That is what [`componentFileSuffix`](#componentfilesuffix) is for: the setup wizard suggests `lit`, so `Button.lit.ts` is a component and `utils.ts` is not.
 
 ### What the scaffolded components assume
 
 Each generated component is written the way its framework currently recommends, which means some of them assume a fairly recent version of it:
 
 - **Vue 3.5+** — the component gives a prop its default value inside the `defineProps` destructure. Vue only keeps a destructured prop reactive from 3.5, so on an earlier version the component stops updating when a parent changes that prop. The starting value still shows.
-- **Svelte 5** — `$props()`, `$state()` and the `Snippet` type.
+- **Svelte 5** — `$props()`, `$state()`, and type children using the `Snippet` type.
 - **Angular 17.1+** — `input()` signals.
 
 React, Preact and Solid add no version floor beyond what the addon itself needs. In a **Next.js** project the React component is written with a `'use client'` line at the top, because it holds state and the App Router renders on the server; you will not see that line in any other React project.
@@ -195,7 +219,7 @@ On Linux and other systems that tell capitals apart, four spellings go unnoticed
 
 The last two have perfectly ordinary extensions; it is the `.Stories` part carrying the capitals.
 
-The watcher's patterns can't be widened *across the board* to catch these: on those same systems, matching every pattern loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
+The watcher's patterns can't be widened _across the board_ to catch these: on those same systems, matching every pattern loosely would also make a `Src/` folder match a `srcDir` of `src`, and there those really are two different folders.
 
 Only the endings are checked, so a component whose own name carries a dot is left alone — as long as none of its dotted parts is an ending that means something here, on that extension and in that framework. `Table.Row.tsx` is fine; `My.Story.tsx` is read as a story file and refused.
 
@@ -311,8 +335,8 @@ The extension `sb-deps` uses when it auto-scaffolds a story file for a new compo
 
 **Default:** `'stories'`
 
-| Value                | Generated story file |
-| -------------------- | -------------------- |
+| Value                 | Generated story file     |
+| --------------------- | ------------------------ |
 | `'stories'` (default) | `ButtonAtom.stories.tsx` |
 | `'story'`             | `ButtonAtom.story.tsx`   |
 
