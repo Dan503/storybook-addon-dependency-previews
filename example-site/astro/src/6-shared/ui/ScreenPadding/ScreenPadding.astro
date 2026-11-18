@@ -1,0 +1,22 @@
+---
+// 6-shared/ui/ScreenPadding/ScreenPadding.astro
+interface Props {
+	padVertical?: boolean
+}
+const { padVertical } = Astro.props
+---
+
+<div class:list={['screenPadding', { padVertical }]}>
+	<slot />
+</div>
+
+<style>
+	.screenPadding {
+		inline-size: 100%;
+		padding-inline: 1.5rem;
+
+		&.padVertical {
+			padding-block: 1.5rem;
+		}
+	}
+</style>

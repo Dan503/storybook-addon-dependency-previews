@@ -1,0 +1,19 @@
+---
+/** Used for setting up container queries */
+interface Props {
+	classes?: Array<string> | string
+}
+const { classes = [] } = Astro.props
+const classList = typeof classes === 'string' ? [classes] : classes
+---
+
+<div class:list={['QueryContainer', ...classList]}>
+	<slot />
+</div>
+
+<style>
+	.QueryContainer {
+		container-type: inline-size;
+		width: 100%;
+	}
+</style>

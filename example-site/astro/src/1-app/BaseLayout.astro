@@ -1,9 +1,9 @@
 ---
 interface Props {
-  title?: string;
-  description?: string;
+	title?: string
+	description?: string
 }
-const { title, description } = Astro.props;
+const { title, description } = Astro.props
 
 const siteName = 'The Meal Place'
 const fullTitle = title ? `${title} | ${siteName}` : siteName
@@ -27,5 +27,5 @@ const fullTitle = title ? `${title} | ${siteName}` : siteName
 </html>
 
 <style lang="scss">
-	@use './syles-entry.scss';
+	@use './styles-entry.scss';
 </style>

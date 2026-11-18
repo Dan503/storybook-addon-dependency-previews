@@ -1,0 +1,55 @@
+---
+import Nav from './Nav/Nav.astro'
+import logo from './simplified-logo.png'
+import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
+import QueryContainer from '../../6-shared/ui/QueryContainer.astro'
+---
+
+<header class="Header p-2 bg-teal-100 border-b-2 border-teal-900 text-black">
+	<QueryContainer>
+		<ScreenPadding padVertical>
+			<div class="layout flex w-full items-center justify-between gap-2 max-md:flex-col max-md:justify-center">
+				<a href="/" class="logoLink">
+					<img alt="Logo" height="50" width="50" src={logo.src} />
+					<p>The Meal Place</p>
+				</a>
+				<Nav />
+			</div>
+		</ScreenPadding>
+	</QueryContainer>
+</header>
+
+<style lang="scss">
+	.Header {
+		background-color: var(--bg-coloured);
+		border-bottom: 2px solid var(--teal-dark);
+	}
+
+	.layout {
+		display: flex;
+		width: 100%;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1em;
+
+		@container (width <= 640px) {
+			flex-direction: column;
+		}
+	}
+
+	.logoLink {
+		color: var(--text);
+		font-weight: 800;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 1.875rem;
+		text-decoration: none;
+		line-height: 1;
+
+		&:hover,
+		&:focus {
+			text-decoration: underline;
+		}
+	}
+</style>
