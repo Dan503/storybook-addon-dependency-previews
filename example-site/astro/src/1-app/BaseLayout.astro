@@ -1,4 +1,9 @@
 ---
+import Footer from '../3-widgets/Footer/Footer.astro'
+import Header from '../3-widgets/Header/Header.astro'
+// site wide styles import
+import './styles-entry.scss'
+
 interface Props {
 	title?: string
 	description?: string
@@ -22,10 +27,22 @@ const fullTitle = title ? `${title} | ${siteName}` : siteName
 		<slot name="head" />
 	</head>
 	<body>
-		<slot />
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<Footer />
 	</body>
 </html>
 
 <style lang="scss">
-	@use './styles-entry.scss';
+	html,
+	body {
+		min-height: 100%;
+		display: grid;
+	}
+	body {
+		grid-template-rows: auto 1fr auto;
+		grid-template-columns: 1fr;
+	}
 </style>
