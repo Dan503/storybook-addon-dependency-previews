@@ -1,0 +1,31 @@
+---
+import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
+---
+
+<footer class="Footer">
+	<ScreenPadding padVertical>
+		<p>
+			Meal data provided by{' '}
+			<a
+				href="https://www.themealdb.com/"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="underline hover:no-underline focus:no-underline"
+			>
+				TheMealDB.com
+			</a>
+		</p>
+	</ScreenPadding>
+</footer>
+
+<style>
+	.Footer {
+		border-top: 2px solid var(--teal-dark);
+		background-color: var(--bg-coloured);
+		text-align: center;
+	}
+
+	a {
+		color: var(--text-link);
+	}
+</style>
