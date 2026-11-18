@@ -1,0 +1,11 @@
+---
+import type { Meal } from 'example-site-shared/utils'
+import Welcome from '../../6-shared/ui/Welcome/Welcome.astro'
+
+interface Props {
+	meal: Meal
+}
+const { meal } = Astro.props
+---
+
+<Welcome />
