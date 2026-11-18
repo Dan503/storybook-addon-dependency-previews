@@ -1,14 +1,44 @@
+---
+interface Props {
+	/**
+	 * The page path to mark as current. Leave it out on the real site, where it
+	 * defaults to the page being viewed. Stories set it, because Storybook does
+	 * not render at a real page address.
+	 */
+	currentPath?: string
+}
+const { currentPath = Astro.url.pathname } = Astro.props
+
+const navLinks = [
+	{ href: '/', text: 'Home' },
+	{ href: '/categories', text: 'Food categories' },
+	{ href: '/contact', text: 'Contact us' },
+]
+
+const currentPathWithoutSlash = removeTrailingSlash(currentPath)
+
+/** `/contact/` and `/contact` are the same page, so compare them without the final slash. */
+function removeTrailingSlash(path: string) {
+	const isRoot = path === '/'
+	if (isRoot || !path.endsWith('/')) {
+		return path
+	}
+	return path.slice(0, -1)
+}
+---
+
 <nav class="Nav">
 	<ul>
-		<li>
-			<a href="/">Home</a>
-		</li>
-		<li>
-			<a href="/categories">Food categories</a>
-		</li>
-		<li>
-			<a href="/contact">Contact us</a>
-		</li>
+		{navLinks.map((link) => {
+			const isCurrentPage = link.href === currentPathWithoutSlash
+			return (
+				<li>
+					<a href={link.href} aria-current={isCurrentPage ? 'page' : undefined}>
+						{link.text}
+					</a>
+				</li>
+			)
+		})}
 	</ul>
 </nav>
 
@@ -28,8 +58,16 @@
 		text-decoration: none;
 
 		&:hover,
-		&:focus {
+		&:focus,
+		&[aria-current='page'] {
 			text-decoration: underline;
+		}
+
+		&[aria-current='page'] {
+			&:hover,
+			&:focus {
+				text-decoration: none;
+			}
 		}
 	}
 </style>

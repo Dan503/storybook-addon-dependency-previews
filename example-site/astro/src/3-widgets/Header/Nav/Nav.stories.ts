@@ -10,4 +10,14 @@ export default {
 
 type Story = StoryObj<typeof Nav>
 
-export const Default: Story = {}
+export const OnHomePage: Story = {
+	args: { currentPath: '/' },
+}
+
+export const OnCategoriesPage: Story = {
+	args: { currentPath: '/categories/' },
+}
+
+export const OnContactPage: Story = {
+	args: { currentPath: '/contact' },
+}
