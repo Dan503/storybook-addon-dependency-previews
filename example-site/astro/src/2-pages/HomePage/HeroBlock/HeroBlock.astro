@@ -1,0 +1,56 @@
+---
+import type { Meal } from 'example-site-shared/utils'
+import ScreenPadding from '../../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
+
+interface Props {
+	bgSource: string
+}
+const { bgSource } = Astro.props
+---
+
+<div class="HeroBlock">
+	<img alt="" src={bgSource} />
+	<div class="content">
+		<ScreenPadding padVertical>
+			<h1>
+				Welcome to the Astro
+				<br />
+				example site
+			</h1>
+			<p>This is an example site for exploring how Astro works.</p>
+		</ScreenPadding>
+	</div>
+</div>
+
+<style>
+	.HeroBlock {
+		position: relative;
+		text-align: center;
+		width: 100%;
+		min-height: 200px;
+		display: grid;
+		place-items: center;
+		border-bottom: 2px solid var(--border-dark);
+		background-color: var(--bg);
+	}
+
+	img {
+		object-fit: cover;
+		height: 100%;
+		width: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		opacity: 0.3;
+	}
+
+	.content {
+		position: relative;
+		z-index: 1;
+	}
+
+	h1 {
+		font-size: 2.25rem;
+		line-height: 1;
+	}
+</style>
