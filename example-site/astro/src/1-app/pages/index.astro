@@ -1,8 +1,11 @@
 ---
 import BaseLayout from '../BaseLayout.astro'
 import HomePage from '../../2-pages/HomePage/HomePage.astro'
+import { fetchRandomMealList } from '../../../../shared/utils'
+
+const [heroMeal, ...featuredMeals] = await fetchRandomMealList(13)
 ---
 
 <BaseLayout title="Astro Demo Site">
-	<HomePage />
+	<HomePage heroBgImg={heroMeal.image} featuredMeals={featuredMeals} />
 </BaseLayout>

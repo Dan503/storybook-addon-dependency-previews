@@ -1,15 +1,20 @@
 ---
-import { fetchRandomMealList } from 'example-site-shared/utils'
+import { type Meal } from 'example-site-shared/utils'
 import { getMealCard } from '../../5-entities/meal/lib/getMealCard'
 import CardListing from '../../6-shared/ui/CardListing/CardListing.astro'
 import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
 import HeroBlock from './HeroBlock/HeroBlock.astro'
 
-const [featureMeal, ...featuredMeals] = await fetchRandomMealList(13)
+interface Props {
+	heroBgImg: string
+	featuredMeals: Array<Meal>
+}
+const { heroBgImg, featuredMeals } = Astro.props
+
 const featuredMealCards = featuredMeals.map(getMealCard)
 ---
 
-<HeroBlock bgSource={featureMeal.image} />
+<HeroBlock bgSource={heroBgImg} />
 <ScreenPadding padVertical>
 	<h2>Featured meals:</h2>
 	<CardListing cards={featuredMealCards} headingLevel={3} />
