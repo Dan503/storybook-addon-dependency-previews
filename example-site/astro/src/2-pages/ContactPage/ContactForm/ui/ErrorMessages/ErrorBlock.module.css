@@ -1,0 +1,17 @@
+.errorBlock {
+	background-color: var(--error-bg);
+	padding: 0.5rem 1rem 0;
+	border-radius: 0.75rem;
+}
+
+.heading {
+	font-size: 1.5rem;
+	line-height: 2rem;
+	font-weight: bold;
+	border-bottom: var(--border-error);
+	padding-bottom: 0.25rem;
+}
+
+.errors {
+	padding: 0.75rem 0 1rem;
+}

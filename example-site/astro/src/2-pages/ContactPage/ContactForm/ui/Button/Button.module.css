@@ -1,0 +1,11 @@
+.button {
+	background-color: var(--bg-vibrant);
+	border: var(--border-dark);
+	border-radius: 0.5rem;
+	padding: 0.25rem 1rem;
+
+	&:hover,
+	&:focus {
+		background-color: var(--bg-coloured);
+	}
+}

@@ -1,0 +1,16 @@
+.growWrapper {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+
+	> * {
+		grid-area: 1 / 1;
+	}
+}
+
+.sizer {
+	visibility: hidden;
+	pointer-events: none;
+	/* Wrap lines the same way the text area does. */
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}

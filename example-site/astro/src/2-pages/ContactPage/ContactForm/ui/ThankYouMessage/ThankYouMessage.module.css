@@ -1,0 +1,9 @@
+.thankYouMessage {
+	display: grid;
+	gap: 1rem;
+}
+
+.actions {
+	display: flex;
+	justify-content: flex-start;
+}

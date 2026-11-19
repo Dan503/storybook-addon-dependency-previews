@@ -1,0 +1,27 @@
+/* The label and input look shared by TextField and TextArea. */
+
+.label {
+	display: block;
+	margin-bottom: 0.25rem;
+}
+
+.labelText {
+	font-size: 1.25rem;
+	line-height: 1.75rem;
+	font-weight: bold;
+}
+
+.input {
+	width: 100%;
+	padding: 0.5rem 1rem;
+	border-radius: 0.375rem;
+	border: 1px solid var(--field-border);
+
+	&:focus {
+		outline: 2px solid var(--field-focus);
+	}
+
+	&[aria-invalid='true']::placeholder {
+		color: color-mix(in srgb, var(--error-text) 60%, transparent);
+	}
+}
