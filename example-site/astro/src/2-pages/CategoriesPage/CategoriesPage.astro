@@ -1,5 +1,33 @@
 ---
-import Welcome from '../../6-shared/ui/Welcome/Welcome.astro'
+import type { Category } from 'example-site-shared/utils'
+import type { PropsForCard } from '../../6-shared/ui/CardListing/Card/Card.types'
+import CardListing from '../../6-shared/ui/CardListing/CardListing.astro'
+import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
+
+interface Props {
+	categories: Array<Category>
+}
+const { categories } = Astro.props
+
+const categoryCardList: Array<PropsForCard> = categories.map((cat) => ({
+	title: cat.strCategory,
+	description: cat.strCategoryDescription,
+	href: `/categories/[category]`,
+	hrefParams: { category: cat.idCategory },
+	imgSrc: cat.strCategoryThumb,
+}))
 ---
 
-<Welcome />
+<ScreenPadding padVertical>
+	<div class="CategoriesPage">
+		<h1>Categories</h1>
+		<CardListing cards={categoryCardList} headingLevel={2} />
+	</div>
+</ScreenPadding>
+
+<style>
+	.CategoriesPage {
+		display: grid;
+		gap: 1em;
+	}
+</style>
