@@ -1,0 +1,41 @@
+---
+// 6-shared/ui/CompactListing/CompactListingItem/CompactListingItem.astro
+import type { HeadingLevel } from '../../../model/HeadingLevel'
+import type { PropsForCompactListingItem } from './CompactListingItem.types'
+
+/** One small row: an image beside a title and a short description. */
+interface Props extends PropsForCompactListingItem {
+	/** The heading level of the row's title, one below the heading the row sits under. */
+	headingLevel: HeadingLevel
+}
+const { imageSrc, title, description, headingLevel } = Astro.props
+
+const HeadingTag = `h${headingLevel}` as const
+---
+
+<div class="CompactListingItem">
+	<img src={imageSrc} alt="" />
+	<div>
+		<HeadingTag class="title">{title}</HeadingTag>
+		<p>{description}</p>
+	</div>
+</div>
+
+<style>
+	.CompactListingItem {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	img {
+		block-size: 3.75rem;
+	}
+
+	.title {
+		font-size: 1.25rem;
+		line-height: 1;
+		font-weight: bold;
+	}
+</style>

@@ -1,5 +1,4 @@
 ---
-import type { Meal } from 'example-site-shared/utils'
 import ScreenPadding from '../../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
 
 interface Props {
@@ -32,6 +31,10 @@ const { bgSource } = Astro.props
 		place-items: center;
 		border-bottom: var(--border-dark);
 		background-color: var(--bg);
+	}
+
+	h1 {
+		margin-bottom: 0.5em;
 	}
 
 	img {

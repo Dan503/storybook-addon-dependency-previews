@@ -1,5 +1,8 @@
 ---
-/** Used for setting up container queries */
+/**
+ * Used for setting up container queries.
+ * It is a grid so what's inside stretches to its full height, e.g. a card filling the height of its row.
+ */
 interface Props {
 	classes?: Array<string> | string
 }
@@ -14,6 +17,7 @@ const classList = typeof classes === 'string' ? [classes] : classes
 <style>
 	.QueryContainer {
 		container-type: inline-size;
+		display: grid;
 		width: 100%;
 	}
 </style>

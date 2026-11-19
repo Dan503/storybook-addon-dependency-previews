@@ -1,0 +1,56 @@
+---
+// 6-shared/ui/CardListing/CardListing.astro
+import type { HeadingLevel } from '../../model/HeadingLevel'
+import QueryContainer from '../QueryContainer.astro'
+import Card from './Card/Card.astro'
+import type { PropsForCard } from './Card/Card.types'
+
+/** A grid of linked cards. The number of columns follows the width of the space the grid sits in. */
+interface Props {
+	cards: Array<PropsForCard>
+	/** The heading level of every card's title, one below the heading the listing sits under. */
+	headingLevel: HeadingLevel
+}
+const { cards, headingLevel } = Astro.props
+---
+
+<QueryContainer>
+	<ul class="CardListing">
+		{cards.map((card) => (
+			<li>
+				<Card {...card} headingLevel={headingLevel} />
+			</li>
+		))}
+	</ul>
+</QueryContainer>
+
+<style lang="scss">
+	/* At this width and narrower, 6 columns drop to 3 */
+	$bp-3col: 1400px;
+	/* At this width and narrower, as many columns fit as there is room for at 250px each */
+	$bp-auto-col: 800px;
+
+	.CardListing {
+		display: grid;
+		gap: 1.5rem;
+		list-style: none;
+		padding: 0;
+
+		@container (#{$bp-3col} < width) {
+			grid-template-columns: repeat(6, minmax(0, 1fr));
+		}
+
+		@container (#{$bp-auto-col} < width <= #{$bp-3col}) {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+
+		@container (width <= #{$bp-auto-col}) {
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		}
+	}
+
+	/* A grid, so the card inside stretches to the height of its row and the card bottoms line up */
+	li {
+		display: grid;
+	}
+</style>

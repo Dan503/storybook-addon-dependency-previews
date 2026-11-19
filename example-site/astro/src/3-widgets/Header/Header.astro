@@ -20,6 +20,9 @@ import QueryContainer from '../../6-shared/ui/QueryContainer.astro'
 </header>
 
 <style lang="scss">
+	/* At this width and narrower, the logo stacks above the nav instead of sitting beside it */
+	$bp-stacked: 640px;
+
 	.Header {
 		background-color: var(--bg-coloured);
 		border-bottom: var(--border-dark);
@@ -32,7 +35,7 @@ import QueryContainer from '../../6-shared/ui/QueryContainer.astro'
 		align-items: center;
 		gap: 1em;
 
-		@container (width <= 640px) {
+		@container (width <= #{$bp-stacked}) {
 			flex-direction: column;
 		}
 	}

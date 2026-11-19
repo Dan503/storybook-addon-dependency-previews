@@ -1,0 +1,102 @@
+---
+// 6-shared/ui/CardListing/Card/Card.astro
+import { getFullAddressViaBrackets } from 'example-site-shared/utils'
+import type { HeadingLevel } from '../../../model/HeadingLevel'
+import QueryContainer from '../../QueryContainer.astro'
+import type { PropsForCard } from './Card.types'
+
+/** One linked card: an image, a title and a short description. */
+interface Props extends PropsForCard {
+	/** The heading level of the card's title, one below the heading the card sits under. */
+	headingLevel: HeadingLevel
+}
+const { title, imgSrc, description, href, hrefParams, headingLevel } =
+	Astro.props
+
+const fullAddress = getFullAddressViaBrackets({ href, hrefParams })
+const HeadingTag = `h${headingLevel}` as const
+---
+
+<QueryContainer>
+	<a class="link" href={fullAddress}>
+		<img src={imgSrc} alt="" />
+		<div class="text">
+			<HeadingTag class="title">{title}</HeadingTag>
+			<p class="description">{description}</p>
+		</div>
+	</a>
+</QueryContainer>
+
+<style lang="scss">
+	/* At this width and narrower, the image stacks above the text instead of sitting beside it */
+	$bp-stacked: 24rem;
+
+	.link {
+		display: flex;
+		gap: 0.5rem;
+		block-size: 100%;
+		border: 1px solid currentColor;
+		border-radius: 1rem;
+		overflow: hidden;
+		background-color: var(--bg);
+		color: var(--text);
+		text-decoration: none;
+		transition: all 150ms;
+
+		&:hover,
+		&:focus-visible {
+			background-color: var(--bg-coloured);
+		}
+
+		&:hover {
+			box-shadow:
+				0 10px 15px -3px rgb(0 0 0 / 0.1),
+				0 4px 6px -4px rgb(0 0 0 / 0.1);
+			scale: 1.02;
+		}
+	}
+
+	img {
+		object-fit: cover;
+	}
+
+	.text {
+		padding: 1rem;
+		inline-size: 100%;
+	}
+
+	.title {
+		font-size: 1.25rem;
+		line-height: 1.75rem;
+		font-weight: bold;
+	}
+
+	.description {
+		display: -webkit-box;
+		-webkit-line-clamp: 4;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	@container (#{$bp-stacked} < width) {
+		.link {
+			flex-direction: row;
+		}
+
+		img {
+			aspect-ratio: 1;
+			inline-size: 10rem;
+		}
+	}
+
+	@container (width <= #{$bp-stacked}) {
+		.link {
+			flex-direction: column;
+		}
+
+		img {
+			aspect-ratio: 16 / 9;
+			inline-size: 100%;
+		}
+	}
+</style>

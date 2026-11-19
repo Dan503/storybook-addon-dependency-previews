@@ -71,6 +71,19 @@ pnpm sb:deps      # One-off dependency graph generation
 - The example-site references the addon via `workspace:*`
 - Dependency graph data is generated into `.storybook/dependency-previews.json` and imported in `.storybook/preview.tsx`
 
+## Building another example site's version of a React component
+
+- **Carry over every class on every element, wrappers included.** The layout classes on a wrapper are easy to drop when the wrapper becomes a shared component, but they often do the work. In React's `CardMolecule` and `CardListingOrganism`, the `grid` beside `@container` is what stretches each card to its row's height, so the card bottoms in a row line up.
+- **Compare the result with the React version's look, not only with its code.** Check what React lines up, wraps or stretches, such as the bottoms of the cards in a row.
+
+Where I've gone wrong before: building the Astro card listing, I replaced React's `@container grid` wrappers with `QueryContainer`, which only sets up the container query. The cards in each row ended at different heights. I had checked the column counts and hover, but not whether the card bottoms lined up.
+
+## Choosing a folder for a new file in a Feature-Sliced Design site
+
+Before placing a new file in a folder such as `model`, `lib`, `ui` or `api`, look at where the same site already keeps that kind of file, and follow it. Types go in `model`, as `ContactForm/model/FormTypes.ts` does in the Astro site. `lib` is for helper functions.
+
+Where I've gone wrong before: I put the Astro site's `HeadingLevel` type in `6-shared/lib` without checking. The site already kept its types in `model`, so the user asked why it wasn't there.
+
 ## Instructions
 
 If the query is a question, answer the question without making changes first, then ask if the developer wants the changes to be made for them.

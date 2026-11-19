@@ -1,5 +1,25 @@
 ---
-import Welcome from '../../6-shared/ui/Welcome/Welcome.astro'
+import { fetchRandomMealList } from 'example-site-shared/utils'
+import { getMealCard } from '../../5-entities/meal/lib/getMealCard'
+import CardListing from '../../6-shared/ui/CardListing/CardListing.astro'
+import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
+import HeroBlock from './HeroBlock/HeroBlock.astro'
+
+const [featureMeal, ...featuredMeals] = await fetchRandomMealList(13)
+const featuredMealCards = featuredMeals.map(getMealCard)
 ---
 
-<Welcome />
+<HeroBlock bgSource={featureMeal.image} />
+<ScreenPadding padVertical>
+	<h2>Featured meals:</h2>
+	<CardListing cards={featuredMealCards} headingLevel={3} />
+</ScreenPadding>
+
+<style>
+	h2 {
+		font-size: 1.5rem;
+		line-height: 2rem;
+		font-weight: bold;
+		margin-bottom: 1rem;
+	}
+</style>

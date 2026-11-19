@@ -1,0 +1,32 @@
+---
+// 6-shared/ui/CompactListing/CompactListing.astro
+import type { HeadingLevel } from '../../model/HeadingLevel'
+import CompactListingItem from './CompactListingItem/CompactListingItem.astro'
+import type { PropsForCompactListingItem } from './CompactListingItem/CompactListingItem.types'
+
+/** A list of small image-and-text rows, as many to a line as fit. */
+interface Props {
+	items: Array<PropsForCompactListingItem>
+	/** The heading level of every row's title, one below the heading the listing sits under. */
+	headingLevel: HeadingLevel
+}
+const { items, headingLevel } = Astro.props
+---
+
+<ul class="CompactListing">
+	{items.map((item) => (
+		<li>
+			<CompactListingItem {...item} headingLevel={headingLevel} />
+		</li>
+	))}
+</ul>
+
+<style>
+	.CompactListing {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		gap: 1rem;
+		list-style: none;
+		padding: 0;
+	}
+</style>
