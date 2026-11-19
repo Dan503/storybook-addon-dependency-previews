@@ -8,6 +8,9 @@ patchedDependencies:
   '@formisch/react@0.4.5':
     hash: 0a29ee2429bbdedac4f5a41bb2af1a6ee47f9737774c7928d310a83e86747f9a
     path: patches/@formisch__react@0.4.5.patch
+  '@storybook-astro/framework@1.16.0':
+    hash: 46bf99f19d4bd60b8689b8561b6e41b81c795d23fa40a99f4a9962c18550d78e
+    path: patches/@storybook-astro__framework@1.16.0.patch
   '@storybook/vue3-vite@10.4.1':
     hash: 739cc409282d4d598d5c955364271619e2a2a7ed5f1da90950c606fed09039f5
     path: patches/@storybook__vue3-vite@10.4.1.patch
@@ -140,7 +143,7 @@ importers:
     devDependencies:
       '@storybook-astro/framework':
         specifier: ^1.16.0
-        version: 1.16.0(e26c46ff19c5666e13de1de1fa4132fd)
+        version: 1.16.0(patch_hash=46bf99f19d4bd60b8689b8561b6e41b81c795d23fa40a99f4a9962c18550d78e)(e26c46ff19c5666e13de1de1fa4132fd)
       '@storybook/builder-vite':
         specifier: ^10.6.7
         version: 10.6.7(storybook@10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(vite@8.3.8(@types/node@24.12.4)(esbuild@0.28.0)(jiti@2.7.0)(less@4.4.2)(sass@1.108.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.9.1))
@@ -21482,7 +21485,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@storybook-astro/framework@1.16.0(e26c46ff19c5666e13de1de1fa4132fd)':
+  '@storybook-astro/framework@1.16.0(patch_hash=46bf99f19d4bd60b8689b8561b6e41b81c795d23fa40a99f4a9962c18550d78e)(e26c46ff19c5666e13de1de1fa4132fd)':
     dependencies:
       '@storybook-astro/renderer': 1.16.0(@storybook/react@10.6.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(storybook@10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(typescript@5.9.3))(astro@7.4.12(@netlify/blobs@10.5.0)(@types/node@24.12.4)(db0@0.3.4)(esbuild@0.28.0)(ioredis@5.10.1)(jiti@2.7.0)(less@4.4.2)(sass@1.108.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.9.1))(storybook@10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
       astro: 7.4.12(@netlify/blobs@10.5.0)(@types/node@24.12.4)(db0@0.3.4)(esbuild@0.28.0)(ioredis@5.10.1)(jiti@2.7.0)(less@4.4.2)(sass@1.108.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.9.1)

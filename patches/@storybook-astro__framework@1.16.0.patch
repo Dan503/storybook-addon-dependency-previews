@@ -1,0 +1,31 @@
+diff --git a/dist/middleware.js b/dist/middleware.js
+index 0beea58dc3e898635547ba331c004bdbe4e0e845..e8972128070885dbc4aa0645a2a7ba12514b530e 100644
+--- a/dist/middleware.js
++++ b/dist/middleware.js
+@@ -43,6 +43,9 @@ async function handlerFactory(_integrations, options) {
+       if (aliasedIsland) {
+         return `/@fs/${aliasedIsland}`;
+       }
++      if (/^[a-zA-Z]:[/\\]/.test(specifier)) {
++        return `/@fs/${specifier.replace(/\\/g, "/")}`;
++      }
+       return specifier;
+     }
+   });
+diff --git a/src/middleware.ts b/src/middleware.ts
+index 92d5b4e2622cf5079b4169fddb9e2317f0970b29..22cbba3a5fcf68c4be027c55c855cd159124551e 100644
+--- a/src/middleware.ts
++++ b/src/middleware.ts
+@@ -69,6 +69,12 @@ export async function handlerFactory(
+         return `/@fs/${aliasedIsland}`;
+       }
+ 
++      // A Windows absolute path such as `C:/...` is read by the browser as a
++      // `c:` URL and refused, so serve it through Vite's `/@fs/` route instead.
++      if (/^[a-zA-Z]:[/\\]/.test(specifier)) {
++        return `/@fs/${specifier.replace(/\\/g, '/')}`;
++      }
++
+       return specifier;
+     }
+   });
