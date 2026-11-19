@@ -1,0 +1,19 @@
+---
+import type { Meal } from 'example-site-shared/utils'
+import { getMealCard } from '../../../5-entities/meal/lib/getMealCard'
+import ListingPage from '../../../6-shared/ui/CardListing/ListingPage/ListingPage.astro'
+
+interface Props {
+	categoryName: string
+	categoryDescription: string
+	meals: Array<Meal>
+}
+const { categoryName, categoryDescription, meals } = Astro.props
+const mealCards = meals.map(getMealCard)
+---
+
+<ListingPage
+	title={`${categoryName} meals`}
+	description={categoryDescription}
+	cards={mealCards}
+/>

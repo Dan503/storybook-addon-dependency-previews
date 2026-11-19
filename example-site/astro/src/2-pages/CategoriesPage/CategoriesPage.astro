@@ -1,8 +1,7 @@
 ---
 import type { Category } from 'example-site-shared/utils'
 import type { PropsForCard } from '../../6-shared/ui/CardListing/Card/Card.types'
-import CardListing from '../../6-shared/ui/CardListing/CardListing.astro'
-import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
+import ListingPage from '../../6-shared/ui/CardListing/ListingPage/ListingPage.astro'
 
 interface Props {
 	categories: Array<Category>
@@ -13,21 +12,13 @@ const categoryCardList: Array<PropsForCard> = categories.map((cat) => ({
 	title: cat.strCategory,
 	description: cat.strCategoryDescription,
 	href: `/categories/[category]`,
-	hrefParams: { category: cat.idCategory },
+	hrefParams: { category: cat.strCategory },
 	imgSrc: cat.strCategoryThumb,
 }))
 ---
 
-<ScreenPadding padVertical>
-	<div class="CategoriesPage">
-		<h1>Categories</h1>
-		<CardListing cards={categoryCardList} headingLevel={2} />
-	</div>
-</ScreenPadding>
-
-<style>
-	.CategoriesPage {
-		display: grid;
-		gap: 1em;
-	}
-</style>
+<ListingPage
+	title="Categories"
+	description="Explore what delicious types of food await you!"
+	cards={categoryCardList}
+/>
