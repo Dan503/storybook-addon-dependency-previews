@@ -15,6 +15,9 @@ if (!meal) {
 }
 ---
 
-<BaseLayout title={meal.name}>
+<BaseLayout
+	title={meal.name}
+	description={`Discover how to cook ${meal.name}.`}
+>
 	<MealPage meal={meal} />
 </BaseLayout>

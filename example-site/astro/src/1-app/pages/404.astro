@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../BaseLayout.astro'
+import NotFoundPage from '../../2-pages/NotFoundPage/NotFoundPage.astro'
+
+// Built on request rather than ahead of time, because the meal and category
+// routes, which are built on request, show this page when the meal or category
+// does not exist, and Astro only lets them do that if this page is built the same way.
+export const prerender = false
+---
+
+<BaseLayout title="Page not found">
+	<NotFoundPage />
+</BaseLayout>

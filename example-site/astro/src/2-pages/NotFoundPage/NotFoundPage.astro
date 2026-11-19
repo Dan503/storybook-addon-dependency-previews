@@ -1,0 +1,52 @@
+---
+import ContentRestraint from '../../6-shared/ui/ContentRestraint/ContentRestraint.astro'
+
+/**
+ * Shown for an address the site does not have, and for a meal or category
+ * the meal database does not know.
+ */
+---
+
+<div class="NotFoundPage">
+	<ContentRestraint padVertical>
+		<div class="text">
+			<h1>We could not find that page</h1>
+			<p>
+				The address you followed does not lead anywhere on this site. It may
+				have been mistyped, or the meal it pointed at may no longer be in the
+				meal database.
+			</p>
+			<a href="/categories">Browse the food categories instead</a>
+		</div>
+	</ContentRestraint>
+</div>
+
+<style>
+	.NotFoundPage {
+		display: grid;
+		place-items: center;
+		block-size: 100%;
+	}
+
+	.text {
+		display: grid;
+		gap: 1rem;
+		justify-items: start;
+	}
+
+	h1 {
+		font-size: 1.875rem;
+		line-height: 2.25rem;
+		font-weight: bold;
+	}
+
+	a {
+		color: var(--teal-mid);
+		text-decoration: underline;
+
+		&:hover {
+			color: var(--teal-dark);
+			text-decoration: none;
+		}
+	}
+</style>

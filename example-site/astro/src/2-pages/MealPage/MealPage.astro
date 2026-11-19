@@ -1,11 +1,92 @@
 ---
 import type { Meal } from 'example-site-shared/utils'
-import Welcome from '../../6-shared/ui/Welcome/Welcome.astro'
+import CompactListing from '../../6-shared/ui/CompactListing/CompactListing.astro'
+import type { PropsForCompactListingItem } from '../../6-shared/ui/CompactListing/CompactListingItem/CompactListingItem.types'
+import QueryContainer from '../../6-shared/ui/QueryContainer.astro'
+import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
 
 interface Props {
 	meal: Meal
 }
 const { meal } = Astro.props
+
+const ingredientItems: Array<PropsForCompactListingItem> = meal.ingredients.map(
+	(ingredient) => ({
+		title: ingredient.ingredient,
+		description: ingredient.amount,
+		imageSrc: ingredient.imageUrl.small,
+	}),
+)
 ---
 
-<Welcome />
+<ScreenPadding padVertical>
+	<QueryContainer>
+		<h1>{meal.name}</h1>
+		<div class="layout">
+			<div class="recipeArea">
+				<img class="photo" src={meal.image} alt={meal.name} />
+				<div>
+					<h2>Recipe</h2>
+					<p class="instructions">{meal.instructions}</p>
+				</div>
+			</div>
+			<div class="ingredientsArea">
+				<h2>Ingredients</h2>
+				<CompactListing items={ingredientItems} headingLevel={3} />
+			</div>
+		</div>
+	</QueryContainer>
+</ScreenPadding>
+
+<style lang="scss">
+	/* At this width and narrower, the ingredients move below the recipe instead of sitting beside it */
+	$bp-ingredients-below: 1024px;
+	/* At this width and narrower, the photo moves above the recipe instead of sitting beside it */
+	$bp-image-above: 640px;
+
+	h1 {
+		font-size: 1.875rem;
+		line-height: 2.25rem;
+		font-weight: bold;
+		margin-bottom: 1.25rem;
+	}
+
+	h2 {
+		font-size: 1.5rem;
+		line-height: 2rem;
+		font-weight: bold;
+	}
+
+	.layout {
+		display: grid;
+		gap: 1rem;
+
+		@container (#{$bp-ingredients-below} < width) {
+			grid-template-columns: 2fr 30rem;
+		}
+	}
+
+	.recipeArea {
+		display: grid;
+		gap: 1rem;
+
+		@container (#{$bp-image-above} < width) {
+			grid-template-columns: 1fr 2fr;
+		}
+	}
+
+	.photo {
+		margin-top: 0.5rem;
+	}
+
+	.instructions {
+		white-space: pre-wrap;
+	}
+
+	.ingredientsArea {
+		display: grid;
+		gap: 1rem;
+		grid-template-rows: auto 1fr;
+		align-items: start;
+	}
+</style>

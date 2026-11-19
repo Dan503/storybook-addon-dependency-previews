@@ -47,7 +47,11 @@ interface ImageUrls {
 }
 
 export interface MealDBResponse {
-	meals: MealRawData[]
+	/**
+	 * `null` when nothing matches, and the text "Invalid ID" when a meal is
+	 * looked up by an id that isn't a number.
+	 */
+	meals: MealRawData[] | null | string
 }
 
 export interface MealRawData {
@@ -116,8 +120,8 @@ export const mealDbApi = axios.create({
 	transformResponse: [
 		...(axios.defaults.transformResponse as []),
 		(data: MealDBResponse): Array<Meal> => {
-			// Handle cases where meals is null or undefined
-			if (!data || !data.meals) {
+			// Handle cases where meals is missing, null, or text such as "Invalid ID"
+			if (!data || !Array.isArray(data.meals)) {
 				console.error('MealDB API returned no meals', data)
 				return []
 			}
