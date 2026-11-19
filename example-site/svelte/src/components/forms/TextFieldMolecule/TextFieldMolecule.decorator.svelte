@@ -2,7 +2,7 @@
 	import TextFieldMolecule, { type PropsForTextFieldMolecule } from './TextFieldMolecule.svelte';
 	import FormDataMolecule from '../../zz-meta-components/FormDataPreview/FormDataMolecule.svelte';
 	import { createForm, Form, Field, type ValidationMode } from '@formisch/svelte';
-	import { defaultFirstNameOnlyValues, firstNameOnlySchema } from 'example-site-shared/data';
+	import { defaultNameOnlyValues, nameOnlySchema } from 'example-site-shared/data';
 
 	interface DecoratorProps extends Omit<PropsForTextFieldMolecule, 'field'> {
 		validate?: ValidationMode;
@@ -12,8 +12,8 @@
 
 	const form = $derived(
 		createForm({
-			schema: firstNameOnlySchema,
-			initialInput: defaultFirstNameOnlyValues,
+			schema: nameOnlySchema,
+			initialInput: defaultNameOnlyValues,
 			validate
 		})
 	);
@@ -27,7 +27,7 @@
 		alert(JSON.stringify(outputData, null, 2));
 	}}
 >
-	<Field of={form} path={['firstName']}>
+	<Field of={form} path={['name']}>
 		{#snippet children(field)}
 			<FormDataMolecule {form}>
 				<TextFieldMolecule {label} {placeholder} {field} />

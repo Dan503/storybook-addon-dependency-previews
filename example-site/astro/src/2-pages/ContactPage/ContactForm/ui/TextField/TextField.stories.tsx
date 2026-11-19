@@ -1,9 +1,6 @@
 import { Field, useForm, type ValidationMode } from '@formisch/react'
 import type { Meta } from '@storybook/react'
-import {
-	defaultFirstNameOnlyValues,
-	firstNameOnlySchema,
-} from 'example-site-shared/data'
+import { defaultNameOnlyValues, nameOnlySchema } from 'example-site-shared/data'
 import { FormFieldWithDataPreview } from '../../storybook-only/FormFieldWithDataPreview/FormFieldWithDataPreview'
 import { TextField, type PropsForTextField } from './TextField'
 
@@ -23,14 +20,14 @@ interface PropsForTextFieldWithForm extends PropsForTextField {
 
 function TextFieldWithForm({ validate, ...props }: PropsForTextFieldWithForm) {
 	const form = useForm({
-		schema: firstNameOnlySchema,
-		initialInput: defaultFirstNameOnlyValues,
+		schema: nameOnlySchema,
+		initialInput: defaultNameOnlyValues,
 		validate,
 	})
 
 	return (
 		<FormFieldWithDataPreview form={form}>
-			<Field of={form} path={['firstName']}>
+			<Field of={form} path={['name']}>
 				{(field) => <TextField {...props} field={field} />}
 			</Field>
 		</FormFieldWithDataPreview>

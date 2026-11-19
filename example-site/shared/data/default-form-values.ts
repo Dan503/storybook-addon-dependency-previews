@@ -25,7 +25,7 @@ export const contactFormSchema = v.object({
 	),
 	message: v.pipe(
 		v.string(),
-		v.nonEmpty('Please write your message here.'),
+		v.nonEmpty('Please write a message.'),
 		v.minLength(10, 'At least 10 characters are required'),
 	),
 })
@@ -39,33 +39,25 @@ export type ContactFormInputData = v.InferInput<ContactFormSchemaType>
 // In this case, there are no transformations or defaults, so it's the same as ContactFormInputData
 export type ContactFormOutputData = v.InferOutput<ContactFormSchemaType>
 
-export const defaultFirstNameOnlyValues: Partial<FirstNameOnlyInputData> = {
-	firstName: '',
+// The one-field forms below are for the text field and text area stories.
+// They take their field straight from the contact form, so they always check
+// the same rules as the real form.
+
+export const defaultNameOnlyValues: Partial<NameOnlyInputData> = {
+	name: '',
 }
 
-export const firstNameOnlySchema = v.object({
-	firstName: v.pipe(
-		v.string(),
-		v.nonEmpty('Please enter your name.'),
-		v.minLength(2, 'Name must be at least 2 characters long'),
-	),
-})
+export const nameOnlySchema = v.pick(contactFormSchema, ['name'])
 
-export type FirstNameOnlySchemaType = typeof firstNameOnlySchema
-export type FirstNameOnlyInputData = v.InferInput<FirstNameOnlySchemaType>
-export type FirstNameOnlyOutputData = v.InferOutput<FirstNameOnlySchemaType>
+export type NameOnlySchemaType = typeof nameOnlySchema
+export type NameOnlyInputData = v.InferInput<NameOnlySchemaType>
+export type NameOnlyOutputData = v.InferOutput<NameOnlySchemaType>
 
 export const defaultMessageOnlyValues: Partial<MessageOnlyInputData> = {
 	message: '',
 }
 
-export const messageOnlySchema = v.object({
-	message: v.pipe(
-		v.string(),
-		v.nonEmpty('Please write your message here.'),
-		v.minLength(10, 'At least 10 characters are required'),
-	),
-})
+export const messageOnlySchema = v.pick(contactFormSchema, ['message'])
 
 export type MessageOnlySchemaType = typeof messageOnlySchema
 export type MessageOnlyInputData = v.InferInput<MessageOnlySchemaType>

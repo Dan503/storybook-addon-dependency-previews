@@ -4,10 +4,7 @@ import { TextFieldMolecule } from './TextFieldMolecule'
 import type { PropsForTextFieldMolecule } from './TextFieldMolecule'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import type { Meta } from '@storybook/react-vite'
-import {
-	defaultFirstNameOnlyValues,
-	firstNameOnlySchema,
-} from 'example-site-shared/data'
+import { defaultNameOnlyValues, nameOnlySchema } from 'example-site-shared/data'
 
 // Button.stories.tsx
 const meta: Meta<typeof TextFieldMolecule> = {
@@ -29,13 +26,13 @@ export const Default = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = useForm({
-			schema: firstNameOnlySchema,
-			initialInput: defaultFirstNameOnlyValues,
+			schema: nameOnlySchema,
+			initialInput: defaultNameOnlyValues,
 		})
 
 		return (
 			<FormDataMolecule form={form}>
-				<Field of={form} path={['firstName']}>
+				<Field of={form} path={['name']}>
 					{(field) => <TextFieldMolecule {...args} field={field} />}
 				</Field>
 			</FormDataMolecule>
@@ -50,14 +47,14 @@ export const ErrorState = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = useForm({
-			schema: firstNameOnlySchema,
-			initialInput: defaultFirstNameOnlyValues,
+			schema: nameOnlySchema,
+			initialInput: defaultNameOnlyValues,
 			validate: 'initial',
 		})
 
 		return (
 			<FormDataMolecule form={form}>
-				<Field of={form} path={['firstName']}>
+				<Field of={form} path={['name']}>
 					{(field) => {
 						return <TextFieldMolecule {...args} field={field} />
 					}}

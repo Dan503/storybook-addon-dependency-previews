@@ -4,10 +4,7 @@ import { TextFieldMolecule } from './TextFieldMolecule'
 import type { PropsForTextFieldMolecule } from './TextFieldMolecule'
 import type { StoryParameters } from 'storybook-addon-dependency-previews'
 import type { Meta } from 'storybook-solidjs-vite'
-import {
-	defaultFirstNameOnlyValues,
-	firstNameOnlySchema,
-} from 'example-site-shared/data'
+import { defaultNameOnlyValues, nameOnlySchema } from 'example-site-shared/data'
 
 const meta: Meta<typeof TextFieldMolecule> = {
 	title: 'Forms / Text Field Molecule',
@@ -28,13 +25,13 @@ export const Default = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = createForm({
-			schema: firstNameOnlySchema,
-			initialInput: defaultFirstNameOnlyValues,
+			schema: nameOnlySchema,
+			initialInput: defaultNameOnlyValues,
 		})
 
 		return (
 			<FormDataMolecule form={form}>
-				<Field of={form} path={['firstName']}>
+				<Field of={form} path={['name']}>
 					{(field) => <TextFieldMolecule {...args} field={field} />}
 				</Field>
 			</FormDataMolecule>
@@ -49,14 +46,14 @@ export const ErrorState = {
 	} satisfies PropsForTextFieldMolecule,
 	render: (args: PropsForTextFieldMolecule) => {
 		const form = createForm({
-			schema: firstNameOnlySchema,
-			initialInput: defaultFirstNameOnlyValues,
+			schema: nameOnlySchema,
+			initialInput: defaultNameOnlyValues,
 			validate: 'initial',
 		})
 
 		return (
 			<FormDataMolecule form={form}>
-				<Field of={form} path={['firstName']}>
+				<Field of={form} path={['name']}>
 					{(field) => <TextFieldMolecule {...args} field={field} />}
 				</Field>
 			</FormDataMolecule>
