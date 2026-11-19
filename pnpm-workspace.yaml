@@ -16,6 +16,10 @@ patchedDependencies:
   # Windows only: hydrated islands in Astro stories get a `C:/...` address the browser
   # refuses, so React never takes over. Delete once the framework fixes it upstream.
   '@storybook-astro/framework@1.16.0': patches/@storybook-astro__framework@1.16.0.patch
+  # Windows only: the Astro Netlify build links each package into its function folder,
+  # and Windows refuses those links without Developer Mode or administrator rights.
+  # The patch falls back to a folder link any user can make, or a copy for a file.
+  '@astrojs/internal-helpers@0.13.2': patches/@astrojs__internal-helpers@0.13.2.patch
 peerDependencyRules:
   allowedVersions:
     # @angular-devkit/core@21 peer dep declaration hasn't caught up to chokidar v5 yet

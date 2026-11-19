@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
 
+import netlify from '@astrojs/netlify'
 import react from '@astrojs/react';
 
 // https://astro.build/config
@@ -12,4 +13,8 @@ export default defineConfig({
   srcDir: './src/1-app',
 
   integrations: [react()],
+
+  // The meal, category and 404 pages are built on request, which needs a
+  // server. This runs them on Netlify, where the other example sites are hosted.
+  adapter: netlify(),
 })

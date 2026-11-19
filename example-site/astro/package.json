@@ -15,6 +15,7 @@
 		"format": "prettier --write ."
 	},
 	"dependencies": {
+		"@astrojs/netlify": "^8.2.14",
 		"@astrojs/react": "^7.1.9",
 		"@formisch/react": "^0.4.5",
 		"astro": "^7.4.12",
