@@ -1,5 +1,41 @@
 ---
+import ContentRestraint from '../../6-shared/ui/ContentRestraint/ContentRestraint.astro'
+import IconText from '../../6-shared/ui/IconText/IconText.astro'
+import MapPinIcon from '../../6-shared/ui/Icons/MapPinIcon.astro'
+import PhoneIcon from '../../6-shared/ui/Icons/PhoneIcon.astro'
 import { ContactForm } from './ContactForm/ContactForm'
 ---
 
-<ContactForm client:load />
+<div class="ContactPage">
+	<ContentRestraint padVertical>
+		<div class="content">
+			<h1>Contact Us</h1>
+			<IconText icon={PhoneIcon} ariaLabel="Phone number">
+				0412 345 678
+			</IconText>
+			<IconText icon={MapPinIcon} ariaLabel="Address">
+				123 Main St, Anytown, Australia
+			</IconText>
+			<ContactForm client:load />
+		</div>
+	</ContentRestraint>
+</div>
+
+<style>
+	.ContactPage {
+		display: grid;
+		place-items: center;
+		block-size: 100%;
+	}
+
+	.content {
+		display: grid;
+		gap: 1rem;
+	}
+
+	h1 {
+		font-size: 1.875rem;
+		line-height: 2.25rem;
+		font-weight: bold;
+	}
+</style>

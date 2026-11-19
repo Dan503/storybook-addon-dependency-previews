@@ -1,6 +1,6 @@
 import type { ContactFormSchemaType } from 'example-site-shared/data'
 import type { WithForm } from '../../model/FormTypes'
-import { Button } from '../Button/Button'
+import { Button } from '../../../../../6-shared/ui/Button/Button'
 import { FormDataPreview } from '../FormDataPreview/FormDataPreview'
 import styles from './ThankYouMessage.module.css'
 

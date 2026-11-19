@@ -7,7 +7,7 @@ import {
 } from '@formisch/react'
 import type { ContactFormSchemaType } from 'example-site-shared/data'
 import type { WithForm } from '../../model/FormTypes'
-import { Button } from '../Button/Button'
+import { Button } from '../../../../../6-shared/ui/Button/Button'
 import { ErrorBlock } from '../ErrorMessages/ErrorBlock'
 import { TextArea } from '../TextArea/TextArea'
 import { TextField } from '../TextField/TextField'

@@ -1,0 +1,39 @@
+---
+// 6-shared/ui/IconText/IconText.astro
+
+/**
+ * One line of text with an icon in front of it.
+ * The icon tells the reader what kind of information the text is, so it needs a label for screen readers,
+ * e.g. `<IconText icon={PhoneIcon} ariaLabel="Phone number">0412 345 678</IconText>`.
+ */
+interface Props {
+	icon: (props: { altText?: string }) => unknown
+	/** Names the kind of information the text is, e.g. "Phone number". Read out by screen readers in place of the icon. */
+	ariaLabel: string
+}
+const { icon: Icon, ariaLabel } = Astro.props
+---
+
+<p class="IconText">
+	<Icon altText={ariaLabel} />
+	<slot />
+</p>
+
+<style>
+	.IconText {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-size: 1.125rem;
+		line-height: 1.75rem;
+		font-weight: 500;
+		color: var(--text);
+
+		/* The icon component draws its own markup, which Astro's scoped styles can't reach without :global */
+		& :global(svg) {
+			inline-size: 1em;
+			block-size: 1em;
+			flex-shrink: 0;
+		}
+	}
+</style>

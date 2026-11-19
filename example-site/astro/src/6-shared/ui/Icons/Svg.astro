@@ -1,0 +1,35 @@
+---
+// 6-shared/ui/Icons/Svg.astro
+
+/** The outer `<svg>` every icon draws its shapes inside. */
+interface Props {
+	/**
+	 * Read out by screen readers. Leave it out only when the icon adds nothing the text beside it doesn't
+	 * already say. A phone icon in front of a bare number does add something: it says the number is a phone number.
+	 */
+	altText?: string
+	class?: string
+}
+const { altText, class: className } = Astro.props
+
+const fixedAttributes = {
+	xmlns: 'http://www.w3.org/2000/svg',
+	fill: 'none',
+	viewBox: '0 0 24 24',
+	'stroke-width': 1.5,
+	stroke: 'currentColor',
+	height: 24,
+	width: 24,
+	focusable: 'false',
+}
+---
+
+<svg
+	{...fixedAttributes}
+	role="img"
+	aria-label={altText || undefined}
+	aria-hidden={altText ? undefined : 'true'}
+	class={className}
+>
+	<slot />
+</svg>

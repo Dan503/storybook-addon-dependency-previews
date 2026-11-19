@@ -1,0 +1,31 @@
+---
+// 6-shared/ui/ContentRestraint/ContentRestraint.astro
+import ScreenPadding from '../ScreenPadding/ScreenPadding.astro'
+
+/** Stops content stretching out to the far edges of the screen. */
+interface Props {
+	padVertical?: boolean
+}
+const { padVertical } = Astro.props
+---
+
+<ScreenPadding padVertical={padVertical}>
+	<div class="ContentRestraint">
+		<div class="content">
+			<slot />
+		</div>
+	</div>
+</ScreenPadding>
+
+<style>
+	.ContentRestraint {
+		display: grid;
+		grid-template-columns: 1fr minmax(auto, 800px) 1fr;
+	}
+
+	.content {
+		grid-column: 2;
+		inline-size: 100%;
+		block-size: 100%;
+	}
+</style>
