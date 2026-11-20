@@ -1,8 +1,8 @@
 /**
  * The props every icon takes, passed on to the `<svg>` that `Svg.astro` draws.
  *
- * Kept in a `.ts` file rather than in `Svg.astro` so the icons can share one set of prop
- * descriptions: the type checker can't read types out of `.astro` files.
+ * Kept in its own file, like `Card.types.ts`, so `Svg`, `MapPinIcon` and `PhoneIcon` share one
+ * set of prop descriptions.
  */
 export interface PropsForIcon {
 	/**

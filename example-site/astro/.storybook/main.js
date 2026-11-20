@@ -11,9 +11,10 @@ export default {
 		},
 	},
 	// Reads the comments on React components and their props, so their docs pages
-	// show descriptions. Storybook's React framework adds this plugin itself; the
-	// Astro framework does not. The options are the ones Storybook's React
-	// framework passes.
+	// show descriptions. Storybook's React framework sets up a comment reader
+	// itself; the Astro framework does not. This is the one Storybook's React
+	// framework uses when set to read TypeScript types, with Storybook's default
+	// options for it.
 	viteFinal: (config) => ({
 		...config,
 		plugins: [
