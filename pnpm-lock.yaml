@@ -147,9 +147,15 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2(typescript@5.9.3)
     devDependencies:
+      '@joshwooding/vite-plugin-react-docgen-typescript':
+        specifier: ^0.9.1
+        version: 0.9.1(typescript@5.9.3)(vite@8.3.8(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(less@4.4.2)(sass@1.108.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.9.1))
       '@storybook-astro/framework':
         specifier: ^1.16.0
         version: 1.16.0(patch_hash=46bf99f19d4bd60b8689b8561b6e41b81c795d23fa40a99f4a9962c18550d78e)(c64d6b8f873eb43fad84529cfdc37243)
+      '@storybook/addon-docs':
+        specifier: ^10.6.7
+        version: 10.6.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(storybook@10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
       '@storybook/builder-vite':
         specifier: ^10.6.7
         version: 10.6.7(storybook@10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(vite@8.3.8(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(less@4.4.2)(sass@1.108.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.9.1))
@@ -3634,6 +3640,16 @@ packages:
       typescript:
         optional: true
 
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.9.1':
+    resolution: {integrity: sha512-nftJ7dfWsyiTquyY2cWhS+4pZi0+OIexa6XDLPTda9DXQeSk/kGxemWCnHq6cg5r1X+P3KLtsC8frI5iZQX69Q==}
+    engines: {node: 20 || >=22}
+    peerDependencies:
+      typescript: '>=4.3.0 <7 || >=7.1.0-0 <8'
+      vite: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -6545,6 +6561,15 @@ packages:
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       storybook: ^10.5.10
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@storybook/addon-docs@10.6.7':
+    resolution: {integrity: sha512-R0SxB+sv99/V1H51JFh5CjiN5Ufpuh8Bho7iT8hhl1NMGLk76BBqq9l63XgCp4d+1k9mXz7BVu7zFLWdf+j/Rg==}
+    peerDependencies:
+      '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      storybook: ^10.6.7
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -19623,9 +19648,17 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.9.1(typescript@5.9.3)(vite@8.3.8(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(less@4.4.2)(sass@1.108.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.9.1))':
+    dependencies:
+      react-docgen-typescript: 2.4.0(typescript@5.9.3)
+      tinyglobby: 0.2.17
+      vite: 8.3.8(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(less@4.4.2)(sass@1.108.2)(terser@5.46.0)(tsx@4.20.6)(yaml@2.9.1)
+    optionalDependencies:
+      typescript: 5.9.3
+
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
       '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/remapping@2.3.5':
@@ -19647,7 +19680,7 @@ snapshots:
   '@jridgewell/trace-mapping@0.3.31':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
 
   '@jsonjoy.com/base64@1.1.2(tslib@2.8.1)':
     dependencies:
@@ -19839,6 +19872,12 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.3.0
       react: 19.1.1
+
+  '@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1)':
+    dependencies:
+      '@types/mdx': 2.0.13
+      '@types/react': 19.3.0
+      react: 19.3.1
 
   '@modelcontextprotocol/sdk@1.26.0(zod@4.3.6)':
     dependencies:
@@ -22726,6 +22765,21 @@ snapshots:
       - rollup
       - vite
       - webpack
+
+  '@storybook/addon-docs@10.6.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(storybook@10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))':
+    dependencies:
+      '@mdx-js/react': 3.1.1(@types/react@19.3.0)(react@19.3.1)
+      '@storybook/icons': 2.0.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@storybook/react-dom-shim': 10.6.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(storybook@10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
+      storybook: 10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      ts-dedent: 2.2.0
+      unplugin: 2.3.11
+    optionalDependencies:
+      '@types/react': 19.3.0
+    transitivePeerDependencies:
+      - '@types/react-dom'
 
   '@storybook/addon-links@10.2.1(react@19.1.1)(storybook@10.2.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))':
     dependencies:
@@ -27300,16 +27354,16 @@ snapshots:
 
   esrap@1.2.2:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
       '@types/estree': 1.0.8
 
   esrap@1.4.9:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
 
   esrap@2.2.2:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
 
   esrecurse@4.3.0:
     dependencies:

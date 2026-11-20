@@ -3,9 +3,13 @@ import type { Meal } from 'example-site-shared/utils'
 import { getMealCard } from '../../../5-entities/meal/lib/getMealCard'
 import ListingPage from '../../../6-shared/ui/CardListing/ListingPage/ListingPage.astro'
 
+/** The page for one food category: its name, its description and a card for each meal in it. */
 interface Props {
+	/** The category's name, used in the page heading. */
 	categoryName: string
+	/** Shown under the heading. */
 	categoryDescription: string
+	/** The meals in the category, one card each. */
 	meals: Array<Meal>
 }
 const { categoryName, categoryDescription, meals } = Astro.props

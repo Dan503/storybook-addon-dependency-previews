@@ -6,6 +6,7 @@ import type { PropsForCompactListingItem } from './CompactListingItem/CompactLis
 
 /** A list of small image-and-text rows, as many to a line as fit. */
 interface Props {
+	/** The rows to show, in order. */
 	items: Array<PropsForCompactListingItem>
 	/** The heading level of every row's title, one below the heading the listing sits under. */
 	headingLevel: HeadingLevel

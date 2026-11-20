@@ -3,7 +3,9 @@ import type { Category } from 'example-site-shared/utils'
 import type { PropsForCard } from '../../6-shared/ui/CardListing/Card/Card.types'
 import ListingPage from '../../6-shared/ui/CardListing/ListingPage/ListingPage.astro'
 
+/** The page listing every food category as a card, each linking to that category's meals. */
 interface Props {
+	/** The categories to show, one card each. */
 	categories: Array<Category>
 }
 const { categories } = Astro.props

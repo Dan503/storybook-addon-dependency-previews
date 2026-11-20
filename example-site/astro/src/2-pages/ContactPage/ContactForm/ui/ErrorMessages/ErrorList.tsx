@@ -4,9 +4,11 @@ import { getErrorText } from './getErrorText'
 import styles from './ErrorList.module.css'
 
 export interface PropsForErrorList {
+	/** The errors to list. */
 	errors: FormErrors
 }
 
+/** A list of error messages, shown under a field that has errors. */
 export function ErrorList({ errors }: PropsForErrorList) {
 	return (
 		<ul className={styles.errorList}>

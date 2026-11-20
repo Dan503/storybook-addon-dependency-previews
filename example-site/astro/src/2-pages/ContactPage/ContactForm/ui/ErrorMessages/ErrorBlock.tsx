@@ -3,6 +3,7 @@ import { ErrorList } from './ErrorList'
 import styles from './ErrorBlock.module.css'
 
 export interface PropsForErrorBlock {
+	/** Every error in the form. */
 	errors: FormErrors
 }
 

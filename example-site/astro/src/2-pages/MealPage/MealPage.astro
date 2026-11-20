@@ -5,7 +5,9 @@ import type { PropsForCompactListingItem } from '../../6-shared/ui/CompactListin
 import QueryContainer from '../../6-shared/ui/QueryContainer.astro'
 import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
 
+/** The page for one meal: its photo, its recipe and a list of its ingredients. */
 interface Props {
+	/** The meal to show. */
 	meal: Meal
 }
 const { meal } = Astro.props
