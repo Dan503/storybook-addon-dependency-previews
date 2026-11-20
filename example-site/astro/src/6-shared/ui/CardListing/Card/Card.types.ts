@@ -7,7 +7,10 @@ import type { LinkAddressPropsViaBrackets } from 'example-site-shared/utils'
  * against it: the type checker can't read types out of `.astro` files.
  */
 export interface PropsForCard extends LinkAddressPropsViaBrackets {
+	/** The card's heading. */
 	title: string
+	/** Address of the card's image. */
 	imgSrc: string
+	/** Shown under the heading, cut off after four lines. */
 	description: string
 }

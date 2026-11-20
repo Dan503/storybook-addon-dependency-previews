@@ -5,8 +5,11 @@ import CardListing from '../../6-shared/ui/CardListing/CardListing.astro'
 import ScreenPadding from '../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
 import HeroBlock from './HeroBlock/HeroBlock.astro'
 
+/** The home page: the welcome banner, then a card for each featured meal. */
 interface Props {
+	/** Address of the photo shown behind the welcome banner's heading. */
 	heroBgImg: string
+	/** The meals to show as cards under the banner. */
 	featuredMeals: Array<Meal>
 }
 const { heroBgImg, featuredMeals } = Astro.props

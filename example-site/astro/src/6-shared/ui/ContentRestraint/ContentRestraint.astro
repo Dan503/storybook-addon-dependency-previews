@@ -4,6 +4,7 @@ import ScreenPadding from '../ScreenPadding/ScreenPadding.astro'
 
 /** Stops content stretching out to the far edges of the screen. */
 interface Props {
+	/** Adds space above and below the content. */
 	padVertical?: boolean
 }
 const { padVertical } = Astro.props
@@ -12,6 +13,7 @@ const { padVertical } = Astro.props
 <ScreenPadding padVertical={padVertical}>
 	<div class="ContentRestraint">
 		<div class="content">
+			{/* @slot The content to keep away from the screen edges. */}
 			<slot />
 		</div>
 	</div>

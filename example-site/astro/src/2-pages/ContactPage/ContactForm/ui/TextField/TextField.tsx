@@ -5,7 +5,9 @@ import { ErrorList } from '../ErrorMessages/ErrorList'
 import fieldStyles from '../field.module.css'
 
 export interface PropsForTextField {
+	/** The field's label. */
 	label: string
+	/** Hint text shown in the box while it is empty. */
 	placeholder?: string
 }
 
@@ -14,6 +16,7 @@ export type FieldPropsForTextField<
 	TPath extends RequiredPath,
 > = PropsForTextField & WithField<TSchema, TPath>
 
+/** A labelled one-line text box, with the field's errors listed under it. */
 export function TextField<TSchema extends Schema, TPath extends RequiredPath>({
 	label,
 	placeholder,

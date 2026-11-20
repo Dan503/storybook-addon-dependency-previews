@@ -6,7 +6,9 @@ import fieldStyles from '../field.module.css'
 import styles from './TextArea.module.css'
 
 export interface PropsForTextArea {
+	/** The field's label. */
 	label: string
+	/** Hint text shown in the box while it is empty. */
 	placeholder?: string
 }
 

@@ -14,9 +14,11 @@ import { TextField } from '../TextField/TextField'
 import styles from './ContactFormFields.module.css'
 
 export interface PropsForContactFormFields extends WithForm<ContactFormSchemaType> {
+	/** Runs when the form is sent with no errors. */
 	onSubmit: SubmitHandler<ContactFormSchemaType>
 }
 
+/** The contact form's fields and send button, with a summary of any errors above them. */
 export function ContactFormFields({
 	form,
 	onSubmit,

@@ -5,7 +5,10 @@
  * against it: the type checker can't read types out of `.astro` files.
  */
 export interface PropsForCompactListingItem {
+	/** Address of the row's image. */
 	imageSrc: string
+	/** The row's heading. */
 	title: string
+	/** Shown under the heading. */
 	description: string
 }
