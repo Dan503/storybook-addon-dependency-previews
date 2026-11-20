@@ -8,7 +8,7 @@ export interface PropsForErrorList {
 	errors: FormErrors
 }
 
-/** A list of error messages, shown under a field that has errors. */
+/** A list of error messages, shown under a field that has errors and in the error summary above the form. */
 export function ErrorList({ errors }: PropsForErrorList) {
 	return (
 		<ul className={styles.errorList}>

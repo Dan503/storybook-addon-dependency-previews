@@ -1,5 +1,6 @@
 ---
 // 6-shared/ui/IconText/IconText.astro
+import type { PropsForIcon } from '../Icons/Icon.types'
 
 /**
  * One line of text with an icon in front of it.
@@ -8,7 +9,7 @@
  */
 interface Props {
 	/** The icon component shown in front of the text, e.g. `PhoneIcon`. */
-	icon: (props: { altText?: string }) => unknown
+	icon: (props: Pick<PropsForIcon, 'altText'>) => unknown
 	/** Names the kind of information the text is, e.g. "Phone number". Read out by screen readers in place of the icon. */
 	ariaLabel: string
 }
