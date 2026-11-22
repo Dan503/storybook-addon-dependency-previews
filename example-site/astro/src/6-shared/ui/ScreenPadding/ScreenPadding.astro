@@ -1,12 +1,15 @@
 ---
 // 6-shared/ui/ScreenPadding/ScreenPadding.astro
+/** Keeps content away from the edges of the screen, and can add space above and below it too. */
 interface Props {
+	/** Adds space above and below the content, as well as at the sides. */
 	padVertical?: boolean
 }
 const { padVertical } = Astro.props
 ---
 
 <div class:list={['screenPadding', { padVertical }]}>
+	{/* @slot The content to pad. */}
 	<slot />
 </div>
 

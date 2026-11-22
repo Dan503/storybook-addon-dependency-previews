@@ -1,11 +1,10 @@
 ---
 // 6-shared/ui/Icons/MapPinIcon.astro
+import type { PropsForIcon } from './Icon.types'
 import Svg from './Svg.astro'
 
-interface Props {
-	altText?: string
-	class?: string
-}
+/** A map pin icon, for marking an address. */
+interface Props extends PropsForIcon {}
 ---
 
 <Svg {...Astro.props}>

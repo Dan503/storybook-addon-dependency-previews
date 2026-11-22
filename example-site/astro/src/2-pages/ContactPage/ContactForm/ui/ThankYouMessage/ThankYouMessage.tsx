@@ -5,6 +5,7 @@ import { FormDataPreview } from '../FormDataPreview/FormDataPreview'
 import styles from './ThankYouMessage.module.css'
 
 export interface PropsForThankYouMessage extends WithForm<ContactFormSchemaType> {
+	/** Runs when the visitor asks to go back to the form. */
 	onBackClick: () => void
 }
 

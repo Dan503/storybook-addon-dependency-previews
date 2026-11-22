@@ -7,6 +7,7 @@ import type { PropsForCard } from './Card/Card.types'
 
 /** A grid of linked cards. The number of columns follows the width of the space the grid sits in. */
 interface Props {
+	/** The cards to show, in order. */
 	cards: Array<PropsForCard>
 	/** The heading level of every card's title, one below the heading the listing sits under. */
 	headingLevel: HeadingLevel

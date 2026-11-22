@@ -1,7 +1,9 @@
 ---
 import ScreenPadding from '../../../6-shared/ui/ScreenPadding/ScreenPadding.astro'
 
+/** The large welcome banner at the top of the home page, with a photo behind the heading. */
 interface Props {
+	/** Address of the photo shown behind the heading. */
 	bgSource: string
 }
 const { bgSource } = Astro.props
