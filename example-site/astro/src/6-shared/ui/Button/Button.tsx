@@ -12,6 +12,15 @@ export interface PropsForButton {
 	children: ReactNode
 }
 
+/**
+ * Firefox remembers whether a button was switched off and puts that back when
+ * the page reloads, before the page's script takes over. React then finds the
+ * button different from what it drew and leaves it that way. "off" stops
+ * Firefox doing this. React's types leave `autoComplete` out for buttons,
+ * though React still writes it onto the page, so it is passed in a spread.
+ */
+const stopFirefoxRestoringButtonState = { autoComplete: 'off' }
+
 /** A clickable button. Set its type to "submit" to make it send the form it sits in. */
 export function Button({
 	children,
@@ -25,6 +34,7 @@ export function Button({
 			onClick={onClick}
 			disabled={disabled}
 			className={styles.button}
+			{...stopFirefoxRestoringButtonState}
 		>
 			{children}
 		</button>
