@@ -53,3 +53,12 @@ export const MealList: Story = {
 		cardList: 'meals' as unknown as PropsForCardListTemplate['cardList'],
 	},
 }
+
+export const Loading: Story = {
+	args: {
+		title: 'Delicious chicken dishes',
+		introText:
+			'Explore our curated selection of mouth-watering chicken recipes that are sure to satisfy your cravings.',
+		isLoading: true,
+	},
+}

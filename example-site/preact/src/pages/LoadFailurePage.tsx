@@ -12,16 +12,16 @@ export interface PropsForLoadFailurePage {
  * Shown when a page could not get its meals.
  *
  * What decides whether a page can end up here is not whether it asks the meal
- * database but whether it *pauses* for the answer. The categories page, a
- * single category and a meal all ask through `useDataOrWait`, which pauses the
- * page, so a dropped connection or a bad answer would otherwise leave the
- * whole site blank. The home page asks too, but through an effect rather than
- * by pausing, so a failure there never reaches this page — it simply draws
- * with no meals.
+ * database but whether it asks through `useFetchedData`, which throws a failed
+ * request for this page to catch. The categories page, a single category and a
+ * meal all ask through it, so a dropped connection or a bad answer would
+ * otherwise leave the whole site blank. The home page asks too, but through an
+ * effect, so a failure there never reaches this page — it simply draws with no
+ * meals.
  *
  * Being written out ahead of time does not spare a page from this. Nothing
  * carries the build's answers into the browser — the three stores in
- * `useDataOrWait` start empty on every fresh load — so opening or reloading a
+ * `useFetchedData` start empty on every fresh load — so opening or reloading a
  * written-out category page asks the meal database again, and a failure then
  * lands here just as it would from a meal page. What being written ahead buys
  * is the order of events rather than safety from it: the reader sees the page

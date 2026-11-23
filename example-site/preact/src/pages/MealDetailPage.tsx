@@ -1,21 +1,24 @@
 import { useRoute } from 'preact-iso'
 import { fetchMealById } from 'example-site-shared/utils'
 import { DetailPageTemplate } from '../components/04-templates/DetailPageTemplate'
-import { setPageTitle } from '../lib/pageTitle'
-import { useDataOrWait } from '../lib/useDataOrWait'
+import { setPageTitle, setStandInPageTitle } from '../lib/pageTitle'
+import { useFetchedData } from '../lib/useFetchedData'
 import { NotFoundPage } from './NotFoundPage'
 
 export function MealDetailPage() {
 	const { params } = useRoute()
 	const mealId = params.mealId ?? ''
 
-	const meal = useDataOrWait(`meal:${mealId}`, () => fetchMealById(mealId))
+	const meal = useFetchedData(`meal:${mealId}`, () => fetchMealById(mealId))
 
-	// By the time this line runs the request has finished, because
-	// `useDataOrWait` holds the page back until it has — so nothing here means
-	// no such meal, rather than one that has not arrived yet.
-	if (!meal) return <NotFoundPage />
+	if (meal.status === 'waiting') {
+		// The meal's name is not known until it arrives.
+		setStandInPageTitle('Meal | The Meal Place')
+		return <DetailPageTemplate meal={undefined} isLoading />
+	}
 
-	setPageTitle(`${meal.name} | The Meal Place`)
-	return <DetailPageTemplate meal={meal} />
+	if (!meal.data) return <NotFoundPage />
+
+	setPageTitle(`${meal.data.name} | The Meal Place`)
+	return <DetailPageTemplate meal={meal.data} />
 }

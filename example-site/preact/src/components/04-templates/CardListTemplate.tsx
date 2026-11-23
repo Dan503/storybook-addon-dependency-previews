@@ -7,12 +7,15 @@ export interface PropsForCardListTemplate {
 	title: string
 	introText?: string
 	cardList?: Array<PropsForCardMolecule>
+	/** Shows "Loading..." where the cards go, while they are on their way. */
+	isLoading?: boolean
 }
 
 export function CardListTemplate({
 	title,
 	introText,
 	cardList,
+	isLoading,
 }: PropsForCardListTemplate) {
 	return (
 		<SiteFrameOrganism>
@@ -20,7 +23,11 @@ export function CardListTemplate({
 				<div class="MealListTemplate grid gap-4">
 					<h1 class="text-4xl font-bold">{title}</h1>
 					<p class="mb-2">{introText}</p>
-					<CardListingOrganism cards={cardList} />
+					{isLoading ? (
+						<p>Loading...</p>
+					) : (
+						<CardListingOrganism cards={cardList} />
+					)}
 				</div>
 			</ScreenPaddingAtom>
 		</SiteFrameOrganism>

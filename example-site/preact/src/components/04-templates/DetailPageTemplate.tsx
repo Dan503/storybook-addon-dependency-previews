@@ -13,7 +13,13 @@ export function DetailPageTemplate({
 	isLoading,
 }: PropsForDetailPageTemplate) {
 	if (isLoading || !meal) {
-		return <div>Loading...</div>
+		return (
+			<SiteFrameOrganism>
+				<ScreenPaddingAtom padVertical>
+					<p>Loading...</p>
+				</ScreenPaddingAtom>
+			</SiteFrameOrganism>
+		)
 	}
 
 	return (
