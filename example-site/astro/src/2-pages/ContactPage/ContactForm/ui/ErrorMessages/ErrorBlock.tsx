@@ -7,7 +7,12 @@ export interface PropsForErrorBlock {
 	errors: FormErrors
 }
 
-/** The summary of every error in the form, shown above the form. Draws nothing while there are no errors. */
+/** The summary of every error in the form, shown above the form. Draws nothing while there are no errors.
+ *
+ * After working on the Accessibility for the demo site, I realised that the block isn't needed due to the inline errors.
+ *
+ * It was actually making accessibility worse due to the role="alert" attribute
+ */
 export function ErrorBlock({ errors }: PropsForErrorBlock) {
 	if (!errors?.length) return null
 

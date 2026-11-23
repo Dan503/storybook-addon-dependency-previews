@@ -26,6 +26,7 @@ export function TextField<TSchema extends Schema, TPath extends RequiredPath>({
 	const id = useId()
 	useKeepTextEnteredBeforeStartup(field, id)
 	const typedText = (field.input as string | undefined) ?? ''
+	const descriptionId = `${id}-description`
 
 	return (
 		<div>
@@ -38,9 +39,10 @@ export function TextField<TSchema extends Schema, TPath extends RequiredPath>({
 					placeholder={placeholder}
 					aria-invalid={!!field.errors}
 					className={fieldStyles.input}
+					aria-describedby={descriptionId}
 				/>
 			</label>
-			{field.errors && <ErrorList errors={field.errors} />}
+			{field.errors && <ErrorList errors={field.errors} id={descriptionId} />}
 		</div>
 	)
 }

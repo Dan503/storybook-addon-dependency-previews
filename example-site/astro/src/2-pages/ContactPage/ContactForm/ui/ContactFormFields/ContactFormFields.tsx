@@ -1,14 +1,7 @@
-import {
-	Field,
-	Form,
-	getAllErrors,
-	useSignals,
-	type SubmitHandler,
-} from '@formisch/react'
+import { Field, Form, useSignals, type SubmitHandler } from '@formisch/react'
 import type { ContactFormSchemaType } from 'example-site-shared/data'
-import type { WithForm } from '../../model/FormTypes'
 import { Button } from '../../../../../6-shared/ui/Button/Button'
-import { ErrorBlock } from '../ErrorMessages/ErrorBlock'
+import type { WithForm } from '../../model/FormTypes'
 import { TextArea } from '../TextArea/TextArea'
 import { TextField } from '../TextField/TextField'
 import styles from './ContactFormFields.module.css'
@@ -25,11 +18,11 @@ export function ContactFormFields({
 }: PropsForContactFormFields) {
 	// Draws this component again whenever the form's errors change.
 	useSignals()
-	const errors = getAllErrors(form)
 
 	return (
 		<div className={styles.contactFormFields}>
-			<ErrorBlock errors={errors} />
+			{/* After working on the Accessibility for the demo site, I realised that ErrorBlock isn't needed due to the inline errors */}
+			{/* <ErrorBlock errors={errors} /> */}
 			<Form className={styles.form} of={form} onSubmit={onSubmit}>
 				<Field of={form} path={['name']}>
 					{(field) => (

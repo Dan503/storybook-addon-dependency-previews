@@ -29,6 +29,7 @@ export function TextArea<TSchema extends Schema, TPath extends RequiredPath>({
 	const typedText = (field.input as string | undefined) ?? ''
 	// The extra space gives a last empty line its height.
 	const sizerText = `${typedText} `
+	const descriptionId = `${id}-description`
 
 	return (
 		<div>
@@ -44,13 +45,14 @@ export function TextArea<TSchema extends Schema, TPath extends RequiredPath>({
 						placeholder={placeholder}
 						aria-invalid={!!field.errors}
 						className={fieldStyles.input}
+						aria-describedby={descriptionId}
 					/>
 					<span aria-hidden className={`${fieldStyles.input} ${styles.sizer}`}>
 						{sizerText}
 					</span>
 				</div>
 			</label>
-			{field.errors && <ErrorList errors={field.errors} />}
+			{field.errors && <ErrorList errors={field.errors} id={descriptionId} />}
 		</div>
 	)
 }
