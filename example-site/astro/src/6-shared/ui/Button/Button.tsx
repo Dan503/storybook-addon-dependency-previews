@@ -6,8 +6,8 @@ export interface PropsForButton {
 	type?: 'button' | 'submit' | 'reset'
 	/** Runs when the button is clicked. */
 	onClick?: (event: MouseEvent<HTMLButtonElement>) => void
-	/** Greys the button out and stops it being clicked. Defaults to false. */
-	disabled?: boolean
+	/** Reason for why the button is unable to be clicked. */
+	disabledReason?: string | false | null
 	/** The button's text. */
 	children: ReactNode
 }
@@ -26,17 +26,17 @@ export function Button({
 	children,
 	type = 'button',
 	onClick,
-	disabled = false,
+	disabledReason,
 }: PropsForButton) {
 	return (
 		<button
 			type={type}
 			onClick={onClick}
-			disabled={disabled}
+			disabled={Boolean(disabledReason)}
 			className={styles.button}
 			{...stopFirefoxRestoringButtonState}
 		>
-			{children}
+			{disabledReason || children}
 		</button>
 	)
 }

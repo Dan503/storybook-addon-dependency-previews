@@ -32,6 +32,6 @@ export const Disabled: Story = {
 	args: {
 		children: 'Send',
 		type: 'submit',
-		disabled: true,
+		disabledReason: 'Reason why the button is disabled',
 	} satisfies PropsForButton,
 }

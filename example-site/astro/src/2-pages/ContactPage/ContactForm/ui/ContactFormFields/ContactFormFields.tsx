@@ -56,7 +56,10 @@ export function ContactFormFields({
 				</Field>
 
 				<div className={styles.actions}>
-					<Button type="submit" disabled={!hasJsLoaded}>
+					<Button
+						type="submit"
+						disabledReason={!hasJsLoaded && 'Form is loading...'}
+					>
 						Send
 					</Button>
 				</div>
