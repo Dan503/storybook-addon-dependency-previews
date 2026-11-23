@@ -448,7 +448,7 @@ function parseAddonImports(content: string): {
 		statements.push({
 			index,
 			length: tailStart - index + tail[0].length,
-			isTypeOnly: !!strippedMatch[1],
+			isTypeOnly: Boolean(strippedMatch[1]),
 			defaultBinding: strippedMatch[2] ?? null,
 			namesList: strippedMatch[3]!,
 			trailingComments: tail[1]!.trim(),
@@ -472,7 +472,7 @@ function parseAddonImports(content: string): {
 			const entry = parseEntry(raw, statement.isTypeOnly)
 			const localName = entry.alias ?? entry.name
 			const prev = byLocalName.get(localName)
-			const isValueReplacingType = !!prev && prev.isType && !entry.isType
+			const isValueReplacingType = prev && prev.isType && !entry.isType
 			if (!prev || isValueReplacingType) byLocalName.set(localName, entry)
 		}
 	}
