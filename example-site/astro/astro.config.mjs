@@ -16,5 +16,15 @@ export default defineConfig({
 
   // The meal, category and 404 pages are built on request, which needs a
   // server. This runs them on Netlify, where the other example sites are hosted.
-  adapter: netlify(),
+  adapter: netlify({
+    devFeatures: {
+      environmentVariables: false,
+      images: true,
+      // The site has no edge functions, and the Deno server that runs them
+      // in `astro dev` fails to start: Netlify passes `deno eval` a
+      // `--allow-scripts` flag that Deno 2.9.7 rejects. Turn this back on if
+      // the site gains a `netlify/edge-functions` folder.
+      edgeFunctions: false,
+    },
+  }),
 })
