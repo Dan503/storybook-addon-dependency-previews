@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
 import { relative as pathRelative } from 'node:path'
 
 import {
@@ -24,8 +23,9 @@ import {
 	writeSbDepsConfigIfNeeded,
 	type SbDepsConfigPatchResult,
 } from './patchers/sbDepsConfig.js'
-import { ask, choose, confirm, confirmOrEdit, input } from './prompt.js'
+import { ask, choose, confirmOrEdit, input } from './prompt.js'
 import { resolveSrcDir } from './srcDir.js'
+import { getCommandEndDescription, getPackageRunner } from './util.js'
 
 import type { SbDepsConfig } from '../../src/config.js'
 
@@ -96,6 +96,20 @@ function exampleStoryFileExtension(framework: Framework): string {
 	}
 }
 
+/**
+ * What the wizard runs through the project's package runner (`npx`,
+ * `pnpm dlx`, …), without asking, when the project has no Storybook config
+ * (`.storybook/main.*`). `--no-dev` stops Storybook's setup starting the
+ * Storybook server once it finishes. Without it, the setup doesn't exit on its
+ * own: the wizard would wait behind a running server, and the Ctrl+C that
+ * stops the server would most likely stop the wizard as well.
+ */
+const STORYBOOK_INIT_ARGS: ReadonlyArray<string> = [
+	'storybook@latest',
+	'init',
+	'--no-dev',
+]
+
 export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 	void argv
 	const cwd = process.cwd()
@@ -106,43 +120,35 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	let detection = detectProject(cwd)
 
-	if (!existsSync(detection.storybookDir)) {
-		log('No `.storybook/` directory found in the current working directory.')
-		const runInit = await confirm(
-			'Run `npx storybook@latest init` now to scaffold Storybook?',
-			true,
+	if (!detection.hasStorybookConfig) {
+		const packageRunner = getPackageRunner(detection.packageManager, cwd)
+		const initArgs = [...packageRunner.args, ...STORYBOOK_INIT_ARGS]
+		// As the user would type it, for the messages below.
+		const initCommand = [packageRunner.program, ...initArgs].join(' ')
+		log(
+			`No Storybook config (\`.storybook/main.*\`) found — setting up Storybook first with \`${initCommand}\`…`,
 		)
-		if (!runInit) {
-			log(
-				'Cancelled. Run `npx storybook@latest init` yourself, then re-run `npx sb-deps setup`.',
-			)
-			process.exit(1)
-		}
-
-		rule()
-		log('Running `npx storybook@latest init`…')
-		const initResult = spawnSync('npx', ['storybook@latest', 'init'], {
+		const initResult = spawnSync(packageRunner.program, initArgs, {
 			cwd,
 			stdio: 'inherit',
 			shell: process.platform === 'win32',
 		})
 		if (initResult.error) {
-			log(`  ✗ Could not spawn storybook init: ${initResult.error.message}`)
+			log(`  ✗ Could not run \`${initCommand}\`: ${initResult.error.message}`)
 			process.exit(1)
 		}
 		if (initResult.status !== 0) {
-			log(
-				`  ✗ \`npx storybook@latest init\` exited with code ${initResult.status}.`,
-			)
+			log(`  ✗ \`${initCommand}\` ${getCommandEndDescription(initResult)}.`)
 			process.exit(1)
 		}
 
-		// Re-detect — storybook init created `.storybook/`, modified `package.json`,
-		// and (depending on user choice) installed framework-specific deps.
+		// Re-detect — storybook init wrote its config into `.storybook/`, modified
+		// `package.json`, and (depending on user choice) installed
+		// framework-specific deps.
 		detection = detectProject(cwd)
-		if (!existsSync(detection.storybookDir)) {
+		if (!detection.hasStorybookConfig) {
 			log(
-				'  ✗ `npx storybook@latest init` finished but `.storybook/` is still missing — aborting.',
+				`  ✗ \`${initCommand}\` finished but there is still no Storybook config (\`.storybook/main.*\`) — aborting.`,
 			)
 			process.exit(1)
 		}
@@ -151,7 +157,7 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 
 	if (!detection.mainFile) {
 		log(
-			`No main.{ts,js,mjs,cjs} found inside ${detection.storybookDir}. Cannot continue.`,
+			`The Storybook config in ${detection.storybookDir} is not a main.{ts,js,mjs,cjs}, the only kinds the wizard can update. Cannot continue.`,
 		)
 		process.exit(1)
 	}
@@ -598,7 +604,9 @@ export async function runSetup(argv: ReadonlyArray<string>): Promise<void> {
 			`  You can run the dependency build manually with: ${detection.packageManager} run sb:deps`,
 		)
 	} else if (buildResult.status !== 0) {
-		log(`  ✗ initial dependency build failed (exit ${buildResult.status}).`)
+		log(
+			`  ✗ initial dependency build failed: it ${getCommandEndDescription(buildResult)}.`,
+		)
 		log(
 			`  You can run it manually with: ${detection.packageManager} run sb:deps`,
 		)

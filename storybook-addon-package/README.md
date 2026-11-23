@@ -66,7 +66,7 @@ The addon needs Node.js 22 or newer. It uses dependency-cruiser to read your com
 
 ### Quick start (React, Preact, Svelte, Vue 3, Solid, and Next.js on Vite)
 
-After running `npx storybook@latest init` in your project, run the setup wizard:
+Run the setup wizard in your project. If it doesn't have Storybook yet, the wizard sets it up first:
 
 ```sh
 npx --package storybook-addon-dependency-previews sb-deps setup
@@ -83,6 +83,8 @@ pnpm dlx --package=storybook-addon-dependency-previews sb-deps setup
 yarn dlx --package storybook-addon-dependency-previews sb-deps setup
 ```
 
+(Yarn 1 has no `dlx` — use the `npx` command above.)
+
 ```sh
 bunx --package storybook-addon-dependency-previews sb-deps setup
 ```
@@ -93,6 +95,7 @@ bunx --package storybook-addon-dependency-previews sb-deps setup
 
 The wizard:
 
+- sets Storybook up with `storybook@latest init --no-dev`, run through your package manager (`npx`, `pnpm dlx`, `yarn dlx` or `bunx`; `npx` on Yarn 1, which has no `dlx`), when the project has no Storybook config yet,
 - detects your framework, package manager, and existing Storybook config,
 - installs `storybook-addon-dependency-previews` and `dependency-cruiser`,
 - registers the addon in `.storybook/main.ts`,

@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 
 import type { PackageManager } from './detect.js'
-import { escapeForCmdExe } from './util.js'
+import { escapeForCmdExe, getCommandEndDescription } from './util.js'
 
 const IS_WIN = process.platform === 'win32'
 
@@ -143,7 +143,7 @@ export function installMissingPackages(
 	if (result.status !== 0) {
 		return {
 			kind: 'failed',
-			reason: `${opts.packageManager} ${args.join(' ')} exited with code ${result.status}`,
+			reason: `${opts.packageManager} ${args.join(' ')} ${getCommandEndDescription(result)}`,
 		}
 	}
 	return { kind: 'installed', packages: missing }
