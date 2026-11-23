@@ -6,14 +6,26 @@ export interface PropsForButton {
 	type?: 'button' | 'submit' | 'reset'
 	/** Runs when the button is clicked. */
 	onClick?: (event: MouseEvent<HTMLButtonElement>) => void
+	/** Greys the button out and stops it being clicked. Defaults to false. */
+	disabled?: boolean
 	/** The button's text. */
 	children: ReactNode
 }
 
 /** A clickable button. Set its type to "submit" to make it send the form it sits in. */
-export function Button({ children, type = 'button', onClick }: PropsForButton) {
+export function Button({
+	children,
+	type = 'button',
+	onClick,
+	disabled = false,
+}: PropsForButton) {
 	return (
-		<button type={type} onClick={onClick} className={styles.button}>
+		<button
+			type={type}
+			onClick={onClick}
+			disabled={disabled}
+			className={styles.button}
+		>
 			{children}
 		</button>
 	)

@@ -5,19 +5,24 @@ import type { WithForm } from '../../model/FormTypes'
 import { TextArea } from '../TextArea/TextArea'
 import { TextField } from '../TextField/TextField'
 import styles from './ContactFormFields.module.css'
+import { useHasJsLoaded } from '../../model/useHasJsLoaded'
 
 export interface PropsForContactFormFields extends WithForm<ContactFormSchemaType> {
 	/** Runs when the form is sent with no errors. */
 	onSubmit: SubmitHandler<ContactFormSchemaType>
 }
 
-/** The contact form's fields and send button, with a summary of any errors above them. */
+/**
+ * The contact form's fields and send button, with a summary of any errors above them.
+ * The send button stays off until the form's script has loaded.
+ */
 export function ContactFormFields({
 	form,
 	onSubmit,
 }: PropsForContactFormFields) {
 	// Draws this component again whenever the form's errors change.
 	useSignals()
+	const hasJsLoaded = useHasJsLoaded()
 
 	return (
 		<div className={styles.contactFormFields}>
@@ -51,7 +56,9 @@ export function ContactFormFields({
 				</Field>
 
 				<div className={styles.actions}>
-					<Button type="submit">Send</Button>
+					<Button type="submit" disabled={!hasJsLoaded}>
+						Send
+					</Button>
 				</div>
 			</Form>
 		</div>

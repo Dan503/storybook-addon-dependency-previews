@@ -27,3 +27,11 @@ export const Submit: Story = {
 		type: 'submit',
 	} satisfies PropsForButton,
 }
+
+export const Disabled: Story = {
+	args: {
+		children: 'Send',
+		type: 'submit',
+		disabled: true,
+	} satisfies PropsForButton,
+}

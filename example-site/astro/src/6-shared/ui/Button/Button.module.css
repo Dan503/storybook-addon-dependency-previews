@@ -4,8 +4,16 @@
 	border-radius: 0.5rem;
 	padding: 0.25rem 1rem;
 
-	&:hover,
-	&:focus {
+	&:enabled:hover,
+	&:enabled:focus {
 		background-color: var(--bg-coloured);
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		background-color: var(--grey-light);
+		color: var(--text);
+		border-color: transparent;
+		opacity: 0.7;
 	}
 }
