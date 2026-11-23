@@ -29,6 +29,11 @@ export function ContactFormFields({
 			{/* After working on the Accessibility for the demo site, I realised that ErrorBlock isn't needed due to the inline errors */}
 			{/* <ErrorBlock errors={errors} /> */}
 			<Form className={styles.form} of={form} onSubmit={onSubmit}>
+				<p>
+					All fields are required. Name must be at least 2 characters. Message
+					must be at least 10 characters.
+				</p>
+
 				<Field of={form} path={['name']}>
 					{(field) => (
 						<TextField label="Name" placeholder="Your name" field={field} />
