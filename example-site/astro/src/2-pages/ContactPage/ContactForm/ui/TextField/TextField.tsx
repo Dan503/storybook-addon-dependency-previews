@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { RequiredPath, Schema } from '@formisch/react'
 import type { WithField } from '../../model/FormTypes'
+import { useKeepTextEnteredBeforeStartup } from '../../model/useKeepTextEnteredBeforeStartup'
 import { ErrorList } from '../ErrorMessages/ErrorList'
 import fieldStyles from '../field.module.css'
 
@@ -23,6 +24,7 @@ export function TextField<TSchema extends Schema, TPath extends RequiredPath>({
 	field,
 }: FieldPropsForTextField<TSchema, TPath>) {
 	const id = useId()
+	useKeepTextEnteredBeforeStartup(field, id)
 	const typedText = (field.input as string | undefined) ?? ''
 
 	return (

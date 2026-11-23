@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { RequiredPath, Schema } from '@formisch/react'
 import type { WithField } from '../../model/FormTypes'
+import { useKeepTextEnteredBeforeStartup } from '../../model/useKeepTextEnteredBeforeStartup'
 import { ErrorList } from '../ErrorMessages/ErrorList'
 import fieldStyles from '../field.module.css'
 import styles from './TextArea.module.css'
@@ -24,6 +25,7 @@ export function TextArea<TSchema extends Schema, TPath extends RequiredPath>({
 	field,
 }: FieldPropsForTextArea<TSchema, TPath>) {
 	const id = useId()
+	useKeepTextEnteredBeforeStartup(field, id)
 	const typedText = (field.input as string | undefined) ?? ''
 	// The extra space gives a last empty line its height.
 	const sizerText = `${typedText} `
