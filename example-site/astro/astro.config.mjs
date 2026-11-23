@@ -14,6 +14,23 @@ export default defineConfig({
 
   integrations: [react()],
 
+  vite: {
+    optimizeDeps: {
+      // Vite builds the packages the browser needs when the dev server starts,
+      // finding them by scanning these files. Astro only scans `srcDir`, so
+      // packages used only by the other FSD layers (such as Formisch in the
+      // contact form) were found when a page first used them. Vite then
+      // rebuilt its package folder mid-session, which can fail on Windows
+      // with EPERM and leave the page's components unable to load. Storybook
+      // files are left out because the dev site never loads them.
+      entries: [
+        'src/**/*.{ts,tsx,astro}',
+        '!src/**/*.stories.*',
+        '!src/**/storybook-only/**',
+      ],
+    },
+  },
+
   // The meal, category and 404 pages are built on request, which needs a
   // server. This runs them on Netlify, where the other example sites are hosted.
   adapter: netlify({
