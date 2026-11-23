@@ -1,6 +1,7 @@
 ---
 import Footer from '../3-widgets/Footer/Footer.astro'
 import Header from '../3-widgets/Header/Header.astro'
+import HiddenNavLink from '../6-shared/ui/HiddenNavLink/HiddenNavLink.astro'
 // site wide styles import
 import './styles-entry.scss'
 
@@ -27,8 +28,10 @@ const fullTitle = title ? `${title} | ${siteName}` : siteName
 		<slot name="head" />
 	</head>
 	<body>
+		<HiddenNavLink anchor="main">Skip to main area</HiddenNavLink>
+
 		<Header />
-		<main>
+		<main id="main" tabindex="-1">
 			<slot />
 		</main>
 		<Footer />

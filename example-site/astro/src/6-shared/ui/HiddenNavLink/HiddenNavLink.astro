@@ -1,0 +1,30 @@
+---
+/** Navigation link for assisting keyboard and screen reader users for jumping to specific sections of the page quickly.
+ *
+ * To view the link, click somewhere above the preview area then press the tab key until the link appears. */
+interface Props {
+	/** The ID on the page that you want the link to jump to */
+	anchor: string
+}
+const { anchor } = Astro.props
+---
+
+<a class="HiddenNavLink" href={'#' + anchor}>
+	<slot />
+</a>
+
+<style>
+	.HiddenNavLink {
+		position: absolute;
+		padding: 5px 10px;
+		background-color: var(--teal-vibrant);
+		color: var(--text);
+		border: 1px solid currentColor;
+		outline: none;
+
+		&:not(:focus) {
+			pointer-events: none;
+			opacity: 0;
+		}
+	}
+</style>
