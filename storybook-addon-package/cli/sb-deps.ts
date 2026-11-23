@@ -1376,10 +1376,11 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// from the decorator's own — the one it imports, and the fuller one just
 	// below — both looked up in the folder listing already read above. Neither
 	// is a general check of what a written file imports.
-	const isWrappedComponentMissing =
-		!!folderEntries &&
+	const isWrappedComponentMissing = Boolean(
+		folderEntries &&
 		!differentlyCasedName &&
-		!folderEntries.includes(componentImportPath)
+		!folderEntries.includes(componentImportPath),
+	)
 	// Whether the dot is what actually stands in the way, decided by what is on
 	// disk rather than by the shape of the name.
 	//
@@ -1396,10 +1397,11 @@ function scaffoldSvelteDecorator(absDecoratorPath: string) {
 	// The ending itself is matched exactly: `getWrongCasedNameError` has already
 	// turned away anything but a lower-case `.decorator`.
 	const fullBaseWithoutDecorator = fullBase.replace(/\.decorator$/, '')
-	const isWrappedNameAmbiguous =
-		!!folderEntries &&
+	const isWrappedNameAmbiguous = Boolean(
+		folderEntries &&
 		fullBaseWithoutDecorator !== wrappedBase &&
-		checkDoesFolderHoldName(`${fullBaseWithoutDecorator}.svelte`, folderEntries)
+		checkDoesFolderHoldName(`${fullBaseWithoutDecorator}.svelte`, folderEntries),
+	)
 
 	const tpl =
 		SCAFFOLD_CONFIG?.svelte?.decorator?.({
@@ -2265,7 +2267,9 @@ function checkIsScaffoldableStoryFile(absStoryPath: string): boolean {
 	const projectFamily = getProjectFrameworkFamily()
 	// The same set a `.ts` story can name through a sibling, reused rather than
 	// spelled again — `getComponentPathForFamily` answers for exactly these.
-	return !!projectFamily && TS_STORY_SIBLING_FAMILIES.includes(projectFamily)
+	return Boolean(
+		projectFamily && TS_STORY_SIBLING_FAMILIES.includes(projectFamily),
+	)
 }
 
 /** The `resolveComponentForStory` answer before the capitals check, chosen by the story file's extension. */
@@ -2625,7 +2629,7 @@ function startWatcher() {
 						// host one: a Svelte project, or any whose framework this tool
 						// does not recognise.
 						const isScaffoldCandidate =
-							!!componentBranch ||
+							componentBranch ||
 							(isStoryCreate && checkIsScaffoldableStoryFile(abs)) ||
 							isAngularHtmlCreate
 
@@ -2687,7 +2691,7 @@ function startWatcher() {
 						// includes the branch-matched check — and `componentBranch` is
 						// only looked up on creation, so that covers the event type too.
 						const isScaffoldableComponent =
-							!!componentBranch &&
+							componentBranch &&
 							checkDoesFileFrameworkMatchProject(componentBranch.family, abs)
 						if (isScaffoldableComponent) {
 							await componentBranch.handle(abs, relPath)

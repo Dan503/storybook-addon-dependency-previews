@@ -366,7 +366,7 @@ function findFrameworkInDeps(
 	)
 	if (matches.length === 0) return null
 	const subsumedCores = new Set(
-		matches.map((m) => m.subsumes).filter((s): s is string => !!s),
+		matches.map((m) => m.subsumes).filter((s): s is string => Boolean(s)),
 	)
 	const survivors = matches.filter((m) => !subsumedCores.has(m.corePackage))
 	if (survivors.length === 1) {
